@@ -2,7 +2,7 @@ const routerModules = import.meta.glob('./views/**/index.vue')
 
 
 const getAsyncRoutesMap = () => {
-    const modules = {}
+    const modules:any = {}
     Object.keys(routerModules).forEach(item => {
         const code = item.replace('./views/', '').replace('/index.vue', '')
         const key = `${code}`
