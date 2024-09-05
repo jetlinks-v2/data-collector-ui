@@ -146,7 +146,7 @@ import {
 } from '../../../../api/data-collect/collector';
 import Save from './Save/index.vue';
 import { onlyMessage } from '@jetlinks-web/utils'
-import _ from 'lodash-es';
+import { cloneDeep,isArray } from 'lodash-es';
 import { colorMap } from '../data';
 
 const props = defineProps({
@@ -175,7 +175,7 @@ const root = [
     },
 ];
 
-const defualtDataSource: any = ref(_.cloneDeep(root));
+const defualtDataSource: any = ref(cloneDeep(root));
 
 const defualtParams = {
     paging: false,
@@ -202,7 +202,7 @@ const handleAdd = () => {
 };
 
 const handleEdit = (data: object) => {
-    current.value = _.cloneDeep(data);
+    current.value = cloneDeep(data);
     visible.value = true;
 };
 
@@ -249,10 +249,10 @@ const handleSearch = async (value: any) => {
     let clickSearch = !!channelId; // 通道跳转进来或者搜索时，树根节点无全部
 
     if (!searchValue.value && !value) {
-        params.value = _.cloneDeep(defualtParams);
+        params.value = cloneDeep(defualtParams);
     } else if (!!searchValue.value) {
         clickSearch = true;
-        params.value = { ..._.cloneDeep(defualtParams) };
+        params.value = { ...cloneDeep(defualtParams) };
         // params.value.terms[1] = {
         //     terms: [
         //         {
@@ -287,7 +287,7 @@ const handleSearch = async (value: any) => {
                     (selectedKeys.value = [res.result[0].id]); // 通道跳转进来或者搜索时，默认选中第一个
             }
         } else {
-            defualtDataSource.value = _.cloneDeep(root);
+            defualtDataSource.value = cloneDeep(root);
             defualtDataSource.value[0].children = res.result;
         }
         collectorAll.value = res.result;
@@ -298,7 +298,7 @@ const handleSearch = async (value: any) => {
 
         //激活change事件
         setTimeout(() => {
-            const _selectedKeys = _.cloneDeep(selectedKeys.value);
+            const _selectedKeys = cloneDeep(selectedKeys.value);
             selectedKeys.value = [];
             selectedKeys.value = _selectedKeys;
         }, 0);
@@ -315,14 +315,14 @@ const treeSelect = (keys: string, e: any) => {
 };
 
 onMounted(() => {
-    handleSearch(_.cloneDeep(defualtParams));
+    handleSearch(cloneDeep(defualtParams));
     getChannelNoPaging();
 });
 
 watch(
     () => selectedKeys.value[0],
     (n, p) => {
-        const key = _.isArray(selectedKeys.value)
+        const key = isArray(selectedKeys.value)
             ? selectedKeys.value[0]
             : selectedKeys.value;
         if (key) {

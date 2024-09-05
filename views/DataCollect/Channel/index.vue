@@ -140,7 +140,7 @@ import { onlyMessage } from '@jetlinks-web/utils'
 import { StatusColorEnum, updateStatus ,protocolList,imgUrl} from './data';
 import { useMenuStore } from '@/store/menu';
 import Save from './Save/index.vue';
-import _ from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 
 const menuStory = useMenuStore();
 const tableRef = ref<Record<string, any>>({});
@@ -148,11 +148,7 @@ const params = ref<Record<string, any>>({});
 const visible = ref(false);
 const current = ref({});
 
-// const opcImage = getImage('/DataCollect/device-opcua.png');
-// const modbusImage = getImage('/DataCollect/device-modbus.png');
-// const s7Image = getImage('/DataCollect/s7.png');
-// const gatewayImage = getImage('/DataCollect/gateway.png');
-// const iecImage = getImage('/DataCollect/IEC104.png');
+
 const ImageMap = new Map();
 ImageMap.set('OPC_UA', imgUrl.opcImage);
 ImageMap.set('MODBUS_TCP', imgUrl.modbusImage);
@@ -321,7 +317,7 @@ const handlAdd = () => {
 };
 
 const handleEdit = (data: object) => {
-    current.value = _.cloneDeep(data);
+    current.value = cloneDeep(data);
     visible.value = true;
 };
 const handlEye = (id: string) => {
