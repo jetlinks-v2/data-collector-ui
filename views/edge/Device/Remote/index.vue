@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-import { _control, _stopControl } from '@/api/edge/device';
-import {useRouterParams} from "@/utils/hooks/useParams";
+import { _control, _stopControl } from '../../../../api/edge/device';
+import { useRouterParams } from '@jetlinks-web/hooks'
 
 const url = ref<string>('');
 const deviceId = ref<string>('');
