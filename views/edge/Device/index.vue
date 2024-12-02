@@ -10,6 +10,7 @@
                 ref="edgeDeviceRef"
                 :columns="columns"
                 :request="query"
+                mode="CARD"
                 :defaultParams="defaultParams"
                 :params="params"
                 :gridColumn="3"
@@ -211,6 +212,7 @@
 <script lang="ts" setup>
 import { useMenuStore } from '@/store/menu';
 import { onlyMessage } from '@jetlinks-web/utils'
+import { openEdgeUrl } from '../../../utils/utils';
 import dayjs from 'dayjs';
 import { query, _delete, _deploy, _undeploy,queryNoPagingPost,queryTree} from '../../../api/others';
 import { restPassword } from '../../../api/edge/device';
@@ -227,7 +229,7 @@ const defaultParams = {
             terms: [
                 {
                     column: 'productId$product-info',
-                    value: 'accessProvider is official-edge-gateway',
+                    value: 'accessProvider in (agent-device-gateway,agent-media-device-gateway,official-edge-gateway)',
                 },
             ],
             type: 'and',
@@ -395,7 +397,7 @@ const columns = [
 const getActions = (
     data: Partial<Record<string, any>>,
     type: 'card' | 'table',
-): any[] => {
+): ActionsType[] => {
     if (!data) return [];
     const actions = [
         {
@@ -454,8 +456,6 @@ const getActions = (
                 },
             },
         },
-    ];
-    const others = [
         {
             key: 'setting',
             text: '远程控制',
@@ -463,36 +463,12 @@ const getActions = (
                 title: '远程控制',
             },
             icon: 'ControlOutlined',
-            onClick: () => {
-                menuStory.jumpPage('edge/Device/Remote', {
-                    params: {
-                        id: data.id,
-                    },
-                });
-            },
-        },
-        {
-            key: 'password',
-            text: '重置密码',
-            tooltip: {
-                title: '重置密码',
-            },
-            icon: 'RedoOutlined',
-            popConfirm: {
-                title: '确认重置密码为Jetlinks123？',
-                onConfirm: () => {
-                    const response = restPassword(data.id);
-                    response.then((resp: any) => {
-                        if (resp.status === 200) {
-                            onlyMessage('操作成功！');
-                            edgeDeviceRef.value?.reload();
-                        }
-                    });
-                    return response;
-                },
+            onClick: async () => {
+                await openEdgeUrl(data?.id)
             },
         },
     ];
+
 
     const deleteItem = {
         key: 'delete',
@@ -523,19 +499,13 @@ const getActions = (
     };
 
     if (type === 'card') {
-        const arr = actions.filter((i: any) => i.key !== 'view');
+        const arr = actions.filter((i: ActionsType) => i.key !== 'view');
         return [
             ...arr,
-            {
-                key: 'others',
-                text: '其他',
-                icon: 'EllipsisOutlined',
-                children: [...others],
-            },
             deleteItem,
         ];
     } else {
-        return [...actions, ...others, deleteItem];
+        return [...actions, deleteItem];
     }
 };
 

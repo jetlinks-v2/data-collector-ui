@@ -1,5 +1,5 @@
 <template>
-    <a-modal visible title="导入" @cancel="emit('closeImport')" @ok="emit('closeImport')" :width="800" maskClosable="false">
+    <a-modal visible title="导入" @cancel="emit('closeImport')" :width="800" :maskClosable="false">
         <div class="import-content">
             <div class="column">
                 <p>上传文件</p>
@@ -40,6 +40,9 @@
                     </div>
             </div>
         </div>
+        <template #footer>
+            <a-button type="primary" @click="emit('closeImport')">确认</a-button>
+        </template>
     </a-modal>
 </template>
 

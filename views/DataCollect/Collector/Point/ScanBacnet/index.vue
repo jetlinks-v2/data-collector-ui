@@ -1,5 +1,5 @@
 <template>
-    <a-modal title="扫描" :visible="true" width="95%" @cancel="handleCancel">
+    <a-modal title="扫描" :visible="true" :maskClosable="false" width="95%" @cancel="handleCancel">
         <div class="content">
             <Tree
                 :data="treeData"
@@ -65,7 +65,6 @@ const handleOk = async () => {
             provider: 'BACNetIp',
             collectorId: props.data?.id,
             collectorName: props.data?.name,
-            pointKey: item.id,
             configuration: {
                 interval: item.configuration?.interval?.value,
                 valueType: item.valueType,

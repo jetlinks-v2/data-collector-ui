@@ -6,4 +6,8 @@ export const _control = (deviceId: string) => request.get(`/edge/remote/${device
 
 export const _stopControl = (deviceId: string) => request.post(`/edge/remote/${deviceId}/stop`)
 
+export const getRemoteProxyUrl = (deviceId: string) => request.post(`/edge/device/${deviceId}/_proxy/_start?timeoutMinute=10`)
 
+export const getRemoteToken = (deviceId: string) => request.post(`/edge/device/${deviceId}/token`)
+
+export const getRemoteSystem = (deviceId: string, data: any) => request.post(`/edge/device/${deviceId}/_/system/config/scopes`, data)

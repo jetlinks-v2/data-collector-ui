@@ -124,6 +124,7 @@
 import {
     savePoint,
     updatePoint,
+    queryIEC104
 } from '../../../../../api/data-collect/collector';
 import { randomString } from '@jetlinks-web/utils';
 import DeathArea from './DeathArea.vue';
@@ -138,11 +139,7 @@ const emit = defineEmits(['change']);
 
 const loading = ref(false);
 const formRef = ref()
-const dataTypeList = ref([
-    { label: '单点开关量', value: 'onePointTelecontrol' },
-    { label: '双点开关量', value: 'twoPointTelecontrol' },
-    { label: '归一化值', value: 'prefabActivationOneParameter' },
-]);
+const dataTypeList = ref();
 const formData = ref({
     name: props.data.name,
     configuration: props.data.configuration || {
@@ -254,7 +251,20 @@ const handleCancel = () => {
     emit('change', false);
 };
 
+const queryDataType = async () => {
+    const res = await queryIEC104();
+    if (res.success) {
+        dataTypeList.value = res.result.map((i:any)=>{
+            return {
+                label: i.name,
+                value: i.key
+            }
+        });
+    }
+};
+
 onMounted(() => {
+    queryDataType();
     formData.value.features = props.data.features?.map((item: any) => item.value)
     if (props.data.accessModes?.length !== 0) {
         formData.value.accessModes = props.data.accessModes?.map((item: any) => item.value)
