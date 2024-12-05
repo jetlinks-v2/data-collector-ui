@@ -212,7 +212,7 @@
 <script lang="ts" setup>
 import { useMenuStore } from '@/store/menu';
 import { onlyMessage } from '@jetlinks-web/utils'
-import { openEdgeUrl } from '../../../utils/utils';
+import { openEdgeUrl } from '@/utils/comm';
 import dayjs from 'dayjs';
 import { query, _delete, _deploy, _undeploy,queryNoPagingPost,queryTree} from '../../../api/others';
 import { restPassword } from '../../../api/edge/device';

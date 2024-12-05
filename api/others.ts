@@ -43,6 +43,24 @@ export const _undeploy = (id: string) => request.post(`/device-instance/${id}/un
 export const queryNoPagingPost = (data: any) => request.post(`/device-product/_query/no-paging?paging=false`, data)
 
 /**
+ * 查询产品列表(分页)
+ * @param data 查询条件
+ */
+export const queryProductList = (data: any) => request.post('/device-product/_query', data)
+
+/**
+ * 根据条件查询产品详情列表（不带翻页）
+ * @param data 查询条件
+ * @returns
+ */
+export const queryProductDetailAllList = (data?: any) => request.post(`/device-product/detail/_query/no-paging`, data);
+
+/**
+ * 查询固件列表
+ */
+ export const queryFirmwareList = (data: object) => request.post(`/firmware/_query/`, data);
+
+/**
  * 查询产品分类树形数据
  */
 export const queryTree = (params?: Record<string, any>) => request.post('/device/category/_tree', params)
@@ -60,6 +78,23 @@ export const update = (data: Partial<any>) => data.id ? request.patch(`/device-i
  * @returns
  */
 export const isExists = (id: string) => request.get(`/device-instance/${id}/exists`)
+
+/**
+ * 新增设备
+ */
+export const addDevice = (params: any) => request.post("/device-instance", params)
+
+/**
+ * 修改设备
+ */
+export const editDevice = (params: any) => request.patch('/device-instance', params)
+
+/**
+ * 根据设备ID获取设备详情
+ * @param id 设备ID
+ * @returns 设备详情
+ */
+export const detail = (id: string) => request.get(`/device-instance/${id}/detail`, {}, {})
 
 
 //视频设备相关
@@ -124,3 +159,30 @@ export const templateDownload = (productId: string, type: string) => request.get
  * @returns
  */
 export const deviceImport = (productId: string, fileUrl: string, autoDeploy: boolean) => `${BASE_API_PATH}/device-instance/${productId}/import/_withlog?fileUrl=${fileUrl}&autoDeploy=${autoDeploy}&:X_Access_Token=${LocalStore.get(TOKEN_KEY)}`
+
+/**
+ * 保存产品
+ * @param data 产品信息
+ * @returns
+ */
+export const saveProductMetadata = (data: Record<string, unknown>) => request.patch('/device-product', data)
+/**
+ * 聚合统计
+ */
+export const dashboard = (data?:any) => request.post('/dashboard/_multi',data);
+
+/**
+ * 获取最新属性值
+ * @param deviceId 设备id
+ * @param type 属性id
+ * @returns
+ */
+export const getProperty = (deviceId: string, type: string) => request.get(`/device/standard/${deviceId}/property/${type}`)
+
+export const queryPluginAccessDetail = (id: string) => request.get(`/plugin/driver/${id}`)
+
+export const getPluginData = (type: string, pluginId: string, internalId: string ) => request.get(`/plugin/mapping/${type}/${pluginId}/${internalId}`)
+
+export const getCommandsByAccess = (id: string) => request.get(`/gateway/device/${id}/commands`)
+
+export const getCommandsDevicesByAccessId = (id: string, data: any) => request.post(`/gateway/device/${id}/command/QueryDevicePage`, data)

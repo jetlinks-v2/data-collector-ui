@@ -134,82 +134,119 @@ export default [
                         indirectMenus: ['1b136e7e4e4e74bb24b91802e4cfcd2d']
                     },
                     {
-                        code: 'edge/Resource',
-                        name: '资源库',
-                        owner: 'iot',
-                        id: '7f49fcece2b291aa595a0ace3ea43ca1',
-                        sortIndex: 2,
-                        url: '/iot/edge/Resource',
-                        icon: 'icon-Vector',
-                        showPage: ['edge-operations'],
+                        "id": "aa30a56878065635574bb62dd4f894e6",
+                        "path": "yci3-B2Qf-m3oA",
+                        "sortIndex": 2,
+                        "level": 3,
+                        "owner": "iot",
+                        "name": "资源库",
+                        "code": "edge/NewResource",
+                        "icon": "SlidersOutlined",
+                        "url": "/iot/edge/new-resource",
+                        "describe": "",
+                        showPage: ['edge-manager'],
                         permissions: [
                             {
-                                permission: 'entity-template',
-                                actions: ['query'],
-                            },
+                                "permission": "entity-template",
+                                "actions": [
+                                    "query"
+                                ]
+                            }
                         ],
-                        buttons: [
+                        "buttons": [
                             {
-                                id: 'view',
-                                name: '查看',
-                                permissions: [
+                                "id": "add",
+                                "name": "新增",
+                                "description": "",
+                                "enabled": false,
+                                "granted": true,
+                                "permissions": [
                                     {
-                                        permission: 'entity-template',
-                                        actions: ['query'],
-                                    },
-                                ],
+                                        "permission": "entity-template",
+                                        "actions": [
+                                            "query",
+                                            "save"
+                                        ]
+                                    }
+                                ]
                             },
                             {
-                                id: 'action',
-                                name: '启/禁用',
-                                permissions: [
+                                "id": "delete",
+                                "name": "删除",
+                                "description": "",
+                                "enabled": false,
+                                "granted": true,
+                                "permissions":[
                                     {
-                                        permission: 'entity-template',
-                                        actions: ['enable', 'disable'],
-                                    },
-                                ],
+                                        "permission": "entity-template",
+                                        "actions": [
+                                            "query",
+                                            "save",
+                                            "delete"
+                                        ]
+                                    }
+                                ]
                             },
                             {
-                                id: 'delete',
-                                name: '删除',
-                                permissions: [
+                                "id": "update",
+                                "name": "编辑",
+                                "description": "",
+                                "enabled": false,
+                                "granted": true,
+                                "permissions": [
                                     {
-                                        permission: 'entity-template',
-                                        actions: ['delete'],
-                                    },
-                                ],
+                                        "permission": "entity-template",
+                                        "actions": [
+                                            "query",
+                                            "save"
+                                        ]
+                                    }
+                                ]
                             },
                             {
-                                id: 'update',
-                                name: '编辑',
-                                permissions: [
+                                "id": "issue",
+                                "name": "下发",
+                                "description": "",
+                                "enabled": false,
+                                "granted": true,
+                                "permissions": [
                                     {
-                                        permission: 'entity-template',
-                                        actions: ['save'],
-                                    },
-                                ],
+                                        "permission": "entity-template",
+                                        "actions": [
+                                            "query",
+                                            "save"
+                                        ]
+                                    }
+                                ]
                             },
                             {
-                                id: 'setting',
-                                name: '下发',
-                                permissions: [
+                                "id": "action",
+                                "name": "启/禁用",
+                                "description": "",
+                                "enabled": false,
+                                "granted": true,
+                                "permissions": [
                                     {
-                                        permission: 'device-instance',
-                                        actions: ['query'],
-                                    },
-                                    {
-                                        permission: 'edge-operations',
-                                        actions: ['invoke'],
-                                    },
-                                    {
-                                        permission: 'entity-template',
-                                        actions: ['query'],
-                                    },
-                                ],
-                            },
+                                        "permission": "entity-template",
+                                        "actions": [
+                                            "enable",
+                                            "disable"
+                                        ]
+                                    }
+                                ]
+                            }
                         ],
-                        accessSupport: { text: "不支持", value: "unsupported" },
-                        supportDataAccess: false
+                        "accessSupport": {
+                            "text": "不支持",
+                            "value": "unsupported"
+                        },
+                        "indirectMenus": [],
+                        "assetAccesses": [],
+                        "options": {
+                            "show": true
+                        },
+                        "createTime": 1730966464081,
+                        "granted": true
                     },
                 ],
             },

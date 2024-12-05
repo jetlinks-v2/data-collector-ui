@@ -14,16 +14,16 @@ const getAsyncRoutesMap = () => {
 
 const getExtraRoutesMap = () => {
     return {
-        // [`${MODULE_CODE}/Product`]: {
-        //     children: [
-        //         {
-        //             code: 'Detail',
-        //             url: '/detail:id',
-        //             name: '详情信息',
-        //             component: () => import('./views/Product/Detail/index.vue')
-        //         }
-        //     ]
-        // }
+        'edge/NewResource': {
+            children: [
+                {
+                    code: 'Detail',
+                    url: '/detail:id',
+                    name: '详情信息',
+                    component: () => import('./views/edge/NewResource/Detail/index.vue')
+                }
+            ]
+        }
     }
 }
 

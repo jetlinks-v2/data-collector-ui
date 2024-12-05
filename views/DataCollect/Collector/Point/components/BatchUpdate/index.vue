@@ -143,7 +143,7 @@ const getIdAndType = async () => {
 
 const handleOk = async () => {
     const data = cloneDeep(formData.value);
-    const { accessModes, features, interval, valueType , pushControl } = data;
+    const { accessModes, features, interval, valueType, pushControl } = data;
     const ischange =
         accessModes.length !== 0 ||
         pushControl ||
@@ -162,10 +162,12 @@ const handleOk = async () => {
                     );
                 }
             }
-            if (features.length !== 0) {
-                i.features = data.features;
-            } else {
-                i.features = [];
+            if (pushControl) {
+                if (features.length !== 0) {
+                    i.features = data.features;
+                } else {
+                    i.features = [];
+                }
             }
             
             if (!!interval || Number(interval) === 0) {
