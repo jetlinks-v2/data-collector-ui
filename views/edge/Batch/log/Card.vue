@@ -28,17 +28,17 @@
               <template #overlay>
                 <a-menu>
                   <a-menu-item >
-                    <PermissionButton
+                    <j-permission-button
                       style="width: 100%;text-align: left;"
                       type="text"
                       @click="onCopy"
                     >
                       从相同设备创建任务
-                    </PermissionButton>
+                    </j-permission-button>
 
                   </a-menu-item>
                   <a-menu-item :disabled="detail.state.value === 'running'">
-                    <PermissionButton
+                    <j-permission-button
                       style="width: 100%;text-align: left;"
                       danger
                       :tooltip="{
@@ -57,7 +57,7 @@
                       :disabled="detail.state.value === 'running'"
                     >
                       删除任务
-                    </PermissionButton>
+                    </j-permission-button>
                   </a-menu-item>
                 </a-menu>
               </template>

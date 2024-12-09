@@ -96,6 +96,7 @@ const queryFn = async (_params) => {
   return {
     status: resp.status,
     code: resp.status,
+    success: resp.success,
     result: {
       ...resp.result,
       data: resp.result.data?.map(item => {

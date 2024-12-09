@@ -105,7 +105,7 @@
         </a-form>
         <template #footer>
             <a-button @click="handleCancel">取消</a-button>
-            <PermissionButton
+            <j-permission-button
                 key="submit"
                 type="primary"
                 :loading="loading"
@@ -116,7 +116,7 @@
                 }`"
             >
                 确认
-            </PermissionButton>
+            </j-permission-button>
         </template>
     </a-modal>
 </template>

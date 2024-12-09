@@ -13,7 +13,7 @@
                         <j-ellipsis>{{ _detail.name || '--' }}</j-ellipsis>
                     </div>
                     <div class="header-status bg-color-200">
-                        <BadgeStatus
+                        <JBadgeStatus
                             :text="_detail.state.text"
                             :status="_detail.state.value"
                             :statusNames="{
@@ -64,16 +64,16 @@
                 <!-- {{ data.description || '--' }} -->
             </div>
             <div class="allOperation">
-                <PermissionButton @click="stopAll" :disabled="!stateArr.includes('waiting')"
+                <j-permission-button @click="stopAll" :disabled="!stateArr.includes('waiting')"
                     ><template #icon><AIcon type="PauseOutlined" /> </template
                     >全部暂停
-                </PermissionButton>
-                <PermissionButton style="margin-left: 20px" @click="startAll" :disabled="!stateArr.includes('canceled')"
+                </j-permission-button>
+                <j-permission-button style="margin-left: 20px" @click="startAll" :disabled="!stateArr.includes('canceled')"
                     ><template #icon
                         ><AIcon type="CaretRightOutlined" /> </template
-                    >全部开始</PermissionButton
+                    >全部开始</j-permission-button
                 >
-                <PermissionButton
+                <j-permission-button
                     style="margin-left: 20px"
                     @click="batchRetry"
                     :tooltip="{
@@ -82,18 +82,18 @@
                     :disabled="!stateArr.includes('failed')"
                     ><template #icon><AIcon type="RedoOutlined" /> </template>
                     批量重试
-                </PermissionButton>
-                <PermissionButton
+                </j-permission-button>
+                <j-permission-button
                     style="margin-left: 20px"
                     @click="refreshState"
                     ><template #icon><AIcon type="RedoOutlined" /> </template>
                     刷新状态
-                </PermissionButton>
-                <PermissionButton style="float: right" @click="onCopy"
+                </j-permission-button>
+                <j-permission-button style="float: right" @click="onCopy"
                     ><template #icon><AIcon type="CopyOutlined" /> </template>
                     从相同设备创建任务
-                </PermissionButton>
-                <PermissionButton
+                </j-permission-button>
+                <j-permission-button
                     style="float: right; margin-right: 20px"
                     danger
                     :tooltip="{
@@ -112,7 +112,7 @@
                 >
                     <template #icon><AIcon type="DeleteOutlined" /> </template>
                     删除任务
-                </PermissionButton>
+                </j-permission-button>
             </div>
             <div class="body-progress">
                 <div class="progress--warp bg-color-200">
@@ -145,7 +145,7 @@
         </div>
         <JProTable
             ref="tableRef"
-            model="TABLE"
+            mode="TABLE"
             style="padding: 0"
             :columns="columns"
             :request="_query"
@@ -220,7 +220,7 @@
             </template>
             <template #action="record">
                 <a-space :size="24">
-                    <PermissionButton
+                    <j-permission-button
                         v-if="
                             record.state.value === 'waiting' ||
                             record.state.value === 'running'
@@ -238,8 +238,8 @@
                         }"
                     >
                         <AIcon type="StopOutlined" />
-                    </PermissionButton>
-                    <PermissionButton
+                    </j-permission-button>
+                    <j-permission-button
                         v-if="record.state.value === 'failed'"
                         type="link"
                         :tooltip="{
@@ -254,8 +254,8 @@
                         }"
                     >
                         <AIcon type="ReloadOutlined" />
-                    </PermissionButton>
-                    <PermissionButton
+                    </j-permission-button>
+                    <j-permission-button
                         v-if="record.state.value === 'canceled'"
                         type="link"
                         :tooltip="{
@@ -270,8 +270,8 @@
                         }"
                     >
                         <AIcon type="PlayCircleOutlined" />
-                    </PermissionButton>
-                    <PermissionButton
+                    </j-permission-button>
+                    <j-permission-button
                         type="link"
                         :tooltip="{
                             title: '删除',
@@ -290,7 +290,7 @@
                         "
                     >
                         <AIcon type="DeleteOutlined" />
-                    </PermissionButton>
+                    </j-permission-button>
                 </a-space>
             </template>
         </JProTable>

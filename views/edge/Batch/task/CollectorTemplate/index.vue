@@ -14,7 +14,7 @@
     />
     <JProTable
       ref="tableRef"
-      model="TABLE"
+      mode="TABLE"
       style="padding: 0"
       :columns="columns"
       :request="queryFn"
@@ -84,6 +84,7 @@ const queryFn = async (_params) => {
   return {
     status: resp.status,
     code: resp.status,
+    success: resp.success,
     result: {
       ...resp.result,
       data: resp.result.data?.map(item => {

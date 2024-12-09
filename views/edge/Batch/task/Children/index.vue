@@ -251,8 +251,8 @@ import {
     queryNoPagingPost,
     addDevice,
     editDevice,
-    queryProductList
-} from '../../../../../api/others';
+} from '../../../../../api/edge/instance';
+import { queryProductList } from '../../../../../api/edge/product';
 import { _queryByEdge, _commandByEdge } from '../../../../../api/edge/batch';
 import { onlyMessage, randomString } from '@jetlinks-web/utils';
 import { cloneDeep } from 'lodash-es';
@@ -346,9 +346,9 @@ const columns = [
 const customRow = (record) => {
     return {
         onClick: (e) => {
-            visible.value = true;
-            _current.value = record;
-            _type.value = 'device';
+            // visible.value = true;
+            // _current.value = record;
+            // _type.value = 'device';
         }
     };
 };

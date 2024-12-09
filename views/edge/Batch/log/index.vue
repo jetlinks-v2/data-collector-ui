@@ -8,12 +8,13 @@
         />
         <JProTable
             ref="tableRef"
-            model="CARD"
+            mode="CARD"
             style="padding: 12px 0 0"
             :columns="columns"
             :request="queryTask"
             :params="params"
             :gridColumn="1"
+            :gridColumns="[1]"
             :defaultParams="{
                 sorts: [{ name: 'createTime', order: 'desc' }],
                 terms: [
