@@ -1,10 +1,10 @@
 <template>
   <div class="task-warp">
     <div class="header">
-      插件
+      {{ $t('Plugin.index.879212-0') }}
     </div>
     <div class="tip">
-      <AIcon class="icon" type="ExclamationCircleFilled" />若插件重复，边端已安装的插件将自动跳过，避免重复安装
+      <AIcon class="icon" type="ExclamationCircleFilled" />{{ $t('Plugin.index.879212-1') }}
     </div>
     <pro-search
       type="simple"
@@ -44,6 +44,9 @@
 import { query } from '../../../../../api/edge/resource';
 import { pick } from 'lodash-es'
 import {useTemplateRowSelection} from "../../util";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const params = ref()
 
@@ -51,7 +54,7 @@ const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTempla
 
 const columns = [
   {
-    title: '插件ID',
+    title: $t('Plugin.index.879212-2'),
     key: 'targetId',
     dataIndex: 'targetId',
     search: {
@@ -60,7 +63,7 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '插件名称',
+    title: $t('Plugin.index.879212-3'),
     key: 'name',
     dataIndex: 'name',
     search: {
@@ -69,19 +72,19 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '文件',
+    title: $t('Plugin.index.879212-4'),
     key: 'file',
     dataIndex: 'file',
     ellipsis: true,
   },
   {
-    title: '描述',
+    title: $t('Plugin.index.879212-5'),
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,
   },
   {
-    title: '资源库ID',
+    title: $t('Plugin.index.879212-6'),
     key: 'id',
     dataIndex: 'id',
     ellipsis: true,

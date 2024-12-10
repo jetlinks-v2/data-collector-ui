@@ -1,14 +1,15 @@
+import i18n from "@/locales";
 export const TargetTypeOptions = [
     {
-        label: 'AI模型',
+        label: i18n.global.t('NewResource.utils.262184-0'),
         value: 'AiModel'
     },
     {
-        label: '插件',
+        label: i18n.global.t('NewResource.utils.262184-1'),
         value: 'PluginDriver'
     },
     {
-        label: '采集器模板',
+        label: i18n.global.t('NewResource.utils.262184-2'),
         value: 'entityTemplate:Collector'
     }
 ]

@@ -6,7 +6,7 @@
                     type="ExclamationCircleFilled"
                     style="color: #1677ff; margin-right: 4px"
                 />
-                拖拽右侧边缘端设备卡片到左侧对应项区域框内，即可完成绑定
+                {{ $t('Children.index.645257-0') }}
             </span>
         </div>
         <div style="width: 65vw">
@@ -33,15 +33,15 @@
         <div class="header-action">
             <div>
                 <a-switch v-model:checked="_checked" @change="onChange" />
-                <span class="header-action-text">实时保存</span>
-                <span class="header-action-desc">实时保存映射关系至边端</span>
+                <span class="header-action-text">{{ $t('Children.index.645257-1') }}</span>
+                <span class="header-action-desc">{{ $t('Children.index.645257-2') }}</span>
             </div>
             <a-space>
                 <a-button type="link" @click="handleRefresh"
                     ><AIcon type="RedoOutlined"
                 /></a-button>
                 <a-button v-if="!_checked" type="primary" @click="onSaveAll"
-                    >保存</a-button
+                    >{{ $t('Children.index.645257-3') }}</a-button
                 >
             </a-space>
         </div>
@@ -49,8 +49,8 @@
             <div class="left">
                 <template v-if="edgeCurrent.state?.value === 'online'">
                     <div class="left-title">
-                        云端设备列表
-                        <a-tooltip title="为网关设备下绑定的所有子设备列表">
+                        {{ $t('Children.index.645257-4') }}
+                        <a-tooltip :title="$t('Children.index.645257-5')">
                             <AIcon
                                 type="QuestionCircleOutlined"
                                 style="margin-left: 2px"
@@ -76,7 +76,7 @@
                                         {{
                                             record.Mappingtype !== 'auto'
                                                 ? record.id
-                                                : '自动生成'
+                                                : $t('Children.index.645257-6')
                                         }}</j-ellipsis
                                     >
                                 </template>
@@ -108,7 +108,9 @@
                                         @dragover.prevent
                                         @drop="(e) => onDrop(e, record)"
                                     >
-                                        从右侧拖拽卡片至此
+                                        <j-ellipsis>
+                                            {{ $t('Children.index.645257-7') }}
+                                        </j-ellipsis>
                                     </div>
                                     <div
                                         v-else
@@ -159,7 +161,7 @@
                         @dragover.prevent
                         @drop="onDropAuto"
                     >
-                        未找到对应云端设备？拖动卡片到此处可在云端创建设备并自动绑定
+                        {{ $t('Children.index.645257-8') }}
                     </div>
                 </template>
                 <template v-else>
@@ -168,24 +170,24 @@
                             <img :src="EmptyChildImg" alt=""/>
                         </div>
                         <div style="color: #1f2429; font-size: 16px">
-                            网关不在线
+                            {{ $t('Children.index.645257-9') }}
                         </div>
                         <div class="left-empty-desc">
-                            网关离线或已禁用，暂无法绑定子设备，可点击「刷新」按钮，同步网关状态
+                            {{ $t('Children.index.645257-10') }}
                         </div>
                         <a-button type="primary" @click="onRefresh"
-                            >刷新</a-button
+                            >{{ $t('Children.index.645257-11') }}</a-button
                         >
                     </div>
                 </template>
             </div>
             <div class="right">
                 <div class="right-title">
-                    <span>边端未映射设备列表</span>
+                    <span>{{ $t('Children.index.645257-12') }}</span>
                     <a-input-search
                         v-model:value="_search"
                         style="width: 200px"
-                        placeholder="搜索"
+                        :placeholder="$t('Children.index.645257-13')"
                         enter-button
                         @search="onRightSearch"
                     />
@@ -210,7 +212,7 @@
                                     style="display: flex; align-items: center"
                                 >
                                     <j-ellipsis
-                                        >产品:{{ item.productName }}</j-ellipsis
+                                        >{{ $t('Children.index.645257-14') }}{{ item.productName }}</j-ellipsis
                                     >
                                     <AIcon
                                         v-if="item.masterProductId"
@@ -220,7 +222,7 @@
                                 </span>
                                 <span>
                                     <j-ellipsis
-                                        >说明:{{
+                                        >{{ $t('Children.index.645257-15') }}{{
                                             item.describe || '--'
                                         }}</j-ellipsis
                                     >
@@ -237,7 +239,7 @@
                 <div class="right-bottom">
                     <AIcon type="CloudOutlined" style="color: #4096ff" />
                     <span style="color: #646c73; font-size: 12px">
-                        此标志表示该设备所属产品由云端模板创建，支持直接在云端生成对应设备
+                        {{ $t('Children.index.645257-16') }}
                     </span>
                 </div>
             </div>
@@ -258,6 +260,9 @@ import { onlyMessage, randomString } from '@jetlinks-web/utils';
 import { cloneDeep } from 'lodash-es';
 import DeviceDetail from './DeviceDetail/index.vue';
 import EmptyChildImg from '../../../../../assets/images/edge/empty-child.png';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     options: {
@@ -292,25 +297,25 @@ const options = computed(() => {
 
 const stateMap = new Map();
 stateMap.set('success', {
-    text: '已映射',
+    text: $t('Children.index.645257-17'),
     status: 'success',
 });
 stateMap.set('error', {
-    text: '失败',
+    text: $t('Children.index.645257-18'),
     status: 'error',
 });
 stateMap.set('warning', {
-    text: '待保存',
+    text: $t('Children.index.645257-19'),
     status: 'warning',
 });
 stateMap.set('none', {
-    text: '未映射',
+    text: $t('Children.index.645257-20'),
     status: 'default',
 });
 
 const columns = [
     {
-        title: '设备ID',
+        title: $t('Children.index.645257-21'),
         dataIndex: 'id',
         key: 'id',
         search: {
@@ -320,7 +325,7 @@ const columns = [
         width: 100,
     },
     {
-        title: '设备名称',
+        title: $t('Children.index.645257-22'),
         dataIndex: 'name',
         key: 'name',
         search: {
@@ -329,14 +334,15 @@ const columns = [
         width: 150,
     },
     {
-        title: '设备状态',
+        title: $t('Children.index.645257-23'),
         key: 'Mapping',
         scopedSlots: true,
         width: 90,
+        ellipsis: true,
         fixed: 'right',
     },
     {
-        title: '已映射边端设备ID',
+        title: $t('Children.index.645257-24'),
         key: 'MappingId',
         fixed: 'right',
         scopedSlots: true,
@@ -512,12 +518,12 @@ const onDropAuto = () => {
                         onAuto(obj);
                     }
                 } else {
-                    onlyMessage('云端产品不存在', 'error');
+                    onlyMessage($t('Children.index.645257-25'), 'error');
                 }
             }
         });
     }else{
-        onlyMessage('该设备所属产品不是由云端模板创建，不支持支持直接在云端生成对应设备', 'warning');
+        onlyMessage($t('Children.index.645257-26'), 'warning');
     }
 };
 
@@ -628,7 +634,7 @@ const onSaveAll = async () => {
     });
     if (res.success) {
         handleRefresh();
-        onlyMessage('编辑绑定子设备成功');
+        onlyMessage($t('Children.index.645257-27'));
     }
 };
 const onChange = (checked) => {
@@ -769,9 +775,11 @@ watch(
             border: 1px solid #c3c7cb;
             // min-height: 50px;
             border-radius: 4px;
+            display: flex;
             :deep(.JSearch-warp) {
                 padding-bottom: 0 !important;
             }
+            flex-direction: column;
             .left-title {
                 background: #f8f9fa;
                 height: 56px;
@@ -786,7 +794,7 @@ watch(
                 border-color: #e4e6e7;
             }
             .left-list {
-                height: 500px;
+                flex: 1;
                 padding: 12px;
                 .left-drag {
                     border: 1px solid #eff0f1;
@@ -814,8 +822,7 @@ watch(
                 }
             }
             .left-bottom {
-                height: 48px;
-                line-height: 48px;
+                padding: 8px 0;
                 padding-left: 12px;
                 box-sizing: border-box;
                 /* Gray400 */
@@ -892,8 +899,6 @@ watch(
             }
             .right-bottom {
                 margin-top: 12px;
-                height: 20px;
-                line-height: 20px;
                 padding-left: 6px;
             }
         }

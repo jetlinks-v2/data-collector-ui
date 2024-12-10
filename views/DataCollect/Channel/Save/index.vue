@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        :title="data.id ? '编辑' : '新增'"
+        :title="data.id ? $t('Save.index.290643-0') : $t('Save.index.290643-1')"
         :visible="true"
         width="700px"
         :maskClosable="false"
@@ -15,18 +15,18 @@
             :rules="FormValidate"
             ref="formRef"
         >
-            <a-form-item label="通道名称" name="name">
+            <a-form-item :label="$t('Save.index.290643-2')" name="name">
                 <a-input
-                    placeholder="请输入通道名称"
+                    :placeholder="$t('Save.index.290643-3')"
                     v-model:value="formData.name"
                 />
             </a-form-item>
-            <a-form-item label="通讯协议" name="provider">
+            <a-form-item :label="$t('Save.index.290643-4')" name="provider">
                 <a-select
                     style="width: 100%"
                     v-model:value="formData.provider"
                     :options="providersList"
-                    placeholder="请选择通讯协议"
+                    :placeholder="$t('Save.index.290643-5')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
@@ -39,8 +39,8 @@
                 :rules="FormValidate.host"
             >
                 <template #label>
-                    Modbus主机IP
-                    <a-tooltip title="支持ipv4、ipv6、域名">
+                    {{ $t('Save.index.290643-6') }}
+                    <a-tooltip :title="$t('Save.index.290643-7')">
                         <AIcon
                             type="QuestionCircleOutlined"
                             style="margin-left: 2px"
@@ -48,19 +48,19 @@
                     </a-tooltip>
                 </template>
                 <a-input
-                    placeholder="请输入Modbus主机IP"
+                    :placeholder="$t('Save.index.290643-8')"
                     v-model:value="formData.configuration.host"
                 />
             </a-form-item>
             <a-form-item
                 v-if="formData.provider === 'MODBUS_TCP'"
-                label="端口"
+                :label="$t('Save.index.290643-9')"
                 :name="['configuration', 'port']"
                 :rules="FormValidate.port"
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入端口"
+                    :placeholder="$t('Save.index.290643-10')"
                     v-model:value="formData.configuration.port"
                     :min="0"
                     :max="65535"
@@ -68,18 +68,18 @@
             </a-form-item>
             <a-form-item
                 v-if="formData.provider === 'OPC_UA'"
-                label="端点url"
+                :label="$t('Save.index.290643-11')"
                 :name="['configuration', 'endpoint']"
                 :rules="FormValidate.endpoint"
             >
                 <a-input
-                    placeholder="请输入端点url"
+                    :placeholder="$t('Save.index.290643-12')"
                     v-model:value="formData.configuration.endpoint"
                 />
             </a-form-item>
             <a-form-item
                 v-if="formData.provider === 'OPC_UA'"
-                label="安全策略"
+                :label="$t('Save.index.290643-13')"
                 :name="['configuration', 'securityPolicy']"
                 :rules="FormValidate.securityPolicy"
             >
@@ -87,7 +87,7 @@
                     style="width: 100%"
                     v-model:value="formData.configuration.securityPolicy"
                     :options="Options['security-policies']"
-                    placeholder="请选择安全策略"
+                    :placeholder="$t('Save.index.290643-14')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
@@ -96,8 +96,8 @@
             <a-form-item
                 v-if="formData.provider === 'COLLECTOR_GATEWAY'"
                 :name="['configuration', 'deviceId']"
-                :rules="[{ required: true, message: '请选择网关设备' }]"
-                label="选择网关设备"
+                :rules="[{ required: true, message: $t('Save.index.290643-15') }]"
+                :label="$t('Save.index.290643-16')"
             >
                 <GateWayFormItem
                     v-model:name="formData.configuration.deviceName"
@@ -106,7 +106,7 @@
             </a-form-item>
             <a-form-item
                 v-if="formData.provider === 'OPC_UA'"
-                label="安全模式"
+                :label="$t('Save.index.290643-17')"
                 :name="['configuration', 'securityMode']"
                 :rules="FormValidate.securityMode"
             >
@@ -114,7 +114,7 @@
                     style="width: 100%"
                     v-model:value="formData.configuration.securityMode"
                     :options="Options['security-modes']"
-                    placeholder="请选择安全模式"
+                    :placeholder="$t('Save.index.290643-18')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
@@ -122,7 +122,7 @@
             </a-form-item>
             <a-form-item
                 v-if="isSecurityMode"
-                label="证书"
+                :label="$t('Save.index.290643-19')"
                 :name="['configuration', 'certId']"
                 :rules="FormValidate.certId"
             >
@@ -130,7 +130,7 @@
                     style="width: 100%"
                     v-model:value="formData.configuration.certId"
                     :options="certificateList"
-                    placeholder="请选择证书"
+                    :placeholder="$t('Save.index.290643-20')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
@@ -138,7 +138,7 @@
             </a-form-item>
             <a-form-item
                 v-if="formData.provider === 'OPC_UA'"
-                label="权限认证"
+                :label="$t('Save.index.290643-21')"
                 :name="['configuration', 'authType']"
                 :rules="FormValidate.authType"
             >
@@ -152,28 +152,28 @@
             </a-form-item>
             <a-form-item
                 v-if="isAuthType"
-                label="用户名"
+                :label="$t('Save.index.290643-22')"
                 :name="['configuration', 'username']"
                 :rules="FormValidate.username"
             >
                 <a-input
-                    placeholder="请输入用户名"
+                    :placeholder="$t('Save.index.290643-23')"
                     v-model:value="formData.configuration.username"
                 />
             </a-form-item>
             <a-form-item
                 v-if="isAuthType"
-                label="密码"
+                :label="$t('Save.index.290643-24')"
                 :name="['configuration', 'password']"
                 :rules="FormValidate.password"
             >
                 <a-input-password
-                    placeholder="请输入密码"
+                    :placeholder="$t('Save.index.290643-25')"
                     v-model:value="formData.configuration.password"
                 />
             </a-form-item>
             <template v-if="formData.provider === 'BACNetIp'">
-                <a-form-item label="BACNet实例号" :name="['configuration', 'instanceNumber']" :rules="{
+                <a-form-item :label="$t('Save.index.290643-26')" :name="['configuration', 'instanceNumber']" :rules="{
                     required: true,
                     trigger:'blur',
                     validator: validate,
@@ -184,16 +184,16 @@
                         :min="0"
                         :precision="0"
                         :max="999999999999"
-                        placeholder="请输入BACNet实例号"
+                        :placeholder="$t('Save.index.290643-27')"
                     ></a-input-number>
                 </a-form-item>
                 <a-form-item
-                    label="网卡"
+                    :label="$t('Save.index.290643-28')"
                     :name="['configuration', 'overIp', 'localBindAddress']"
                     :rules="{
                         required: true,
                         trigger:'blur',
-                        message: '请选择网卡'
+                        message: $t('Save.index.290643-29')
                     }"
                 >
                     <a-input
@@ -202,12 +202,12 @@
                     </a-input>
                 </a-form-item>
                 <a-form-item
-                    label="广播端口"
+                    :label="$t('Save.index.290643-30')"
                     :name="['configuration', 'overIp', 'port']"
                     :rules="{
                         required: true,
                         trigger: 'blur',
-                        message: '请输入广播端口'
+                        message: $t('Save.index.290643-31')
                     }"
                 >
                     <a-input-number
@@ -216,11 +216,11 @@
                         :min="1"
                         :max="65535"
                         :precision="0"
-                        placeholder="请输入广播端口"
+                        :placeholder="$t('Save.index.290643-31')"
                     ></a-input-number>
                 </a-form-item>
                 <a-form-item
-                    label="子网地址"
+                    :label="$t('Save.index.290643-32')"
                     :name="['configuration', 'overIp', 'subnetAddress']"
                     :rules="{
                         trigger: 'change',
@@ -232,11 +232,11 @@
                             formData.configuration.overIp.subnetAddress
                         "
                         style="width: 100%"
-                        placeholder="请输入子网地址"
+                        :placeholder="$t('Save.index.290643-33')"
                     ></a-input>
                 </a-form-item>
                 <a-form-item
-                    label="网络前缀长度"
+                    :label="$t('Save.index.290643-34')"
                     :name="['configuration', 'overIp', 'networkPrefixLength']"
                 >
                     <a-input-number
@@ -247,7 +247,7 @@
                         :min="1"
                         :max="65535"
                         :precision="0"
-                        placeholder="请输入网络前缀长度"
+                        :placeholder="$t('Save.index.290643-35')"
                     ></a-input-number>
                 </a-form-item>
             </template>
@@ -257,9 +257,9 @@
             >
                 <a-input v-model:value="formData.configuration.connect"/>
             </a-form-item> -->
-            <a-form-item label="说明" name="description">
+            <a-form-item :label="$t('Save.index.290643-36')" name="description">
                 <a-textarea
-                    placeholder="请输入说明"
+                    :placeholder="$t('Save.index.290643-37')"
                     v-model:value="formData.description"
                     :maxlength="200"
                     :rows="3"
@@ -268,7 +268,7 @@
             </a-form-item>
         </a-form>
         <template #footer>
-            <a-button key="back" @click="handleCancel">取消</a-button>
+            <a-button key="back" @click="handleCancel">{{ $t('Save.index.290643-38') }}</a-button>
             <j-permission-button
                 key="submit"
                 type="primary"
@@ -277,7 +277,7 @@
                 style="margin-left: 8px"
                 :hasPermission="`DataCollect/Channel:${id ? 'update' : 'add'}`"
             >
-                确认
+                {{ $t('Save.index.290643-39') }}
             </j-permission-button>
         </template>
     </a-modal>
@@ -297,6 +297,9 @@ import { cloneDeep, isArray, omit } from 'lodash-es';
 // import { protocolList } from '@/utils/consts';
 import GateWayFormItem from './GateWayFormItem.vue';
 import { testIpv4_6 } from '@/utils/validate';
+import { useI18n } from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
     data: {
@@ -353,11 +356,11 @@ const handleOk = async () => {
 
 const validate = async (_rule: any, value: string) => {
   if (!value) {
-    return Promise.reject('请输入BACnet实例号');
+    return Promise.reject($t('Save.index.290643-40'));
   } else {
     const reg = new RegExp(/^[0-9]*$/)
     if(!reg.test(value) || parseInt(value) < 0) {
-      return Promise.reject('请输入正确的BACnet实例号');
+      return Promise.reject($t('Save.index.290643-41'));
     }
     return Promise.resolve()
   }
@@ -365,7 +368,7 @@ const validate = async (_rule: any, value: string) => {
 
 const validateSubnetAddress = async (_rule: any, value: string) => {
     if (value && !testIpv4_6(value)) {
-        return Promise.reject('请输入正确的子网地址');
+        return Promise.reject($t('Save.index.290643-42'));
     }
     return Promise.resolve();
 };

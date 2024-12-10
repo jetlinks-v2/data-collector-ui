@@ -1,12 +1,12 @@
 <template>
     <div class="tree-content">
         <div class="tree-header">
-            <div>数据源</div>
+            <div>{{ $t('ScanBacnet.Tree.400142-0') }}</div>
             <!-- <a-checkbox v-model:checked="isSelected">隐藏已有节点</a-checkbox> -->
         </div>
         {{ unSelectKeys }}
         <a-button block @click="allControl"
-            >{{ props.tableData.length ? '全部撤销' : '全部添加' }}
+            >{{ props.tableData.length ? $t('ScanBacnet.Tree.400142-1') : $t('ScanBacnet.Tree.400142-2') }}
         </a-button>
         <a-spin :spinning="spinning">
             <a-tree
@@ -47,7 +47,9 @@ import {
     queryPointNoPaging,
     getBacnetObjectList,
 } from '../../../../../api/data-collect/collector';
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,

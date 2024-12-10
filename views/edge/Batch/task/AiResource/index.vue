@@ -1,10 +1,10 @@
 <template>
   <div class="task-warp">
     <div class="header">
-      AI底库
+      {{ $t('AiResource.index.967858-0') }}
     </div>
     <div class="tip">
-      <AIcon class="icon" type="ExclamationCircleFilled" />若AI底库重复，边端已安装的AI底库将自动覆盖
+      <AIcon class="icon" type="ExclamationCircleFilled" />{{ $t('AiResource.index.967858-1') }}
     </div>
     <pro-search
       type="simple"
@@ -38,13 +38,16 @@
 import { queryPage } from '../../../../../api/edge/newResource'
 import {useTemplateRowSelection} from '../../util'
 import {pick} from "lodash-es";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const params = ref()
 const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
 
 const columns = [
   {
-    title: '底库ID',
+    title: $t('AiResource.index.967858-2'),
     key: 'id',
     dataIndex: 'id',
     search: {
@@ -52,7 +55,7 @@ const columns = [
     },
   },
   {
-    title: '底库名称',
+    title: $t('AiResource.index.967858-3'),
     key: 'name',
     dataIndex: 'name',
     search: {
@@ -61,7 +64,7 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '底库类型',
+    title: $t('AiResource.index.967858-4'),
     key: 'type',
     dataIndex: 'type',
     search: {
@@ -70,18 +73,18 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '文件',
+    title: $t('AiResource.index.967858-5'),
     key: 'file',
     dataIndex: 'file',
     ellipsis: true,
   },
   {
-    title: '版本号',
+    title: $t('AiResource.index.967858-6'),
     key: 'version',
     dataIndex: 'version',
   },
   {
-    title: '描述',
+    title: $t('AiResource.index.967858-7'),
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,

@@ -27,7 +27,7 @@
                             <template #icon
                                 ><AIcon type="PlusOutlined"
                             /></template>
-                            新增通道
+                            {{ $t('Channel.index.290640-0') }}
                         </j-permission-button>
                     </template>
                     <template #card="slotProps">
@@ -64,7 +64,7 @@
                                     <a-row class="card-item-content-box">
                                         <a-col :span="12">
                                             <div class="card-item-content-text">
-                                                协议
+                                                {{ $t('Channel.index.290640-1') }}
                                             </div>
                                             <div class="card-item-content-text">
                                                 <a-tooltip>
@@ -88,7 +88,7 @@
                 
                                         <a-col :span="12">
                                             <div class="card-item-content-text">
-                                                说明
+                                                {{ $t('Channel.index.290640-2') }}
                                             </div>
                                             <j-ellipsis>
                                                 <div class="explain">
@@ -141,7 +141,9 @@ import { StatusColorEnum, updateStatus ,protocolList,imgUrl} from './data';
 import { useMenuStore } from '@/store/menu';
 import Save from './Save/index.vue';
 import { cloneDeep } from 'lodash-es';
+import { useI18n } from 'vue-i18n';
 
+const {t: $t} = useI18n();
 const menuStory = useMenuStore();
 const tableRef = ref<Record<string, any>>({});
 const params = ref<Record<string, any>>({});
@@ -158,7 +160,7 @@ ImageMap.set('COLLECTOR_GATEWAY', imgUrl.gatewayImage);
 
 const columns = [
     {
-        title: '通道名称',
+        title: $t('Channel.index.290640-3'),
         dataIndex: 'name',
         key: 'name',
         ellipsis: true,
@@ -168,7 +170,7 @@ const columns = [
         },
     },
     {
-        title: '通讯协议',
+        title: $t('Channel.index.290640-4'),
         dataIndex: 'provider',
         key: 'provider',
         ellipsis: true,
@@ -198,7 +200,7 @@ const columns = [
         },
     },
     {
-        title: '状态',
+        title: $t('Channel.index.290640-5'),
         dataIndex: 'state',
         key: 'state',
         ellipsis: true,
@@ -206,13 +208,13 @@ const columns = [
         search: {
             type: 'select',
             options: [
-                { label: '正常', value: 'enabled' },
-                { label: '禁用', value: 'disabled' },
+                { label: $t('Channel.index.290640-6'), value: 'enabled' },
+                { label: $t('Channel.index.290640-7'), value: 'disabled' },
             ],
         },
     },
     {
-        title: '运行状态',
+        title: $t('Channel.index.290640-8'),
         dataIndex: 'runningState',
         key: 'runningState',
         ellipsis: true,
@@ -220,13 +222,13 @@ const columns = [
         search: {
             type: 'select',
             options: [
-                { label: '运行中', value: 'running' },
-                { label: '已停止', value: 'stopped' },
+                { label: $t('Channel.index.290640-9'), value: 'running' },
+                { label: $t('Channel.index.290640-10'), value: 'stopped' },
             ],
         },
     },
     {
-        title: '说明',
+        title: $t('Channel.index.290640-2'),
         dataIndex: 'description',
         key: 'description',
         ellipsis: true,
@@ -235,7 +237,7 @@ const columns = [
         },
     },
     {
-        title: '操作',
+        title: $t('Channel.index.290640-11'),
         key: 'action',
         fixed: 'right',
         width: 200,
@@ -249,13 +251,13 @@ const getActions = (
 ): any[] => {
     if (!data) return [];
     const state = data.state.value;
-    const stateText = state === 'enabled' ? '禁用' : '启用';
+    const stateText = state === 'enabled' ? $t('Channel.index.290640-7') : $t('Channel.index.290640-12');
     const actions = [
         {
             key: 'update',
-            text: '编辑',
+            text: $t('Channel.index.290640-13'),
             tooltip: {
-                title: '编辑',
+                title: $t('Channel.index.290640-13'),
             },
             icon: 'EditOutlined',
             onClick: () => {
@@ -270,12 +272,12 @@ const getActions = (
             },
             icon: state === 'enabled' ? 'StopOutlined' : 'CheckCircleOutlined',
             popConfirm: {
-                title: `确认${stateText}?`,
+                title: $t('Channel.index.290640-14', [stateText]),
                 onConfirm: () => {
                     const response = update(data.id, updateStatus[state]);
                     response.then((res) => {
                         if (res.success) {
-                            onlyMessage('操作成功', 'success');
+                            onlyMessage($t('Channel.index.290640-15'), 'success');
                             tableRef.value?.reload();
                         }
                     });
@@ -285,20 +287,20 @@ const getActions = (
         },
         {
             key: 'delete',
-            text: '删除',
+            text: $t('Channel.index.290640-16'),
             disabled: state === 'enabled',
             tooltip: {
                 title:
-                    state === 'enabled' ? '请先禁用该通道，再删除。' : '删除',
+                    state === 'enabled' ? $t('Channel.index.290640-17') : $t('Channel.index.290640-16'),
             },
             popConfirm: {
                 placement: 'topRight',
-                title: '该操作将会删除下属采集器与点位，确定删除?',
+                title: $t('Channel.index.290640-18'),
                 onConfirm:  () => {
                     const response =  remove(data.id);
                     response.then((res)=>{
                         if (res.success) {
-                        onlyMessage('操作成功', 'success');
+                        onlyMessage($t('Channel.index.290640-15'), 'success');
                         tableRef.value.reload();
                     }
                     })
@@ -329,7 +331,7 @@ const saveChange = (value: object) => {
     visible.value = false;
     current.value = {};
     if (value) {
-        onlyMessage('操作成功', 'success');
+        onlyMessage($t('Channel.index.290640-15'), 'success');
         tableRef.value.reload();
     }
 };
@@ -339,7 +341,7 @@ const getState = (record: Partial<Record<string, any>>) => {
             return { ...record?.runningState };
         } else {
             return {
-                text: '禁用',
+                text: $t('Channel.index.290640-7'),
                 value: 'disabled',
             };
         }

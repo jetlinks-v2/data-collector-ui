@@ -2,7 +2,7 @@
     <a-descriptions bordered :labelStyle="{width: '200px'}">
         <template #title>
             <a-space>
-                <span>基础信息</span>
+                <span>{{ $t('Info.index.077901-0') }}</span>
                 <a-button type="link" @click="visible = true">
                     <AIcon type="EditOutlined"></AIcon>
                 </a-button>
@@ -11,30 +11,30 @@
         <a-descriptions-item label="ID">
             {{data.id}}
         </a-descriptions-item>
-        <a-descriptions-item v-if="data.targetType === 'AiModel'" label="文件">
+        <a-descriptions-item v-if="data.targetType === 'AiModel'" :label="$t('Info.index.077901-1')">
             {{data.properties?.fileName}}
         </a-descriptions-item>
-        <a-descriptions-item v-else-if="data.targetType === 'PluginDriver'" label="文件">
+        <a-descriptions-item v-else-if="data.targetType === 'PluginDriver'" :label="$t('Info.index.077901-1')">
             {{JSON.parse(data.metadata || '{}')?.filename}}
         </a-descriptions-item>
-        <a-descriptions-item label="创建时间">
+        <a-descriptions-item :label="$t('Info.index.077901-2')">
             {{dayjs(data.createTime).format('YYYY-MM-DD HH:mm:ss') || '--'}}
         </a-descriptions-item>
-        <a-descriptions-item label="创建者">
+        <a-descriptions-item :label="$t('Info.index.077901-3')">
             {{data.creatorName || '--'}}
         </a-descriptions-item>
         <template v-if="data.targetType === 'entityTemplate:Collector'">
-            <a-descriptions-item label="通讯协议">
+            <a-descriptions-item :label="$t('Info.index.077901-4')">
                 {{metadata.category}}
             </a-descriptions-item>
         </template>
-        <a-descriptions-item label="说明">
+        <a-descriptions-item :label="$t('Info.index.077901-5')">
             {{metadata?.description || '--'}}
         </a-descriptions-item>
     </a-descriptions>
     <template v-if="data.targetType === 'entityTemplate:Collector'">
         <div class="title">
-            <span>点位信息</span>
+            <span>{{ $t('Info.index.077901-6') }}</span>
         </div>
         <Points :dataSource="typeof metadata.metadata === 'string' ? JSON.parse(metadata.metadata || '{}')?.points : metadata.metadata?.metadata" />
     </template>
@@ -46,6 +46,9 @@ import dayjs from "dayjs";
 import {PropType} from "vue";
 import Save from '../../Save/index.vue';
 import Points from "./Points.vue";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const emit = defineEmits(['refresh'])
 const props = defineProps({

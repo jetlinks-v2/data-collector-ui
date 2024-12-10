@@ -1,84 +1,84 @@
 <template >
-    <a-modal :title="data.id ? '编辑' : '新增'" :visible="true" width="700px" @cancel="handleCancel">
+    <a-modal :title="data.id ? $t('Save.SaveS7.4001411-0') : $t('Save.SaveS7.4001411-1')" :visible="true" width="700px" @cancel="handleCancel">
         <a-form :model="form" layout="vertical" ref="formRef">
-            <a-form-item label="点位名称" name="name">
-                <a-input placeholder="请输入点位名称" v-model:value="form.name" />
+            <a-form-item :label="$t('Save.SaveS7.4001411-2')" name="name">
+                <a-input :placeholder="$t('Save.SaveS7.4001411-3')" v-model:value="form.name" />
             </a-form-item>
-            <a-form-item label="地址区域" :name="['configuration', 'daveArea']" :rules="{
+            <a-form-item :label="$t('Save.SaveS7.4001411-4')" :name="['configuration', 'daveArea']" :rules="{
                 required: true,
-                message: '请选择地址区域',
+                message: $t('Save.SaveS7.4001411-5'),
                 trigger: 'change',
             }">
-                <a-select v-model:value="form.configuration.daveArea" show-search placeholder="请选择地址区域"
+                <a-select v-model:value="form.configuration.daveArea" show-search :placeholder="$t('Save.SaveS7.4001411-5')"
                     @change="daveAreaChange">
                     <a-select-option v-for="item in dataAreaFilterList" :key="item.id" :value="item.id">{{
                         item.name }}</a-select-option>
                 </a-select>
             </a-form-item>
-            <a-form-item label="地址编号" :name="['configuration', 'areaNumber']" v-show="form.configuration.daveArea == 'DB'"
+            <a-form-item :label="$t('Save.SaveS7.4001411-6')" :name="['configuration', 'areaNumber']" v-show="form.configuration.daveArea == 'DB'"
                 :rules="{
                     required: true,
-                    message: '请输入地址编号',
+                    message: $t('Save.SaveS7.4001411-7'),
                     trigger: 'blur',
                 }">
                 <a-input-number v-model:value="form.configuration.areaNumber" :maxlength="64" style="width: 100%"
                     :max="65535" autocomplete="off" :disabled="form.configuration.daveArea == 'DB' && deviceType == 'S200'"
-                    placeholder="请输入地址编号" />
+                    :placeholder="$t('Save.SaveS7.4001411-7')" />
             </a-form-item>
-            <a-form-item label="数据类型" :name="['configuration', 'type']" :rules="{
+            <a-form-item :label="$t('Save.SaveS7.4001411-8')" :name="['configuration', 'type']" :rules="{
                 required: true,
-                message: '请选择数据类型',
+                message: $t('Save.SaveS7.4001411-9'),
                 trigger: 'change',
             }">
-                <a-select v-model:value="form.configuration.type" show-search placeholder="请选择数据类型"
+                <a-select v-model:value="form.configuration.type" show-search :placeholder="$t('Save.SaveS7.4001411-9')"
                     @change="chooseS7DataType">
                     <a-select-option v-for="item in dataTypesList" :key="item.id" :value="item.id">{{
                         item.name }}</a-select-option>
                 </a-select>
             </a-form-item>
 
-            <a-form-item v-if="!disabled" label="字符串长度（byte）" :name="['configuration', 'bytes']" :rules="{
+            <a-form-item v-if="!disabled" :label="$t('Save.SaveS7.4001411-10')" :name="['configuration', 'bytes']" :rules="{
                 required: true,
-                message: '请输入0~65535之间的正整数',
+                message: $t('Save.SaveS7.4001411-11'),
                 trigger: 'blur',
             }">
-                <a-input-number type="number" style="width: 100%" addon-after="字节" v-model:value="form.configuration.bytes"
-                    placeholder="请输入字符串长度" :precision="0" :controls="false" :disabled="disabled" :max="65535" :min="0" />
+                <a-input-number type="number" style="width: 100%" :addon-after="$t('Save.SaveS7.4001411-12')" v-model:value="form.configuration.bytes"
+                    :placeholder="$t('Save.SaveS7.4001411-13')" :precision="0" :controls="false" :disabled="disabled" :max="65535" :min="0" />
             </a-form-item>
 
-            <a-form-item v-if="form.configuration.type == 'Bool'" label="位偏移量（bit）" :name="['configuration', 'bits']"
+            <a-form-item v-if="form.configuration.type == 'Bool'" :label="$t('Save.SaveS7.4001411-14')" :name="['configuration', 'bits']"
                 :rules="{
                     required: true,
-                    message: '请输入0~7之间的正整数',
+                    message: $t('Save.SaveS7.4001411-15'),
                     trigger: 'blur',
                 }">
-                <a-input-number type="number" style="width: 100%" addon-after="位" v-model:value="form.configuration.bits"
-                    placeholder="请输入位偏移量" :precision="0" :min="0" :max="7" :controls="false" :maxlength="2" />
+                <a-input-number type="number" style="width: 100%" :addon-after="$t('Save.SaveS7.4001411-16')" v-model:value="form.configuration.bits"
+                    :placeholder="$t('Save.SaveS7.4001411-17')" :precision="0" :min="0" :max="7" :controls="false" :maxlength="2" />
             </a-form-item>
 
-            <a-form-item label="偏移量" :name="['configuration', 'offset']" :rules="{
+            <a-form-item :label="$t('Save.SaveS7.4001411-18')" :name="['configuration', 'offset']" :rules="{
                 required: true,
-                message: '请输入0~65535之间的正整数',
+                message: $t('Save.SaveS7.4001411-11'),
                 trigger: 'blur',
             }">
                 <a-input-number type="number" style="width: 100%" v-model:value="form.configuration.offset"
-                    placeholder="请输入偏移量" :precision="0" :min="0" :max="65535" :controls="false" :maxlength="64" />
+                    :placeholder="$t('Save.SaveS7.4001411-19')" :precision="0" :min="0" :max="65535" :controls="false" :maxlength="64" />
             </a-form-item>
-            <a-form-item label="缩放因子" :name="['configuration', 'scaleFactor']">
+            <a-form-item :label="$t('Save.SaveS7.4001411-20')" :name="['configuration', 'scaleFactor']">
                 <a-input-number type="number" style="width: 100%" v-model:value="form.configuration.scaleFactor"
-                    placeholder="缩放因子" :min="0" :max="65535" :controls="false" :maxlength="64" />
+                    :placeholder="$t('Save.SaveS7.4001411-20')" :min="0" :max="65535" :controls="false" :maxlength="64" />
             </a-form-item>
-            <a-form-item label="小数保留位数" :name="['configuration', 'scale']">
+            <a-form-item :label="$t('Save.SaveS7.4001411-21')" :name="['configuration', 'scale']">
                 <a-input-number type="number" style="width: 100%" v-model:value="form.configuration.scale"
-                    placeholder="缩放因子" :precision="0" :min="1" :max="65535" :controls="false" :maxlength="64" />
+                    :placeholder="$t('Save.SaveS7.4001411-21')" :precision="0" :min="1" :max="65535" :controls="false" :maxlength="64" />
             </a-form-item>
-            <a-form-item label="访问类型" name="accessModes" :rules="{
+            <a-form-item :label="$t('Save.SaveS7.4001411-22')" name="accessModes" :rules="{
                 required: true,
-                message: '请选择访问类型',
+                message: $t('Save.SaveS7.4001411-23'),
             }">
                 <j-card-select multiple :showImage="false" v-model:value="form.accessModes" :options="[
-                    { label: '读', value: 'read' },
-                    { label: '写', value: 'write' },
+                    { label: $t('Save.SaveS7.4001411-24'), value: 'read' },
+                    { label: $t('Save.SaveS7.4001411-25'), value: 'write' },
                 ]
                     " :column="2" />
             </a-form-item>
@@ -88,18 +88,18 @@
             }]">
                 <template #label>
                     <a-space>
-                        <span>点位死区</span><span class="explain">点位死区范围内的异常数据将被过滤（请勿配置非数值类型）</span>
+                        <span>{{$t('Save.SaveS7.4001411-26')}}</span><span class="explain">{{$t('Save.SaveS7.4001411-27')}}</span>
                     </a-space>
                 </template>
                 <DeathArea v-model:value="form.configuration.terms" />
             </a-form-item>
-            <a-form-item label="轮询任务" :name="['configuration', 'interval']">
+            <a-form-item :label="$t('Save.SaveS7.4001411-28')" :name="['configuration', 'interval']">
                 <p>
-                    采集频率<span style="margin-left: 5px; color: #9d9ea1; font-size: 12px">采集频率为0时不执行轮询任务</span>
+                    {{ $t('Save.SaveS7.4001411-29') }}<span style="margin-left: 5px; color: #9d9ea1; font-size: 12px">{{$t('Save.SaveS7.4001411-30')}}</span>
                 </p>
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入采集频率"
+                    :placeholder="$t('Save.SaveS7.4001411-31')"
                     v-model:value="form.configuration.interval"
                     addon-after="ms"
                     :max="2147483648"
@@ -108,18 +108,18 @@
             </a-form-item>
             <a-form-item name="features">
                 <a-checkbox-group v-model:value="form.features">
-                    <a-checkbox value="changedOnly">只推送变化的数据</a-checkbox>
+                    <a-checkbox value="changedOnly">{{$t('Save.SaveS7.4001411-32')}}</a-checkbox>
                 </a-checkbox-group>
             </a-form-item>
-            <a-form-item label="说明" name="description">
-                <a-textarea placeholder="请输入说明" v-model:value="form.description" :maxlength="200" :rows="3" showCount />
+            <a-form-item :label="$t('Save.SaveS7.4001411-33')" name="description">
+                <a-textarea :placeholder="$t('Save.SaveS7.4001411-34')" v-model:value="form.description" :maxlength="200" :rows="3" showCount />
             </a-form-item>
         </a-form>
         <template #footer>
-            <a-button key="back" @click="handleCancel">取消</a-button>
+            <a-button key="back" @click="handleCancel">{{$t('Save.SaveS7.4001411-35')}}</a-button>
             <j-permission-button key="submit" type="primary" :loading="loading" @click="handleOk" style="margin-left: 8px"
                 :hasPermission="`DataCollect/Collector:${data.id ? 'update' : 'add'}`">
-                确认
+                {{$t('Save.SaveS7.4001411-36')}}
             </j-permission-button>
         </template>
     </a-modal>
@@ -135,6 +135,9 @@ import {
 import type { FormInstance } from 'ant-design-vue';
 import DeathArea from './DeathArea.vue';
 import { randomString } from '@jetlinks-web/utils';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     data: {
@@ -230,7 +233,7 @@ const dataAreaFilterList = computed(() => {
     if (deviceType.value == 'S200') {
         result.push({
             id: 'DB',
-            name: '变量存储区（V）',
+            name: $t('Save.SaveS7.4001411-37'),
             address: '',
         });
     }
@@ -272,22 +275,22 @@ const Area = (_: any, value: any): Promise<any> =>
         if (value?.length === 0) {
             return resolve('')
         } else if (value?.length === 1) {
-            return value[0].value && value[0].termType ? resolve('') : reject('请配置点位死区');
+            return value[0].value && value[0].termType ? resolve('') : reject($t('Save.SaveS7.4001411-38'));
         } else {
             if (value?.[0].column === 'currentValue') {
                 // value.forEach((item:any) => {
                 //     if(item.termType && item.value){
                 //        return resolve('')
                 //     }else{
-                //         return reject('请配置点位死区')
+                //         return reject(this.$t('Save.SaveS7.4001411-38'))
                 //     }
                 // });
                 const pass = value.every((item: any) => item.termType && item.value)
-                return pass ? resolve('') : reject('请配置点位死区')
+                return pass ? resolve('') : reject($t('Save.SaveS7.4001411-38'))
             } else {
                 value.forEach((item: any) => {
                     if (item.column === `this['currentValue'] - this['lastValue']*init/100`) {
-                        return reject('请配置点位死区')
+                        return reject($t('Save.SaveS7.4001411-38'))
                     } else {
                         return resolve('')
                     }

@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="item-body-alt">
-          <div class="body-alt-title">产品名称</div>
+          <div class="body-alt-title">{{ $t('components.card.569266-0') }}</div>
           <div class="body-alt-value">
             <Ellipsis>
               {{ record.productName }}

@@ -26,15 +26,18 @@ import Info from './Info/index.vue';
 import Record from './Record/index.vue';
 import { detail } from "../../../../api/edge/newResource";
 import { useResourceStore } from "../../../../store/resource";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const list = ref([
     {
         key: 'Info',
-        tab: '基础信息',
+        tab: $t('Detail.index.327603-0'),
     },
     {
         key: 'Record',
-        tab: '下发记录',
+        tab: $t('Detail.index.327603-1'),
     }
 ])
 

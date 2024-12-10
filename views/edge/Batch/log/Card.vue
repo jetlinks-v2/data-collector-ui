@@ -33,7 +33,7 @@
                       type="text"
                       @click="onCopy"
                     >
-                      从相同设备创建任务
+                      {{ $t('log.Card.332932-0') }}
                     </j-permission-button>
 
                   </a-menu-item>
@@ -44,19 +44,19 @@
                       :tooltip="{
                         title:
                             detail.state.value === 'running'
-                                ? '任务进行不可删除'
+                                ? $t('log.Card.332932-1')
                                 : '',
                       }"
                       type="text"
                       :popConfirm="{
-                        title: '确认删除?',
+                        title: $t('log.Card.332932-2'),
                         onConfirm: async () => {
                             onDelete();
                         },
                     }"
                       :disabled="detail.state.value === 'running'"
                     >
-                      删除任务
+                      {{ $t('log.Card.332932-3') }}
                     </j-permission-button>
                   </a-menu-item>
                 </a-menu>
@@ -66,13 +66,13 @@
         </div>
         <div class="body-detail">
           <div class="detail-desc">
-            <div class="detail-title text-color-500">说明</div>
+            <div class="detail-title text-color-500">{{ $t('log.Card.332932-4') }}</div>
             <div class="detail-value text-color-600">
               <j-ellipsis>{{ detail.description || '--'}}</j-ellipsis>
             </div>
           </div>
           <div class="detail-time">
-            <div class="detail-title text-color-500">时间</div>
+            <div class="detail-title text-color-500">{{ $t('log.Card.332932-5') }}</div>
             <div class="detail-value text-color-600">{{ dayjs(detail.createTime).format('YYYY-MM-DD HH:mm:ss')}}</div>
           </div>
         </div>
@@ -80,14 +80,14 @@
           <div>
             <a-space>
               <Icon type="icon-shebei" style="font-size: 16px" />
-              <label class="text-color-500">网关数量</label>
+              <label class="text-color-500">{{ $t('log.Card.332932-6') }}</label>
               <span class="text-color-900">{{ detail.thingTotal }}</span>
             </a-space>
           </div>
           <div>
             <a-space>
               <Icon type="icon-chajianbao" style="font-size: 16px" />
-              <label class="text-color-500">插件数量</label>
+              <label class="text-color-500">{{ $t('log.Card.332932-7') }}</label>
               <span class="text-color-900">{{ detail.others.commandTotal || 0 }}</span>
             </a-space>
           </div>
@@ -109,7 +109,7 @@
           </div>
           <div class="status-item last-item">
             <label>
-              任务总数
+              {{ $t('log.Card.332932-8') }}
             </label>
             <span class="text-color-900">
               {{ taskTotal }}
@@ -244,6 +244,7 @@ const onDelete = async () => {
       .detail-desc {
         display: flex;
         width: 66.66%;
+        gap: 16px;
       }
 
       .detail-time {
@@ -252,7 +253,7 @@ const onDelete = async () => {
       }
 
       .detail-title {
-        width: 40px;
+        min-width: 40px;
 
       }
 

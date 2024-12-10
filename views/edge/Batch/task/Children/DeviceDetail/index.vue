@@ -26,7 +26,9 @@ import { useInstanceStore } from '../../../../../../store/instance';
 // import Function from './Function/index.vue';
 // import Log from './Log/index.vue';
 import { _detailByEdge } from '../../../../../../api/edge/batch';
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
@@ -54,23 +56,23 @@ const tabActiveKey = ref('Info');
 const initTabs = [
     {
         value: 'Info',
-        label: '实例信息',
+        label: $t('DeviceDetail.index.378019-0'),
     },
     {
         value: 'Running',
-        label: '运行状态',
+        label: $t('DeviceDetail.index.378019-1'),
     },
     {
         value: 'Metadata',
-        label: '物模型',
+        label: $t('DeviceDetail.index.378019-2'),
     },
     {
         value: 'Function',
-        label: '设备功能',
+        label: $t('DeviceDetail.index.378019-3'),
     },
     {
         value: 'Log',
-        label: '日志管理',
+        label: $t('DeviceDetail.index.378019-4'),
     },
 ];
 

@@ -1,10 +1,10 @@
 <template>
     <a-space align="end">
-        <a-radio-group button-style="solid" v-model:value="modelValue.fileType" placeholder="请选择文件格式">
+        <a-radio-group button-style="solid" v-model:value="modelValue.fileType" :placeholder="$t('Import.FileFormat.240355-0')">
             <a-radio-button value="xlsx">xlsx</a-radio-button>
             <a-radio-button value="csv">csv</a-radio-button>
         </a-radio-group>
-        <a-checkbox v-model:checked="modelValue.autoDeploy">自动启用</a-checkbox>
+        <a-checkbox v-model:checked="modelValue.autoDeploy">{{ $t('Import.FileFormat.240355-1') }}</a-checkbox>
     </a-space>
 </template>
 

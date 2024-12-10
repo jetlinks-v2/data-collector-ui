@@ -8,44 +8,44 @@
     >
         <div class="log-detail-body">
             <div style="margin-bottom: 16px;">
-                <TitleComponent data="基本信息"/>
+                <TitleComponent :data="$t('Record.Detail.913748-0')"/>
                 <a-descriptions bordered>
-                    <a-descriptions-item label="创建人" :labelStyle="{width: '110px'}">
+                    <a-descriptions-item :label="$t('Record.Detail.913748-1')" :labelStyle="{width: '110px'}">
                         {{resourceStore.resource.creatorName}}
                     </a-descriptions-item>
-                    <a-descriptions-item label="创建时间" :labelStyle="{width: '110px'}">
+                    <a-descriptions-item :label="$t('Record.Detail.913748-2')" :labelStyle="{width: '110px'}">
                         {{dayjs(resourceStore.resource.createTime).format('YYYY-MM-DD HH:mm:ss')}}
                     </a-descriptions-item>
-                    <a-descriptions-item label="网关数量" :labelStyle="{width: '110px'}">
+                    <a-descriptions-item :label="$t('Record.Detail.913748-3')" :labelStyle="{width: '110px'}">
                         {{ record.thingTotal }}
                     </a-descriptions-item>
-                    <a-descriptions-item label="文件" :labelStyle="{width: '110px'}">
+                    <a-descriptions-item :label="$t('Record.Detail.913748-4')" :labelStyle="{width: '110px'}">
                         {{JSON.parse(resourceStore.resource.metadata || '{}')?.filename || JSON.parse(resourceStore.resource.metadata || '{}')?.properties?.fileName || resourceStore.resource?.properties?.fileName}}
                     </a-descriptions-item>
-                    <a-descriptions-item label="说明" :labelStyle="{width: '110px'}">
+                    <a-descriptions-item :label="$t('Record.Detail.913748-5')" :labelStyle="{width: '110px'}">
                         {{JSON.parse(resourceStore.resource.metadata || '{}')?.description || '--'}}
                     </a-descriptions-item>
                 </a-descriptions>
             </div>
             <div>
-                <TitleComponent data="任务信息"/>
+                <TitleComponent :data="$t('Record.Detail.913748-6')"/>
                 <div style="display: flex;justify-content: space-between;">
                     <a-space>
                         <j-permission-button :disabled="!stateArr.includes('waiting')" @click="handlePauseAll">
                             <AIcon type="PauseOutlined"/>
-                            全部暂停
+                            {{ $t('Record.Detail.913748-7') }}
                         </j-permission-button>
                         <j-permission-button :disabled="!stateArr.includes('canceled')" @click="handleStartAll">
                             <AIcon type="PlayCircleOutlined"/>
-                            全部开始
+                            {{ $t('Record.Detail.913748-8') }}
                         </j-permission-button>
                         <j-permission-button :disabled="!stateArr.includes('failed')" @click="handlePauseAllRetry">
                             <AIcon type="RedoOutlined"/>
-                            批量重试
+                            {{ $t('Record.Detail.913748-9') }}
                         </j-permission-button>
                         <j-permission-button @click="handleRefresh">
                             <AIcon type="RedoOutlined"/>
-                            刷新状态
+                            {{ $t('Record.Detail.913748-10') }}
                         </j-permission-button>
                     </a-space>
                     <a-space>
@@ -55,11 +55,11 @@
                             :tooltip="{
                                 title:
                                     record.state.value === 'running'
-                                        ? '任务进行不可删除'
+                                        ? $t('Record.Detail.913748-11')
                                         : '',
                             }"
                             :popConfirm="{
-                                title: '确认删除?',
+                                title: $t('Record.Detail.913748-12'),
                                 onConfirm: async () => {
                                     deleteAll();
                                 },
@@ -67,7 +67,7 @@
                             :disabled="record.state.value === 'running'"
                         >
                             <template #icon><AIcon type="DeleteOutlined" /> </template>
-                            删除任务
+                            {{ $t('Record.Detail.913748-13') }}
                         </j-permission-button>
                     </a-space>
                 </div>
@@ -83,7 +83,7 @@
                             </a-space>
                         </span>
                     </a-space>
-                    <span>共{{ record.thingTotal }}个网关</span>
+                    <span>{{ $t('Record.Detail.913748-14') }}{{ record.thingTotal }}{{ $t('Record.Detail.913748-15') }}</span>
                 </div>
                 <JProTable
                     ref="tableRef"
@@ -129,11 +129,11 @@
                                 "
                                 type="link"
                                 :tooltip="{
-                                    title: '停止',
+                                    title: $t('Record.Detail.913748-16'),
                                 }"
                                 style="padding: 0"
                                 :popConfirm="{
-                                    title: '确认停止?',
+                                    title: $t('Record.Detail.913748-17'),
                                     onConfirm: async () => {
                                         stopUpgrades(record.id);
                                     },
@@ -145,11 +145,11 @@
                                 v-if="record.state.value === 'failed'"
                                 type="link"
                                 :tooltip="{
-                                    title: '重试',
+                                    title: $t('Record.Detail.913748-18'),
                                 }"
                                 style="padding: 0"
                                 :popConfirm="{
-                                    title: '确认重试?',
+                                    title: $t('Record.Detail.913748-19'),
                                     onConfirm: () => {
                                         startUpgrades(record.id);
                                     },
@@ -161,11 +161,11 @@
                                 v-if="record.state.value === 'canceled'"
                                 type="link"
                                 :tooltip="{
-                                    title: '开始',
+                                    title: $t('Record.Detail.913748-20'),
                                 }"
                                 style="padding: 0"
                                 :popConfirm="{
-                                    title: '确认开始?',
+                                    title: $t('Record.Detail.913748-21'),
                                     onConfirm: async () => {
                                         startUpgrades(record.id);
                                     },
@@ -176,12 +176,12 @@
                             <j-permission-button
                                 type="link"
                                 :tooltip="{
-                                    title: '删除',
+                                    title: $t('Record.Detail.913748-22'),
                                 }"
                                 danger
                                 style="padding: 0"
                                 :popConfirm="{
-                                    title: '确认删除?',
+                                    title: $t('Record.Detail.913748-12'),
                                     onConfirm: () => {
                                         deleteUpgrades(record.id);
                                     },
@@ -216,6 +216,9 @@ import dayjs from "dayjs";
 import {onlyMessage} from "@jetlinks-web/utils";
 import Icon from '../../../Batch/components/Icon.vue';
 import { useResourceStore } from "../../../../../store/resource";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     record: {
@@ -262,50 +265,50 @@ const defaultParams = {
 const tableRef = ref();
 const gatewayColumns = [
     {
-        title: '网关设备id',
+        title: $t('Record.Detail.913748-23'),
         dataIndex: 'thingId',
         ellipsis: true,
-        width: 200,
     },
     {
-        title: '资源库ID',
+        title: $t('Record.Detail.913748-24'),
         dataIndex: 'id',
         key: 'id',
         ellipsis: true,
-        width: 200,
     },
     {
-        title: '网关设备名称',
+        title: $t('Record.Detail.913748-25'),
         dataIndex: 'thingName',
         ellipsis: true,
     },
     {
-        title: '响应超时时间',
+        title: $t('Record.Detail.913748-26'),
         dataIndex: 'timeoutSeconds',
         key: 'timeoutSeconds',
         scopedSlots: true,
+        ellipsis: true,
     },
     {
-        title: '重试次数',
+        title: $t('Record.Detail.913748-27'),
         dataIndex: 'maxRetry',
         key: 'maxRetry',
         scopedSlots: true,
+        ellipsis: true,
     },
     {
-        title: '完成时间',
+        title: $t('Record.Detail.913748-28'),
         dataIndex: 'completeTime',
         scopedSlots: true,
         ellipsis: true,
         width: 180,
     },
     {
-        title: '状态',
+        title: $t('Record.Detail.913748-29'),
         dataIndex: 'state',
         key: 'state',
         scopedSlots: true,
     },
     {
-        title: '操作',
+        title: $t('Record.Detail.913748-30'),
         dataIndex: 'action',
         key: 'action',
         scopedSlots: true,
@@ -384,7 +387,7 @@ const handlePauseAll = async () => {
     const res = await pauseAll(props.record.id);
     if (res) {
         tableRef.value?.reload();
-        onlyMessage('操作成功');
+        onlyMessage($t('Record.Detail.913748-31'));
         emit('reload');
     }
 }
@@ -394,7 +397,7 @@ const handleStartAll = async () => {
     const res = await startTask (props.record.id, ['failed', 'canceled']);
     if (res) {
         tableRef.value?.reload();
-        onlyMessage('操作成功');
+        onlyMessage($t('Record.Detail.913748-31'));
         emit('reload');
     }
 }
@@ -404,7 +407,7 @@ const handlePauseAllRetry = async () => {
     const res = await startTask( props.record.id, ['failed', 'canceled']);
     if (res) {
         tableRef.value?.reload();
-        onlyMessage('操作成功');
+        onlyMessage($t('Record.Detail.913748-31'));
         emit('reload');
     }
 }

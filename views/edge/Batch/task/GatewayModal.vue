@@ -1,13 +1,13 @@
 <template>
     <a-modal
         visible
-        title="选择设备"
+        :title="$t('task.GatewayModal.823128-0')"
         :width="1300"
         @cancel="onCancel"
         @ok="onOk"
     >
         <a-tabs v-model:active="activeKey">
-            <a-tab-pane tab="按设备选择" value="device"></a-tab-pane>
+            <a-tab-pane :tab="$t('task.GatewayModal.823128-1')" value="device"></a-tab-pane>
         </a-tabs>
         <div class="device-select-body">
             <pro-search
@@ -58,7 +58,7 @@
                             <a-row style="margin-top: 18px">
                                 <a-col :span="24">
                                     <div class="card-item-content-text">
-                                        产品名称
+                                        {{ $t('task.GatewayModal.823128-2') }}
                                     </div>
                                     <j-ellipsis style="width: 100%">
                                         {{ slotProps.productName }}
@@ -98,7 +98,9 @@ import {query, queryNoPagingPost, queryTree} from '../../../../api/others';
 import dayjs from 'dayjs'
 import {onlyMessage} from '@jetlinks-web/utils';
 import DeviceGatewayImg from '../../../../assets/images/device-gateway.png'
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const props = defineProps({
     filter: {
         type: Array,
@@ -168,7 +170,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '设备名称',
+        title: $t('task.GatewayModal.823128-3'),
         dataIndex: 'name',
         key: 'name',
         search: {
@@ -178,7 +180,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '产品名称',
+        title: $t('task.GatewayModal.823128-2'),
         dataIndex: 'productName',
         key: 'productName',
         search: {
@@ -199,7 +201,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '注册时间',
+        title: $t('task.GatewayModal.823128-4'),
         dataIndex: 'registryTime',
         key: 'registryTime',
         scopedSlots: true,
@@ -208,23 +210,23 @@ const columns = [
         },
     },
     {
-        title: '状态',
+        title: $t('task.GatewayModal.823128-5'),
         dataIndex: 'state',
         key: 'state',
         scopedSlots: true,
         search: {
             type: 'select',
             options: [
-                {label: '禁用', value: 'notActive'},
-                {label: '离线', value: 'offline'},
-                {label: '在线', value: 'online'},
+                {label: $t('task.GatewayModal.823128-6'), value: 'notActive'},
+                {label: $t('task.GatewayModal.823128-7'), value: 'offline'},
+                {label: $t('task.GatewayModal.823128-8'), value: 'online'},
             ],
         },
     },
     {
         key: 'productId$product-info',
         dataIndex: 'productId$product-info',
-        title: '产品分类',
+        title: $t('task.GatewayModal.823128-9'),
         hideInTable: true,
         search: {
             type: 'treeSelect',
@@ -237,7 +239,7 @@ const columns = [
         },
     },
     {
-        title: '说明',
+        title: $t('task.GatewayModal.823128-10'),
         dataIndex: 'describe',
         key: 'describe',
         ellipsis: true,
@@ -255,7 +257,7 @@ const onOk = () => {
     if (toRaw(deviceSelected).length) {
         emit('ok', toRaw(deviceSelected))
     } else {
-        onlyMessage('请选择设备', 'warning')
+        onlyMessage($t('task.GatewayModal.823128-11'), 'warning')
     }
 }
 const handleSearch = (e) => {

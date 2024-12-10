@@ -1,6 +1,6 @@
 <template>
   <div class="type-select-warp">
-      <div class="tips"> <AIcon type="icon-bianyuanwangguan"/> 选择网关设备后，可点击右侧操作快速创建任务</div>
+      <div class="tips"> <AIcon type="icon-bianyuanwangguan"/> {{ $t('device.index.407672-0') }}</div>
       <div class="card-warp">
         <div
           v-for="item in options"
@@ -18,8 +18,8 @@
         </div>
         <div class="card-item more">
           <div class="content">
-            <div class="title">更多方式</div>
-            <div class="tip">敬请期待！</div>
+            <div class="title">{{ $t('device.index.407672-1') }}</div>
+            <div class="tip">{{ $t('device.index.407672-2') }}</div>
           </div>
         </div>
       </div>
@@ -30,12 +30,15 @@
 </template>
 
 <script setup name="BatchDevice">
-import DeviceSelect from './device.vue'
+import DeviceSelect from './device.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const options = [
   {
-    label: '按设备选择',
-    tip: '按设备列表选择对应网关设备',
+    label: $t('device.index.407672-3'),
+    tip: $t('device.index.407672-4'),
     icon: '',
     value: 'device'
   }

@@ -1,7 +1,7 @@
 <template>
     <a-modal
         visible
-        title="任务详情"
+        :title="$t('log.TaskDetail.866822-0')"
         width="75vw"
         @cancel="$emit('closeDetail')"
         :maskClosable="false"
@@ -38,7 +38,7 @@
                                     type="icon-shebei"
                                     style="font-size: 16px"
                                 />
-                                <label class="text-color-500">网关数量</label>
+                                <label class="text-color-500">{{ $t('log.TaskDetail.866822-1') }}</label>
                                 <span class="text-color-900">{{
                                     _detail?.thingTotal
                                 }}</span>
@@ -50,7 +50,7 @@
                                     type="icon-chajianbao"
                                     style="font-size: 16px"
                                 />
-                                <label class="text-color-500">插件数量</label>
+                                <label class="text-color-500">{{ $t('log.TaskDetail.866822-2') }}</label>
                                 <span class="text-color-900">{{
                                     _detail?.others.commandTotal || 0
                                 }}</span>
@@ -66,32 +66,32 @@
             <div class="allOperation">
                 <j-permission-button @click="stopAll" :disabled="!stateArr.includes('waiting')"
                     ><template #icon><AIcon type="PauseOutlined" /> </template
-                    >全部暂停
+                    >{{ $t('log.TaskDetail.866822-3') }}
                 </j-permission-button>
                 <j-permission-button style="margin-left: 20px" @click="startAll" :disabled="!stateArr.includes('canceled')"
                     ><template #icon
                         ><AIcon type="CaretRightOutlined" /> </template
-                    >全部开始</j-permission-button
+                    >{{ $t('log.TaskDetail.866822-4') }}</j-permission-button
                 >
                 <j-permission-button
                     style="margin-left: 20px"
                     @click="batchRetry"
                     :tooltip="{
-                        title: stateArr.includes('failed') ? '批量重试' : '',
+                        title: stateArr.includes('failed') ? $t('log.TaskDetail.866822-5') : '',
                     }"
                     :disabled="!stateArr.includes('failed')"
                     ><template #icon><AIcon type="RedoOutlined" /> </template>
-                    批量重试
+                    {{ $t('log.TaskDetail.866822-5') }}
                 </j-permission-button>
                 <j-permission-button
                     style="margin-left: 20px"
                     @click="refreshState"
                     ><template #icon><AIcon type="RedoOutlined" /> </template>
-                    刷新状态
+                    {{ $t('log.TaskDetail.866822-6') }}
                 </j-permission-button>
                 <j-permission-button style="float: right" @click="onCopy"
                     ><template #icon><AIcon type="CopyOutlined" /> </template>
-                    从相同设备创建任务
+                    {{ $t('log.TaskDetail.866822-7') }}
                 </j-permission-button>
                 <j-permission-button
                     style="float: right; margin-right: 20px"
@@ -99,11 +99,11 @@
                     :tooltip="{
                         title:
                         _detail.state.value === 'running'
-                                ? '任务进行不可删除'
+                                ? $t('log.TaskDetail.866822-8')
                                 : '',
                     }"
                     :popConfirm="{
-                        title: '确认删除?',
+                        title: $t('log.TaskDetail.866822-9'),
                         onConfirm: async () => {
                             deleteAll();
                         },
@@ -111,7 +111,7 @@
                     :disabled="_detail.state.value === 'running'"
                 >
                     <template #icon><AIcon type="DeleteOutlined" /> </template>
-                    删除任务
+                    {{ $t('log.TaskDetail.866822-10') }}
                 </j-permission-button>
             </div>
             <div class="body-progress">
@@ -136,7 +136,7 @@
                     </div>
                 </div>
                 <div class="status-item last-item">
-                    <label> 任务总数 </label>
+                    <label> {{ $t('log.TaskDetail.866822-11') }} </label>
                     <span class="text-color-900" style="font-size: 20px">
                         {{ taskTotal }}
                     </span>
@@ -149,7 +149,7 @@
             style="padding: 0"
             :columns="columns"
             :request="_query"
-            :scroll="{ x: true }"
+            :scroll="{ x: 1650 }"
             :defaultParams="{
                 sorts: [{ name: 'createTime', order: 'desc' }],
                 terms: [
@@ -227,11 +227,11 @@
                         "
                         type="link"
                         :tooltip="{
-                            title: '停止',
+                            title: $t('log.TaskDetail.866822-12'),
                         }"
                         style="padding: 0"
                         :popConfirm="{
-                            title: '确认停止?',
+                            title: $t('log.TaskDetail.866822-13'),
                             onConfirm: async () => {
                                 stopUpgrades(record.id);
                             },
@@ -243,11 +243,11 @@
                         v-if="record.state.value === 'failed'"
                         type="link"
                         :tooltip="{
-                            title: '重试',
+                            title: $t('log.TaskDetail.866822-14'),
                         }"
                         style="padding: 0"
                         :popConfirm="{
-                            title: '确认重试?',
+                            title: $t('log.TaskDetail.866822-15'),
                             onConfirm: async () => {
                                 startUpgrades(record.id);
                             },
@@ -259,11 +259,11 @@
                         v-if="record.state.value === 'canceled'"
                         type="link"
                         :tooltip="{
-                            title: '开始',
+                            title: $t('log.TaskDetail.866822-16'),
                         }"
                         style="padding: 0"
                         :popConfirm="{
-                            title: '确认开始?',
+                            title: $t('log.TaskDetail.866822-17'),
                             onConfirm: async () => {
                                 startUpgrades(record.id);
                             },
@@ -274,12 +274,12 @@
                     <j-permission-button
                         type="link"
                         :tooltip="{
-                            title: '删除',
+                            title: $t('log.TaskDetail.866822-18'),
                         }"
                         danger
                         style="padding: 0"
                         :popConfirm="{
-                            title: '确认删除?',
+                            title: $t('log.TaskDetail.866822-9'),
                             onConfirm: async () => {
                                 deleteUpgrades(record.id);
                             },
@@ -295,9 +295,9 @@
             </template>
         </JProTable>
         <template #footer>
-            <span class="tip">关闭弹窗不会影响任务执行状态</span>
+            <span class="tip">{{ $t('log.TaskDetail.866822-19') }}</span>
             <a-button value="large" type="primary" @click="$emit('closeDetail')"
-                >关闭</a-button
+                >{{ $t('log.TaskDetail.866822-20') }}</a-button
             >
         </template>
     </a-modal>
@@ -317,6 +317,9 @@ import {
 import dayjs from 'dayjs';
 import { onlyMessage } from '@/utils/comm';
 import Icon from '../components/Icon.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
@@ -335,19 +338,20 @@ const columns = computed(()=>([
         width: 150,
     },
     {
-        title:'名称',
+        title:$t('log.TaskDetail.866822-21'),
         key: 'pulginName',
         scopedSlots: true,
         width: 150,
     },
     {
-        title: '文件',
+        title: $t('log.TaskDetail.866822-22'),
         key: 'filename',
         scopedSlots: true,
+        ellipsis: true,
         width: 150,
     },
     {
-        title: '资源库ID',
+        title: $t('log.TaskDetail.866822-23'),
         key: 'id',
         dataIndex: 'id',
         ellipsis: true,
@@ -355,39 +359,39 @@ const columns = computed(()=>([
         width: 100,
     },
     {
-        title: '边缘网关',
+        title: $t('log.TaskDetail.866822-24'),
         key: 'thingName',
         dataIndex: 'thingName',
         scopedSlots: true,
         width: 150,
     },
     {
-        title: '响应超时时间',
+        title: $t('log.TaskDetail.866822-25'),
         key: 'timeoutSeconds',
         dataIndex: 'timeoutSeconds',
         scopedSlots: true,
         width: 200,
     },
     {
-        title: '重试次数',
+        title: $t('log.TaskDetail.866822-26'),
         key: 'maxRetry',
         dataIndex: 'maxRetry',
         width: 150,
     },
     {
-        title: '完成时间',
+        title: $t('log.TaskDetail.866822-27'),
         key: 'completeTime',
         scopedSlots: true,
         width: 300,
     },
     {
-        title: '状态',
+        title: $t('log.TaskDetail.866822-28'),
         key: 'state',
         scopedSlots: true,
         width: 180,
     },
     {
-        title: '操作',
+        title: $t('log.TaskDetail.866822-29'),
         dataIndex: 'action',
         key: 'action',
         width: 120,
@@ -456,7 +460,7 @@ const _query = async (e) => {
 const refreshState = () => {
     tableRef.value?.reload();
     getDetail();
-    onlyMessage('操作成功');
+    onlyMessage($t('log.TaskDetail.866822-30'));
     emit('refresh');
 };
 //全部开始
@@ -560,7 +564,7 @@ getDetail()
 
                 > div {
                     flex: 1;
-                    min-width: 150px;
+                    min-width: 200px;
                 }
             }
         }
@@ -588,7 +592,6 @@ getDetail()
     .body-status {
         display: flex;
         .status-item {
-            width: 120px;
             display: flex;
             align-items: center;
             flex-direction: column;

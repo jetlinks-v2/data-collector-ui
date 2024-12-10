@@ -5,11 +5,11 @@
         <div class="content">
             <a-radio-group v-model:value="tag" @change="handleTag">
                 <a-space>
-                    <a-radio-button value="currentValue">固定值</a-radio-button>
-                    <a-radio-button value="this['currentValue'] - this['lastValue']">百分比</a-radio-button>
+                    <a-radio-button value="currentValue">{{ $t('Save.DeathArea.4001417-0') }}</a-radio-button>
+                    <a-radio-button value="this['currentValue'] - this['lastValue']">{{ $t('Save.DeathArea.4001417-1') }}</a-radio-button>
                 </a-space>
             </a-radio-group>
-            <a-tooltip v-if="tag !== 'currentValue'" title="最近一次采集到的值与上一次采集值比对，数值浮动在百分比以内时将被过滤">
+            <a-tooltip v-if="tag !== 'currentValue'" :title="$t('Save.DeathArea.4001417-2')">
                 <AIcon type="QuestionCircleOutlined" style="margin-left: 10px;font-size: 18px;color: rgb(153, 153, 153)" />
             </a-tooltip>
         </div>
@@ -17,22 +17,22 @@
             <div v-if="tag === 'currentValue'" class="fixed">
                 <a-row :gutter="5" align="middle">
                     <a-col>
-                        <a-input-number v-model:value="_value[0].value" style="width: 100%" placeholder="请输入值"
+                        <a-input-number v-model:value="_value[0].value" style="width: 100%" :placeholder="$t('Save.DeathArea.4001417-3')"
                             :max="_value[1] ? _value[1].value : 999999" :min="1" @change="handleChange" />
                     </a-col>
                     <a-col>
                         <a-select v-model:value="_value[0].termType" :showArrow="false"
-                            :options="_value.length !== 2 ? termTypeOptions : leftOptions" placeholder="符号"
+                            :options="_value.length !== 2 ? termTypeOptions : leftOptions" :placeholder="$t('Save.DeathArea.4001417-4')"
                             @change="handleChange" />
                     </a-col>
                     <template v-if="swap === 'range'">
-                        <a-col>点位值</a-col>
+                        <a-col>{{ $t('Save.DeathArea.4001417-5') }}</a-col>
                         <a-col>
                             <a-select :showArrow="false" v-model:value="_value[1].termType" :options="termTypeOptions"
-                                placeholder="符号" @change="handleChange" />
+                                :placeholder="$t('Save.DeathArea.4001417-4')" @change="handleChange" />
                         </a-col>
                         <a-col>
-                            <a-input-number v-model:value="_value[1].value" style="width: 100%" placeholder="请输入值"
+                            <a-input-number v-model:value="_value[1].value" style="width: 100%" :placeholder="$t('Save.DeathArea.4001417-3')"
                                 :min="_value[0].value" @change="handleChange" />
                         </a-col>
 
@@ -43,8 +43,8 @@
                 </a-row>
             </div>
             <div v-else class="percent">
-                <div class="percent-title">点位值</div>
-                <a-input-number v-model:value="percentValue" style="width: 200px" addon-after="%" placeholder="请输入值"
+                <div class="percent-title">{{ $t('Save.DeathArea.4001417-5') }}</div>
+                <a-input-number v-model:value="percentValue" style="width: 200px" addon-after="%" :placeholder="$t('Save.DeathArea.4001417-3')"
                     :min="1" @change="handlePercent" :max="65535" />
             </div>
         </a-form-item-rest>
@@ -54,7 +54,9 @@
 
 <script setup lang='ts'>
 import { Form } from 'ant-design-vue';
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const formItemContext = Form.useInjectFormItemContext()
 
 const props = defineProps({

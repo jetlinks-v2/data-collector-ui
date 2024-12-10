@@ -1,5 +1,5 @@
 <template >
-    <a-modal title="编辑" :visible="true" width="700px" @cancel="handleCancel">
+    <a-modal :title="$t('Save.SaveOPCUA.4001412-0')" :visible="true" width="700px" @cancel="handleCancel">
         <a-form
             class="form"
             layout="vertical"
@@ -9,45 +9,45 @@
             :rules="OPCUARules"
             ref="formRef"
         >
-            <a-form-item label="点位名称" name="name">
+            <a-form-item :label="$t('Save.SaveOPCUA.4001412-1')" name="name">
                 <a-input
-                    placeholder="请输入点位名称"
+                    :placeholder="$t('Save.SaveOPCUA.4001412-2')"
                     v-model:value="formData.name"
                 />
             </a-form-item>
-            <a-form-item label="数据类型" :name="['configuration', 'type']">
+            <a-form-item :label="$t('Save.SaveOPCUA.4001412-3')" :name="['configuration', 'type']">
                 <a-select
                     style="width: 100%"
                     v-model:value="formData.configuration.type"
                     :options="options"
-                    placeholder="请选择数据类型"
+                    :placeholder="$t('Save.SaveOPCUA.4001412-4')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
                 />
             </a-form-item>
 
-            <a-form-item label="访问类型" name="accessModes">
+            <a-form-item :label="$t('Save.SaveOPCUA.4001412-5')" name="accessModes">
                 <j-card-select
                     multiple
                     :showImage="false"
                     v-model:value="formData.accessModes"
                     :options="[
-                        { label: '读', value: 'read' },
-                        { label: '写', value: 'write' },
-                        { label: '订阅', value: 'subscribe' },
+                        { label: $t('Save.SaveOPCUA.4001412-6'), value: 'read' },
+                        { label: $t('Save.SaveOPCUA.4001412-7'), value: 'write' },
+                        { label: $t('Save.SaveOPCUA.4001412-8'), value: 'subscribe' },
                     ]"
                     :column="3"
                 />
             </a-form-item>
             <a-form-item
-                label="采集频率"
+                :label="$t('Save.SaveOPCUA.4001412-9')"
                 :name="['configuration', 'interval']"
                 :rules="[...OPCUARules.interval]"
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入采集频率"
+                    :placeholder="$t('Save.SaveOPCUA.4001412-10')"
                     v-model:value="formData.configuration.interval"
                     addon-after="ms"
                     :max="2147483648"
@@ -57,13 +57,13 @@
             <a-form-item label="" :name="['features']">
                 <a-checkbox-group v-model:value="formData.features">
                     <a-checkbox value="changedOnly" name="type"
-                        >只推送变化的数据</a-checkbox
+                        >{{$t('Save.SaveOPCUA.4001412-11')}}</a-checkbox
                     >
                 </a-checkbox-group>
             </a-form-item>
-            <a-form-item label="说明" :name="['description']">
+            <a-form-item :label="$t('Save.SaveOPCUA.4001412-12')" :name="['description']">
                 <a-textarea
-                    placeholder="请输入说明"
+                    :placeholder="$t('Save.SaveOPCUA.4001412-13')"
                     v-model:value="formData.description"
                     :maxlength="200"
                     :rows="3"
@@ -72,7 +72,7 @@
             </a-form-item>
         </a-form>
         <template #footer>
-            <a-button key="back" @click="handleCancel">取消</a-button>
+            <a-button key="back" @click="handleCancel">{{$t('Save.SaveOPCUA.4001412-14')}}</a-button>
             <j-permission-button
                 key="submit"
                 type="primary"
@@ -83,7 +83,7 @@
                     id ? 'update' : 'add'
                 }`"
             >
-                确认
+                {{$t('Save.SaveOPCUA.4001412-15')}}
             </j-permission-button>
         </template>
     </a-modal>
@@ -98,6 +98,9 @@ import {
 import type { FormInstance } from 'ant-design-vue';
 import { cloneDeep } from 'lodash-es';
 import { OPCUARules } from '../../data';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     data: {

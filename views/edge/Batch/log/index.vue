@@ -50,6 +50,9 @@ import { queryTask } from '../../../../api/edge/batch';
 import Card from './Card.vue';
 import TaskDetail from './TaskDetail.vue';
 import { getContext } from '../util';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     type: {
@@ -65,22 +68,22 @@ const current = ref({});
 
 const columns = [
     {
-        title: '操作类型',
+        title: $t('log.index.741299-0'),
         dataIndex: 'type',
         key: 'type',
     },
     {
-        title: '涉及网关',
+        title: $t('log.index.741299-1'),
         dataIndex: 'gateway',
         key: 'gateway',
     },
     {
-        title: '创建时间',
+        title: $t('log.index.741299-2'),
         dataIndex: 'createTime',
         key: 'createTime',
     },
     {
-        title: '全部任务',
+        title: $t('log.index.741299-3'),
         dataIndex: 'all',
         hideInTable: true,
         search: {
@@ -88,7 +91,7 @@ const columns = [
         },
     },
     {
-        title: '全部完成',
+        title: $t('log.index.741299-4'),
         dataIndex: 'complete',
         hideInTable: true,
         search: {
@@ -96,7 +99,7 @@ const columns = [
         },
     },
     {
-        title: '进行中',
+        title: $t('log.index.741299-5'),
         dataIndex: 'running',
         hideInTable: true,
         search: {
@@ -104,7 +107,7 @@ const columns = [
         },
     },
     {
-        title: '未完成',
+        title: $t('log.index.741299-6'),
         dataIndex: 'incomplete',
         hideInTable: true,
         search: {

@@ -2,7 +2,7 @@
   <a-modal
     :maskClosable="false"
     :width='820'
-    title="选择网关设备"
+    :title="$t('Save.GateWayDeviceModal.290645-0')"
     visible
     @cancel="cancel"
     @ok="confirm"
@@ -61,13 +61,13 @@
               <a-row>
                 <a-col :span="12">
                   <div class="card-item-content-text">
-                    设备类型
+                    {{ $t('Save.GateWayDeviceModal.290645-1') }}
                   </div>
                   <div>{{ slotProps.deviceType?.text }}</div>
                 </a-col>
                 <a-col :span="12">
                   <div class="card-item-content-text">
-                    产品名称
+                    {{ $t('Save.GateWayDeviceModal.290645-2') }}
                   </div>
                   <div>{{ slotProps.productName }}</div>
                 </a-col>
@@ -86,6 +86,9 @@
 <script name="GateWayDevice" setup>
 import imgUrl from '../../../../assets/images/device-card.png'
 import {query} from "../../../../api/others";
+import { useI18n } from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
     value: {
@@ -118,7 +121,7 @@ const columns = [
     }
   },
   {
-    title: '设备名称',
+    title: $t('Save.GateWayDeviceModal.290645-3'),
     dataIndex: 'name',
     width: 200,
     ellipsis: true,
@@ -128,7 +131,7 @@ const columns = [
     }
   },
   {
-    title: '创建时间',
+    title: $t('Save.GateWayDeviceModal.290645-4'),
     dataIndex: 'createTime',
     width: 200,
     search: {
@@ -136,15 +139,15 @@ const columns = [
     }
   },
   {
-    title: '状态',
+    title: $t('Save.GateWayDeviceModal.290645-5'),
     dataIndex: 'state',
     width: 90,
     search: {
       type: 'select',
       options: [
-        { label: '禁用', value: 'notActive' },
-        { label: '离线', value: 'offline' },
-        { label: '在线', value: 'online' },
+        { label: $t('Save.GateWayDeviceModal.290645-6'), value: 'notActive' },
+        { label: $t('Save.GateWayDeviceModal.290645-7'), value: 'offline' },
+        { label: $t('Save.GateWayDeviceModal.290645-8'), value: 'online' },
       ]
     }
   },

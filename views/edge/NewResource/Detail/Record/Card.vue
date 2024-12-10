@@ -4,7 +4,7 @@
       <div class="item-body">
         <div class="body-header">
           <div class="header-title">
-            {{ detail.name || '测试内容' }}
+            {{ detail.name || $t('Record.Card.931797-0') }}
           </div>
           <div class="header-status bg-color-200">
             <j-badgeStatus
@@ -19,11 +19,11 @@
         </div>
         <div class="body-detail">
           <div class="detail-desc">
-            <div class="detail-title text-color-500">说明</div>
+            <div class="detail-title text-color-500">{{ $t('Record.Card.931797-1') }}</div>
             <div class="detail-value text-color-600">{{ detail.description }}</div>
           </div>
           <div class="detail-time">
-            <div class="detail-title text-color-500">时间</div>
+            <div class="detail-title text-color-500">{{ $t('Record.Card.931797-2') }}</div>
             <div class="detail-value text-color-600">
               {{ dayjs(detail.createTime).format('YYYY-MM-DD HH:mm:ss') }}
             </div>
@@ -33,7 +33,7 @@
           <div>
             <a-space>
               <Icon type="icon-shebei" style="font-size: 16px"/>
-              <label class="text-color-500">网关数量</label>
+              <label class="text-color-500">{{ $t('Record.Card.931797-3') }}</label>
               <span class="text-color-900">{{ detail.thingTotal }}</span>
             </a-space>
           </div>
@@ -55,7 +55,7 @@
           </div>
           <div class="status-item last-item">
             <label>
-              任务总数
+              {{ $t('Record.Card.931797-4') }}
             </label>
             <span class="text-color-900">
               {{ taskTotal }}
@@ -192,6 +192,7 @@ const onCopy = () => {
 
       .detail-desc {
         display: flex;
+        gap: 16px;
         width: 66.66%;
       }
 
@@ -232,7 +233,6 @@ const onCopy = () => {
       display: flex;
 
       .status-item {
-        width: 120px;
         display: flex;
         gap: 12px;
         align-items: center;

@@ -6,7 +6,7 @@
         :fileList="list"
         @remove="remove"
     >
-        <a-button>上传文件</a-button><span class="upload-tip">格式要求：.json</span>
+        <a-button>{{ $t('Save.FileSelect.614464-0') }}</a-button><span class="upload-tip">{{ $t('Save.FileSelect.614464-1') }}</span>
     </a-upload>
 </template>
 
@@ -14,6 +14,9 @@
 import {onlyMessage} from "@/utils/comm";
 import {PropType} from "vue";
 import {cloneDeep, omit} from "lodash-es";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 const emit = defineEmits(['update:metadata', 'update:fileName', 'change']);
 const props = defineProps({
     metadata: {
@@ -29,7 +32,7 @@ const beforeUpload = (file: any, files) => {
     reader.onload = async (result) => {
         const text = result.target?.result;
         if (!file.type.includes('json')) {
-            onlyMessage('请上传json格式文件', 'error');
+            onlyMessage($t('Save.FileSelect.614464-2'), 'error');
             return false;
         }
         list.value = files;

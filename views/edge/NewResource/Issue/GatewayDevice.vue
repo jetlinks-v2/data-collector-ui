@@ -49,27 +49,27 @@
                     />
                 </template>
                 <template #content>
-                    <Ellipsis style="width: calc(100% - 100px)">
+                    <j-ellipsis style="width: calc(100% - 100px)">
                             <span style="font-size: 16px; font-weight: 600">
                                 {{ slotProps.name }}
                             </span>
-                    </Ellipsis>
-                    <j-row style="margin-top: 18px">
-                        <j-col :span="12">
+                    </j-ellipsis>
+                    <a-row style="margin-top: 18px">
+                        <a-col :span="12">
                             <div class="card-item-content-text">
-                                设备类型
+                                {{ $t('Issue.GatewayDevice.556619-0') }}
                             </div>
                             <div>{{ slotProps.deviceType?.text }}</div>
-                        </j-col>
-                        <j-col :span="12">
+                        </a-col>
+                        <a-col :span="12">
                             <div class="card-item-content-text">
-                                产品名称
+                                {{ $t('Issue.GatewayDevice.556619-1') }}
                             </div>
-                            <Ellipsis style="width: 100%">
+                            <j-ellipsis style="width: 100%">
                                 {{ slotProps.productName }}
-                            </Ellipsis>
-                        </j-col>
-                    </j-row>
+                            </j-ellipsis>
+                        </a-col>
+                    </a-row>
                 </template>
             </CardBox>
         </template>
@@ -101,6 +101,9 @@ import {queryNoPagingPost, query, queryTree} from "../../../../api/others";
 import DeviceGatewayImg from '../../../../assets/images/device-gateway.png'
 import dayjs from "dayjs";
 import {PropType} from "vue";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const emit = defineEmits(['update:value']);
 const props = defineProps({
@@ -122,7 +125,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '设备名称',
+        title: $t('Issue.GatewayDevice.556619-2'),
         dataIndex: 'name',
         key: 'name',
         search: {
@@ -132,7 +135,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '产品名称',
+        title: $t('Issue.GatewayDevice.556619-1'),
         dataIndex: 'productName',
         key: 'productName',
         search: {
@@ -159,7 +162,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '注册时间',
+        title: $t('Issue.GatewayDevice.556619-3'),
         dataIndex: 'registryTime',
         key: 'registryTime',
         scopedSlots: true,
@@ -168,23 +171,23 @@ const columns = [
         },
     },
     {
-        title: '状态',
+        title: $t('Issue.GatewayDevice.556619-4'),
         dataIndex: 'state',
         key: 'state',
         scopedSlots: true,
         search: {
             type: 'select',
             options: [
-                {label: '禁用', value: 'notActive'},
-                {label: '离线', value: 'offline'},
-                {label: '在线', value: 'online'},
+                {label: $t('Issue.GatewayDevice.556619-5'), value: 'notActive'},
+                {label: $t('Issue.GatewayDevice.556619-6'), value: 'offline'},
+                {label: $t('Issue.GatewayDevice.556619-7'), value: 'online'},
             ],
         },
     },
     {
         key: 'productId$product-info',
         dataIndex: 'productId$product-info',
-        title: '产品分类',
+        title: $t('Issue.GatewayDevice.556619-8'),
         hideInTable: true,
         search: {
             type: 'treeSelect',
@@ -198,20 +201,20 @@ const columns = [
     },
     {
         dataIndex: 'deviceType',
-        title: '设备类型',
+        title: $t('Issue.GatewayDevice.556619-0'),
         valueType: 'select',
         hideInTable: true,
         search: {
             type: 'select',
             options: [
-                {label: '直连设备', value: 'device'},
-                {label: '网关子设备', value: 'childrenDevice'},
-                {label: '网关设备', value: 'gateway'},
+                {label: $t('Issue.GatewayDevice.556619-9'), value: 'device'},
+                {label: $t('Issue.GatewayDevice.556619-10'), value: 'childrenDevice'},
+                {label: $t('Issue.GatewayDevice.556619-11'), value: 'gateway'},
             ],
         },
     },
     {
-        title: '说明',
+        title: $t('Issue.GatewayDevice.556619-12'),
         dataIndex: 'describe',
         key: 'describe',
         ellipsis: true,

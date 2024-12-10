@@ -1,10 +1,10 @@
 <template>
   <div class="task-warp">
     <div class="header">
-      AI模型
+      {{ $t('AiModel.index.311326-0') }}
     </div>
     <div class="tip">
-      <AIcon class="icon" type="ExclamationCircleFilled" />若AI模型重复，边端已安装的AI模型将自动覆盖
+      <AIcon class="icon" type="ExclamationCircleFilled" />{{ $t('AiModel.index.311326-1') }}
     </div>
     <pro-search
       type="simple"
@@ -37,13 +37,16 @@
 <script setup name="AiModel">
 import { queryPage } from '../../../../../api/edge/newResource'
 import {useTemplateRowSelection} from '../../util'
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const params = ref()
 const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
 
 const columns = [
   {
-    title: '模型ID',
+    title: $t('AiModel.index.311326-2'),
     key: 'id',
     dataIndex: 'id',
     search: {
@@ -51,7 +54,7 @@ const columns = [
     },
   },
   {
-    title: '模型名称',
+    title: $t('AiModel.index.311326-3'),
     key: 'name',
     dataIndex: 'name',
     search: {
@@ -60,13 +63,13 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '文件',
+    title: $t('AiModel.index.311326-4'),
     key: 'file',
     dataIndex: 'file',
     ellipsis: true,
   },
   {
-    title: '描述',
+    title: $t('AiModel.index.311326-5'),
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,

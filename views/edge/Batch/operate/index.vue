@@ -19,7 +19,7 @@
         </div>
         <div :class="{ 'operate-action': true, 'disabled': disabled}" @click="showTask(item)">
           <a-space>
-            <span>开始</span>
+            <span>{{ $t('operate.index.694505-0') }}</span>
             <AIcon type="ArrowRightOutlined" :style=" disabled &&{cursor: 'not-allowed'}"/>
           </a-space>
         </div>
@@ -38,7 +38,7 @@
     <template #title>
       <div class="drawer-header-title">
         <span> <Icon :type="operateActive.icon" /></span>
-        <span>{{operateActive.title}}历史任务</span>
+        <span>{{operateActive.title}}{{ $t('operate.index.694505-1') }}</span>
         <a-button type="text" style="padding: 6px;margin-left: auto" @click="closeHistoryTask">
           <template #icon>
             <AIcon type="CloseOutlined" style="font-size: 22px;" />

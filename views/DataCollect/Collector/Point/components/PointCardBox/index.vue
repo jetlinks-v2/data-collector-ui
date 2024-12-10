@@ -79,6 +79,9 @@
 
 <script setup lang="ts">
 import { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 type EmitProps = {
     // (e: 'update:modelValue', data: Record<string, any>): void;
@@ -104,7 +107,7 @@ const props = defineProps({
     },
     statusText: {
         type: String,
-        default: '正常',
+        default: '',
     },
     status: {
         type: [String, Number],

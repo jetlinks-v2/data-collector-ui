@@ -24,6 +24,9 @@
 import {queryTaskDetailPage} from '../../../../../api/edge/newResource';
 import {PropType} from "vue";
 import Card from './Card.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     data: {
@@ -51,7 +54,7 @@ const defaultParams = {
 const params = ref({});
 const columns = [
     {
-        title: '创建时间',
+        title: $t('Record.index.327270-0'),
         dataIndex: 'createTime',
         key: 'createTime',
         width: 200,
@@ -60,15 +63,15 @@ const columns = [
         }
     },
     {
-        title: '状态',
+        title: $t('Record.index.327270-1'),
         dataIndex: 'state',
         key: 'state',
         search: {
             type: 'select',
             options: [
-                {label: '全部完成', value: 'complete'},
-                {label: '未完成', value: 'incomplete'},
-                {label: '进行中', value: 'running'},
+                {label: $t('Record.index.327270-2'), value: 'complete'},
+                {label: $t('Record.index.327270-3'), value: 'incomplete'},
+                {label: $t('Record.index.327270-4'), value: 'running'},
             ]
         }
     },

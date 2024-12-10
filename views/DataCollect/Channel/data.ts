@@ -6,6 +6,7 @@ import modbusImage from '../../../assets/images/DataCollect/channel-modbus.png'
 import s7Image from '../../../assets/images/DataCollect/s7.png'
 import gatewayImage from '../../../assets/images/DataCollect/gateway.png'
 import iecImage from '../../../assets/images/DataCollect/IEC104.png'
+import i18n from '@/locales'
 
 export const FormState: FormDataType = {
     name: '',
@@ -72,42 +73,42 @@ export const checkHost = (_rule: Rule, value: string): Promise<any> =>
     new Promise(async (resolve, reject) => {
         if(!value) return resolve('');
         if(!(regIP.test(value) || regIPv6.test(value) || regDomain.test(value))) {
-            return reject('请输入正确格式的Modbus主机IP地址')
+            return reject(i18n.global.t('Channel.data.290641-0'))
         }
         return resolve('')
     });
 export const FormValidate = {
     name: [
-        { required: true, message: '请输入名称', trigger: 'blur' },
-        { max: 64, message: '最多可输入64个字符' },
+        { required: true, message: i18n.global.t('Channel.data.290641-1'), trigger: 'blur' },
+        { max: 64, message: i18n.global.t('Channel.data.290641-2') },
     ],
-    provider: [{ required: true, message: '请选择通讯协议' }],
+    provider: [{ required: true, message: i18n.global.t('Channel.data.290641-3') }],
     host: [
         {
             required: true,
-            message: '请输入Modbus主机IP',
+            message: i18n.global.t('Channel.data.290641-4'),
         },
         {
             validator: checkHost,
             trigger: 'blur',
-            // message: '请输入正确格式的Modbus主机IP地址',
+            // message: i18n.global.t('Channel.data.290641-0'),
         },
     ],
     port: [
         {
             required: true,
-            message: '请输入端口',
+            message: i18n.global.t('Channel.data.290641-5'),
         },
         {
             pattern: regOnlyNumber,
-            message: '请输入0-65535之间的正整数',
+            message: i18n.global.t('Channel.data.290641-6'),
         },
     ],
 
     endpoint: [
         {
             required: true,
-            message: '请输入端点url',
+            message: i18n.global.t('Channel.data.290641-7'),
         },
         {
             validator: checkEndpoint,
@@ -118,41 +119,41 @@ export const FormValidate = {
     securityPolicy: [
         {
             required: true,
-            message: '请选择安全策略',
+            message: i18n.global.t('Channel.data.290641-8'),
         },
     ],
     securityMode: [
         {
             required: true,
-            message: '请选择安全模式',
+            message: i18n.global.t('Channel.data.290641-9'),
         },
     ],
     certId: [
         {
             required: true,
-            message: '请选择证书',
+            message: i18n.global.t('Channel.data.290641-10'),
         },
     ],
     authType: [
         {
             required: true,
-            message: '请选择权限认证',
+            message: i18n.global.t('Channel.data.290641-11'),
         },
     ],
     username: [
-        { required: true, message: '请输入用户名', trigger: 'blur' },
-        { max: 64, message: '最多可输入64个字符' },
+        { required: true, message: i18n.global.t('Channel.data.290641-12'), trigger: 'blur' },
+        { max: 64, message: i18n.global.t('Channel.data.290641-2') },
     ],
     password: [
-        { required: true, message: '请输入密码', trigger: 'blur' },
-        { max: 64, message: '最多可输入64个字符' },
+        { required: true, message: i18n.global.t('Channel.data.290641-13'), trigger: 'blur' },
+        { max: 64, message: i18n.global.t('Channel.data.290641-2') },
     ],
 
-    description: [{ max: 200, message: '最多可输入200个字符' }],
+    description: [{ max: 200, message: i18n.global.t('Channel.data.290641-14') }],
 };
 export const columns = [
     {
-        title: '通道名称',
+        title: i18n.global.t('Channel.data.290641-15'),
         dataIndex: 'name',
         key: 'name',
         ellipsis: true,
@@ -162,7 +163,7 @@ export const columns = [
         },
     },
     {
-        title: '通讯协议',
+        title: i18n.global.t('Channel.data.290641-16'),
         dataIndex: 'provider',
         key: 'provider',
         ellipsis: true,
@@ -175,7 +176,7 @@ export const columns = [
         },
     },
     {
-        title: '状态',
+        title: i18n.global.t('Channel.data.290641-17'),
         dataIndex: 'state',
         key: 'state',
         ellipsis: true,
@@ -183,13 +184,13 @@ export const columns = [
         search: {
             type: 'select',
             options: [
-                { label: '正常', value: 'enabled' },
-                { label: '禁用', value: 'disabled' },
+                { label: i18n.global.t('Channel.data.290641-18'), value: 'enabled' },
+                { label: i18n.global.t('Channel.data.290641-19'), value: 'disabled' },
             ],
         },
     },
     {
-        title: '运行状态',
+        title: i18n.global.t('Channel.data.290641-20'),
         dataIndex: 'runningState',
         key: 'runningState',
         ellipsis: true,
@@ -197,20 +198,20 @@ export const columns = [
         search: {
             type: 'select',
             options: [
-                { label: '运行中', value: 'running' },
-                { label: '部分错误', value: 'partialError' },
-                { label: '错误', value: 'failed' },
+                { label: i18n.global.t('Channel.data.290641-21'), value: 'running' },
+                { label: i18n.global.t('Channel.data.290641-22'), value: 'partialError' },
+                { label: i18n.global.t('Channel.data.290641-23'), value: 'failed' },
             ],
         },
     },
     {
-        title: '说明',
+        title: i18n.global.t('Channel.data.290641-24'),
         dataIndex: 'description',
         key: 'description',
         ellipsis: true,
     },
     {
-        title: '操作',
+        title: i18n.global.t('Channel.data.290641-25'),
         key: 'action',
         fixed: 'right',
         width: 200,

@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        :title="data.id ? '编辑' : '新增'"
+        :title="data.id ? $t('Save.index.4001415-0') : $t('Save.index.4001415-1')"
         :visible="true"
         width="700px"
         :maskClosable="false"
@@ -15,7 +15,7 @@
             ref="formRef"
         >
             <a-form-item
-                label="所属通道"
+                :label="$t('Save.index.4001415-2')"
                 name="channelId"
                 :rules="LeftTreeRules.channelId"
             >
@@ -23,7 +23,7 @@
                     style="width: 100%"
                     v-model:value="formData.channelId"
                     :options="channelList"
-                    placeholder="请选择所属通道"
+                    :placeholder="$t('Save.index.4001415-3')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
@@ -32,67 +32,67 @@
                 />
             </a-form-item>
             <a-form-item
-                label="采集器名称"
+                :label="$t('Save.index.4001415-4')"
                 name="name"
                 :rules="LeftTreeRules.name"
             >
                 <a-input
-                    placeholder="请输入采集器名称"
+                    :placeholder="$t('Save.index.4001415-5')"
                     v-model:value="formData.name"
                 />
 
             </a-form-item>
             <a-form-item  v-if="provider === 'snap7'" label="IP" :name="['configuration', 'host']" :rules="LeftTreeRules.host" >
-              <a-input v-model:value="formData.configuration.host" autocomplete="off" placeholder="请输入通道IP" :disabled="false"/>
+              <a-input v-model:value="formData.configuration.host" autocomplete="off" :placeholder="$t('Save.index.4001415-6')" :disabled="false"/>
             </a-form-item>
-            <a-form-item v-if="provider === 'snap7'" label="端口" :name="['configuration', 'port']" :rules="LeftTreeRules.port">
-              <a-input-number style="width: 100%" v-model:value="formData.configuration.port" :precision="0" autocomplete="off" placeholder="请输入通道端口"/>
+            <a-form-item v-if="provider === 'snap7'" :label="$t('Save.index.4001415-7')" :name="['configuration', 'port']" :rules="LeftTreeRules.port">
+              <a-input-number style="width: 100%" v-model:value="formData.configuration.port" :precision="0" autocomplete="off" :placeholder="$t('Save.index.4001415-8')"/>
             </a-form-item>
-            <a-form-item v-if="provider === 'snap7'" label="机架号" :name="['configuration', 'rack']" :rules="LeftTreeRules.rack">
-              <a-input-number style="width: 100%" v-model:value="formData.configuration.rack" autocomplete="off" placeholder="请输入机架号" :maxlength="64" />
+            <a-form-item v-if="provider === 'snap7'" :label="$t('Save.index.4001415-9')" :name="['configuration', 'rack']" :rules="LeftTreeRules.rack">
+              <a-input-number style="width: 100%" v-model:value="formData.configuration.rack" autocomplete="off" :placeholder="$t('Save.index.4001415-10')" :maxlength="64" />
             </a-form-item>
-            <a-form-item v-if="provider === 'snap7'" label="型号" :name="['configuration', 'type']" :rules="LeftTreeRules.type">
-              <a-select v-model:value="formData.configuration.type" placeholder="请选择型号" @change="typeChange">
+            <a-form-item v-if="provider === 'snap7'" :label="$t('Save.index.4001415-11')" :name="['configuration', 'type']" :rules="LeftTreeRules.type">
+              <a-select v-model:value="formData.configuration.type" :placeholder="$t('Save.index.4001415-12')" @change="typeChange">
                 <a-select-option v-for="item in typeOptions" :key="item.value" :value="item.value">{{ item.label }}</a-select-option>
               </a-select>
             </a-form-item>
-            <a-form-item v-if="provider === 'snap7'" label="槽位" :name="['configuration', 'slot']" :rules="LeftTreeRules.slot">
-              <a-input-number style="width: 100%" v-model:value="formData.configuration.slot" autocomplete="off" placeholder="请输入槽位" :maxlength="64" :disabled="formData.configuration.type == 'S200' || formData.configuration.type == 'S1200'"/>
+            <a-form-item v-if="provider === 'snap7'" :label="$t('Save.index.4001415-13')" :name="['configuration', 'slot']" :rules="LeftTreeRules.slot">
+              <a-input-number style="width: 100%" v-model:value="formData.configuration.slot" autocomplete="off" :placeholder="$t('Save.index.4001415-14')" :maxlength="64" :disabled="formData.configuration.type == 'S200' || formData.configuration.type == 'S1200'"/>
             </a-form-item>
-            <a-form-item v-if="provider === 'snap7'" label="超时时间（毫秒）" :name="['configuration', 'timeout']" :rules="LeftTreeRules.timeout">
-              <a-input-number style="width: 100%" v-model:value="formData.configuration.timeout" autocomplete="off" placeholder="请输入超时时间" :maxlength="64" />
+            <a-form-item v-if="provider === 'snap7'" :label="$t('Save.index.4001415-15')" :name="['configuration', 'timeout']" :rules="LeftTreeRules.timeout">
+              <a-input-number style="width: 100%" v-model:value="formData.configuration.timeout" autocomplete="off" :placeholder="$t('Save.index.4001415-16')" :maxlength="64" />
             </a-form-item>
-            <a-form-item v-if="provider === 'snap7'" label="数据读取方式" :name="['configuration', 'serializable']">
+            <a-form-item v-if="provider === 'snap7'" :label="$t('Save.index.4001415-17')" :name="['configuration', 'serializable']">
               <a-radio-group v-model:value="formData.configuration.serializable">
-                <a-radio-button :value="false">并行</a-radio-button>
-                <a-radio-button :value="true">串行</a-radio-button>
+                <a-radio-button :value="false">{{ $t('Save.index.4001415-18') }}</a-radio-button>
+                <a-radio-button :value="true">{{ $t('Save.index.4001415-19') }}</a-radio-button>
               </a-radio-group>
             </a-form-item>
             <template v-if="provider === 'iec104'">
-              <a-form-item label="从机地址" :name="['configuration', 'host']" :rules="LeftTreeRules.host">
-                <a-input v-model:value="formData.configuration.host" autocomplete="off" placeholder="请输入" :disabled="false"/>
+              <a-form-item :label="$t('Save.index.4001415-20')" :name="['configuration', 'host']" :rules="LeftTreeRules.host">
+                <a-input v-model:value="formData.configuration.host" autocomplete="off" :placeholder="$t('Save.index.4001415-21')" :disabled="false"/>
               </a-form-item>
-              <a-form-item label="从机端口" :name="['configuration', 'port']" :rules="LeftTreeRules.port" >
-                <a-input-number style="width: 100%" v-model:value="formData.configuration.port" :min="1" :max="65535" :precision="0" autocomplete="off" placeholder="请输入从机端口"/>
+              <a-form-item :label="$t('Save.index.4001415-22')" :name="['configuration', 'port']" :rules="LeftTreeRules.port" >
+                <a-input-number style="width: 100%" v-model:value="formData.configuration.port" :min="1" :max="65535" :precision="0" autocomplete="off" :placeholder="$t('Save.index.4001415-23')"/>
               </a-form-item>
-              <a-form-item label="分组地址" :name="['configuration', 'terminnalAddress']" :rules="LeftTreeRules.terminnalAddress">
-                <a-input-number style="width: 100%" :min="0" :max="65535" :precision="0" v-model:value="formData.configuration.terminnalAddress" autocomplete="off" placeholder="请输入分组地址"></a-input-number>
+              <a-form-item :label="$t('Save.index.4001415-24')" :name="['configuration', 'terminnalAddress']" :rules="LeftTreeRules.terminnalAddress">
+                <a-input-number style="width: 100%" :min="0" :max="65535" :precision="0" v-model:value="formData.configuration.terminnalAddress" autocomplete="off" :placeholder="$t('Save.index.4001415-25')"></a-input-number>
               </a-form-item>
-              <a-form-item label="确认帧数量" :name="['configuration', 'frameAmountMax']" :rules="LeftTreeRules.frameAmountMax">
-                <a-input-number style="width: 100%" v-model:value="formData.configuration.frameAmountMax" placeholder="请输入确认帧数量" :min="1" :maxlength="16" :precision="0"></a-input-number>
+              <a-form-item :label="$t('Save.index.4001415-26')" :name="['configuration', 'frameAmountMax']" :rules="LeftTreeRules.frameAmountMax">
+                <a-input-number style="width: 100%" v-model:value="formData.configuration.frameAmountMax" :placeholder="$t('Save.index.4001415-27')" :min="1" :maxlength="16" :precision="0"></a-input-number>
               </a-form-item>
             </template>
             <a-form-item
                 v-if="provider === 'COLLECTOR_GATEWAY'"
-                label="通讯协议"
+                :label="$t('Save.index.4001415-28')"
                 :name="['collectorProvider']"
-                :rules="[{ required: true, message: '请选择通讯协议' }]"
+                :rules="[{ required: true, message: $t('Save.index.4001415-29') }]"
             >
               <a-select
                   style="width: 100%"
                   v-model:value="formData.collectorProvider"
                   :options="providerListItems"
-                  placeholder="请选择通讯协议"
+                  :placeholder="$t('Save.index.4001415-29')"
                   allowClear
                   show-search
                   :filter-option="filterOption"
@@ -103,11 +103,11 @@
                 v-if="visibleUnitId"
                 :name="['configuration', 'unitId']"
                 :rules="LeftTreeRules.unitId"
-                label="从机地址"
+                :label="$t('Save.index.4001415-20')"
             >
               <a-input-number
                   style="width: 100%"
-                  placeholder="请输入从机地址"
+                  :placeholder="$t('Save.index.4001415-30')"
                   v-model:value="formData.configuration.unitId"
                   :min="0"
                   :max="255"
@@ -115,25 +115,25 @@
             </a-form-item>
             <template v-if="provider === 'BACNetIp'">
               <a-form-item
-                label="设备实例号"
+                :label="$t('Save.index.4001415-31')"
                 :name="['configuration', 'instanceNumber']"
                 :rules="[{ required: true, trigger: 'change' }]"
               >
                 <a-input-number
                   style="width: 100%"
                   v-model:value="formData.configuration.instanceNumber"
-                  placeholder="请输入设备实例号"
+                  :placeholder="$t('Save.index.4001415-32')"
                   :min="0"
                   :precision="0"
                   :disabled="route.query.id ? true : false"
                 />
               </a-form-item>
-              <a-form-item label="地址" :name="['configuration', 'address']"  :rules="LeftTreeRules.address">
+              <a-form-item :label="$t('Save.index.4001415-33')" :name="['configuration', 'address']"  :rules="LeftTreeRules.address">
                 <a-input
                   style="width: 100%"
                   v-model:value="formData.configuration.address"
                   :maxlength="64"
-                  placeholder="请输入地址"
+                  :placeholder="$t('Save.index.4001415-34')"
                 >
                 </a-input>
               </a-form-item>
@@ -142,15 +142,15 @@
                 v-if="provider !== 'COLLECTOR_GATEWAY'"
                 :name="['configuration', 'inheritBreakerSpec', 'type']"
                 :rules="LeftTreeRules.type"
-                label="点位熔断处理"
+                :label="$t('Save.index.4001415-35')"
             >
               <j-card-select
                   :showImage="false"
                   v-model:value="formData.configuration.inheritBreakerSpec.type"
                   :options="[
-                                      { label: '降频', value: 'LowerFrequency' },
-                                      { label: '断开', value: 'Break' },
-                                      { label: '忽略', value: 'Ignore' },
+                                      { label: $t('Save.index.4001415-36'), value: 'LowerFrequency' },
+                                      { label: $t('Save.index.4001415-37'), value: 'Break' },
+                                      { label: $t('Save.index.4001415-38'), value: 'Ignore' },
                                   ]"
                   @change="changeCardSelectType"
               />
@@ -162,7 +162,7 @@
                 v-if="visibleEndian"
                 :name="['configuration', 'endian']"
                 :rules="LeftTreeRules.endian"
-                label="双字高低位切换"
+                :label="$t('Save.index.4001415-39')"
             >
             <j-card-select
                 :showImage="false"
@@ -179,7 +179,7 @@
                 v-if="visibleEndian"
                 :name="['configuration', 'endianIn']"
                 :rules="LeftTreeRules.endianIn"
-                label="单字高低位切换"
+                :label="$t('Save.index.4001415-40')"
             >
             <j-card-select
                 :showImage="false"
@@ -193,30 +193,30 @@
             />
             </a-form-item>
             <div v-if="visibleEndian" style="color: #616161">
-            <p>当前内存布局: {{ endianData }}</p>
+            <p>{{ $t('Save.index.4001415-41') }} {{ endianData }}</p>
             <p>
-              只有4字节数据类型(int32、ieee754 float)
-              具有4种内存布局，其它只有ABCD、DCBA两种内存布局(以双字配置为准)
+              {{ $t('Save.index.4001415-42') }}(int32、ieee754 float)
+              {{ $t('Save.index.4001415-43') }}({{ $t('Save.index.4001415-44') }})
             </p>
             </div>
             <a-form-item
                 v-if="provider !== 'snap7'"
                 :name="['configuration', 'requestTimeout']"
                 :rules="LeftTreeRules.requestTimeout"
-                label='请求超时时间'
+                :label="$t('Save.index.4001415-45')"
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入请求超时时间配置"
+                    :placeholder="$t('Save.index.4001415-46')"
                     v-model:value="formData.configuration.requestTimeout"
                     addon-after="ms"
                     :max="60000"
                     :min="2000"
                 />
             </a-form-item>
-            <a-form-item label="说明" name="description">
+            <a-form-item :label="$t('Save.index.4001415-47')" name="description">
                 <a-textarea
-                    placeholder="请输入说明"
+                    :placeholder="$t('Save.index.4001415-48')"
                     v-model:value="formData.description"
                     :maxlength="200"
                     :rows="3"
@@ -225,7 +225,7 @@
             </a-form-item>
         </a-form>
         <template #footer>
-            <a-button key="back" @click="handleCancel">取消</a-button>
+            <a-button key="back" @click="handleCancel">{{ $t('Save.index.4001415-49') }}</a-button>
             <j-permission-button
                 key="submit"
                 type="primary"
@@ -236,7 +236,7 @@
                     id ? 'update' : 'add'
                 }`"
             >
-                确认
+                {{ $t('Save.index.4001415-50') }}
             </j-permission-button>
         </template>
     </a-modal>
@@ -247,7 +247,9 @@ import { LeftTreeRules } from '../../data';
 import type { FormInstance } from 'ant-design-vue';
 import {cloneDeep, omit} from "lodash-es";
 // import {protocolList} from "@/utils/consts";
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const route = useRoute()
 
 const loading = ref(false);
@@ -401,10 +403,10 @@ const handleOk = async () => {
 
 const getTypeTooltip = (value: string) => {
   switch (value) {
-    case 'LowerFrequency': return '连续20次采集异常后，降低采集频率至设定频率的1/10，故障处理后，采集频率将恢复至设定频率。';
+    case 'LowerFrequency': return $t('Save.index.4001415-51');
     // case 'Break': return '连续10分钟异常，停止采集数据进入断开状态，设备重新启用后恢复采集状态。'
-    case 'Break': return '连续20次采集异常后，降低采集频率至设定频率的1/10，10分钟内未排除故障，将停止采集。'
-    case 'Ignore': return '忽略异常，保持设定采集频率。';
+    case 'Break': return $t('Save.index.4001415-52')
+    case 'Ignore': return $t('Save.index.4001415-53');
     default: return '';
   }
 }

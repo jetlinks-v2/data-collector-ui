@@ -1,5 +1,5 @@
 <template>
-    <a-modal title="扫描" :visible="true" :maskClosable="false" width="95%" @cancel="handleCancel">
+    <a-modal :title="$t('ScanBacnet.index.400145-0')" :visible="true" :maskClosable="false" width="95%" @cancel="handleCancel">
         <div class="content">
             <Tree
                 :data="treeData"
@@ -19,7 +19,7 @@
             ></Table>
         </div>
         <template #footer>
-            <a-button key="back" @click="handleCancel">取消</a-button>
+            <a-button key="back" @click="handleCancel">{{ $t('ScanBacnet.index.400145-1') }}</a-button>
             <j-permission-button
                 key="submit"
                 type="primary"
@@ -28,7 +28,7 @@
                 style="margin-left: 8px"
                 :hasPermission="`DataCollect/Collector:update`"
             >
-                确认
+                {{ $t('ScanBacnet.index.400145-2') }}
             </j-permission-button>
         </template>
     </a-modal>
@@ -39,6 +39,9 @@ import { savePointBatch } from '../../../../../api/data-collect/collector';
 
 import Table from './Table.vue';
 import Tree from './Tree.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     data: {

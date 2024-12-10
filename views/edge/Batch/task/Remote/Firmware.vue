@@ -38,7 +38,10 @@
 <script setup name="TaskFirmware">
 import {queryFirmwareList, queryProductDetailAllList} from '../../../../../api/others';
 import {map} from "lodash-es";
-import dayjs from 'dayjs'
+import dayjs from 'dayjs';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     value: {
@@ -54,7 +57,7 @@ const selectedKeys = ref([])
 
 const columns = [
     {
-        title: '固件名称',
+        title: $t('Remote.Firmware.492667-0'),
         key: 'name',
         dataIndex: 'name',
         fixed: 'left',
@@ -65,7 +68,7 @@ const columns = [
         },
     },
     {
-        title: '固件版本',
+        title: $t('Remote.Firmware.492667-1'),
         dataIndex: 'version',
         key: 'version',
         ellipsis: true,
@@ -74,7 +77,7 @@ const columns = [
         },
     },
     {
-        title: '所属产品',
+        title: $t('Remote.Firmware.492667-2'),
         dataIndex: 'productId',
         key: 'productId',
         ellipsis: true,
@@ -102,7 +105,7 @@ const columns = [
         },
     },
     {
-        title: '签名方式',
+        title: $t('Remote.Firmware.492667-3'),
         dataIndex: 'signMethod',
         key: 'signMethod',
         scopedSlots: true,
@@ -122,7 +125,7 @@ const columns = [
         width: 150,
     },
     {
-        title: '创建时间',
+        title: $t('Remote.Firmware.492667-4'),
         key: 'createTime',
         dataIndex: 'createTime',
         search: {
@@ -132,7 +135,7 @@ const columns = [
         scopedSlots: true,
     },
     {
-        title: '说明',
+        title: $t('Remote.Firmware.492667-5'),
         dataIndex: 'description',
         key: 'description',
         ellipsis: true,

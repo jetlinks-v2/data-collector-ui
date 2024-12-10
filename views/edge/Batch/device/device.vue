@@ -17,7 +17,7 @@
                 mode="CARD"
                 :defaultParams="defaultParams"
                 :gridColumn="3"
-                :gridColumns="[3]"
+                :gridColumns="[2, 3]"
                 :scroll="{ y: 300 }"
                 :rowSelection="{
                 selectedRowKeys: deviceRowKeys,
@@ -63,7 +63,7 @@
                             <a-row>
                                 <a-col :span="24">
                                     <div class="card-item-content-text">
-                                        产品名称
+                                        {{ $t('device.device.512194-0') }}
                                     </div>
                                     <j-ellipsis style="width: 100%">
                                         {{ slotProps.productName }}
@@ -97,7 +97,10 @@ import { query, queryNoPagingPost, queryTree } from '../../../../api/others';
 import { getContext } from '../util';
 import { omit } from 'lodash-es';
 import dayjs from 'dayjs';
-import DeviceCardImg from '../../../../assets/images/device-card.png'
+import DeviceCardImg from '../../../../assets/images/device-card.png';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const params = ref();
 const deviceRowKeys = ref([]);
@@ -139,7 +142,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '设备名称',
+        title: $t('device.device.512194-1'),
         dataIndex: 'name',
         key: 'name',
         search: {
@@ -149,7 +152,7 @@ const columns = [
         ellipsis: true,
     },
     {
-        title: '产品名称',
+        title: $t('device.device.512194-0'),
         dataIndex: 'productName',
         key: 'productName',
         search: {
@@ -177,21 +180,21 @@ const columns = [
     },
 
     {
-        title: '状态',
+        title: $t('device.device.512194-2'),
         dataIndex: 'state',
         key: 'state',
         scopedSlots: true,
         search: {
             type: 'select',
             options: [
-                { label: '禁用', value: 'notActive' },
-                { label: '离线', value: 'offline' },
-                { label: '在线', value: 'online' },
+                { label: $t('device.device.512194-3'), value: 'notActive' },
+                { label: $t('device.device.512194-4'), value: 'offline' },
+                { label: $t('device.device.512194-5'), value: 'online' },
             ],
         },
     },
     {
-        title: '注册时间',
+        title: $t('device.device.512194-6'),
         dataIndex: 'registryTime',
         key: 'registryTime',
         scopedSlots: true,
@@ -202,7 +205,7 @@ const columns = [
     {
         key: 'productId$product-info',
         dataIndex: 'productId$product-info',
-        title: '产品分类',
+        title: $t('device.device.512194-7'),
         hideInTable: true,
         search: {
             type: 'treeSelect',
@@ -215,7 +218,7 @@ const columns = [
         },
     },
     {
-        title: '说明',
+        title: $t('device.device.512194-8'),
         dataIndex: 'describe',
         key: 'describe',
         ellipsis: true,

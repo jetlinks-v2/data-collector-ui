@@ -1,7 +1,7 @@
 <template>
   <a-drawer
     visible
-    title="任务详情"
+    :title="$t('log.Detail.389002-0')"
     :width="1000"
     :maskClosable="false"
     @close="onCancel"
@@ -21,24 +21,24 @@
       </div>
     </template>
     <div class="log-detail-body">
-      <div @click="onCopy">从相同设备创建任务</div>
+      <div @click="onCopy">{{ $t('log.Detail.389002-1') }}</div>
       <div>
-        <TitleComponent title="基本信息" />
+        <TitleComponent :title="$t('log.Detail.389002-2')" />
         <a-descriptions bordered>
-          <a-descriptions-item label="创建人" :labelStyle="{width: '110px'}"></a-descriptions-item>
-          <a-descriptions-item label="创建时间" :labelStyle="{width: '110px'}"></a-descriptions-item>
-          <a-descriptions-item label="任务详情" :labelStyle="{width: '110px'}">
-            <a-button type="link" @click="emit('showTaskDetail')">查看</a-button>
+          <a-descriptions-item :label="$t('log.Detail.389002-3')" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-4')" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-0')" :labelStyle="{width: '110px'}">
+            <a-button type="link" @click="emit('showTaskDetail')">{{ $t('log.Detail.389002-5') }}</a-button>
           </a-descriptions-item>
-          <a-descriptions-item label="已完成" :labelStyle="{width: '110px'}"></a-descriptions-item>
-          <a-descriptions-item label="已失败" :labelStyle="{width: '110px'}"></a-descriptions-item>
-          <a-descriptions-item label="进行中" :labelStyle="{width: '110px'}"></a-descriptions-item>
-          <a-descriptions-item label="排队中" :labelStyle="{width: '110px'}"></a-descriptions-item>
-          <a-descriptions-item label="说明" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-6')" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-7')" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-8')" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-9')" :labelStyle="{width: '110px'}"></a-descriptions-item>
+          <a-descriptions-item :label="$t('log.Detail.389002-10')" :labelStyle="{width: '110px'}"></a-descriptions-item>
         </a-descriptions>
       </div>
       <div>
-        <TitleComponent title="涉及网关" />
+        <TitleComponent :title="$t('log.Detail.389002-11')" />
         <JProTable
           model="TABLE"
           :columns="gatewayColumns"
@@ -46,7 +46,7 @@
         />
       </div>
       <div>
-        <TitleComponent title="安装插件" />
+        <TitleComponent :title="$t('log.Detail.389002-12')" />
         <JProTable
           model="TABLE"
           :columns="pluginColumns"
@@ -58,7 +58,9 @@
 </template>
 
 <script setup name="LogDrawer">
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const props = defineProps({
   record: {
     type: Object,
@@ -70,15 +72,15 @@ const emit = defineEmits(['showTaskDetail', 'copy', 'cancel'])
 
 const gatewayColumns = [
   {
-    title: '网关设备名称',
+    title: $t('log.Detail.389002-13'),
     dataIndex: 'name',
   },
   {
-    title: '设备类型',
+    title: $t('log.Detail.389002-14'),
     dataIndex: 'type',
   },
   {
-    title: '状态',
+    title: $t('log.Detail.389002-15'),
     dataIndex: 'status',
     width: 120
   },
@@ -86,27 +88,27 @@ const gatewayColumns = [
 
 const pluginColumns = [
   {
-    title: '插件ID',
+    title: $t('log.Detail.389002-16'),
     dataIndex: 'id',
   },
   {
-    title: '插件名称',
+    title: $t('log.Detail.389002-17'),
     dataIndex: 'name',
   },
   {
-    title: '插件类型',
+    title: $t('log.Detail.389002-18'),
     dataIndex: 'type',
   },
   {
-    title: '文件',
+    title: $t('log.Detail.389002-19'),
     dataIndex: 'file',
   },
   {
-    title: '版本号',
+    title: $t('log.Detail.389002-20'),
     dataIndex: 'version',
   },
   {
-    title: '描述',
+    title: $t('log.Detail.389002-21'),
     dataIndex: 'describe',
   },
 ]

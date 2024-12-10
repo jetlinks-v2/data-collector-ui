@@ -20,36 +20,36 @@
         :model="formDataModel[activeIndex]"
         :rules="rules"
       >
-        <a-form-item label="推送方式" name="type">
+        <a-form-item :label="$t('Remote.index.973615-0')" name="type">
           <CheckButton
             v-model:value="formDataModel[activeIndex].type"
             :options="[
-                {label: '平台推送', value: 'plugin'},
-                {label: '设备拉取', value: 'remote'},
+                {label: $t('Remote.index.973615-1'), value: 'plugin'},
+                {label: $t('Remote.index.973615-2'), value: 'remote'},
               ]"
           />
         </a-form-item>
         <a-row :gutter="[16]">
           <a-col :span="8">
-            <a-form-item label="响应超过时间" name="responseTime">
-              <a-input-number v-model:value="formDataModel[activeIndex].responseTime" placeholder="请输入响应超过时间（秒）" style="width: 100%" >
+            <a-form-item :label="$t('Remote.index.973615-3')" name="responseTime">
+              <a-input-number v-model:value="formDataModel[activeIndex].responseTime" :placeholder="$t('Remote.index.973615-4')" style="width: 100%" >
                 <template #addonAfter>
-                  秒
+                  {{ $t('Remote.index.973615-5') }}
                 </template>
               </a-input-number>
             </a-form-item>
           </a-col>
           <a-col :span="8">
-            <a-form-item label="升级超过时间" name="updateTime">
-              <a-input-number v-model:value="formDataModel[activeIndex].updateTime" placeholder="请输入升级超过时间（秒）" style="width: 100%" >
+            <a-form-item :label="$t('Remote.index.973615-6')" name="updateTime">
+              <a-input-number v-model:value="formDataModel[activeIndex].updateTime" placeholder="请输入升级超过时间（{{ $t('Remote.index.973615-5') }}）" style="width: 100%" >
                 <template #addonAfter>
-                  秒
+                  {{ $t('Remote.index.973615-5') }}
                 </template>
               </a-input-number>
             </a-form-item>
           </a-col>
         </a-row>
-        <a-form-item label="选择固件" name="firmware">
+        <a-form-item :label="$t('Remote.index.973615-8')" name="firmware">
           <Firmware v-model:value="formDataModel[activeIndex].firmware" />
         </a-form-item>
       </a-form>
@@ -58,7 +58,10 @@
 </template>
 
 <script setup name="TaskRemote">
-import Firmware from './Firmware.vue'
+import Firmware from './Firmware.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
   options: {
@@ -74,14 +77,14 @@ const errorKeys = ref([])
 
 const rules = {
   type: [
-    { required: true, message: '请选择推送方式' },
+    { required: true, message: $t('Remote.index.973615-9') },
   ],
   responseTime: [
     {
       required: true,
       validator: (_rule, value) => {
         if (value === undefined || value === null) {
-          return Promise.reject('请输入响应时间');
+          return Promise.reject($t('Remote.index.973615-10'));
         } else {
           return Promise.resolve();
         }
@@ -93,7 +96,7 @@ const rules = {
       required: true,
       validator: (_rule, value) => {
         if (value === undefined || value === null) {
-          return Promise.reject('请输入升级时间');
+          return Promise.reject($t('Remote.index.973615-11'));
         } else {
           return Promise.resolve();
         }
@@ -105,7 +108,7 @@ const rules = {
       required: true,
       validator: (_rule, value) => {
         if (!value.length) {
-          return Promise.reject('请选择固件');
+          return Promise.reject($t('Remote.index.973615-12'));
         } else {
           return Promise.resolve();
         }

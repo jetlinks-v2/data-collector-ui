@@ -2,7 +2,7 @@
     <a-modal
         visible
         :maskClosable="false"
-        :title="!!data?.id ? '编辑' : '新增'"
+        :title="!!data?.id ? $t('Save.index.001090-0') : $t('Save.index.001090-1')"
         width="650px"
         :confirm-loading="loading"
         @cancel="emit('close')"
@@ -21,9 +21,9 @@
             <a-form-item name="targetId">
                 <template #label>
                     <span>
-                        模型ID
+                        {{ $t('Save.index.001090-2') }}
                         <a-tooltip
-                            title="若不填写，系统将自动生成唯一ID"
+                            :title="$t('Save.index.001090-3')"
                         >
                             <AIcon
                                 type="QuestionCircleOutlined"
@@ -32,14 +32,14 @@
                         </a-tooltip>
                     </span>
                 </template>
-                <a-input v-model:value="formData.targetId" :disabled="data.targetId" placeholder="请输入模型ID"></a-input>
+                <a-input v-model:value="formData.targetId" :disabled="data.targetId" :placeholder="$t('Save.index.001090-4')"></a-input>
             </a-form-item>
-            <a-form-item label="名称" name="name">
-                <a-input v-model:value="formData.name" placeholder="请输入名称"></a-input>
+            <a-form-item :label="$t('Save.index.001090-5')" name="name">
+                <a-input v-model:value="formData.name" :placeholder="$t('Save.index.001090-6')"></a-input>
             </a-form-item>
             <a-form-item
                 v-if="formData.targetType == 'AiModel'"
-                label="文件"
+                :label="$t('Save.index.001090-7')"
                 name="properties"
                 :rules="{
                     required: true,
@@ -56,7 +56,7 @@
             </a-form-item>
             <a-form-item
                 v-else-if="formData.targetType == 'PluginDriver'"
-                label="文件"
+                :label="$t('Save.index.001090-7')"
                 name="metadata"
                 :rules="{
                     required: true,
@@ -73,7 +73,7 @@
             </a-form-item>
             <a-form-item
                 v-else-if="formData.targetType == 'entityTemplate:Collector'"
-                label="文件"
+                :label="$t('Save.index.001090-7')"
                 name="metadata"
                 :rules="{
                     required: true,
@@ -86,8 +86,8 @@
                     @change="handleTemplateFileChange"
                 />
             </a-form-item>
-            <a-form-item label="说明">
-                <a-textarea v-model:value="formData.metadata.description" :maxlength="200" showCount placeholder="请输入说明"></a-textarea>
+            <a-form-item :label="$t('Save.index.001090-8')">
+                <a-textarea v-model:value="formData.metadata.description" :maxlength="200" showCount :placeholder="$t('Save.index.001090-9')"></a-textarea>
             </a-form-item>
         </a-form>
     </a-modal>
@@ -101,6 +101,9 @@ import { onlyMessage } from "@/utils/comm";
 import { randomString } from "@jetlinks-web/utils";
 import {ServiceIdEnum, TargetTypeOptions} from "../utils";
 import {cloneDeep} from "lodash-es";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const emit = defineEmits(['close', 'save']);
 const props = defineProps({
@@ -163,21 +166,21 @@ const rules = {
     targetId: [
         {
             pattern: /^[a-zA-Z0-9_\-]+$/,
-            message: '请输入英文或者数字或者-或者_',
+            message: $t('Save.index.001090-10'),
         },
         {
             max: 64,
-            message: '最多输入64个字符',
+            message: $t('Save.index.001090-11'),
         },
     ],
     name: [
         {
             required: true,
-            message: '请输入名称',
+            message: $t('Save.index.001090-6'),
         },
         {
             max: 64,
-            message: '最多输入64个字符',
+            message: $t('Save.index.001090-11'),
         },
     ],
 }
@@ -197,21 +200,21 @@ const handleTemplateFileChange = () => {
 
 const validateModelFile = (rule: any, value: string) => {
     if (!value?.fileName) {
-        return Promise.reject('请选择文件');
+        return Promise.reject($t('Save.index.001090-12'));
     }
     return Promise.resolve();
 }
 
 const validatePluginFile = (rule: any, value: string) => {
     if (!value?.filename) {
-        return Promise.reject('请选择文件');
+        return Promise.reject($t('Save.index.001090-12'));
     }
     return Promise.resolve();
 }
 
 const validateTemplateFile = (rule: any, value: string) => {
     if (!value?.properties?.fileName) {
-        return Promise.reject('请选择文件');
+        return Promise.reject($t('Save.index.001090-12'));
     }
     return Promise.resolve();
 }
@@ -231,7 +234,7 @@ const handleSave = () => {
         }
         const res = await save(params).finally(() => loading.value = false);
         if (res) {
-            onlyMessage('操作成功');
+            onlyMessage($t('Save.index.001090-13'));
             emit('save');
         }
     }) ;

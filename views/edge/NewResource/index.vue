@@ -28,7 +28,7 @@
                                 <AIcon type="PlusOutlined"
                                 />
                             </template>
-                            新增
+                            {{ $t('NewResource.index.035355-0') }}
                         </j-permission-button>
                     </a-space>
                 </template>
@@ -64,7 +64,7 @@
                             <a-row :gutter="16" style="margin-top: 18px">
                                 <a-col :span="12">
                                     <div class="card-item-content-text">
-                                        类型
+                                        {{ $t('NewResource.index.035355-1') }}
                                     </div>
                                     <j-ellipsis>
                                         <span>
@@ -74,7 +74,7 @@
                                 </a-col>
                                 <a-col :span="12">
                                     <div class="card-item-content-text">
-                                        说明
+                                        {{ $t('NewResource.index.035355-2') }}
                                     </div>
                                     <j-ellipsis style="width: 100%">
                                         {{ JSON.parse(slotProps.metadata || '{}')?.description || '--' }}
@@ -159,6 +159,9 @@ import {onlyMessage} from "@jetlinks-web/utils";
 import { useMenuStore } from "@/store/menu";
 import { TargetTypeOptions, ServiceIdEnum, JobTypeEnum } from './utils';
 import DeviceGatewayImg from '../../../assets/images/device-gateway.png';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const columns = [
     {
@@ -171,7 +174,7 @@ const columns = [
         }
     },
     {
-        title: '名称',
+        title: $t('NewResource.index.035355-3'),
         dataIndex: 'name',
         key: 'name',
         width: 200,
@@ -180,7 +183,7 @@ const columns = [
         }
     },
     {
-        title: '类型',
+        title: $t('NewResource.index.035355-1'),
         dataIndex: 'targetType',
         key: 'targetType',
         width: 200,
@@ -190,7 +193,7 @@ const columns = [
         }
     },
     {
-        title: '状态',
+        title: $t('NewResource.index.035355-4'),
         dataIndex: 'state',
         key: 'state',
         width: 100,
@@ -198,20 +201,20 @@ const columns = [
         search: {
             type: 'select',
             options: [
-                {label: '启用', value: 'enabled'},
-                {label: '禁用', value: 'disabled'},
+                {label: $t('NewResource.index.035355-5'), value: 'enabled'},
+                {label: $t('NewResource.index.035355-6'), value: 'disabled'},
             ]
         }
     },
     {
-        title: '说明',
+        title: $t('NewResource.index.035355-2'),
         dataIndex: 'describe',
         key: 'describe',
         width: 200,
         scopedSlots: true
     },
     {
-        title: '操作',
+        title: $t('NewResource.index.035355-7'),
         dataIndex: 'action',
         key: 'action',
         width: 150,
@@ -230,9 +233,9 @@ const getActions = (data, type) => {
     const actions = [
         {
             key: 'update',
-            text: '编辑',
+            text: $t('NewResource.index.035355-8'),
             tooltip: {
-                title: '编辑',
+                title: $t('NewResource.index.035355-8'),
             },
             icon: 'EditOutlined',
             onClick: () => {
@@ -242,22 +245,20 @@ const getActions = (data, type) => {
         },
         {
             key: 'action',
-            text: data.state?.value !== 'disabled' ? '禁用' : '启用',
+            text: data.state?.value !== 'disabled' ? $t('NewResource.index.035355-6') : $t('NewResource.index.035355-5'),
             tooltip: {
-                title: data.state?.value !== 'disabled' ? '禁用' : '启用',
+                title: data.state?.value !== 'disabled' ? $t('NewResource.index.035355-6') : $t('NewResource.index.035355-5'),
             },
             icon:
                 data.state.value !== 'disabled'
                     ? 'StopOutlined'
                     : 'CheckCircleOutlined',
             popConfirm: {
-                title: `确认${
-                    data.state.value !== 'disabled' ? '禁用' : '启用'
-                }?`,
+                title: $t('NewResource.index.035355-9', [data.state.value !== 'disabled' ? $t('NewResource.index.035355-6') : $t('NewResource.index.035355-5')]),
                 onConfirm: () => {
                     const state = data.state.value === 'disabled' ? 'enabled' : 'disabled';
                     update(data.id, {state}).then(() => {
-                        onlyMessage('操作成功');
+                        onlyMessage($t('NewResource.index.035355-10'));
                         tableRef.value?.reload();
                     });
                 },
@@ -265,9 +266,9 @@ const getActions = (data, type) => {
         },
         {
             key: 'issue',
-            text: '下发',
+            text: $t('NewResource.index.035355-11'),
             tooltip: {
-                title: data.state.value === 'disabled' ? '请先启用，再下发' : '下发',
+                title: data.state.value === 'disabled' ? $t('NewResource.index.035355-12') : $t('NewResource.index.035355-11'),
             },
             disabled: data.state?.value === 'disabled',
             icon: 'DownSquareOutlined',
@@ -278,17 +279,17 @@ const getActions = (data, type) => {
         },
         {
             key: 'delete',
-            text: '删除',
+            text: $t('NewResource.index.035355-13'),
             tooltip: {
-                title: data.state?.value === 'enabled' ? '请先禁用，再删除' : '删除',
+                title: data.state?.value === 'enabled' ? $t('NewResource.index.035355-14') : $t('NewResource.index.035355-13'),
             },
             disabled: data.state?.value === 'enabled',
             icon: 'DeleteOutlined',
             popConfirm: {
-                title: '确认删除?',
+                title: $t('NewResource.index.035355-15'),
                 onConfirm: () => {
                     remove(data.id).then(() => {
-                        onlyMessage('操作成功');
+                        onlyMessage($t('NewResource.index.035355-10'));
                         tableRef.value?.reload();
                     })
                 },
@@ -298,9 +299,9 @@ const getActions = (data, type) => {
     if(type === 'table') {
         actions.unshift({
             key: 'view',
-            text: '查看',
+            text: $t('NewResource.index.035355-16'),
             tooltip: {
-                title: '查看',
+                title: $t('NewResource.index.035355-16'),
             },
             icon: 'EyeOutlined',
             onClick: () => {

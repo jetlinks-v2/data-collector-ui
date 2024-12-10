@@ -3,7 +3,7 @@
     visible
     :title="title"
     width="90vw"
-    okText="新增任务"
+    :okText="$t('task.task.010223-0')"
     :mask-closable="false"
     @cancel="onCancel"
     @ok="onOk"
@@ -17,32 +17,32 @@
     <div class="task-body">
 
       <div class="task-form">
-          <a-form-item label="名称" name="name" v-if="!showBindChildren">
-            <a-input v-model:value="formModel.name" placeholder="请输入任务名称" />
+          <a-form-item :label="$t('task.task.010223-1')" name="name" v-if="!showBindChildren">
+            <a-input v-model:value="formModel.name" :placeholder="$t('task.task.010223-2')" />
           </a-form-item>
           <a-form-item name="thingList" style="width: 100%;">
             <template #label>
-              涉及网关
+              {{ $t('task.task.010223-3') }}
               <div class="form-label-extra gateway-list-label">
                 <a-badge :count="formModel.thingList.length" />
-                <a-button type="link" @click="openGatewayModal">选择</a-button>
+                <a-button type="link" @click="openGatewayModal">{{ $t('task.task.010223-4') }}</a-button>
               </div>
             </template>
             <GatewaySelect
               v-model:value="formModel.thingList"
             />
           </a-form-item>
-          <a-form-item label="任务类型" name="jobType" required>
+          <a-form-item :label="$t('task.task.010223-5')" name="jobType" required>
             <CheckButton
               v-model:value="formModel.jobType"
               :options="batchOperateOptions"
               :beforeChange="batchOperateChange"
             />
           </a-form-item>
-          <a-form-item v-if="!showBindChildren" label="说明" name="description">
+          <a-form-item v-if="!showBindChildren" :label="$t('task.task.010223-6')" name="description">
             <a-textarea
               v-model:value="formModel.description"
-              placeholder="请输入说明"
+              :placeholder="$t('task.task.010223-7')"
               :rows="4"
             />
           </a-form-item>
@@ -51,25 +51,25 @@
         <div v-if="!showBindChildren">
           <a-row :gutter="16">
             <a-col :span="12">
-              <a-form-item label="响应超时时间" name="timeoutSeconds" required>
+              <a-form-item :label="$t('task.task.010223-8')" name="timeoutSeconds" required>
                 <a-input-number
                   v-model:value="formModel.timeoutSeconds"
                   :min="1"
                   :max="99999"
                   :precision="0"
-                  placeholder="请输入响应超时时间（秒）"
+                  :placeholder="$t('task.task.010223-9')"
                   style="width: 100%;"
                 />
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item label="重试次数" name="maxRetry" required>
+              <a-form-item :label="$t('task.task.010223-10')" name="maxRetry" required>
                 <a-input-number
                   v-model:value="formModel.maxRetry"
                   :min="1"
                   :max="99999"
                   :precision="0"
-                  placeholder="请输入重试次数"
+                  :placeholder="$t('task.task.010223-11')"
                   style="width: 100%;"
                 />
               </a-form-item>
@@ -95,8 +95,8 @@
     <ChildrenModal v-if="modalVisible" @cancel="modalVisible = false" @ok="childOk" @close="childCancel"/>
     <template #footer>
       <div v-if="!showBindChildren">
-        <a-button @click="onCancel">取消</a-button>
-        <a-button type="primary" :loading="loading" @click="onOk">确定</a-button>
+        <a-button @click="onCancel">{{ $t('task.task.010223-12') }}</a-button>
+        <a-button type="primary" :loading="loading" @click="onOk">{{ $t('task.task.010223-13') }}</a-button>
       </div>
     </template>
   </a-modal>
@@ -119,6 +119,9 @@ import {useBatchOperateOptions} from "../util";
 import {Modal} from "ant-design-vue";
 import {onlyMessage} from "@jetlinks-web/utils";
 import ChildrenModal from './Children/ChildrenModal.vue'
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
   value: {
@@ -166,15 +169,15 @@ const title = computed(() => {
 
 const rules = {
   name: [
-    { required: true, message: '请输入名称' },
-    { max: 64, message: '最多可输入64位字符' },
+    { required: true, message: $t('task.task.010223-14') },
+    { max: 64, message: $t('task.task.010223-15') },
   ],
   type: [
     {
       required: true,
       validator: (_rule, value) => {
         if (!value) {
-          return Promise.reject('请选择任务类型');
+          return Promise.reject($t('task.task.010223-16'));
         } else {
           return Promise.resolve();
         }
@@ -185,25 +188,25 @@ const rules = {
     required: true,
     validator: (_rule, value) => {
       if (!value.length) {
-        return Promise.reject('请选择涉及网关');
+        return Promise.reject($t('task.task.010223-17'));
       } else {
         return Promise.resolve();
       }
     },
   }],
   description: [
-    { max: 200, message: '最多可输入200位字符', trigger: 'blur' },
+    { max: 200, message: $t('task.task.010223-18'), trigger: 'blur' },
   ],
   timeoutSeconds: [
     {
       required: true,
-      message: '请输入响应超时时间'
+      message: $t('task.task.010223-19')
     }
   ],
   maxRetry: [
     {
       required: true,
-      message: '请输入重试次数'
+      message: $t('task.task.010223-11')
     }
   ]
 }
@@ -256,7 +259,7 @@ const onOk = async () => {
   const commandArgs = await contentRef.value.getValue()
 
   if (!commandArgs.length) {
-    onlyMessage('请选择插件', 'warning')
+    onlyMessage($t('task.task.010223-20'), 'warning')
     return
   }
 
@@ -290,7 +293,7 @@ const batchOperateChange = (e) => {
 
   return new Promise((resolve, reject) => {
     Modal.confirm({
-      title: '切换任务类型会清空之前的数据',
+      title: $t('task.task.010223-21'),
       onOk() {
         resolve(true)
       },

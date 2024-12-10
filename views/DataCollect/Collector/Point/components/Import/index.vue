@@ -1,8 +1,8 @@
 <template>
-    <a-modal visible title="导入" @cancel="emit('closeImport')" :width="800" :maskClosable="false">
+    <a-modal visible :title="$t('Import.index.4001420-0')" @cancel="emit('closeImport')" :width="800" :maskClosable="false">
         <div class="import-content">
             <div class="column">
-                <p>上传文件</p>
+                <p>{{ $t('Import.index.4001420-1') }}</p>
                 <div class="import">
                     <a-upload-dragger v-model:fileList="fileList" name="file" :action="`${FileStaticPath}?options=tempFile`"
                         :headers="{
@@ -11,37 +11,37 @@
                         :before-upload="beforeUpload">
                         <div class="dragger-box">
                             <AIcon class="icon" type="PlusCircleFilled" />
-                            <span style="margin: 16px 0 8px 0">点击或拖拽上传文件</span>
-                            <span>格式：.xlsx, .csv</span>
+                            <span style="margin: 16px 0 8px 0">{{ $t('Import.index.4001420-2') }}</span>
+                            <span>{{ $t('Import.index.4001420-3') }}</span>
                         </div>
                     </a-upload-dragger>
                 </div>
             </div>
             <div class="importing-status" v-if="importStatus == 'importing'">
                 <AIcon  type="LoadingOutlined" />
-                正在导入
+                {{ $t('Import.index.4001420-4') }}
             </div>
             <div class="column" v-if="importStatus != 'wait'">
                 <p>
-                    <AIcon style="color: #00a4ff"  type="CheckOutlined"/>导入成功 总数量
+                    <AIcon style="color: #00a4ff"  type="CheckOutlined"/>{{ $t('Import.index.4001420-5') }}
                     {{ successNumber }}
                 </p>
                 <span v-if="failNumber">
-                    <AIcon style="color: #e50012" type="CloseOutlined"/>导入失败 总数量
+                    <AIcon style="color: #e50012" type="CloseOutlined"/>{{ $t('Import.index.4001420-6') }}
                     {{ failNumber }}
                 </span>
             </div>
             <div class="column">
-                <p>Excel导入模板</p>
+                <p>{{ $t('Import.index.4001420-7') }}</p>
                     <div class="file-download">
                         <a-button @click="downTemplate('xlsx')"  class="btn">
-                            下载模板
+                            {{ $t('Import.index.4001420-8') }}
                         </a-button>
                     </div>
             </div>
         </div>
         <template #footer>
-            <a-button type="primary" @click="emit('closeImport')">确认</a-button>
+            <a-button type="primary" @click="emit('closeImport')">{{ $t('Import.index.4001420-9') }}</a-button>
         </template>
     </a-modal>
 </template>
@@ -57,6 +57,9 @@ import {
 } from '../../../../../../api/data-collect/collector';
 // import { downloadFileByUrl } from '@/utils/utils';
 // import { getToken } from '@/utils/comm';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
@@ -87,7 +90,7 @@ const beforeUpload = (_file: any) => {
         _file.type ===
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     if (!isCsv && !isXlsx) {
-        onlyMessage('请上传.csv或.xlsx格式文件', 'warning');
+        onlyMessage($t('Import.index.4001420-10'), 'warning');
     }
     return isCsv || isXlsx;
 };
@@ -96,7 +99,7 @@ const downTemplate = async (type: string) => {
     if (res) {
         const blob = new Blob([res], { type: type });
         const url = URL.createObjectURL(blob);
-        downloadFileByUrl(url, `${params}导入模版`, type);
+        downloadFileByUrl(url, $t('Import.index.4001420-11', [params]), type);
     }
 };
 const handleImport = async (file: any) => {
@@ -122,7 +125,7 @@ const handleImport = async (file: any) => {
             if (result.rowNumber !== -1) {
                 failNumber.value++;
                 message.push({
-                    rowNumber: `第${result.rowNumber}行`,
+                    rowNumber: $t('Import.index.4001420-12', [result.rowNumber]),
                     message: result.message,
                     name: result.name
                 })

@@ -1,10 +1,10 @@
 <template>
   <div class="task-warp">
     <div class="header">
-      采集器模板
+      {{ $t('CollectorTemplate.index.429253-0') }}
     </div>
     <div class="tip">
-      <AIcon class="icon" type="ExclamationCircleFilled" />若采集器模板重复，边端已安装的采集器模板将自动覆盖
+      <AIcon class="icon" type="ExclamationCircleFilled" />{{ $t('CollectorTemplate.index.429253-1') }}
     </div>
     <pro-search
       type="simple"
@@ -37,13 +37,17 @@
 <script setup name="CollectorTemplate">
 import { queryPage } from '../../../../../api/edge/newResource'
 import {useTemplateRowSelection} from '../../util'
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
+
 
 const params = ref()
 const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
 
 const columns = [
   {
-    title: '模板ID',
+    title: $t('CollectorTemplate.index.429253-2'),
     key: 'id',
     dataIndex: 'id',
     search: {
@@ -51,7 +55,7 @@ const columns = [
     },
   },
   {
-    title: '模板名称',
+    title: $t('CollectorTemplate.index.429253-3'),
     key: 'name',
     dataIndex: 'name',
     search: {
@@ -60,13 +64,13 @@ const columns = [
     ellipsis: true,
   },
   {
-    title: '文件',
+    title: $t('CollectorTemplate.index.429253-4'),
     key: 'file',
     dataIndex: 'file',
     ellipsis: true,
   },
   {
-    title: '描述',
+    title: $t('CollectorTemplate.index.429253-5'),
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,

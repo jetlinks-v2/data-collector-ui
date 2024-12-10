@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import channelImg from '../../../assets/images/DataCollect/dashboard/channel.png';
 import collectorImg from '../../../assets/images/DataCollect/dashboard/collector.png';
 import pointImg from '../../../assets/images/DataCollect/dashboard/point.png';
+import i18n from '@/locales';
 
 const getParams = (dt: any) => {
     switch (dt.type) {
@@ -135,9 +136,9 @@ export const statusData = [
     [
         {
             type: 'channel',
-            title: '异常通道',
+            title: i18n.global.t('Dashboard.tool.772451-0'),
             status: 'error',
-            label: '通道数量',
+            label: i18n.global.t('Dashboard.tool.772451-1'),
             value: 0,
             total: 0,
             permission: 'DataCollect/Channel',
@@ -147,9 +148,9 @@ export const statusData = [
     [
         {
             type: 'collector',
-            title: '异常采集器',
+            title: i18n.global.t('Dashboard.tool.772451-2'),
             status: 'error',
-            label: '采集器数量',
+            label: i18n.global.t('Dashboard.tool.772451-3'),
             value: 0,
             total: 0,
             permission: 'DataCollect/Collector',
@@ -159,9 +160,9 @@ export const statusData = [
     [
         {
             type: 'point',
-            title: '异常点位',
+            title: i18n.global.t('Dashboard.tool.772451-4'),
             status: 'error',
-            label: '采集点位',
+            label: i18n.global.t('Dashboard.tool.772451-5'),
             value: 0,
             total: 0,
             permission: 'DataCollect/Collector',

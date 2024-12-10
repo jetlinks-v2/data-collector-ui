@@ -12,7 +12,7 @@
             {{slotProps.configuration?.interval || slotProps.interval}}ms
         </template>
         <template #pushRule="slotProps">
-            {{slotProps.feature?.find(item => item.value === 'changedOnly') ? '只推送变化的数据' : '总是推送数据'}}
+            {{slotProps.feature?.find(item => item.value === 'changedOnly') ? $t('Info.Points.218084-0') : $t('Info.Points.218084-1')}}
         </template>
     </j-pro-table>
 </template>
@@ -20,6 +20,9 @@
 <script setup lang="ts">
 import _ from "lodash-es";
 import { randomString } from "@jetlinks-web/utils";
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     dataSource: {
@@ -31,27 +34,27 @@ const props = defineProps({
 const _params = ref({})
 const columns = [
     {
-        title: '点位名称',
+        title: $t('Info.Points.218084-2'),
         dataIndex: 'name',
         key: 'name',
         ellipsis: true
     },
     {
-        title: '访问类型',
+        title: $t('Info.Points.218084-3'),
         dataIndex: 'access',
         key: 'access',
         ellipsis: true,
         scopedSlots: true
     },
     {
-        title: '采集频率',
+        title: $t('Info.Points.218084-4'),
         dataIndex: 'interval',
         key: 'interval',
         ellipsis: true,
         scopedSlots: true
     },
     {
-        title: '推送规则',
+        title: $t('Info.Points.218084-5'),
         dataIndex: 'pushRule',
         key: 'pushRule',
         ellipsis: true,

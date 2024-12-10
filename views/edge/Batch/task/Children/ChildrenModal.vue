@@ -1,12 +1,12 @@
 <template>
-    <a-modal visible title="未保存" width="500px" @cancel="emit('close')">
-        <span style="margin: 12px 0;">存在未保存数据,确认关闭</span> 
+    <a-modal visible :title="$t('Children.ChildrenModal.763264-0')" width="500px" @cancel="emit('close')">
+        <span style="margin: 12px 0;">{{ $t('Children.ChildrenModal.763264-1') }}</span> 
         <template #footer>
             <div class="footer">
-                <a-button @click="emit('close')">不保存，直接关闭</a-button>
+                <a-button @click="emit('close')">{{ $t('Children.ChildrenModal.763264-2') }}</a-button>
                 <div>
-                    <a-button type="primary" @click="emit('cancel')">取消</a-button>
-                    <a-button type="primary" @click="emit('ok')">保存并关闭</a-button>
+                    <a-button type="primary" @click="emit('cancel')">{{ $t('Children.ChildrenModal.763264-3') }}</a-button>
+                    <a-button type="primary" @click="emit('ok')">{{ $t('Children.ChildrenModal.763264-4') }}</a-button>
                 </div>
              
             </div>

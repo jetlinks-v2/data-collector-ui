@@ -3,7 +3,7 @@
         <a-input-search
             v-model:value="searchValue"
             style="margin-bottom: 8px"
-            placeholder="请输入"
+            :placeholder="$t('Tree.index.4001410-0')"
             @search="handleSearch"
             allowClear
         />
@@ -16,7 +16,7 @@
                 hasPermission="DataCollect/Collector:add"
             >
                 <template #icon><AIcon type="PlusOutlined" /></template>
-                新增采集器
+                {{ $t('Tree.index.4001410-1') }}
             </j-permission-button>
         </div>
         <a-spin :spinning="spinning">
@@ -69,7 +69,7 @@
                         <j-permission-button
                             type="link"
                             :tooltip="{
-                                title: '编辑',
+                                title: $t('Tree.index.4001410-2'),
                             }"
                             @click="handleEdit(data)"
                             hasPermission="DataCollect/Collector:update"
@@ -81,8 +81,8 @@
                             :tooltip="{
                                 title:
                                     data?.state?.value === 'disabled'
-                                        ? '启用'
-                                        : '禁用',
+                                        ? $t('Tree.index.4001410-3')
+                                        : $t('Tree.index.4001410-4'),
                             }"
                             :disabled="
                                 data?.runningState?.value === 'stopped' &&
@@ -92,8 +92,8 @@
                             :popConfirm="{
                                 title:
                                     data?.state?.value === 'disabled'
-                                        ? '确认启用？'
-                                        : '确认禁用？',
+                                        ? $t('Tree.index.4001410-5')
+                                        : $t('Tree.index.4001410-6'),
                                 onConfirm: () => handleUpdate(data),
                             }"
                         >
@@ -111,13 +111,13 @@
                             :tooltip="{
                                 title:
                                     data?.state?.value !== 'disabled'
-                                        ? '请先禁用，再删除'
-                                        : '删除',
+                                        ? $t('Tree.index.4001410-7')
+                                        : $t('Tree.index.4001410-8'),
                             }"
                             :danger="data?.state?.value === 'disabled'"
                             hasPermission="DataCollect/Collector:delete"
                             :popConfirm="{
-                                title: `该操作将会删除下属点位，确定删除？`,
+                                title: $t('Tree.index.4001410-9'),
                                 onConfirm: () => handleDelete(data.id),
                             }"
                         >
@@ -126,7 +126,7 @@
                     </span>
                 </template>
             </a-tree>
-            <a-empty v-else description="暂无数据" />
+            <a-empty v-else :description="$t('Tree.index.4001410-10')" />
         </a-spin>
         <Save
             :channelListAll="channelListAll"
@@ -148,7 +148,9 @@ import Save from './Save/index.vue';
 import { onlyMessage } from '@jetlinks-web/utils'
 import { cloneDeep,isArray } from 'lodash-es';
 import { colorMap } from '../data';
+import { useI18n } from 'vue-i18n';
 
+const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
@@ -170,7 +172,7 @@ const channelListAll = ref<any[]>([]);
 const root = [
     {
         id: '*',
-        name: '全部',
+        name: $t('Tree.index.4001410-11'),
         children: [],
     },
 ];
@@ -219,7 +221,7 @@ const handleUpdate = (data: any) => {
                 (i: any) => i?.id === selectedKeys.value?.[0],
             );
             emits('change', _item);
-            onlyMessage('操作成功', 'success');
+            onlyMessage($t('Tree.index.4001410-12'), 'success');
         }
     });
     return response
@@ -230,7 +232,7 @@ const handleDelete = (id: string) => {
         if (resp.status === 200) {
             selectedKeys.value = [];
             handleSearch(params.value);
-            onlyMessage('操作成功', 'success');
+            onlyMessage($t('Tree.index.4001410-12'), 'success');
         }
     });
     return response
@@ -241,7 +243,7 @@ const saveChange = (value: object) => {
     current.value = {};
     if (value) {
         handleSearch(params.value);
-        onlyMessage('操作成功', 'success');
+        onlyMessage($t('Tree.index.4001410-12'), 'success');
     }
 };
 

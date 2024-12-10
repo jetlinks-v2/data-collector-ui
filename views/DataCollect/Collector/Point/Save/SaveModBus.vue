@@ -1,6 +1,6 @@
 <template >
     <a-modal
-        :title="data.id ? '编辑' : '新增'"
+        :title="data.id ? $t('Save.SaveModBus.4001413-0') : $t('Save.SaveModBus.4001413-1')"
         :visible="true"
         width="700px"
         @cancel="handleCancel"
@@ -14,14 +14,14 @@
             :rules="ModBusRules"
             ref="formRef"
         >
-            <a-form-item label="点位名称" name="name">
+            <a-form-item :label="$t('Save.SaveModBus.4001413-2')" name="name">
                 <a-input
-                    placeholder="请输入点位名称"
+                    :placeholder="$t('Save.SaveModBus.4001413-3')"
                     v-model:value="formData.name"
                 />
             </a-form-item>
             <a-form-item
-                label="功能码"
+                :label="$t('Save.SaveModBus.4001413-4')"
                 :name="['configuration', 'function']"
                 :rules="ModBusRules.function"
             >
@@ -29,12 +29,12 @@
                     style="width: 100%"
                     v-model:value="formData.configuration.function"
                     :options="[
-                        { label: '01线圈寄存器', value: 'Coils' },
-                        { label: '02离散输入寄存器', value: 'DiscreteInputs' },
-                        { label: '03保存寄存器', value: 'HoldingRegisters' },
-                        { label: '04输入寄存器', value: 'InputRegisters' },
+                        { label: $t('Save.SaveModBus.4001413-5'), value: 'Coils' },
+                        { label: $t('Save.SaveModBus.4001413-6'), value: 'DiscreteInputs' },
+                        { label: $t('Save.SaveModBus.4001413-7'), value: 'HoldingRegisters' },
+                        { label: $t('Save.SaveModBus.4001413-8'), value: 'InputRegisters' },
                     ]"
-                    placeholder="请选择所功能码"
+                    :placeholder="$t('Save.SaveModBus.4001413-9')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
@@ -42,7 +42,7 @@
                 />
             </a-form-item>
             <a-form-item
-                label="地址"
+                :label="$t('Save.SaveModBus.4001413-10')"
                 :name="['pointKey']"
                 validateFirst
                 :rules="[
@@ -55,7 +55,7 @@
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入地址"
+                    :placeholder="$t('Save.SaveModBus.4001413-11')"
                     v-model:value="formData.pointKey"
                     :min="0"
                     :max="999999"
@@ -63,20 +63,20 @@
                 />
             </a-form-item>
             <p style="color: #616161" v-if="formData.configuration.function">
-                PLC地址:
+                {{ $t('Save.SaveModBus.4001413-12') }}
                 {{
                     InitAddress[formData.configuration.function] +
                         Number(formData.pointKey) || 0
                 }}
             </p>
             <a-form-item
-                label="寄存器数量"
+                :label="$t('Save.SaveModBus.4001413-13')"
                 :name="['configuration', 'parameter', 'quantity']"
                 :rules="ModBusRules.quantity"
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入寄存器数量"
+                    :addon-after="$t('Save.SaveModBus.4001413-14')"
                     v-model:value="formData.configuration.parameter.quantity"
                     :min="1"
                     :max="255"
@@ -91,7 +91,7 @@
                         formData.configuration.function,
                     )
                 "
-                label="数据类型"
+                :label="$t('Save.SaveModBus.4001413-15')"
                 :name="['configuration', 'codec', 'provider']"
                 :rules="[
                     ...ModBusRules.provider,
@@ -105,14 +105,14 @@
                     style="width: 100%"
                     v-model:value="formData.configuration.codec.provider"
                     :options="providerList"
-                    placeholder="请选择数据类型"
+                    :placeholder="$t('Save.SaveModBus.4001413-16')"
                     allowClear
                     show-search
                     :filter-option="filterOption"
                 />
             </a-form-item>
             <a-form-item
-                label="缩放因子"
+                :label="$t('Save.SaveModBus.4001413-17')"
                 :name="[
                     'configuration',
                     'codec',
@@ -123,19 +123,19 @@
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入缩放因子"
+                    :placeholder="$t('Save.SaveModBus.4001413-18')"
                     v-model:value="
                         formData.configuration.codec.configuration.scaleFactor
                     "
                 />
             </a-form-item>
             <a-form-item
-                label="小数保留位数"
+                :label="$t('Save.SaveModBus.4001413-19')"
                 :name="['configuration', 'codec', 'configuration', 'scale']"
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入小数保留位数"
+                    :placeholder="$t('Save.SaveModBus.4001413-20')"
                     :min="0"
                     :max="65535"
                     :precision="0"
@@ -146,7 +146,7 @@
             </a-form-item>
             <a-form-item
                 v-if="formData.configuration.function"
-                label="访问类型"
+                :label="$t('Save.SaveModBus.4001413-21')"
                 name="accessModes"
             >
                 <j-card-select
@@ -156,10 +156,10 @@
                     :options="
                         formData.configuration.function === 'InputRegisters' ||
                         formData.configuration.function === 'DiscreteInputs'
-                            ? [{ label: '读', value: 'read' }]
+                            ? [{ label: $t('Save.SaveModBus.4001413-22'), value: 'read' }]
                             : [
-                                  { label: '读', value: 'read' },
-                                  { label: '写', value: 'write' },
+                                  { label: $t('Save.SaveModBus.4001413-22'), value: 'read' },
+                                  { label: $t('Save.SaveModBus.4001413-23'), value: 'write' },
                               ]
                     "
                     :column="2"
@@ -172,7 +172,7 @@
                     formData.configuration.function === 'HoldingRegisters'
                 "
             >
-                <span style="margin-right: 10px">非标准协议写入配置</span>
+                <span style="margin-right: 10px">{{ $t('Save.SaveModBus.4001413-24') }}</span>
                 <a-switch
                     @change="changeNspwc"
                     v-model:checked="formData.nspwc"
@@ -184,7 +184,7 @@
                     formData.accessModes?.includes('write') &&
                     formData.configuration.function === 'HoldingRegisters'
                 "
-                label="是否写入数据区长度"
+                :label="$t('Save.SaveModBus.4001413-25')"
                 :name="['configuration', 'parameter', 'writeByteCount']"
                 :rules="ModBusRules.writeByteCount"
             >
@@ -194,8 +194,8 @@
                         formData.configuration.parameter.writeByteCount
                     "
                     :options="[
-                        { label: '是', value: true },
-                        { label: '否', value: false },
+                        { label: $t('Save.SaveModBus.4001413-26'), value: true },
+                        { label: $t('Save.SaveModBus.4001413-27'), value: false },
                     ]"
                     @change="changeWriteByteCount"
                     :column="2"
@@ -207,23 +207,23 @@
                     formData.accessModes?.includes('write') &&
                     formData.configuration.function === 'HoldingRegisters'
                 "
-                label="自定义数据区长度（byte）"
+                :label="$t('Save.SaveModBus.4001413-28')"
                 :name="['configuration', 'parameter', 'byteCount']"
                 :rules="ModBusRules.byteCount"
             >
                 <a-input
-                    placeholder="请输入自定义数据区长度（byte）"
+                    :placeholder="$t('Save.SaveModBus.4001413-29')"
                     v-model:value="formData.configuration.parameter.byteCount"
                 />
             </a-form-item>
             <a-form-item
-                label="采集频率"
+                :label="$t('Save.SaveModBus.4001413-30')"
                 :name="['configuration', 'interval']"
                 :rules="[...ModBusRules.interval]"
             >
                 <a-input-number
                     style="width: 100%"
-                    placeholder="请输入采集频率"
+                    :placeholder="$t('Save.SaveModBus.4001413-31')"
                     v-model:value="formData.configuration.interval"
                     addon-after="ms"
                     :max="2147483648"
@@ -234,14 +234,14 @@
             <a-form-item label="" :name="['features']">
                 <a-checkbox-group v-model:value="formData.features">
                     <a-checkbox value="changedOnly" name="type"
-                        >只推送变化的数据</a-checkbox
+                        >{{$t('Save.SaveModBus.4001413-32')}}</a-checkbox
                     >
                 </a-checkbox-group>
             </a-form-item>
 
-            <a-form-item label="说明" :name="['description']">
+            <a-form-item :label="$t('Save.SaveModBus.4001413-33')" :name="['description']">
                 <a-textarea
-                    placeholder="请输入说明"
+                    :placeholder="$t('Save.SaveModBus.4001413-34')"
                     v-model:value="formData.description"
                     :maxlength="200"
                     :rows="3"
@@ -250,7 +250,7 @@
             </a-form-item>
         </a-form>
         <template #footer>
-            <a-button key="back" @click="handleCancel">取消</a-button>
+            <a-button key="back" @click="handleCancel">{{$t('Save.SaveModBus.4001413-35')}}</a-button>
             <j-permission-button
                 key="submit"
                 type="primary"
@@ -261,7 +261,7 @@
                     id ? 'update' : 'add'
                 }`"
             >
-                确认
+                {{$t('Save.SaveModBus.4001413-36')}}
             </j-permission-button>
         </template>
     </a-modal>
@@ -277,6 +277,9 @@ import {ModBusRules,  checkProviderData } from '../../data';
 import type { FormInstance } from 'ant-design-vue';
 import type { Rule } from 'ant-design-vue/lib/form';
 import { cloneDeep, omit } from 'lodash-es';
+import { useI18n } from 'vue-i18n';
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
     data: {
@@ -411,7 +414,7 @@ const checkProvider = (_rule: Rule, value: string): Promise<any> =>
         if (value) {
             const { quantity } = formData.value.configuration.parameter;
             return checkProviderData[value] > Number(quantity) * 2
-                ? reject('数据类型长度需 <= 寄存器数量 * 2')
+                ? reject($t('Save.SaveModBus.4001413-37') + '<=' + $t('Save.SaveModBus.4001413-38')  + ' * 2')
                 : resolve('');
         } else {
             return reject('');
@@ -428,7 +431,7 @@ const checkPointKey = (_rule: Rule, value: string): Promise<any> =>
             });
             return res.result?.passed ? resolve('') : reject(res.result.reason);
         } else {
-            return reject('请输入地址');
+            return reject($t('Save.SaveModBus.4001413-11'));
         }
     });
 
