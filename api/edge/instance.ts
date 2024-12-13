@@ -721,3 +721,10 @@ export const getDeviceShadow = (id: string) => request.get(`/device/shadow/${id}
 export const proxyUrl = (deviceId: string, url: string) => request.get(`/edge/device/${deviceId}/_proxy?url=${url}`, {}, { responseType: 'blob' })
 
 export const tagsList = () => request.get('/device-instance/tags/key')
+
+
+export const getRemoteProxyUrl = (deviceId: string) => request.post(`/edge/device/${deviceId}/_proxy/_start?timeoutMinute=10`)
+
+export const getRemoteToken = (deviceId: string, data: any) => request.post(`/edge/device/${deviceId}/token`, data)
+
+export const getRemoteSystem = (deviceId: string, data: any) => request.post(`/edge/device/${deviceId}/_/system/config/scopes`, data)

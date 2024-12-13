@@ -1,4 +1,4 @@
-import { DeviceInstance } from "@/modules/device-manager-ui/views/device/Instance/typings"
+import { DeviceInstance } from "../views/edge/Batch/instance"
 import { defineStore } from "pinia"
 import { detail } from '../api/others'
 
