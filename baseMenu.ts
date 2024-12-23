@@ -248,6 +248,68 @@ export default [
                         "createTime": 1730966464081,
                         "granted": true
                     },
+                    {
+                        code: 'edge/Batch',
+                        name: '批量操作',
+                        owner: 'iot',
+                        id: '7f49fce112b291aa59321ace3ea43ca1',
+                        sortIndex: 3,
+                        url: '/iot/edge/batch',
+                        icon: 'icon-caidanguanli1',
+                        showPage: ['edge-manager'],
+                        permissions: [
+                            {
+                                "permission": "device-product",
+                                "actions": [
+                                    "query"
+                                ]
+                            },
+                            {
+                                "permission": "device-instance",
+                                "actions": [
+                                    "query"
+                                ]
+                            },
+                            {
+                                "permission": "agent-job",
+                                "actions": [
+                                    "query",
+                                    "save",
+                                    "delete"
+                                ]
+                            },
+                            {
+                                "permission": "batch-operation-task",
+                                "actions": [
+                                    "query",
+                                    "save",
+                                    "delete",
+                                    "deploy"
+                                ]
+                            },
+                            {
+                                "permission": "batch-operation-history",
+                                "actions": [
+                                    "query",
+                                    "save",
+                                    "delete"
+                                ]
+                            },
+                            {
+                                "permission": "batch-dev-operation-detail",
+                                "actions": [
+                                    "query",
+                                    "save",
+                                    "delete"
+                                ]
+                            }
+                        ],
+                        buttons: [
+
+                        ],
+                        accessSupport: { text: "不支持", value: "unsupported" },
+                        supportDataAccess: false
+                    },
                 ],
             },
             {
