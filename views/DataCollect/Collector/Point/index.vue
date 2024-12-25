@@ -634,15 +634,15 @@ const clickRead = async (data: any) => {
 
 const getQuantity = (item: Partial<Record<string, any>>) => {
     const { quantity } = item.configuration?.parameter || '';
-    return !!quantity ? quantity + '(寄存器数量)' : '';
+    return !!quantity ? quantity + `(${$t('Point.index.400149-24')})` : '';
 };
 const getAddress = (item: Partial<Record<string, any>>) => {
     const { address } = item.configuration?.parameter || '';
-    return !!address || address === 0 ? address + '(地址)' : '';
+    return !!address || address === 0 ? address + `(${$t('Point.index.400149-25')})` : '';
 };
 const getScaleFactor = (item: Partial<Record<string, any>>) => {
     const { scaleFactor } = item.configuration?.codec?.configuration || '';
-    return !!scaleFactor ? scaleFactor + '(缩放因子)' : '';
+    return !!scaleFactor ? scaleFactor + `(${$t('Point.index.400149-26')})` : '';
 };
 const getRight1 = (item: Partial<Record<string, any>>) => {
     return !!getQuantity(item) || getAddress(item) || getScaleFactor(item);
