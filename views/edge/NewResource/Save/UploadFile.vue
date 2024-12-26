@@ -33,7 +33,9 @@ import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
 import { notification as Notification } from 'ant-design-vue';
 import { useSystemStore } from '@/store/system';
 import { FileStaticPath } from "@/api/comm";
+import { useI18n } from "vue-i18n";
 
+const { t: $t } = useI18n();
 const emit = defineEmits(['update:modelValue', 'change', 'update:fileName']);
 
 const props = defineProps({
