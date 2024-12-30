@@ -108,7 +108,7 @@
                     {{ JSON.parse(slotProps.metadata || '{}')?.description || '--' }}
                 </template>
                 <template #state="slotProps">
-                    <BadgeStatus
+                    <JBadgeStatus
                         :status="slotProps.state?.value"
                         :text="slotProps.state?.text"
                         :statusNames="{

@@ -9,7 +9,7 @@
               <j-ellipsis> {{ detail.name  }}</j-ellipsis>
           </div>
           <div class="header-status bg-color-200">
-            <BadgeStatus
+            <JBadgeStatus
               :text="detail.state.text"
               :status="detail.state.value"
               :statusNames="{

@@ -167,7 +167,7 @@
                                                 ?.addresses"
                                             :key="`${i.address}_address${idx}`"
                                         >
-                                            <Ellipsis>
+                                            <j-ellipsis>
                                                 <a-badge
                                                     :text="i.address"
                                                     :color="
@@ -176,7 +176,7 @@
                                                             : 'green'
                                                     "
                                                 />
-                                            </Ellipsis>
+                                            </j-ellipsis>
                                         </p>
                                     </a-col>
                                 </a-row>

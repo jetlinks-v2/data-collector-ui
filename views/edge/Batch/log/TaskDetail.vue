@@ -162,26 +162,26 @@
             }"
         >
             <template #pulginId="{ detail }">
-                <Ellipsis style="width: 100%">{{ detail.data.id }}</Ellipsis>
+                <j-ellipsis style="width: 100%">{{ detail.data.id }}</j-ellipsis>
             </template>
             <template #pulginName="{ detail }">
-                <Ellipsis style="width: 100%"> {{ detail.data.name }}</Ellipsis>
+                <j-ellipsis style="width: 100%"> {{ detail.data.name }}</j-ellipsis>
             </template>
             <template #thingName="{ thingName }">
-                <Ellipsis style="width: 100%"> {{ thingName }}</Ellipsis>
+                <j-ellipsis style="width: 100%"> {{ thingName }}</j-ellipsis>
             </template>
             <template #timeoutSeconds="{ timeoutSeconds }">
-                <Ellipsis style="width: 100%"> {{ timeoutSeconds }}s</Ellipsis>
+                <j-ellipsis style="width: 100%"> {{ timeoutSeconds }}s</j-ellipsis>
             </template>
             <template #id="{ id }">
-                <Ellipsis style="width: 100%"> {{ id }}</Ellipsis>
+                <j-ellipsis style="width: 100%"> {{ id }}</j-ellipsis>
             </template>
             <template #filename="{ detail }">
-                <Ellipsis style="width: 100%">
+                <j-ellipsis style="width: 100%">
                     {{
                         JSON.parse(detail.data.metadata || '{}')?.filename || detail.data.file ||
                         '--'
-                    }}</Ellipsis
+                    }}</j-ellipsis
                 >
             </template>
             <template #completeTime="record">

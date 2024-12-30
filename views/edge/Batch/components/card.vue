@@ -2,17 +2,17 @@
   <div class="batch-item" @click.stop="onClick">
     <div class="item-content">
       <div class="item-avatar">
-        <img :width="40" :height="40" :src="record.photoUrl || getImage('/device-gateway.png')" />
+        <img :width="40" :height="40" :src="record.photoUrl || DeviceGateWayImg />
       </div>
       <div class="item-body">
         <div class="item-body-title">
           <div class="body-title-render" style="width: calc(100% - 80px);">
-            <Ellipsis >
+            <j-ellipsis >
               {{ record.name }}
-            </Ellipsis>
+            </j-ellipsis>
           </div>
           <div class="body-title-status">
-            <BadgeStatus
+            <JBadgeStatus
               :text="record.state?.text"
               :status="record.state?.value"
               :statusNames="{
@@ -26,9 +26,9 @@
         <div class="item-body-alt">
           <div class="body-alt-title">{{ $t('components.card.569266-0') }}</div>
           <div class="body-alt-value">
-            <Ellipsis>
+            <j-ellipsis>
               {{ record.productName }}
-            </Ellipsis>
+            </j-ellipsis>
           </div>
         </div>
       </div>
@@ -40,8 +40,7 @@
 </template>
 
 <script setup name="BatchCard">
-import { getImage } from '@/utils/comm';
-
+import DeviceGateWayImg from '../../../../assets/images/device-gateway.png'
 const props = defineProps({
   record: {
     type: Object,
