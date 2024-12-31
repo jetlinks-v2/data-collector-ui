@@ -186,7 +186,7 @@ const columns = [
         title: $t('NewResource.index.035355-1'),
         dataIndex: 'targetType',
         key: 'targetType',
-        width: 200,
+        width: 150,
         search: {
             type: 'select',
             options: TargetTypeOptions
@@ -217,7 +217,8 @@ const columns = [
         title: $t('NewResource.index.035355-7'),
         dataIndex: 'action',
         key: 'action',
-        width: 150,
+        width: 250,
+        fixed: 'right',
         scopedSlots: true
     }
 ]
