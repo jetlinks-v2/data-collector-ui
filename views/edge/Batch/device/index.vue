@@ -69,7 +69,7 @@ const typeSelect = (e) => {
     gap: 16px;
 
     .card-item {
-      border: 1px solid @border-base-color;
+      border: 1px solid #D9D9D9;
       display: flex;
       cursor: pointer;
       padding: 36px 24px;

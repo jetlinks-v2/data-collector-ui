@@ -47,7 +47,7 @@ const onDelete = (id) => {
 <style scoped lang="less">
 .gateway-select-warp {
   padding: 8px;
-  border: 1px solid @border-base-color;
+  border: 1px solid #D9D9D9;
   border-radius: 6px;
   min-height: 100px;
 
