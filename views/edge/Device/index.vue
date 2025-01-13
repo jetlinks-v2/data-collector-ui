@@ -201,10 +201,9 @@
             @save="saveBtn"
         />
         <Import
+            v-if="importVisible"
             @save="onRefresh"
             @close="importVisible = false"
-            v-if="importVisible"
-            type="official-edge-gateway"
         />
     </j-page-container>
 </template>
