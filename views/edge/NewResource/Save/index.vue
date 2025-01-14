@@ -21,7 +21,15 @@
             <a-form-item name="targetId">
                 <template #label>
                     <span>
-                        {{ $t('Save.index.001090-2') }}
+                        <span v-if="formData.targetType === 'AiModel'">
+                            {{ $t('Save.index.001090-2') }}
+                        </span>
+                        <span v-else-if="formData.targetType === 'PluginDriver'">
+                            {{ $t('Save.index.001090-14') }}
+                        </span>
+                        <span v-else>
+                            {{ $t('Save.index.001090-15') }}
+                        </span>
                         <a-tooltip
                             :title="$t('Save.index.001090-3')"
                         >

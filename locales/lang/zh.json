@@ -566,6 +566,8 @@
     "Save.index.001090-11": "最多输入64个字符",
     "Save.index.001090-12": "请选择文件",
     "Save.index.001090-13": "操作成功",
+    "Save.index.001090-14": "插件ID",
+    "Save.index.001090-15": "模板ID",
     "Save.FileSelect.614464-0": "上传文件",
     "Save.FileSelect.614464-1": "格式要求：.json",
     "Save.FileSelect.614464-2": "请上传json格式文件",
