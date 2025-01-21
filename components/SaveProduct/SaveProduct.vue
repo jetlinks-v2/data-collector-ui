@@ -230,6 +230,7 @@ const props = defineProps({
     visible: { type: Boolean, default: false },
     productId: { type: String, default: '' },
     channel: { type: String, default: '' },
+    channels: { type: Array, default: () => [] },
     deviceType: { type: String, default: 'device' },
 });
 
@@ -273,7 +274,7 @@ const getGatewayList = async () => {
     const params = {
         pageSize: 100,
         sorts: [{ name: 'createTime', order: 'desc' }],
-        terms: [{ column: 'provider', value: props.channel }],
+        terms: [{ column: 'provider', termType: 'in', value: props.channels }],
     };
     const { result } = await DeviceApi.queryProvider(params);
     gatewayList.value = result.data;
@@ -429,9 +430,11 @@ const handleCancel = () => {
  * 添加接入网关
  */
 const handleAdd = () => {
-    const tab: any = window.open(
-        `${origin}/#/iot/link/accessConfig/detail/:id?save=true&view=false&type=${props.channel}`,
-    );
+  const tab: any = props.channels.length > 1
+      ? window.open(
+          `${origin}/#/iot/link/accessConfig/detail/:id?save=true&view=false`,
+      )
+      : window.open(`${origin}/#/iot/link/accessConfig/detail/:id?save=true&view=false&type=${props.channel}`);
     tab.onTabSaveSuccess = async (value: any) => {
         await getGatewayList();
         handleClick(gatewayList.value?.[0]);
