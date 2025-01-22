@@ -13,7 +13,7 @@
                 mode="CARD"
                 :defaultParams="defaultParams"
                 :params="params"
-                :gridColumn="3"
+                :gridColumns="[2, 2, 2, 3]"
             >
                 <template #headerLeftRender>
                     <a-space>
@@ -201,10 +201,9 @@
             @save="saveBtn"
         />
         <Import
+            v-if="importVisible"
             @save="onRefresh"
             @close="importVisible = false"
-            v-if="importVisible"
-            type="official-edge-gateway"
         />
     </j-page-container>
 </template>
@@ -215,7 +214,6 @@ import { onlyMessage } from '@jetlinks-web/utils'
 import { openEdgeUrl } from '../../../utils/utils';
 import dayjs from 'dayjs';
 import { query, _delete, _deploy, _undeploy,queryNoPagingPost,queryTree} from '../../../api/others';
-import { restPassword } from '../../../api/edge/device';
 import url from '../../../assets/images/device-gateway.png'
 import Save from './Save/index.vue';
 import Import from '../../../components/Import/index.vue';
@@ -237,6 +235,16 @@ const defaultParams = {
             ],
             type: 'and',
         },
+        {
+            "terms": [
+                {
+                    "type": "or",
+                    "value": "gateway",
+                    "termType": "eq",
+                    "column": "deviceType"
+                }
+            ]
+        }
     ],
 };
 
@@ -370,14 +378,6 @@ const columns = [
         title: $t('Device.index.911422-2'),
         valueType: 'select',
         hideInTable: true,
-        search: {
-            type: 'select',
-            options: [
-                { label: $t('Device.index.911422-11'), value: 'device' },
-                { label: $t('Device.index.911422-12'), value: 'childrenDevice' },
-                { label: $t('Device.index.911422-13'), value: 'gateway' },
-            ],
-        },
     },
     {
         title: $t('Device.index.911422-14'),
