@@ -435,7 +435,7 @@ const accessModesMODBUS_TCP = [
     },
 ];
 
-const columns = [
+const columns = reactive([
     {
         title: $t('Point.index.400149-9'),
         dataIndex: 'name',
@@ -469,7 +469,7 @@ const columns = [
         key: 'accessModes$in$any',
         search: {
             type: 'select',
-            options: accessModesOption,
+            options: computed(() => accessModesOption.value)
         },
     },
     {
@@ -499,7 +499,7 @@ const columns = [
             type: 'string',
         },
     },
-];
+])
 
 const subRef = ref();
 const propertyValue = ref(new Map());
@@ -754,7 +754,7 @@ const closeImport = () => {
 };
 
 watch(
-    () => tableRef?.value?._dataSource,
+    () => tableRef.value?._dataSource,
     (value) => {
         subRef.value?.unsubscribe();
         if (value.length !== 0) {
@@ -773,6 +773,59 @@ watch(
         checkAll.value = false;
     },
 );
+
+const changeAccessModelOptions = () => {
+
+  accessModesOption.value = props.data.provider === 'MODBUS_TCP' ? accessModesMODBUS_TCP : [
+    ...accessModesMODBUS_TCP,
+    {
+      label: $t('Point.index.400149-21'),
+      value: 'subscribe',
+    }
+  ]
+}
+
+const updateDefaultParams = () => {
+  const { id } = props.data
+  let value = 'undefined'
+
+  if (id) {
+    value = id === '*' ? undefined : id
+  }
+
+  defaultParams.value.terms[0].terms[0].value = value
+}
+
+const updateBatchActions = () => {
+  const { provider } = props.data
+  const defaultActions = [
+    {
+      key: 'update',
+      text: $t('Point.index.400149-22'),
+      permission: 'DataCollect/Collector:update',
+      icon: 'FormOutlined',
+      selected: {
+        onClick: handleBatchUpdate,
+      },
+    },
+    {
+      key: 'delete',
+      text: $t('Point.index.400149-23'),
+      danger: true,
+      permission: 'DataCollect/Collector:delete',
+      icon: 'DeleteOutlined',
+      selected: {
+        popConfirm: {
+          title: $t('Point.index.400149-6'),
+          onConfirm: handleBatchDelete,
+        },
+      },
+    },
+  ]
+
+  batchActions.value = ['OPC_UA', 'BACNetIp'].includes(provider) ? defaultActions : [defaultActions[1]]
+}
+
 watch(
     () => _selectedRowKeys.value,
     (value) => {
@@ -786,64 +839,15 @@ watch(
     () => props.data,
     (value) => {
         if (!!value) {
-            accessModesOption.value =
-                value?.provider === 'MODBUS_TCP'
-                    ? accessModesMODBUS_TCP
-                    : accessModesMODBUS_TCP.concat({
-                          label: $t('Point.index.400149-21'),
-                          value: 'subscribe',
-                      });
-            defaultParams.value.terms[0].terms[0].value = !value.id
-                ? 'undefined'
-                : value.id === '*'
-                ? undefined
-                : value.id;
-            tableRef?.value?.reload && tableRef?.value?.reload();
+
+          changeAccessModelOptions();
+          updateDefaultParams();
+
+            tableRef.value?.reload?.();
             // cancelSelect();
             checkAll.value = false;
             batchRef.value?.reload();
-            batchActions.value =
-                props?.data?.provider === 'OPC_UA' ||
-                props?.data?.provider === 'BACNetIp'
-                    ? [
-                          {
-                              key: 'update',
-                              text: $t('Point.index.400149-22'),
-                              permission: 'DataCollect/Collector:update',
-                              icon: 'FormOutlined',
-                              selected: {
-                                  onClick: handleBatchUpdate,
-                              },
-                          },
-                          {
-                              key: 'delete',
-                              text: $t('Point.index.400149-23'),
-                              danger: true,
-                              permission: 'DataCollect/Collector:delete',
-                              icon: 'DeleteOutlined',
-                              selected: {
-                                  popConfirm: {
-                                      title: $t('Point.index.400149-6'),
-                                      onConfirm: handleBatchDelete,
-                                  },
-                              },
-                          },
-                      ]
-                    : [
-                          {
-                              key: 'delete',
-                              text: $t('Point.index.400149-23'),
-                              danger: true,
-                              permission: 'DataCollect/Collector:delete',
-                              icon: 'DeleteOutlined',
-                              selected: {
-                                  popConfirm: {
-                                      title: $t('Point.index.400149-6'),
-                                      onConfirm: handleBatchDelete,
-                                  },
-                              },
-                          },
-                      ];
+          updateBatchActions()
         }
     },
     { immediate: true, deep: true },

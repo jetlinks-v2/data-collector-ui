@@ -10,7 +10,7 @@
 
         <div class="add-btn">
             <j-permission-button
-                
+
                 type="primary"
                 @click="handleAdd()"
                 hasPermission="DataCollect/Collector:add"
