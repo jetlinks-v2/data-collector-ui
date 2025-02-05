@@ -13,7 +13,7 @@
                     :columns="columns"
                     :gridColumn="2"
                     :gridColumns="[1, 2]"
-                    :request="queryPoint"
+                    :request="getDataSource"
                     :defaultParams="defaultParams"
                     :rowSelection="
                         isCheck
@@ -753,26 +753,27 @@ const closeImport = () => {
     tableRef.value.reload();
 };
 
-watch(
-    () => tableRef.value?._dataSource,
-    (value) => {
-        subRef.value?.unsubscribe();
-        if (value.length !== 0) {
-            setTimeout(() => {
-                subscribeProperty(value);
-                value.forEach((item: any) => {
-                    item?.accessModes?.forEach((i: any) => {
-                        if (i?.value === 'read') {
-                            ReadIdMap.set(item.id, item);
-                        }
-                    });
-                });
-            }, 100);
-        }
-        cancelSelect();
-        checkAll.value = false;
-    },
-);
+const getDataSource = (p:any) => {
+  return queryPoint(p).then(resp => {
+    subRef.value?.unsubscribe();
+    if (resp.success && resp.result.data.length) {
+      setTimeout(() => {
+        const _array = resp.result.data
+        subscribeProperty(resp.result.data);
+        _array.forEach((item: any) => {
+          item.accessModes?.forEach((i: any) => {
+            if (i?.value === 'read') {
+              ReadIdMap.set(item.id, item);
+            }
+          });
+        })
+      }, 100)
+    }
+    cancelSelect();
+    checkAll.value = false;
+    return resp
+  })
+}
 
 const changeAccessModelOptions = () => {
 
