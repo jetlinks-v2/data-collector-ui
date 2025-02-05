@@ -6,7 +6,7 @@
             @search="handleSearch"
         />
         <FullPage>
-            <j-scrollbar height="680">
+            <j-scrollbar height="670">
                 <j-pro-table
                     ref="tableRef"
                     mode="CARD"
