@@ -10,7 +10,7 @@
 
         <div class="add-btn">
             <j-permission-button
-                
+
                 type="primary"
                 @click="handleAdd()"
                 hasPermission="DataCollect/Collector:add"
@@ -154,7 +154,7 @@ const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
-        default: () => {},
+        default: () => ({}),
     },
 });
 const emits = defineEmits(['change']);
