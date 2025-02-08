@@ -184,7 +184,7 @@ const id = props.data.id;
 const formRef = ref();
 const provider = ref()
 const providerListItems = ref()
-
+const channel = ref({});
 const geyProviderList = async () => {
   const resp = await getProviders();
   if (resp.success) {
@@ -203,6 +203,7 @@ const channelList = computed(() => {
   _channelListAll.value.forEach((item) => {
     if (item?.state?.value !== 'disabled') {
       list.push({
+        ...item,
         provider: item.provider,
         value: item.id,
         label: item.name,
@@ -217,7 +218,7 @@ const channelSelect = (key, detail) => {
 }
 
 const endianData = computed(() => {
-  const {endian, endianIn} = formData.value.configuration;
+  const {endian, endianIn} = formData.configuration;
   if (endian) {
     if (endianIn) {
       if (endian === 'BIG') {
@@ -231,7 +232,7 @@ const endianData = computed(() => {
   }
 });
 
-const formData = ref({
+const formData = reactive({
   channelId: undefined,
   name: '',
   collectorProvider: undefined,
@@ -254,6 +255,7 @@ const formData = ref({
 });
 
 const onChange = async (_, node) => {
+  channel.value = node
   if (
       !["COLLECTOR_GATEWAY"].includes(node?.provider)
   ) {
@@ -266,7 +268,7 @@ const handleOk = async () => {
 
   if (_data) {
     const {name} = _channelListAll.value.find(
-        (item) => item.id === formData.value.channelId,
+        (item) => item.id === formData.channelId,
     );
 
     let _copyData = _data
@@ -330,13 +332,13 @@ const handleCancel = () => {
 };
 
 const changeCardSelectType = (value) => {
-  formData.value.configuration.inheritBreakerSpec.type = value[0];
+  formData.configuration.inheritBreakerSpec.type = value[0];
 };
 const changeCardSelectEndian = (value) => {
-  formData.value.configuration.endian = value[0];
+  formData.configuration.endian = value[0];
 };
 const changeCardSelectEndianIn = (value) => {
-  formData.value.configuration.endianIn = value[0];
+  formData.configuration.endianIn = value[0];
 };
 
 const filterOption = (input, option) => {
@@ -344,7 +346,7 @@ const filterOption = (input, option) => {
 };
 
 watch(
-    () => formData.value.channelId,
+    () => formData.channelId,
     (value) => {
       const dt = _channelListAll.value.find((item) => item.id === value);
       visibleUnitId.value = visibleEndian.value =
@@ -369,17 +371,16 @@ watch(
         }
 
         if (copyValue.provider === 'COLLECTOR_GATEWAY') {
-          formData.value = {
-            ...omit(copyValue, ['configuration']),
-            ...copyValue.configuration,
-          }
+          Object.assign(formData, copyValue)
+          formData.configuration = copyValue.configuration
         } else {
-          formData.value = copyValue
+          Object.assign(formData, copyValue)
+          // formData.value = copyValue
         }
 
         provider.value = copyValue?.provider
+        channel.value = props.channelListAll.find(item => item.id === value.channelId)
       }
-      ;
     },
     {immediate: true, deep: true},
 );
@@ -390,6 +391,8 @@ watchEffect(() => {
   }
 })
 
+provide("plugin-form", formData);
+provide("plugin-form-channel", channel);
 </script>
 
 <style lang="less" scoped>

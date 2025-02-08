@@ -116,6 +116,7 @@ const formData = reactive({
   features: [],
   description: props.data.description || "",
 });
+
 provide("plugin-form-collector", props.collector);
 
 const handleOk = async () => {
