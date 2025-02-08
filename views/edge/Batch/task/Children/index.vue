@@ -674,14 +674,7 @@ const onClose = async () => {
 };
 
 const isModal = () => {
-    const obj = _dataSource.value.find(
-        (item) => item?.MappingStatus === 'warning',
-    );
-    if (obj?.id) {
-        return true;
-    } else {
-        return false;
-    }
+  return _dataSource.value.some(item => (item && item.MappingStatus === 'warning' && item.id));
 };
 
 onMounted(() => {
