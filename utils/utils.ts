@@ -1,5 +1,7 @@
 import {getRemoteProxyUrl, getRemoteSystem, getRemoteToken} from "../api/edge/instance";
 import {BASE_API} from "@jetlinks-web/constants";
+import {getResourceFile} from "@/modules/rule-engine-manager-ui/api/channel";
+import axios from "axios";
 
 export const openEdgeUrl = async (id: string) => {
     const resp = await getRemoteToken(id,
@@ -49,5 +51,22 @@ export const openEdgeUrl = async (id: string) => {
         const url = `${_location}${basePath}/edge/device:${id}/_proxy/${proxyUrl.result}/${fallbackBase64}/${base64Url}/#/?token=${resp.result}&thingId=${id}&terminal=cloud`
 
         window.open(url)
+    }
+}
+
+export const devGetProtocol = async (protocol: string, module: string) => {
+    try {
+        const isDevelopment = import.meta.env.MODE === 'development'
+
+        if (isDevelopment) {
+            const resp = await axios.get(`/protocol/${protocol}/${module}.vue`)
+            return resp.data
+        } else {
+            const resp = await getResourceFile(protocol, module)
+            return resp
+        }
+
+    } catch (e) {
+        return undefined
     }
 }

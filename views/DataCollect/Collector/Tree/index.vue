@@ -154,7 +154,7 @@ const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
-        default: () => {},
+        default: () => ({}),
     },
 });
 const emits = defineEmits(['change']);
