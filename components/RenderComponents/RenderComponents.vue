@@ -18,7 +18,7 @@ import * as pinia from 'pinia'
 import * as Router from 'vue-router'
 import * as LocalUtils from '@/utils'
 import * as LodashEs from 'lodash-es'
-import {useLocales} from '@/hooks'
+import * as hooks from '@collector/hooks'
 
 defineOptions({name: 'RenderComponents'})
 
@@ -43,7 +43,7 @@ const render = debounce(() => {
       'vue-router': Router,
       'local-utils': LocalUtils,
       'lodash-es': LodashEs,
-      '@hooks': {useLocales}
+      '@hooks': hooks
     },
     getFile(url) {
       return Promise.resolve(props.value)

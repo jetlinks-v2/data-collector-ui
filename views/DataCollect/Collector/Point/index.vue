@@ -369,6 +369,7 @@ import Import from './components/Import/index.vue';
 import BatchDropdown from '@/components/BatchDropdown/index.vue';
 import { useI18n } from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";
+import RenderComponents from "@collector/components/RenderComponents";
 
 const { t: $t } = useI18n();
 const props = defineProps({

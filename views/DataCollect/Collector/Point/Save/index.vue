@@ -84,6 +84,7 @@ import type { FormInstance } from 'ant-design-vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";
+import RenderComponents from "@collector/components/RenderComponents";
 
 const { t: $t } = useI18n();
 
