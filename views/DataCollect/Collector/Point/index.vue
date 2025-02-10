@@ -587,7 +587,7 @@ const handleBatchUpdate = () => {
   }
   const dataSet = new Set(_selectedRowKeys.value);
   const dataMap = new Map();
-  tableRef?.value?._dataSource.forEach((i: any) => {
+  tableRef?.value?.dataSource.forEach((i: any) => {
     dataSet.has(i.id) && dataMap.set(i.id, i);
   });
   current.value = [...dataMap.values()];
@@ -708,7 +708,7 @@ const handleClick = (dt: any) => {
   } else {
     _selectedRowKeys.value = [..._selectedRowKeys.value, dt.id];
     if (
-        _selectedRowKeys.value.length === tableRef.value?._dataSource.length
+        _selectedRowKeys.value.length === tableRef.value?.dataSource.length
     ) {
       checkAll.value = true;
     }
@@ -744,7 +744,7 @@ const subscribeProperty = (value: any) => {
 const onCheckAllChange = (e: any) => {
   if (e.target.checked) {
     _selectedRowKeys.value = [
-      ...tableRef.value?._dataSource.map((i: any) => i.id),
+      ...tableRef.value?.dataSource.map((i: any) => i.id),
     ];
   } else {
     cancelSelect();
