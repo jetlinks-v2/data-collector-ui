@@ -153,11 +153,12 @@
   </a-modal>
 </template>
 <script name="CollectorTreeSave" setup>
-import {save, update, getProviders} from '../../../../../api/data-collect/collector';
+import {save, update, getProviders} from '@collector/api/data-collect/collector';
 import {LeftTreeRules} from '../../data';
 import {cloneDeep, omit} from "lodash-es";
 import {useI18n} from 'vue-i18n';
-import {devGetProtocol} from "@/modules/data-collector-ui/utils/utils";
+import {devGetProtocol} from "@collector/utils/utils";
+import RenderComponents from "@collector/components/RenderComponents";
 
 const {t: $t} = useI18n();
 const jsonData = ref();

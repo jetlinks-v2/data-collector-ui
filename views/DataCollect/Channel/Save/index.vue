@@ -80,12 +80,13 @@ import {
   save,
   update,
   getProviders,
-} from '../../../../api/data-collect/channel';
+} from '@collector/api/data-collect/channel';
 import {FormValidate, FormState} from '../data';
 import {cloneDeep} from 'lodash-es';
 import {useI18n} from 'vue-i18n';
-import {devGetProtocol} from "@/modules/data-collector-ui/utils/utils";
-import GateWayFormItem from "@/modules/data-collector-ui/views/DataCollect/Channel/Save/GateWayFormItem.vue";
+import {devGetProtocol} from "@collector/utils/utils";
+import GateWayFormItem from "./GateWayFormItem.vue";
+import RenderComponents from "@collector/components/RenderComponents";
 
 const {t: $t} = useI18n();
 
