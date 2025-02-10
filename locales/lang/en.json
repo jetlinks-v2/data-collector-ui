@@ -566,6 +566,8 @@
     "Save.index.001090-11": "Enter a maximum of 64 characters",
     "Save.index.001090-12": "Please select a file",
     "Save.index.001090-13": "Operation successful",
+    "Save.index.001090-14": "Plugin ID",
+    "Save.index.001090-15": "Template ID",
     "Save.FileSelect.614464-0": "Upload files",
     "Save.FileSelect.614464-1": "Format requirements: json",
     "Save.FileSelect.614464-2": "Please upload a JSON format file",

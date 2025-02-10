@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/jetlinks-v2/data-collector-ui/issues"
   },
-  "homepage": "https://github.com/jetlinks-v2/data-collector-ui#readme"
+  "homepage": "https://github.com/jetlinks-v2/data-collector-ui#readme",
+  "dependencies": {
+    "vue3-sfc-loader": "^0.9.5"
+  }
 }

@@ -7,7 +7,7 @@
             <div class="right">
                 <a-spin :spinning="spinning">
                     <Point v-if="data" :data="data" />
-                    <j-empty v-else style="margin-top: 20%" />
+                    <j-empty v-else style="margin-top: 200px" />
                 </a-spin>
             </div>
         </div>

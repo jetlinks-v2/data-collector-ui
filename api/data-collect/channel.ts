@@ -25,3 +25,7 @@ export const validateField = (data: any) =>
 
 export const queryCertificateList = () =>
     request.get(`/network/certificate/_query/no-paging?paging=false`, {});
+
+export const getResourceFile = (provider: string, module: string) => request.get(`/data-collect/${provider}/resource/_/script/${module}.vue`, {}, { hiddenError: true });
+export const getResourceLangFile = (provider: string, language: string) => request.get(`/data-collect/${provider}/resource/_/script/lang/${language}.json`, {}, { hiddenError: true });
+
