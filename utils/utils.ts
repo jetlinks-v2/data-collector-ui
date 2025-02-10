@@ -1,6 +1,6 @@
 import {getRemoteProxyUrl, getRemoteSystem, getRemoteToken} from "../api/edge/instance";
 import {BASE_API} from "@jetlinks-web/constants";
-import {getResourceFile} from "@/modules/rule-engine-manager-ui/api/channel";
+import {getResourceFile} from "../api/data-collect/channel";
 import axios from "axios";
 
 export const openEdgeUrl = async (id: string) => {

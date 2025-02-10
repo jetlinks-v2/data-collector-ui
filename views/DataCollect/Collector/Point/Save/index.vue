@@ -83,7 +83,7 @@ import {ModBusRules } from '../../data';
 import type { FormInstance } from 'ant-design-vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
-import {devGetProtocol} from "@/modules/data-collector-ui/utils/utils";
+import {devGetProtocol} from "@collector/utils/utils";
 
 const { t: $t } = useI18n();
 

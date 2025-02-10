@@ -352,7 +352,7 @@ import {
   getProviders,
   getStates,
   exportPoint,
-} from '../../../../api/data-collect/collector';
+} from '@collector/api/data-collect/collector';
 import { onlyMessage,downloadFileByUrl } from '@jetlinks-web/utils'
 import PointCardBox from './components/PointCardBox/index.vue';
 import WritePoint from './components/WritePoint/index.vue';
@@ -368,7 +368,7 @@ import dayjs from 'dayjs';
 import Import from './components/Import/index.vue';
 import BatchDropdown from '@/components/BatchDropdown/index.vue';
 import { useI18n } from 'vue-i18n';
-import {devGetProtocol} from "@/modules/data-collector-ui/utils/utils";
+import {devGetProtocol} from "@collector/utils/utils";
 
 const { t: $t } = useI18n();
 const props = defineProps({
