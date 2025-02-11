@@ -52,11 +52,14 @@ export const writePoint = (collectorId: string, data: string[]) =>
 export const queryPointNoPaging = (data: any) =>
     request.post(`/data-collect/point/_query/no-paging`, data);
 
-export const scanOpcUAList = (data: any) =>
-    request.get(
-        `/data-collect/opc/channel/${data.id}/nodes?nodeId=${data?.nodeId || ''
-        }`,
-    );
+// export const scanOpcUAList = (data: any) =>
+//     request.get(
+//         `/data-collect/opc/channel/${data.id}/nodes?nodeId=${data?.nodeId || ''
+//         }`,
+//     );
+
+export const scanOpcUAList = (id:string, command: string, data:any)=> request.post(`/data-collect/channel:${id}/command/${command}`,data);
+
 
 export const queryTypeList = () => request.get(`/data-collect/opc/data-types`);
 

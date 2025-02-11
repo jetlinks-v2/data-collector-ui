@@ -14,7 +14,12 @@ export const useLocales = (protocol: string) => {
                 const resp = await axios.get(`/protocol/${_protocol}/lang/${language}.json`)
                 langJson.value = resp.data
             } else {
-                const resp = await getResourceLangFile(_protocol, language)
+                const resp: any = await getResourceLangFile(_protocol, language).catch(async (e) => {
+                    if(e){
+                        const resp = await axios.get(`/protocol/${_protocol}/lang/${language}.json`)
+                        langJson.value = resp.data
+                    }
+                })
                 langJson.value = resp
             }
 
@@ -23,7 +28,7 @@ export const useLocales = (protocol: string) => {
         }
     }
 
-    const $lang = (key) => {
+    const $lang = (key: string) => {
         return langJson.value?.[key] || ''
     }
 
