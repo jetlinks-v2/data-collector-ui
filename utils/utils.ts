@@ -62,7 +62,12 @@ export const devGetProtocol = async (protocol: string, module: string) => {
             const resp = await axios.get(`/protocol/${protocol}/${module}.vue`)
             return resp.data
         } else {
-            const resp = await getResourceFile(protocol, module)
+            const resp = await getResourceFile(protocol, module).catch(async (e) => {
+                if(e){
+                    const resp = await axios.get(`/protocol/${protocol}/${module}.vue`)
+                    return resp.data
+                }
+            })
             return resp
         }
 

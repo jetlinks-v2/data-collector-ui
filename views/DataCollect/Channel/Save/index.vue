@@ -82,7 +82,7 @@ import {
   getProviders,
 } from '@collector/api/data-collect/channel';
 import {FormValidate, FormState} from '../data';
-import {cloneDeep} from 'lodash-es';
+import {cloneDeep, omit} from 'lodash-es';
 import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";
 import GateWayFormItem from "./GateWayFormItem.vue";
@@ -104,41 +104,41 @@ const formRef = ref();
 const jsonData = ref();
 
 const providersList = ref([]);
-const formData = reactive(cloneDeep(FormState));
+const formData = reactive({
+  id: undefined,
+  type: "device",
+  provider: undefined,
+  name: undefined,
+  description: undefined,
+  configuration: {},
+  circuitBreaker: {
+    type: "Ignore",
+  },
+});
 
 provide("plugin-form", formData);
 
 const handleOk = async () => {
-  const params = await formRef.value?.validate();
-  if (params?.provider === 'COLLECTOR_GATEWAY') {
-    params.configuration.deviceName =
-        formData.configuration.deviceName;
-  }
-  // if (params?.provider === 'snap7') {
-  //   params.configuration = {
-  //     connect: false,
-  //   };
-  // } else if (params?.provider === 'iec104') {
-  //   params.configuration = {};
-  // } else if (params?.provider === 'BACNetIp') {
-  //   if (!params.configuration.overIp?.subnetAddress) {
-  //     params.configuration.overIp = omit(params.configuration.overIp, ['subnetAddress'])
-  //   }
-  // }
+  await formRef.value?.validate().then(async () => {
+    const submitData =
+        formData.type === "device"
+            ? omit(formData, ["type"])
+            : {
+              name: formData.name,
+              description: formData.description,
+              provider: formData.provider,
+            };
 
-  params.circuitBreaker = {
-    type: 'Ignore',
-  };
+    loading.value = true;
+    const response = !props.data?.id
+        ? await save(submitData).catch(() => {
+        })
+        : await update(props.data?.id, {...props.data, ...submitData}).catch(() => {
+        });
+    emit('change', response?.success);
+    loading.value = false;
+  })
 
-  loading.value = true;
-  const response = !id
-      ? await save(params).catch(() => {
-      })
-      : await update(id, {...props.data, ...params}).catch(() => {
-      });
-  emit('change', response?.status === 200);
-  loading.value = false;
-  formRef.value?.resetFields();
 };
 
 const onChange = async (val) => {

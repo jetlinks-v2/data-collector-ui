@@ -217,16 +217,8 @@ const allControl = () => {
 };
 
 const getScanOpcUAList = async (nodeId: string | undefined) => {
-    const params = nodeId
-        ? {
-              id: channelId,
-              nodeId: nodeId,
-          }
-        : {
-              id: channelId,
-          };
     spinning.value = true;
-    const res: any = await scanOpcUAList(params);
+    const res: any = await scanOpcUAList(channelId, 'BrowseNodes', { nodeId: nodeId });
     treeData.value = res.result.map((item: any) => ({
         ...item,
         key: item.id,
