@@ -160,6 +160,7 @@ import { isExists, update, queryNoPagingPost } from '../../../../api/others';
 import { onlyMessage } from '@jetlinks-web/utils'
 import url from '../../../../assets/images/device-gateway.png'
 import SaveProduct from '../../../../components/SaveProduct/SaveProduct.vue';
+import {useI18n} from "vue-i18n";
 
 const emit = defineEmits(['close', 'save']);
 const props = defineProps({
@@ -181,7 +182,7 @@ const modelRef = reactive({
     describe: '',
     photoUrl: url,
 });
-
+const { t: $t } = useI18n();
 const vailId = async (_: Record<string, any>, value: string) => {
     if (!props?.data?.id && value) {
         const resp = await isExists(value);
