@@ -48,26 +48,59 @@
             v-if="jsonData"
             :value="jsonData"
         />
-        <a-form-item
-            v-if="provider !== 'COLLECTOR_GATEWAY'"
-            :name="['configuration', 'inheritBreakerSpec', 'type']"
-            :rules="LeftTreeRules.type"
-            :label="$t('Save.index.4001415-35')"
-        >
-          <j-card-select
-              :showImage="false"
-              v-model:value="formData.configuration.inheritBreakerSpec.type"
-              :options="[
+        <template  v-if="provider !== 'COLLECTOR_GATEWAY'">
+          <a-form-item
+              :name="['configuration', 'inheritBreakerSpec', 'type']"
+              :rules="LeftTreeRules.type"
+              :label="$t('Save.index.4001415-35')"
+          >
+            <j-card-select
+                :showImage="false"
+                v-model:value="formData.configuration.inheritBreakerSpec.type"
+                :options="[
                                       { label: $t('Save.index.4001415-36'), value: 'LowerFrequency' },
                                       { label: $t('Save.index.4001415-37'), value: 'Break' },
                                       { label: $t('Save.index.4001415-38'), value: 'Ignore' },
                                   ]"
-              @change="changeCardSelectType"
+                @change="changeCardSelectType"
+            />
+          </a-form-item>
+          <p style="color: #616161">
+            {{ getTypeTooltip(formData.configuration.inheritBreakerSpec.type) }}
+          </p>
+        </template>
+        <template v-else>
+          <a-form-item
+          :label="$t('Channel.index.290640-4')"
+          :name="['collectorProvider']"
+          :rules="[{ required: true, message: $t('Channel.data.290641-3') }]"
+          >
+          <a-select
+              style="width: 100%"
+              v-model:value="formData.collectorProvider"
+              :options="providerListItems"
+              :placeholder="$t('Channel.data.290641-3')"
+              allowClear
+              show-search
+              :filter-option="filterOption"
+              :disabled="!!id"
           />
-        </a-form-item>
-        <p style="color: #616161" v-if="provider !== 'COLLECTOR_GATEWAY'">
-          {{ getTypeTooltip(formData.configuration.inheritBreakerSpec.type) }}
-        </p>
+          </a-form-item>
+          <a-form-item
+              v-if="visibleUnitId"
+              :name="['configuration', 'unitId']"
+              :rules="LeftTreeRules.unitId"
+              :label="$t('Save.index.4001415-30')"
+          >
+            <a-input-number
+                style="width: 100%"
+                :placeholder="$t('Save.index.4001415-30')"
+                v-model:value="formData.configuration.unitId"
+                :min="0"
+                :max="255"
+            />
+          </a-form-item>
+        </template>
         <a-form-item
             v-if="visibleEndian"
             :name="['configuration', 'endian']"
@@ -186,7 +219,7 @@ const formRef = ref();
 const provider = ref()
 const providerListItems = ref()
 const channel = ref({});
-const geyProviderList = async () => {
+const getProviderList = async () => {
   const resp = await getProviders();
   if (resp.success) {
     providerListItems.value = resp.result.map((item) => ({label: item.name, value: item.id}))
@@ -388,7 +421,7 @@ watch(
 
 watchEffect(() => {
   if (provider.value === 'COLLECTOR_GATEWAY') {
-    geyProviderList()
+    getProviderList()
   }
 })
 

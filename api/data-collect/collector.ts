@@ -92,7 +92,7 @@ export const getBacnetPropertyIdNotUse = (data: any) => request.post(`/collect/b
 // export const getBacnetAllPropertyId = () => request.get('/collect/bacnet/property/ids')
 
 /**查询bacnet值类型*/
-export const getBacnetValueType = () => request.get(`/collect/bacnet/value/types`)
+export const getBacnetValueType = () => request.post(`/data-collect/BACNetIp/command/QueryValueTypes`)
 
 /**
  * 导出点位数据
