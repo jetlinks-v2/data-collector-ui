@@ -412,7 +412,6 @@ watch(
           formData.configuration = copyValue.configuration
         } else {
           Object.assign(formData, copyValue)
-          // formData.value = copyValue
         }
 
         provider.value = copyValue?.provider
