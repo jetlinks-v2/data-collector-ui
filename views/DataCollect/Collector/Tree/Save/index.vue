@@ -409,6 +409,7 @@ watch(
 
         if (copyValue.provider === 'COLLECTOR_GATEWAY') {
           Object.assign(formData, copyValue)
+
           formData.configuration = {
             ...copyValue.configuration,
             ...copyValue.configuration?.configuration
