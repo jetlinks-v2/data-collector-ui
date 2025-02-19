@@ -72,12 +72,12 @@
         <template v-else>
           <a-form-item
           :label="$t('Channel.index.290640-4')"
-          :name="['collectorProvider']"
+          :name="['configuration','collectorProvider']"
           :rules="[{ required: true, message: $t('Channel.data.290641-3') }]"
           >
           <a-select
               style="width: 100%"
-              v-model:value="formData.collectorProvider"
+              v-model:value="formData.configuration.collectorProvider"
               :options="providerListItems"
               :placeholder="$t('Channel.data.290641-3')"
               allowClear
@@ -88,14 +88,14 @@
           </a-form-item>
           <a-form-item
               v-if="visibleUnitId"
-              :name="['configuration', 'unitId']"
+              :name="['configuration', 'configuration', 'unitId']"
               :rules="LeftTreeRules.unitId"
               :label="$t('Save.index.4001415-30')"
           >
             <a-input-number
                 style="width: 100%"
                 :placeholder="$t('Save.index.4001415-30')"
-                v-model:value="formData.configuration.unitId"
+                v-model:value="formData.configuration.configuration.unitId"
                 :min="0"
                 :max="255"
             />
@@ -279,6 +279,9 @@ const formData = reactive({
     serializable: false,
     inheritBreakerSpec: {
       type: 'LowerFrequency',
+    },
+    configuration: {
+
     }
   },
   circuitBreaker: {
@@ -313,12 +316,12 @@ const handleOk = async () => {
 
       _copyData.configuration = {
         configuration: {
-          ..._data.configuration,
+          ..._data.configuration?.configuration,
           inheritBreakerSpec: {
             type: 'Ignore'
           }
         },
-        collectorProvider: _data.collectorProvider
+        collectorProvider: _data.configuration?.collectorProvider
       }
     }
 
