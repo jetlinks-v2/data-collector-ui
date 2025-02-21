@@ -316,7 +316,7 @@ const handleOk = async () => {
 
       _copyData.configuration = {
         configuration: {
-          ..._data.configuration?.configuration,
+          ...omit(_data.configuration, 'collectorProvider'),
           inheritBreakerSpec: {
             type: 'Ignore'
           }
@@ -409,7 +409,11 @@ watch(
 
         if (copyValue.provider === 'COLLECTOR_GATEWAY') {
           Object.assign(formData, copyValue)
-          formData.configuration = copyValue.configuration
+
+          formData.configuration = {
+            ...copyValue.configuration,
+            ...copyValue.configuration?.configuration
+          }
         } else {
           Object.assign(formData, copyValue)
         }
