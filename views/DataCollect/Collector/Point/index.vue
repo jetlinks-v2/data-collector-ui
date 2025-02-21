@@ -28,14 +28,7 @@
           <template #headerLeftRender>
             <a-space>
               <j-permission-button
-                  v-if="
-                                    [
-                                        'MODBUS_TCP',
-                                        'COLLECTOR_GATEWAY',
-                                        'snap7',
-                                        'iec104',
-                                    ].includes(data?.provider)
-                                "
+                  v-if="pointActions.add"
                   type="primary"
                   @click="handleAdd"
                   hasPermission="DataCollect/Collector:add"
@@ -46,10 +39,7 @@
                 {{ $t('Point.index.400149-0') }}
               </j-permission-button>
               <j-permission-button
-                  v-if="
-                                    data?.provider === 'OPC_UA' ||
-                                    data?.provider === 'BACNetIp'
-                                "
+                  v-if="pointActions.scan"
                   type="primary"
                   @click="handleScan"
                   hasPermission="DataCollect/Collector:add"
@@ -297,11 +287,11 @@
         @change="saveChange"
         :collector="data"
     />
-<!--    <SaveModBus-->
-<!--        v-if="visible.saveModBus"-->
-<!--        :data="current"-->
-<!--        @change="saveChange"-->
-<!--    />-->
+   <SaveModBus
+       v-if="visible.saveModBus"
+       :data="current"
+       @change="saveChange"
+   />
 <!--    <SaveOPCUA-->
 <!--        v-if="visible.saveOPCUA"-->
 <!--        :data="current"-->
@@ -341,7 +331,7 @@
         @close-import="closeImport"
     />
   </a-spin>
-  <RenderComponents v-if="data.id && jsonData" :value="jsonData"/>
+  <RenderComponents :key="data.id" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
 <script lang="ts" setup name="PointPage">
 import {
@@ -358,6 +348,7 @@ import PointCardBox from './components/PointCardBox/index.vue';
 import WritePoint from './components/WritePoint/index.vue';
 import BatchUpdate from './components/BatchUpdate/index.vue';
 import Save from './Save/index.vue';
+import SaveModBus from './Save/SaveModBus.vue';
 import Scan from './Scan/index.vue';
 import ScanBacnet from './ScanBacnet/index.vue';
 import { colorMap,imgUrl } from '../data';
@@ -396,7 +387,9 @@ const visible = reactive({
   save: false,
   import: false,
   scanBacnet: false,
+  saveModBus: false,
 });
+
 const current: any = ref({});
 const accessModesOption = ref();
 const _selectedRowKeys = ref<string[]>([]);
@@ -412,6 +405,7 @@ const pointActions = reactive({
 const jsonData = ref();
 
 provide("point-actions", pointActions);
+
 const defaultParams = ref({
   sorts: [{ name: 'id', order: 'desc' }],
   terms: [
@@ -511,45 +505,47 @@ const columns = reactive([
 const subRef = ref();
 const propertyValue = ref(new Map());
 const batchActions = ref<any>([]);
+
 const handleAdd = () => {
-  if (props.data?.provider === 'snap7') {
+  if(props.data?.provider === 'COLLECTOR_GATEWAY'){
     current.value = {
       collectorId: props.data?.id,
-      provider: props.data?.provider,
-      deviceType: props.data?.configuration.type,
+      provider: props.data?.provider || 'COLLECTOR_GATEWAY',
     };
-  } else if (props.data?.provider === 'iec104') {
-    current.value = {
-      collectorId: props.data?.id,
-      provider: props.data?.provider,
-    };
+    visible.saveModBus = true;
   } else {
-    current.value = {
-      collectorId: props.data?.id,
-      provider: props.data?.provider || 'MODBUS_TCP',
-    };
+    if (props.data?.provider === 'snap7') {
+      current.value = {
+        collectorId: props.data?.id,
+        provider: props.data?.provider,
+        deviceType: props.data?.configuration.type,
+      };
+    } else if (props.data?.provider === 'iec104') {
+      current.value = {
+        collectorId: props.data?.id,
+        provider: props.data?.provider,
+      };
+    } else {
+      current.value = {
+        collectorId: props.data?.id,
+        provider: props.data?.provider || 'MODBUS_TCP',
+      };
+    }
+    visible.save = true;
   }
-  visible.save = true;
 };
 const handleEdit = (data: any) => {
-  // if (data?.provider === 'OPC_UA') {
-  //   // visible.saveOPCUA = true;
-  // } else if (data?.provider === 'snap7') {
-  //   visible.saveS7 = true;
-  // } else if (data?.provider === 'iec104') {
-  //   visible.saveIEC104 = true;
-  // } else if (data?.provider === 'BACNetIp') {
-  //   visible.saveBACNet = true;
-  // } else {
-  //   visible.saveModBus = true;
-  // }
   current.value = cloneDeep({
     ...data,
     deviceType:
         props.data?.configuration?.type ||
         props.data?.configuration?.valueType,
   });
-  visible.save = true;
+  if(data?.provider === 'COLLECTOR_GATEWAY'){
+    visible.saveModBus = true;
+  } else {
+    visible.save = true;
+  }
 };
 
 const handleDelete = (id: string | undefined = undefined) => {
@@ -858,7 +854,13 @@ watch(
         checkAll.value = false;
         batchRef.value?.reload();
         updateBatchActions()
-        if(value.id && value.id !== '*'){
+        // COLLECTOR_GATEWAY写死
+        if(value.provider === 'COLLECTOR_GATEWAY'){
+          pointActions.add = true
+          pointActions.scan = false
+        }else if(value.id && value.id !== '*'){
+          pointActions.add = false
+          pointActions.scan = false
           getPointAction()
         }
       }
