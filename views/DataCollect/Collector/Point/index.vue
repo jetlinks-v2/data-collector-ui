@@ -162,19 +162,19 @@
                                                     )
                                                 "
                       >
-                        <j-j-ellipsis
+                        <j-ellipsis
                             style="max-width: 150px"
                         >
                           {{
                             getParseData(slotProps)
                           }}
-                        </j-j-ellipsis>
+                        </j-ellipsis>
                       </div>
                       <div
                           class="ard-box-content-left-1-title"
                           v-else
                       >
-                        <j-j-ellipsis
+                        <j-ellipsis
                             style="max-width: 150px"
                         >
                           {{
@@ -182,7 +182,7 @@
                                 slotProps,
                             )
                           }}
-                        </j-j-ellipsis>
+                        </j-ellipsis>
                       </div>
                       <a
                           v-if="
