@@ -49,7 +49,7 @@ export default [
                         sortIndex: 1,
                         url: '/iot/edge/Devic',
                         icon: 'icon-bumenguanli',
-                        showPage: ['edge-operations'],
+                        showPage: ['edge-manager'],
                         permissions: [
                             {
                                 permission: 'device-product',
