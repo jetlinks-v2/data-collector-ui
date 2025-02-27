@@ -48,7 +48,7 @@
             v-if="jsonData"
             :value="jsonData"
         />
-        <template  v-if="provider !== 'COLLECTOR_GATEWAY'">
+        <template v-if="provider !== 'COLLECTOR_GATEWAY'">
           <a-form-item
               :name="['configuration', 'inheritBreakerSpec', 'type']"
               :rules="LeftTreeRules.type"
@@ -71,23 +71,22 @@
         </template>
         <template v-else>
           <a-form-item
-          :label="$t('Channel.index.290640-4')"
-          :name="['configuration','collectorProvider']"
-          :rules="[{ required: true, message: $t('Channel.data.290641-3') }]"
+              :label="$t('Channel.index.290640-4')"
+              :name="['configuration','collectorProvider']"
+              :rules="[{ required: true, message: $t('Channel.data.290641-3') }]"
           >
-          <a-select
-              style="width: 100%"
-              v-model:value="formData.configuration.collectorProvider"
-              :options="providerListItems"
-              :placeholder="$t('Channel.data.290641-3')"
-              allowClear
-              show-search
-              :filter-option="filterOption"
-              :disabled="!!id"
-          />
+            <a-select
+                style="width: 100%"
+                v-model:value="formData.configuration.collectorProvider"
+                :options="providerListItems"
+                :placeholder="$t('Channel.data.290641-3')"
+                allowClear
+                show-search
+                :filter-option="filterOption"
+                :disabled="!!id"
+            />
           </a-form-item>
           <a-form-item
-              v-if="visibleUnitId"
               :name="['configuration', 'configuration', 'unitId']"
               :rules="LeftTreeRules.unitId"
               :label="$t('Save.index.4001415-30')"
@@ -100,50 +99,48 @@
                 :max="255"
             />
           </a-form-item>
+
+          <a-form-item
+              :name="['configuration', 'endian']"
+              :rules="LeftTreeRules.endian"
+              :label="$t('Save.index.4001415-39')"
+          >
+            <j-card-select
+                :showImage="false"
+                v-model:value="formData.configuration.endian"
+                :options="[
+                                    { label: 'AB', value: 'BIG' },
+                                    { label: 'BA', value: 'LITTLE' },
+                                ]"
+                @change="changeCardSelectEndian"
+                :column="2"
+            />
+          </a-form-item>
+          <a-form-item
+              :name="['configuration', 'endianIn']"
+              :rules="LeftTreeRules.endianIn"
+              :label="$t('Save.index.4001415-40')"
+          >
+            <j-card-select
+                :showImage="false"
+                v-model:value="formData.configuration.endianIn"
+                :options="[
+                                    { label: 'AB', value: 'BIG' },
+                                    { label: 'BA', value: 'LITTLE' },
+                                ]"
+                @change="changeCardSelectEndianIn"
+                :column="2"
+            />
+          </a-form-item>
+          <div style="color: #616161">
+            <p>{{ $t('Save.index.4001415-41') }} {{ endianData }}</p>
+            <p>
+              {{ $t('Save.index.4001415-42') }}(int32、ieee754 float)
+              {{ $t('Save.index.4001415-43') }}({{ $t('Save.index.4001415-44') }})
+            </p>
+          </div>
         </template>
         <a-form-item
-            v-if="visibleEndian"
-            :name="['configuration', 'endian']"
-            :rules="LeftTreeRules.endian"
-            :label="$t('Save.index.4001415-39')"
-        >
-          <j-card-select
-              :showImage="false"
-              v-model:value="formData.configuration.endian"
-              :options="[
-                                    { label: 'AB', value: 'BIG' },
-                                    { label: 'BA', value: 'LITTLE' },
-                                ]"
-              @change="changeCardSelectEndian"
-              :column="2"
-          />
-        </a-form-item>
-        <a-form-item
-            v-if="visibleEndian"
-            :name="['configuration', 'endianIn']"
-            :rules="LeftTreeRules.endianIn"
-            :label="$t('Save.index.4001415-40')"
-        >
-          <j-card-select
-              :showImage="false"
-              v-model:value="formData.configuration.endianIn"
-              :options="[
-                                    { label: 'AB', value: 'BIG' },
-                                    { label: 'BA', value: 'LITTLE' },
-                                ]"
-              @change="changeCardSelectEndianIn"
-              :column="2"
-          />
-        </a-form-item>
-        <div v-if="visibleEndian" style="color: #616161">
-          <p>{{ $t('Save.index.4001415-41') }} {{ endianData }}</p>
-          <p>
-            {{ $t('Save.index.4001415-42') }}(int32、ieee754 float)
-            {{ $t('Save.index.4001415-43') }}({{ $t('Save.index.4001415-44') }})
-          </p>
-        </div>
-        <a-form-item
-            v-if="provider !== 'snap7'"
             :name="['configuration', 'requestTimeout']"
             :rules="LeftTreeRules.requestTimeout"
             :label="$t('Save.index.4001415-45')"
@@ -197,8 +194,6 @@ const {t: $t} = useI18n();
 const jsonData = ref();
 
 const loading = ref(false);
-const visibleEndian = ref(false);
-const visibleUnitId = ref(false);
 
 const props = defineProps({
   data: {
@@ -280,9 +275,7 @@ const formData = reactive({
     inheritBreakerSpec: {
       type: 'LowerFrequency',
     },
-    configuration: {
-
-    }
+    configuration: {}
   },
   circuitBreaker: {
     // type: 'LowerFrequency',
@@ -354,7 +347,6 @@ const getTypeTooltip = (value) => {
   switch (value) {
     case 'LowerFrequency':
       return $t('Save.index.4001415-51');
-      // case 'Break': return '连续10分钟异常，停止采集数据进入断开状态，设备重新启用后恢复采集状态。'
     case 'Break':
       return $t('Save.index.4001415-52')
     case 'Ignore':
@@ -383,16 +375,6 @@ const filterOption = (input, option) => {
 };
 
 watch(
-    () => formData.channelId,
-    (value) => {
-      const dt = _channelListAll.value.find((item) => item.id === value);
-      visibleUnitId.value = visibleEndian.value =
-          dt?.provider && ['MODBUS_TCP', 'COLLECTOR_GATEWAY'].includes(dt?.provider);
-    },
-    {deep: true},
-);
-
-watch(
     () => props.data,
     (value) => {
       if (value.id) {
@@ -407,6 +389,9 @@ watch(
           copyValue.circuitBreaker.type = 'Ignore'
         }
 
+        provider.value = copyValue?.provider
+        channel.value = props.channelListAll.find(item => item.id === value.channelId)
+
         if (copyValue.provider === 'COLLECTOR_GATEWAY') {
           Object.assign(formData, copyValue)
 
@@ -416,19 +401,19 @@ watch(
           }
         } else {
           Object.assign(formData, copyValue)
+          onChange({},channel.value)
         }
-
-        provider.value = copyValue?.provider
-        channel.value = props.channelListAll.find(item => item.id === value.channelId)
       }
     },
     {immediate: true, deep: true},
 );
 
-watchEffect(() => {
+watch(() => provider.value, () => {
   if (provider.value === 'COLLECTOR_GATEWAY') {
     getProviderList()
   }
+}, {
+  immediate: true
 })
 
 provide("plugin-form", formData);
