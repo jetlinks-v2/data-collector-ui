@@ -290,6 +290,8 @@ const onChange = async (_, node) => {
       !["COLLECTOR_GATEWAY"].includes(node?.provider)
   ) {
     jsonData.value = await devGetProtocol(node.provider, "collector");
+  } else {
+    jsonData.value = undefined
   }
 };
 
