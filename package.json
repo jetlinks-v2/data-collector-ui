@@ -1,5 +1,6 @@
 {
   "name": "data-collector-ui",
+  "id": "data-collector",
   "version": "1.0.0",
   "description": "数据采集",
   "main": "index.js",

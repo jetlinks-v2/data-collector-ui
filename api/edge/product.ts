@@ -1,6 +1,4 @@
 import { request } from '@jetlinks-web/core'
-import type { DeviceMetadata, ProductItem, DepartmentItem, MetadataType  } from '../views/Product/typings'
-import type { OperatorItem } from '../components/FRuleEditor/Operator/typings'
 import {BASE_API} from "@jetlinks-web/constants";
 
 /**
@@ -17,7 +15,7 @@ export const queryNoPagingPost = (data: any) => request.post(`/device-product/_q
  * @param data 物模型数据
  * @returns
  */
-export const convertMetadata = (direction: 'from' | 'to', type: string, data: any) => request.post<DeviceMetadata>(`/device/product/metadata/convert-${direction}/${type}`, data)
+export const convertMetadata = (direction: 'from' | 'to', type: string, data: any) => request.post(`/device/product/metadata/convert-${direction}/${type}`, data)
 
 /**
  * 修改产品
@@ -38,7 +36,7 @@ export const getCodecs = () => request.get<{id: string, name: string}>('/device/
  * @param id 产品ID
  * @returns
  */
-export const detail = (id: string) => request.get<ProductItem>(`/device-product/${id}`)
+export const detail = (id: string) => request.get(`/device-product/${id}`)
 
 /**
  * 产品分类
@@ -55,7 +53,7 @@ export const category = (data: any) => request.get('/device/category/_tree?pagin
   * 查询所属部门
   * @param params 查询条件
   */
- export const queryOrgThree = (params?: Record<string, any>) => request.post<DepartmentItem>('/organization/_all/tree', params)
+ export const queryOrgThree = (params?: Record<string, any>) => request.post('/organization/_all/tree', params)
 
  /**
   * 获取接入方式
@@ -181,7 +179,7 @@ export const updateDevice = (data:any) => request.patch('/device-product',data)
 /**
  * 获取操作符
  */
-export const getOperator = () => request.get<OperatorItem[]>('/property-calculate-rule/description')
+export const getOperator = () => request.get('/property-calculate-rule/description')
 
 /**
  * 获取聚合函数列表
@@ -198,7 +196,7 @@ export const getAccessConfig = (pId: string, accessId: string) => request.get(`/
 export const getMetadataConfig = (params: {
   deviceId: string;
   metadata: {
-    type: MetadataType | 'property';
+    type: string | 'property';
     id: string;
     dataType: string;
   };
@@ -207,7 +205,7 @@ export const getMetadataConfig = (params: {
 export const getMetadataDeviceConfig = (params: {
   deviceId: string;
   metadata: {
-    type: MetadataType | 'property';
+    type: string | 'property';
     id: string;
     dataType: string;
   };
