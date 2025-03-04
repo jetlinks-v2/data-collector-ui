@@ -162,7 +162,7 @@ const emits = defineEmits(['change']);
 const route = useRoute();
 const channelId = route.query?.channelId;
 const spinning = ref(false);
-const selectedKeys: any = ref([]);
+const selectedKeys: any = ref([route.query?.collectorId]);
 const searchValue = ref();
 const visible = ref(false);
 const current = ref({});
@@ -296,6 +296,9 @@ const handleSearch = async (value: any) => {
 
         if (selectedKeys.value.length === 0) {
             selectedKeys.value = res.result.length ? ['*'] : [];
+        } else {
+            const row = collectorAll.value.find((i: any) => i.id === selectedKeys.value?.[0]);
+            emits('change', row)
         }
 
         //激活change事件
