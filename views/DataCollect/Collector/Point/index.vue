@@ -1,12 +1,13 @@
 <template>
   <a-spin :spinning="spinning">
-    <pro-search
-        :columns="columns"
-        target="search-point"
-        @search="handleSearch"
-    />
-    <FullPage>
-      <j-scrollbar height="670">
+    <div style="display: flex; flex-direction: column;height: 100%">
+      <pro-search
+          :columns="columns"
+          target="search-point"
+          @search="handleSearch"
+          style="padding-top: 0; margin-bottom: 0"
+      />
+      <div style="flex: 1; min-height: 0">
         <j-pro-table
             ref="tableRef"
             mode="CARD"
@@ -16,13 +17,13 @@
             :request="getDataSource"
             :defaultParams="defaultParams"
             :rowSelection="
-                        isCheck
-                            ? {
-                                  selectedRowKeys: _selectedRowKeys,
-                                  onSelectNone: () => (_selectedRowKeys = []),
-                              }
-                            : false
-                    "
+                      isCheck
+                          ? {
+                                selectedRowKeys: _selectedRowKeys,
+                                onSelectNone: () => (_selectedRowKeys = []),
+                            }
+                          : false
+                  "
             :params="params"
         >
           <template #headerLeftRender>
@@ -34,8 +35,10 @@
                   hasPermission="DataCollect/Collector:add"
               >
                 <template #icon
-                ><AIcon type="PlusOutlined"
-                /></template>
+                >
+                  <AIcon type="PlusOutlined"
+                  />
+                </template>
                 {{ $t('Point.index.400149-0') }}
               </j-permission-button>
               <j-permission-button
@@ -45,8 +48,10 @@
                   hasPermission="DataCollect/Collector:add"
               >
                 <template #icon
-                ><AIcon type="PlusOutlined"
-                /></template>
+                >
+                  <AIcon type="PlusOutlined"
+                  />
+                </template>
                 {{ $t('Point.index.400149-1') }}
               </j-permission-button>
               <j-permission-button
@@ -77,7 +82,8 @@
               <a-checkbox
                   v-model:checked="checkAll"
                   @change="onCheckAllChange"
-              >{{ $t('Point.index.400149-4') }}</a-checkbox
+              >{{ $t('Point.index.400149-4') }}
+              </a-checkbox
               >
             </div>
           </template>
@@ -91,8 +97,8 @@
                 :status="slotProps?.runningState?.value"
                 :statusText="slotProps?.runningState?.text"
                 :statusNames="
-                                Object.fromEntries(colorMap.entries())
-                            "
+                              Object.fromEntries(colorMap.entries())
+                          "
             >
               <template #title>
                 <slot name="title">
@@ -108,22 +114,24 @@
                   <j-permission-button
                       type="text"
                       :tooltip="{
-                                            title: $t('Point.index.400149-5'),
-                                        }"
+                                          title: $t('Point.index.400149-5'),
+                                      }"
                       hasPermission="DataCollect/Collector:delete"
                       :popConfirm="{
-                                            title: $t('Point.index.400149-6'),
-                                            onConfirm: () =>
-                                                handleDelete(slotProps.id),
-                                        }"
+                                          title: $t('Point.index.400149-6'),
+                                          onConfirm: () =>
+                                              handleDelete(slotProps.id),
+                                      }"
                   >
                     <a
                         style="
-                                                font-size: 20px;
-                                                margin-top: -10px;
-                                            "
-                    ><AIcon type="DeleteOutlined"
-                    /></a>
+                                              font-size: 20px;
+                                              margin-top: -10px;
+                                          "
+                    >
+                      <AIcon type="DeleteOutlined"
+                      />
+                    </a>
                   </j-permission-button>
 
                   <j-permission-button
@@ -132,13 +140,15 @@
                       hasPermission="DataCollect/Collector:update"
                   >
                     <a style="font-size: 20px"
-                    ><AIcon type="FormOutlined"
-                    /></a>
+                    >
+                      <AIcon type="FormOutlined"
+                      />
+                    </a>
                   </j-permission-button>
                 </div>
               </template>
               <template #img>
-                <img :src="ImageMap.get(slotProps.provider)" />
+                <img :src="ImageMap.get(slotProps.provider)"/>
               </template>
               <template #content>
                 <div class="card-box-content">
@@ -147,10 +157,10 @@
                       <div
                           class="ard-box-content-left-1-title"
                           v-if="
-                                                    propertyValue.has(
-                                                        slotProps.id,
-                                                    )
-                                                "
+                                                  propertyValue.has(
+                                                      slotProps.id,
+                                                  )
+                                              "
                       >
                         <j-ellipsis
                             style="max-width: 150px"
@@ -176,31 +186,35 @@
                       </div>
                       <a
                           v-if="
-                                                    getAccessModes(
-                                                        slotProps,
-                                                    ).includes('write')
-                                                "
+                                                  getAccessModes(
+                                                      slotProps,
+                                                  ).includes('write')
+                                              "
                           @click.stop="
-                                                    clickEdit(slotProps)
-                                                "
-                      ><AIcon type="EditOutlined"
-                      /></a>
+                                                  clickEdit(slotProps)
+                                              "
+                      >
+                        <AIcon type="EditOutlined"
+                        />
+                      </a>
                       <a
                           v-if="
-                                                    getAccessModes(
-                                                        slotProps,
-                                                    ).includes('read')
-                                                "
+                                                  getAccessModes(
+                                                      slotProps,
+                                                  ).includes('read')
+                                              "
                           @click.stop="
-                                                    clickRead(slotProps)
-                                                "
-                      ><AIcon type="RedoOutlined"
-                      /></a>
+                                                  clickRead(slotProps)
+                                              "
+                      >
+                        <AIcon type="RedoOutlined"
+                        />
+                      </a>
                     </div>
                     <div
                         v-if="
-                                                propertyValue.has(slotProps.id)
-                                            "
+                                              propertyValue.has(slotProps.id)
+                                          "
                         class="card-box-content-right-2"
                     >
                       <j-ellipsis>
@@ -227,45 +241,45 @@
                   <div class="card-box-content-right">
                     <j-ellipsis
                         style="
-                                                width: calc(100% - 10px);
-                                                margin-bottom: 10px;
-                                            "
+                                              width: calc(100% - 10px);
+                                              margin-bottom: 10px;
+                                          "
                     >
                       <div
                           v-if="getRight1(slotProps)"
                           class="card-box-content-right-1"
                       >
-                                                <span>
-                                                    {{ getQuantity(slotProps) }}
-                                                </span>
+                                              <span>
+                                                  {{ getQuantity(slotProps) }}
+                                              </span>
                         <span>
-                                                    {{ getAddress(slotProps) }}
-                                                </span>
+                                                  {{ getAddress(slotProps) }}
+                                              </span>
                         <span>
-                                                    {{
+                                                  {{
                             getScaleFactor(
                                 slotProps,
                             )
                           }}
-                                                </span>
+                                              </span>
                       </div>
                     </j-ellipsis>
                     <j-ellipsis
                         style="
-                                                width: calc(100% - 10px);
-                                                margin-bottom: 10px;
-                                            "
+                                              width: calc(100% - 10px);
+                                              margin-bottom: 10px;
+                                          "
                     >
                       <div
                           class="card-box-content-right-2"
                       >
-                                                <span>{{
-                                                    getText(slotProps)
-                                                  }}</span>
+                                              <span>{{
+                                                  getText(slotProps)
+                                                }}</span>
                         <span
                             v-if="
-                                                        getInterval(slotProps)
-                                                    "
+                                                      getInterval(slotProps)
+                                                  "
                         >{{
                             getInterval(slotProps)
                           }}</span
@@ -278,59 +292,58 @@
             </PointCardBox>
           </template>
         </j-pro-table>
-      </j-scrollbar>
-    </FullPage>
-
-    <Save
-        v-if="visible.save"
-        :data="current"
-        @change="saveChange"
-        :collector="data"
-    />
-   <SaveModBus
-       v-if="visible.saveModBus"
-       :data="current"
-       @change="saveChange"
-   />
-<!--    <SaveOPCUA-->
-<!--        v-if="visible.saveOPCUA"-->
-<!--        :data="current"-->
-<!--        @change="saveChange"-->
-<!--    />-->
-    <WritePoint
-        v-if="visible.writePoint"
-        :data="current"
-        @change="saveChange"
-    />
-    <BatchUpdate
-        v-if="visible.batchUpdate"
-        :data="current"
-        :provider="data.provider"
-        @change="saveChange"
-    />
-<!--    <SaveS7 v-if="visible.saveS7" :data="current" @change="saveChange" />-->
-<!--    <SaveIEC104-->
-<!--        v-if="visible.saveIEC104"-->
-<!--        :data="current"-->
-<!--        @change="saveChange"-->
-<!--    />-->
-<!--    <SaveBACNet-->
-<!--        v-if="visible.saveBACNet"-->
-<!--        :data="current"-->
-<!--        @change="saveChange"-->
-<!--    />-->
-    <Scan v-if="visible.scan" :data="current" @change="saveChange" />
-    <ScanBacnet
-        v-if="visible.scanBacnet"
-        :data="current"
-        @change="saveChange"
-    />
-    <Import
-        v-if="visible.import"
-        :data="current"
-        @close-import="closeImport"
-    />
+      </div>
+    </div>
   </a-spin>
+  <Save
+      v-if="visible.save"
+      :data="current"
+      @change="saveChange"
+      :collector="data"
+  />
+  <SaveModBus
+      v-if="visible.saveModBus"
+      :data="current"
+      @change="saveChange"
+  />
+  <!--    <SaveOPCUA-->
+  <!--        v-if="visible.saveOPCUA"-->
+  <!--        :data="current"-->
+  <!--        @change="saveChange"-->
+  <!--    />-->
+  <WritePoint
+      v-if="visible.writePoint"
+      :data="current"
+      @change="saveChange"
+  />
+  <BatchUpdate
+      v-if="visible.batchUpdate"
+      :data="current"
+      :provider="data.provider"
+      @change="saveChange"
+  />
+  <!--    <SaveS7 v-if="visible.saveS7" :data="current" @change="saveChange" />-->
+  <!--    <SaveIEC104-->
+  <!--        v-if="visible.saveIEC104"-->
+  <!--        :data="current"-->
+  <!--        @change="saveChange"-->
+  <!--    />-->
+  <!--    <SaveBACNet-->
+  <!--        v-if="visible.saveBACNet"-->
+  <!--        :data="current"-->
+  <!--        @change="saveChange"-->
+  <!--    />-->
+  <Scan v-if="visible.scan" :data="current" @change="saveChange"/>
+  <ScanBacnet
+      v-if="visible.scanBacnet"
+      :data="current"
+      @change="saveChange"
+  />
+  <Import
+      v-if="visible.import"
+      :data="current"
+      @close-import="closeImport"
+  />
   <RenderComponents :key="data.id" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
 <script lang="ts" setup name="PointPage">
@@ -343,7 +356,7 @@ import {
   getStates,
   exportPoint,
 } from '@collector/api/data-collect/collector';
-import { onlyMessage,downloadFileByUrl } from '@jetlinks-web/utils'
+import {onlyMessage, downloadFileByUrl} from '@jetlinks-web/utils'
 import PointCardBox from './components/PointCardBox/index.vue';
 import WritePoint from './components/WritePoint/index.vue';
 import BatchUpdate from './components/BatchUpdate/index.vue';
@@ -351,18 +364,18 @@ import Save from './Save/index.vue';
 import SaveModBus from './Save/SaveModBus.vue';
 import Scan from './Scan/index.vue';
 import ScanBacnet from './ScanBacnet/index.vue';
-import { colorMap,imgUrl } from '../data';
-import { cloneDeep, isBoolean, isNumber, throttle } from 'lodash-es';
-import { getWebSocket } from '@/utils/websocket';
-import { map } from 'rxjs/operators';
+import {colorMap, imgUrl} from '../data';
+import {cloneDeep, isBoolean, isNumber, throttle} from 'lodash-es';
+import {getWebSocket} from '@/utils/websocket';
+import {map} from 'rxjs/operators';
 import dayjs from 'dayjs';
 import Import from './components/Import/index.vue';
 import BatchDropdown from '@/components/BatchDropdown/index.vue';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
 
-const { t: $t } = useI18n();
+const {t: $t} = useI18n();
 const props = defineProps({
   data: {
     type: Object,
@@ -407,7 +420,7 @@ const jsonData = ref();
 provide("point-actions", pointActions);
 
 const defaultParams = ref({
-  sorts: [{ name: 'id', order: 'desc' }],
+  sorts: [{name: 'id', order: 'desc'}],
   terms: [
     {
       terms: [
@@ -507,7 +520,7 @@ const propertyValue = ref(new Map());
 const batchActions = ref<any>([]);
 
 const handleAdd = () => {
-  if(props.data?.provider === 'COLLECTOR_GATEWAY'){
+  if (props.data?.provider === 'COLLECTOR_GATEWAY') {
     current.value = {
       collectorId: props.data?.id,
       provider: props.data?.provider || 'COLLECTOR_GATEWAY',
@@ -541,7 +554,7 @@ const handleEdit = (data: any) => {
         props.data?.configuration?.type ||
         props.data?.configuration?.valueType,
   });
-  if(data?.provider === 'COLLECTOR_GATEWAY'){
+  if (data?.provider === 'COLLECTOR_GATEWAY') {
     visible.saveModBus = true;
   } else {
     visible.save = true;
@@ -551,8 +564,10 @@ const handleEdit = (data: any) => {
 const handleDelete = (id: string | undefined = undefined) => {
   spinning.value = true;
   const response = !id
-      ? batchDeletePoint(_selectedRowKeys.value).catch(() => {})
-      : removePoint(id as string).catch(() => {});
+      ? batchDeletePoint(_selectedRowKeys.value).catch(() => {
+      })
+      : removePoint(id as string).catch(() => {
+      });
   response.then((res) => {
     if (res?.status === 200) {
       cancelSelect();
@@ -610,7 +625,7 @@ const handleExport = async () => {
           : props?.data?.provider;
   const res: any = await exportPoint(props.data.collectorId, params);
   if (res) {
-    const blob = new Blob([res], { type: 'xlsx' });
+    const blob = new Blob([res], {type: 'xlsx'});
     const url = URL.createObjectURL(blob);
     downloadFileByUrl(url, $t('Point.index.400149-16', [props?.data?.channelName]), 'xlsx');
   }
@@ -626,7 +641,7 @@ const clickRead = async (data: any) => {
   if (res.status === 200) {
     const readData: any = res.result[0];
     const _data = ReadIdMap.get(data?.id);
-    ReadIdMap.set(data?.id, { ..._data, ...readData });
+    ReadIdMap.set(data?.id, {..._data, ...readData});
     cancelSelect();
     tableRef.value?.reload();
     onlyMessage($t('Point.index.400149-14'), 'success');
@@ -634,15 +649,15 @@ const clickRead = async (data: any) => {
 };
 
 const getQuantity = (item: Partial<Record<string, any>>) => {
-  const { quantity } = item.configuration?.parameter || '';
+  const {quantity} = item.configuration?.parameter || '';
   return !!quantity ? quantity + `(${$t('Point.index.400149-24')})` : '';
 };
 const getAddress = (item: Partial<Record<string, any>>) => {
-  const { address } = item.configuration?.parameter || '';
+  const {address} = item.configuration?.parameter || '';
   return !!address || address === 0 ? address + `(${$t('Point.index.400149-25')})` : '';
 };
 const getScaleFactor = (item: Partial<Record<string, any>>) => {
-  const { scaleFactor } = item.configuration?.codec?.configuration || '';
+  const {scaleFactor} = item.configuration?.codec?.configuration || '';
   return !!scaleFactor ? scaleFactor + `(${$t('Point.index.400149-26')})` : '';
 };
 const getRight1 = (item: Partial<Record<string, any>>) => {
@@ -652,7 +667,7 @@ const getText = (item: Partial<Record<string, any>>) => {
   return (item?.accessModes || []).map((i: any) => i?.text).join(',');
 };
 const getInterval = (item: Partial<Record<string, any>>) => {
-  const { interval } = item.configuration || '';
+  const {interval} = item.configuration || '';
   return !!interval ? $t('Point.index.400149-20') + interval + 'ms' : '';
 };
 
@@ -661,7 +676,7 @@ const getAccessModes = (item: Partial<Record<string, any>>) => {
 };
 
 const getParseData = (item: any) => {
-  const { parseData, dataType } = propertyValue.value.get(item.id);
+  const {parseData, dataType} = propertyValue.value.get(item.id);
   const data = isNumber(parseData) ? parseData || 0 : parseData;
   const _data = `${data}(${dataType}) `;
   return _data;
@@ -669,7 +684,7 @@ const getParseData = (item: any) => {
 const getReadParseData = (item: any) => {
   let _data = '--';
   if (ReadIdMap.has(item.id)) {
-    const { parseData, dataType } = ReadIdMap.get(item.id);
+    const {parseData, dataType} = ReadIdMap.get(item.id);
     if (isBoolean(parseData)) {
       _data = `${parseData}(${dataType || '-'}) `;
     } else {
@@ -758,7 +773,7 @@ const getPointAction = async () => {
   jsonData.value = await devGetProtocol(props.data.provider, "pointActions");
 };
 
-const getDataSource = (p:any) => {
+const getDataSource = (p: any) => {
   return queryPoint(p).then(resp => {
     subRef.value?.unsubscribe();
     if (resp.success && resp.result.data.length) {
@@ -792,7 +807,7 @@ const changeAccessModelOptions = () => {
 }
 
 const updateDefaultParams = () => {
-  const { id } = props.data
+  const {id} = props.data
   let value = 'undefined'
 
   if (id) {
@@ -803,7 +818,7 @@ const updateDefaultParams = () => {
 }
 
 const updateBatchActions = () => {
-  const { provider } = props.data
+  const {provider} = props.data
   const defaultActions = [
     {
       key: 'update',
@@ -855,17 +870,17 @@ watch(
         batchRef.value?.reload();
         updateBatchActions()
         // COLLECTOR_GATEWAY写死
-        if(value.provider === 'COLLECTOR_GATEWAY'){
+        if (value.provider === 'COLLECTOR_GATEWAY') {
           pointActions.add = true
           pointActions.scan = false
-        }else if(value.id && value.id !== '*'){
+        } else if (value.id && value.id !== '*') {
           pointActions.add = false
           pointActions.scan = false
           getPointAction()
         }
       }
     },
-    { immediate: true, deep: true },
+    {immediate: true, deep: true},
 );
 
 onUnmounted(() => {
@@ -883,14 +898,17 @@ const handleSearch = (e: any) => {
     color: #474747;
     z-index: 1;
   }
+
   a:hover {
     color: #315efb;
     z-index: 1;
   }
+
   .card-box-title {
     font-size: 18px;
     color: #474747;
   }
+
   .card-box-action {
     width: 90px;
     display: flex;
@@ -898,35 +916,43 @@ const handleSearch = (e: any) => {
     align-items: center;
     margin-top: -10px;
   }
+
   .card-box-content {
     margin-top: 20px;
     display: flex;
+
     .card-box-content-left {
       max-width: 220px;
       border-right: 1px solid #e0e4e8;
       height: 68px;
       padding-right: 10px;
+
       .card-box-content-left-1 {
         display: flex;
         justify-content: flex-start;
+
         .card-box-content-left-1-title {
           color: #000;
           font-size: 20px;
           opacity: 0.85;
         }
       }
+
       a {
         margin-left: 10px;
       }
     }
+
     .card-box-content-right {
       flex: 0.8;
       margin-left: 20px;
+
       .card-box-content-right-1 {
         span {
           margin: 0 5px 0 0;
         }
       }
+
       .card-box-content-right-2 {
         span {
           margin: 0 5px 0 0;
