@@ -215,7 +215,13 @@ watch(
                             termType: 'in',
                             column: 'accessProvider',
                             value: provider,
+                            type: 'and',
                         },
+                        {
+                          "value": "gateway",
+                          "termType": "eq",
+                          "column": "deviceType"
+                        }
                     ],
                 },
             ],
