@@ -36,6 +36,7 @@ const changeTree = (row: any) => {
     spinning.value = false;
   }, 1000);
 };
+
 </script>
 
 <style lang="less" scoped>
