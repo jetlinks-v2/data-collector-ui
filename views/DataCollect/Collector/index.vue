@@ -1,17 +1,21 @@
 <template>
-    <j-page-container>
-        <div class="container">
-            <div class="left">
-                <Tree @change="changeTree" />
-            </div>
-            <div class="right">
-                <a-spin :spinning="spinning">
-                    <Point v-if="data" :data="data" />
-                    <j-empty v-else style="margin-top: 200px" />
-                </a-spin>
-            </div>
+  <j-page-container>
+    <FullPage>
+      <div class="container">
+        <div class="left">
+          <Tree @change="changeTree"/>
         </div>
-    </j-page-container>
+        <div class="right">
+          <a-spin :spinning="spinning">
+            <Point v-if="data" :data="data"/>
+            <div v-else style="margin-top: 150px">
+              <j-empty />
+            </div>
+          </a-spin>
+        </div>
+      </div>
+    </FullPage>
+  </j-page-container>
 </template>
 
 <script setup lang="ts" name="CollectorPage">
@@ -22,34 +26,43 @@ const data = ref();
 const spinning = ref(false);
 
 const changeTree = (row: any) => {
-    spinning.value = true;
-    //手动延迟，防止数据库更新不及时
-    setTimeout(() => {
-        data.value = {
-            ...row,
-            collectorId: row?.id,
-        };
-        spinning.value = false;
-    }, 1000);
+  spinning.value = true;
+  //手动延迟，防止数据库更新不及时
+  setTimeout(() => {
+    data.value = {
+      ...row,
+      collectorId: row?.id,
+    };
+    spinning.value = false;
+  }, 1000);
 };
+
 </script>
 
 <style lang="less" scoped>
 .container {
-    margin: 0px;
-    background: white;
-    padding: 14px;
-    display: flex;
-    min-height: calc(100vh - 180px);
-    width: 100%;
-    .left {
-        width: 370px;
-        border-right: 1px #eeeeee solid;
-        margin: 10px 10px 0 0;
+  display: flex;
+  padding: 24px;
+  height: 100%;
+
+  .left {
+    width: 370px;
+    border-right: 1px #eeeeee solid;
+    height: 100%;
+  }
+
+  .right {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+
+    :deep(.ant-spin-nested-loading) {
+      height: 100%;
+
+      .ant-spin-container {
+        height: 100%;
+      }
     }
-    .right {
-        flex: 1;
-        padding: 10px;
-    }
+  }
 }
 </style>
