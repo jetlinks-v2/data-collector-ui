@@ -230,7 +230,8 @@ const _channelListAll = computed(() => {
 const channelList = computed(() => {
   const list = [];
   _channelListAll.value.forEach((item) => {
-    if (item?.state?.value !== 'disabled') {
+    // 编辑时为了防止禁用的数据可以回显问题
+    if (props.data.id || item?.state?.value !== 'disabled') {
       list.push({
         ...item,
         provider: item.provider,
