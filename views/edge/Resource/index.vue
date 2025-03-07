@@ -151,7 +151,7 @@
 <script lang="ts" setup>
 import { useMenuStore } from '@/store/menu';
 import { onlyMessage } from '@jetlinks-web/utils'
-import imgUrl from '../../../assets/images/device-card.png';
+import imgUrl from '../../../assets/device-card.png';
 import dayjs from 'dayjs';
 import { query, _delete, _start, _stop } from '../../../api/edge/resource';
 import Save from './Save/index.vue';

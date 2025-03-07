@@ -158,7 +158,7 @@ import {queryPage, remove, update} from '../../../api/edge/newResource'
 import {onlyMessage} from "@jetlinks-web/utils";
 import { useMenuStore } from "@/store/menu";
 import { TargetTypeOptions, ServiceIdEnum, JobTypeEnum } from './utils';
-import DeviceGatewayImg from '../../../assets/images/device-gateway.png';
+import DeviceGatewayImg from '../../../assets/device-gateway.png';
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();

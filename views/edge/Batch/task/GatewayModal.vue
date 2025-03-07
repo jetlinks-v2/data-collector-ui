@@ -97,7 +97,7 @@
 import {query, queryNoPagingPost, queryTree} from '../../../../api/others';
 import dayjs from 'dayjs'
 import {onlyMessage} from '@jetlinks-web/utils';
-import DeviceGatewayImg from '../../../../assets/images/device-gateway.png'
+import DeviceGatewayImg from '../../../../assets/device-gateway.png'
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();

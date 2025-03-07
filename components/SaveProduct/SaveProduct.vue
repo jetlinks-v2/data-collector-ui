@@ -205,7 +205,7 @@
 import {DeviceApi,getAccessConfig,getProductsById,savePluginData} from '../../api/others';
 // import { getImage, onlyMessage } from '@/utils/comm';
 import { onlyMessage } from '@jetlinks-web/utils'
-import url from '../../assets/images/device-access.png'
+import url from '../../assets/device-access.png'
 import { gatewayType } from './typings';
 import { providerType } from './const';
 import { useAuthStore } from '@/store/auth';
