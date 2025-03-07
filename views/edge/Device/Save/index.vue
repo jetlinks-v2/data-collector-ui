@@ -158,7 +158,7 @@
 import { isExists, update, queryNoPagingPost } from '../../../../api/others';
 // import { getImage, onlyMessage } from '@/utils/comm';
 import { onlyMessage } from '@jetlinks-web/utils'
-import url from '../../../../assets/images/device-gateway.png'
+import url from '../../../../assets/device-gateway.png'
 import SaveProduct from '../../../../components/SaveProduct/SaveProduct.vue';
 import {useI18n} from "vue-i18n";
 

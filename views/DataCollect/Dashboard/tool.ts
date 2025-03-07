@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
-import channelImg from '../../../assets/images/DataCollect/dashboard/channel.png';
-import collectorImg from '../../../assets/images/DataCollect/dashboard/collector.png';
-import pointImg from '../../../assets/images/DataCollect/dashboard/point.png';
+import channelImg from '../../../assets/DataCollect/dashboard/channel.png';
+import collectorImg from '../../../assets/DataCollect/dashboard/collector.png';
+import pointImg from '../../../assets/DataCollect/dashboard/point.png';
 import i18n from '@/locales';
 
 const getParams = (dt: any) => {

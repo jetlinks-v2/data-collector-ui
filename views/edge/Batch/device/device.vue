@@ -97,7 +97,7 @@ import { query, queryNoPagingPost, queryTree } from '../../../../api/others';
 import { getContext } from '../util';
 import { omit } from 'lodash-es';
 import dayjs from 'dayjs';
-import DeviceCardImg from '../../../../assets/images/device-card.png';
+import DeviceCardImg from '../../../../assets/device-card.png';
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();

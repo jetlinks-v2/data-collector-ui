@@ -214,7 +214,7 @@ import { onlyMessage } from '@jetlinks-web/utils'
 import { openEdgeUrl } from '../../../utils/utils';
 import dayjs from 'dayjs';
 import { query, _delete, _deploy, _undeploy,queryNoPagingPost,queryTree} from '../../../api/others';
-import url from '../../../assets/images/device-gateway.png'
+import url from '../../../assets/device-gateway.png'
 import Save from './Save/index.vue';
 import Import from '../../../components/Import/index.vue';
 import { useI18n } from 'vue-i18n';

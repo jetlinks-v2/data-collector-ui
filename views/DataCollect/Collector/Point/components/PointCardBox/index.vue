@@ -197,7 +197,7 @@ const handleClick = () => {
                 width: 15%;
                 min-width: 64px;
                 height: 2px;
-                // background-image: url('/images/rectangle.png');
+                // background-image: url('/rectangle.png');
                 background-repeat: no-repeat;
                 background-size: 100% 100%;
                 content: ' ';
