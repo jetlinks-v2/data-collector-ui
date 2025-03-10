@@ -366,7 +366,7 @@ import Scan from './Scan/index.vue';
 import ScanBacnet from './ScanBacnet/index.vue';
 import {colorMap, imgUrl} from '../data';
 import {cloneDeep, isBoolean, isNumber, throttle} from 'lodash-es';
-import {getWebSocket} from '@/utils/websocket';
+import { wsClient } from '@jetlinks-web/core';
 import {map} from 'rxjs/operators';
 import dayjs from 'dayjs';
 import Import from './components/Import/index.vue';
@@ -743,7 +743,7 @@ const subscribeProperty = (value: any) => {
           ? '*'
           : props.data?.id
   }/data`;
-  subRef.value = getWebSocket(id, topic, {
+  subRef.value = wsClient.getWebSocket(id, topic, {
     pointId: list.join(','),
   })
       ?.pipe(map((res: any) => res.payload))
