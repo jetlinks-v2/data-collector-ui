@@ -1,6 +1,6 @@
 <template>
     <a-modal visible title="编辑" :width="700" @ok="onSave" @cancel="onCancel">
-        <j-monaco-editor
+        <monaco-editor
             style="width: 100%; height: 370px"
             theme="vs"
             v-model="monacoValue"
