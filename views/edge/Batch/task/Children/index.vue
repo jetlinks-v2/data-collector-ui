@@ -259,7 +259,7 @@ import { _queryByEdge, _commandByEdge } from '../../../../../api/edge/batch';
 import { onlyMessage, randomString } from '@jetlinks-web/utils';
 import { cloneDeep } from 'lodash-es';
 import DeviceDetail from './DeviceDetail/index.vue';
-import EmptyChildImg from '../../../../../assets/images/edge/empty-child.png';
+import EmptyChildImg from '../../../../../assets/edge/empty-child.png';
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();

@@ -1,9 +1,9 @@
 import { testIpv4_6 } from '@/utils/validate';
-import opcImage from '../../../assets/images/DataCollect/device-opcua.png'
-import modbusImage from '../../../assets/images/DataCollect/channel-modbus.png'
-import s7Image from '../../../assets/images/DataCollect/s7.png'
-import gatewayImage from '../../../assets/images/DataCollect/gateway.png'
-import iecImage from '../../../assets/images/DataCollect/IEC104.png'
+import opcImage from '../../../assets/DataCollect/device-opcua.png'
+import modbusImage from '../../../assets/DataCollect/channel-modbus.png'
+import s7Image from '../../../assets/DataCollect/s7.png'
+import gatewayImage from '../../../assets/DataCollect/gateway.png'
+import iecImage from '../../../assets/DataCollect/IEC104.png'
 import i18n from '@/locales';
 
 export const imgUrl = {

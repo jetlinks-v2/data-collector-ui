@@ -40,7 +40,7 @@
 </template>
 
 <script setup name="BatchCard">
-import DeviceGateWayImg from '../../../../assets/images/device-gateway.png'
+import DeviceGateWayImg from '../../../../assets/device-gateway.png'
 const props = defineProps({
   record: {
     type: Object,

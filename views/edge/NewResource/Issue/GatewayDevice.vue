@@ -98,7 +98,7 @@
 
 <script setup lang="ts">
 import {queryNoPagingPost, query, queryTree} from "../../../../api/others";
-import DeviceGatewayImg from '../../../../assets/images/device-gateway.png'
+import DeviceGatewayImg from '../../../../assets/device-gateway.png'
 import dayjs from "dayjs";
 import {PropType} from "vue";
 import { useI18n } from 'vue-i18n';

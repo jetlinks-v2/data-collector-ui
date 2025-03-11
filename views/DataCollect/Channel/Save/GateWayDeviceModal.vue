@@ -77,14 +77,14 @@
         </template>
       </j-pro-table>
       </div>
-     
+
     </div>
 
   </a-modal>
 </template>
 
 <script name="GateWayDevice" setup>
-import imgUrl from '../../../../assets/images/device-card.png'
+import imgUrl from '../../../../assets/device-card.png'
 import {query} from "../../../../api/others";
 import { useI18n } from 'vue-i18n';
 

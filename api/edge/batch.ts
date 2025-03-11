@@ -28,7 +28,7 @@ export const _detailByEdge = (thingId: string,id:string) => request.get(`/edge/d
  * @param thingId 边缘网关ID
  * @param id 设备ID
  */
-export const getEventListByEdge = (thingId: string,id:string,eventId:string,data:any) => server.post(`/edge/device/${thingId}/_/device-instance/${id}/event/${eventId}?format=true`,data)
+export const getEventListByEdge = (thingId: string,id:string,eventId:string,data:any) => request.post(`/edge/device/${thingId}/_/device-instance/${id}/event/${eventId}?format=true`,data)
 
 /**
  * 创建任务
