@@ -10,7 +10,7 @@
                 ref="edgeDeviceRef"
                 :columns="columns"
                 :request="query"
-                mode="CARD"
+                modeValue="CARD"
                 :defaultParams="defaultParams"
                 :params="params"
                 :gridColumns="[2, 2, 2, 3]"
