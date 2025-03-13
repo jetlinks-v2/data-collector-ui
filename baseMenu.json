@@ -64,6 +64,12 @@
                 "actions": [
                   "query"
                 ]
+              },
+              {
+                "permission": "edge-action-sync",
+                "actions": [
+                    "save"
+                ]
               }
             ],
             "buttons": [
