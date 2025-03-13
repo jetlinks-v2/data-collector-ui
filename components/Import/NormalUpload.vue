@@ -39,7 +39,7 @@
             </div>
             <div>
                 <a-space size="large">
-                    <a-badge status="error" :text="$t('Import.NormalUpload.135131-5')" />
+                    <a-badge status="error" :text="$t('Import.NormalUpload.135131-5') + '&emsp;'" />
                     <span>{{ $t('Import.NormalUpload.135131-4') }}{{ failCount }}</span>
                     <a :href="detailFile" v-if="failCount">{{ $t('Import.NormalUpload.135131-6') }}</a>
                 </a-space>
@@ -161,7 +161,7 @@ const submitData = async (fileUrl: string) => {
 const uploadChange = async (info: Record<string, any>) => {
     if (info.file.status === 'done') {
         const resp: any = info.file.response || { result: '' };
-        await submitData(resp?.result || '');
+        await submitData(resp?.result?.accessUrl || '');
     }
 };
 </script>

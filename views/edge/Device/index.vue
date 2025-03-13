@@ -10,7 +10,7 @@
                 ref="edgeDeviceRef"
                 :columns="columns"
                 :request="query"
-                mode="CARD"
+                modeValue="CARD"
                 :defaultParams="defaultParams"
                 :params="params"
                 :gridColumns="[2, 2, 2, 3]"
@@ -460,6 +460,7 @@ const getActions = (
         {
             key: 'setting',
             text: $t('Device.index.911422-22'),
+            disabled: data.state.value !== 'online',
             tooltip: {
                 title: $t('Device.index.911422-22'),
             },
