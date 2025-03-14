@@ -160,7 +160,7 @@
                             ? dayjs(slotProps.registryTime).format(
                                   'YYYY-MM-DD HH:mm:ss',
                               )
-                            : ''
+                            : '--'
                     }}</span>
                 </template>
                 <template #action="slotProps">
@@ -202,6 +202,7 @@
         />
         <Import
             v-if="importVisible"
+            type="agent-device-gateway"
             @save="onRefresh"
             @close="importVisible = false"
         />
