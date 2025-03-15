@@ -22,7 +22,7 @@
             selectedRowKeys: _selectedRowKeys,
             onSelect: onSelectChange,
             onSelectAll: selectAll,
-            onSelectNone: () => (_selectedRowKeys = []),
+            onSelectNone: selectNone,
         }"
     >
         <template #card="slotProps">
@@ -200,20 +200,6 @@ const columns = [
         },
     },
     {
-        dataIndex: 'deviceType',
-        title: $t('Issue.GatewayDevice.556619-0'),
-        valueType: 'select',
-        hideInTable: true,
-        search: {
-            type: 'select',
-            options: [
-                {label: $t('Issue.GatewayDevice.556619-9'), value: 'device'},
-                {label: $t('Issue.GatewayDevice.556619-10'), value: 'childrenDevice'},
-                {label: $t('Issue.GatewayDevice.556619-11'), value: 'gateway'},
-            ],
-        },
-    },
-    {
         title: $t('Issue.GatewayDevice.556619-12'),
         dataIndex: 'describe',
         key: 'describe',
@@ -265,6 +251,11 @@ const selectAll = (selected: Boolean, selectedRows: any, changeRows: any) => {
         _selectedRowKeys.value = _ids;
     }
 };
+
+const selectNone = () => {
+    _selectedRowKeys.value = []
+    emit('update:value', _selectedRowKeys.value)
+}
 const transformData = (arr: any[]): any[] => {
     if (Array.isArray(arr) && arr.length) {
         return (arr || []).map((item: any) => {
