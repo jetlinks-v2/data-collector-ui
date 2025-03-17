@@ -202,8 +202,9 @@ const onCopy = () => {
       }
 
       .detail-title {
-        width: 40px;
-
+        max-width: 60px;
+        white-space: nowrap;
+        margin-right: 10px;
       }
 
       .detail-value {

@@ -4,6 +4,7 @@
         target="edge-device"
         type="simple"
         @search="handleSearch"
+        style="padding: 0"
     />
     <JProTable
         ref="edgeDeviceRef"
@@ -13,7 +14,6 @@
         :params="params"
         :gridColumn="2"
         :gridColumns="[2]"
-        mode="CARD"
         :pagination="{
             pageSizeOptions: ['4', '12', '24', '48'],
             showSizeChanger: true,
@@ -24,13 +24,14 @@
             onSelectAll: selectAll,
             onSelectNone: selectNone,
         }"
+        style="padding: 0"
     >
         <template #card="slotProps">
             <CardBox
                 :value="slotProps"
                 :status="slotProps.state?.value"
                 :statusText="slotProps.state?.text"
-                :active="_selectedRowKeys.findIndex(i => i.id === slotProps.id) !== -1"
+                :active="_selectedRowKeys.includes(slotProps.id)"
                 @click="handleClick(slotProps)"
                 :statusNames="{
                     online: 'processing',
@@ -221,16 +222,25 @@ const defaultParams = {
     ],
 };
 
-const _selectedRowKeys = ref<Record<string, any>[]>([]);
+const _selectedRowKeys = ref<string[]>([]);
+const _selectedDataMap = new Map()
 const params = ref<Record<string, any>>({});
 
+const onChange = () => {
+  const arr = _selectedRowKeys.value.map(i => {
+    return _selectedDataMap.get(i)
+  })
+  console.log(arr, 'arr')
+  emit('update:value', arr)
+}
 const onSelectChange = (item: any, state: boolean) => {
     if (state) {
-        _selectedRowKeys.value.push(item);
+        _selectedRowKeys.value.push(item.id);
+      _selectedDataMap.set(item.id, item)
     } else {
-        _selectedRowKeys.value.splice(_selectedRowKeys.value.findIndex(i => i.id === item.id), 1);
+        _selectedRowKeys.value.splice(_selectedRowKeys.value.findIndex(i => i === item.id), 1);
     }
-    emit('update:value', _selectedRowKeys.value)
+    onChange()
 };
 
 const selectAll = (selected: Boolean, selectedRows: any, changeRows: any) => {
@@ -238,6 +248,7 @@ const selectAll = (selected: Boolean, selectedRows: any, changeRows: any) => {
         changeRows.map((i: any) => {
             if (!_selectedRowKeys.value.includes(i.id)) {
                 _selectedRowKeys.value.push(i.id);
+              _selectedDataMap.set(i.id, i)
             }
         });
     } else {
@@ -246,15 +257,18 @@ const selectAll = (selected: Boolean, selectedRows: any, changeRows: any) => {
         _selectedRowKeys.value.map((i: any) => {
             if (!arr.includes(i)) {
                 _ids.push(i);
+              _selectedDataMap.set(i.id, i)
             }
         });
         _selectedRowKeys.value = _ids;
     }
+  onChange()
 };
 
 const selectNone = () => {
     _selectedRowKeys.value = []
-    emit('update:value', _selectedRowKeys.value)
+    _selectedDataMap.clear()
+    onChange()
 }
 const transformData = (arr: any[]): any[] => {
     if (Array.isArray(arr) && arr.length) {
@@ -274,13 +288,14 @@ const handleSearch = (e: any) => {
     params.value = e;
 }
 const handleClick = (data: any) => {
-    const _index = _selectedRowKeys.value.findIndex(i => i.id === data.id)
+    const _index = _selectedRowKeys.value.findIndex(i => i === data.id)
     if (_index !== -1) {
         _selectedRowKeys.value.splice(_index, 1);
     } else {
-        _selectedRowKeys.value.push(data);
+        _selectedRowKeys.value.push(data.id);
+        _selectedDataMap.set(data.id, data)
     }
-    emit('update:value', _selectedRowKeys.value)
+  onChange()
 };
 
 </script>
