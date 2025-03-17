@@ -24,7 +24,17 @@
                     </a-col>
                 </a-row>
                 <a-form-item :label="$t('Issue.index.517977-8')">
-                    <j-card-select v-model:value="chooseType" :options="options"></j-card-select>
+                    <j-card-select v-model:value="chooseType" :options="options">
+                        <template #itemRender={node}>
+                            <a-space align="flex-start">
+                                <AIcon :type="node.icon"></AIcon>
+                            <div>
+                                <p>{{node.label}}</p>
+                                <span style="color: #999;font-size: 14px;">{{node.describe}}</span>
+                            </div>
+                            </a-space>
+                        </template>
+                    </j-card-select>
                 </a-form-item>
                 <a-form-item :label="$t('Issue.index.517977-9')">
                     <a-textarea v-model:value="formData.description" :placeholder="$t('Issue.index.517977-10')" :maxlength="200" showCount></a-textarea>
@@ -100,8 +110,8 @@ const rules = {
 }
 
 const options = [
-    {label: $t('Issue.index.517977-16'), value: 'device'},
-    {label: $t('Issue.index.517977-17'), value: 'more', disabled: true},
+    {label: $t('Issue.index.517977-16'), value: 'device', describe: '按设备列表选择对应网关设备', icon: 'icon-shebeixinxi'},
+    {label: $t('Issue.index.517977-17'), value: 'more', disabled: true, describe: '敬请期待！', icon: 'AppstoreOutlined'},
 ]
 
 const handleSubmit = () => {
