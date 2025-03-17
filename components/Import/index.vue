@@ -60,7 +60,9 @@ const props = defineProps({
         type: Object,
         default: undefined,
     },
-    type: String,
+    type: {
+        type: Array || String,
+    },
 });
 const productList = ref<Record<string, any>[]>([]);
 
@@ -86,7 +88,8 @@ watch(
                 },
                 {
                     column: 'accessProvider',
-                    value: props?.type
+                    value: props?.type,
+                    termType: typeof props?.type === 'string' ? 'eq' : 'in',
                 }
             ],
             sorts: [{ name: 'createTime', order: 'desc' }]

@@ -202,7 +202,7 @@
         />
         <Import
             v-if="importVisible"
-            type="agent-device-gateway"
+            :type="['agent-device-gateway', 'agent-media-device-gateway']"
             @save="onRefresh"
             @close="importVisible = false"
         />

@@ -34,7 +34,7 @@
         selectedRowKeys: selectedRowKeys,
         onSelect: onSelectChange,
         onSelectAll: selectAll,
-        onSelectNone: () => (selectedRowKeys = []),
+        onSelectNone: selectNone,
       }"
     />
   </div>
@@ -51,6 +51,11 @@ const { t: $t } = useI18n();
 const params = ref()
 
 const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
+
+const selectNone = () => {
+  selectedRowKeys.value = []
+  selectedRowMap.clear()
+}
 
 const columns = [
   {
