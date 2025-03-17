@@ -5,7 +5,25 @@
         @tabChange="onTabChange"
     >
         <template #title>
-            {{detailData.name}}
+            <a-space>
+                <span>{{detailData.name}}</span>
+                <j-permission-button
+                    style="padding: 0"
+                    type="text"
+                    hasPermission="device/Product:action"
+                    :popConfirm="{
+                        title:
+                            detailData.state?.value === 'enabled'
+                                ? $t('NewResource.index.035355-9', [$t('NewResource.index.035355-6')])
+                                : $t('NewResource.index.035355-9', [$t('NewResource.index.035355-5')]),
+                        onConfirm: () => {
+                            handleEnable(detailData.state?.value === 'enabled')
+                        }
+                    }"
+                >
+                    <a-switch :checked="detailData.state?.value === 'enabled'"></a-switch>
+                </j-permission-button>
+            </a-space>
         </template>
         <FullPage>
             <div style="padding: 24px; height: 100%">
@@ -24,9 +42,10 @@
 <script setup lang="ts">
 import Info from './Info/index.vue';
 import Record from './Record/index.vue';
-import { detail } from "../../../../api/edge/newResource";
+import { detail, update } from "../../../../api/edge/newResource";
 import { useResourceStore } from "../../../../store/resource";
 import { useI18n } from 'vue-i18n';
+import { onlyMessage } from '@jetlinks-web/utils'
 
 const { t: $t } = useI18n();
 
@@ -65,6 +84,14 @@ const getDetail = async () => {
 
 const handleRefresh = () => {
     getDetail();
+}
+
+const handleEnable = (checked: boolean) => {
+    const state = !checked ? 'enabled' : 'disabled';
+    update(detailData.value?.id, {state}).then(() => {
+        onlyMessage($t('NewResource.index.035355-10'));
+        getDetail();
+    });
 }
 
 watch(() => route.params.id, (val) => {
