@@ -260,7 +260,7 @@ const onOk = async () => {
   const commandArgs = await contentRef.value.getValue()
 
   if (!commandArgs.length) {
-    onlyMessage($t('task.task.010223-20'), 'warning')
+    onlyMessage($t('task.task.010223-20', [title.value]), 'warning')
     return
   }
 

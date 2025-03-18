@@ -783,7 +783,7 @@
     "task.task.010223-17": "Please select the gateway involved",
     "task.task.010223-18": "Up to 200 characters can be entered",
     "task.task.010223-19": "Please enter the response timeout time",
-    "task.task.010223-20": "Please select a plugin",
+    "task.task.010223-20": "Please select {0}",
     "task.task.010223-21": "Switching task types will clear previous data",
     "task.GatewayModal.823128-0": "Select device",
     "task.GatewayModal.823128-1": "Select by device",
