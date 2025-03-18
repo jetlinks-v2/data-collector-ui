@@ -140,6 +140,7 @@ const { loading, run } = useRequest( createTask, {
   immediate: false,
   onSuccess() {
     emit('ok')
+    onlyMessage($t('log.TaskDetail.866822-30'))
   }
 })
 
