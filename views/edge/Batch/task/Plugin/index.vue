@@ -50,12 +50,8 @@ const { t: $t } = useI18n();
 
 const params = ref()
 
-const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
+const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll, selectNone } = useTemplateRowSelection()
 
-const selectNone = () => {
-  selectedRowKeys.value = []
-  selectedRowMap.clear()
-}
 
 const columns = [
   {

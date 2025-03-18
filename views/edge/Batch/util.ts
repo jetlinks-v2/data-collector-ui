@@ -113,10 +113,16 @@ export const useTemplateRowSelection = () => {
         handleSelect(selected, changeRows)
     };
 
+    const selectNone = () => {
+        selectedRowKeys.value = [];
+        selectedRowMap.clear();
+    }
+
     return {
         selectedRowKeys,
         selectedRowMap,
         onSelectChange,
-        selectAll
+        selectAll,
+        selectNone
     }
 }

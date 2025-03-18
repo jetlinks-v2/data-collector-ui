@@ -28,7 +28,7 @@
             selectedRowKeys: selectedRowKeys,
             onSelect: onSelectChange,
             onSelectAll: selectAll,
-            onSelectNone: () => (selectedRowKeys = []),
+            onSelectNone: selectNone,
         }"
     />
   </div>
@@ -42,7 +42,7 @@ import { useI18n } from 'vue-i18n';
 const { t: $t } = useI18n();
 
 const params = ref()
-const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
+const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll, selectNone } = useTemplateRowSelection()
 
 const columns = [
   {
