@@ -14,7 +14,7 @@
                 <a-tab-pane v-for="item in options" :key="item.id">
                     <template #tab>
                         <div style="text-wrap: initial; display: flex">
-                            <badge-status
+                            <j-badge-status
                                 :status="item.state.value"
                                 :statusNames="{
                                     online: 'success',

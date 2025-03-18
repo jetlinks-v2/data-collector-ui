@@ -68,7 +68,8 @@
               {
                 "permission": "edge-action-sync",
                 "actions": [
-                    "save"
+                    "save",
+                    "delete"
                 ]
               }
             ],

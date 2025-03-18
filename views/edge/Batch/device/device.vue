@@ -14,7 +14,6 @@
                 :request="query"
                 :params="params"
                 modeValue="CARD"
-                mode="CARD"
                 :defaultParams="defaultParams"
                 :gridColumn="3"
                 :gridColumns="[2, 3]"
