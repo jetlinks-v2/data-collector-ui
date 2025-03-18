@@ -19,6 +19,7 @@
             <JProTable
                 ref="edgeDeviceRef"
                 :columns="columns"
+                modeValue="CARD"
                 :style="{ padding: '24px 0' }"
                 :request="query"
                 :params="params"
@@ -117,7 +118,7 @@ const defaultParams = computed(() => {
                 terms: [
                     {
                         column: 'productId$product-info',
-                        value: 'accessProvider in (agent-device-gateway, agent-media-device-gateway, official-edge-gateway)'
+                        value: 'accessProvider in (agent-device-gateway,agent-media-device-gateway,official-edge-gateway)'
                     }
                 ],
                 type: 'and',
