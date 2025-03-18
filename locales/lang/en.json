@@ -873,6 +873,8 @@
     "Children.index.645257-25": "Cloud products do not exist",
     "Children.index.645257-26": "The product to which this device belongs was not created by a cloud template and does not support generating the corresponding device directly in the cloud",
     "Children.index.645257-27": "Successfully edited and bound sub devices",
+    "Children.index.645257-28": "There are unsaved mapping relationships, do you want to save?",
+    "Children.index.645257-29": "Notice",
     "Children.ChildrenModal.763264-0": "Not saved",
     "Children.ChildrenModal.763264-1": "There is unsaved data, confirm to close",
     "Children.ChildrenModal.763264-2": "Do not save, close directly",

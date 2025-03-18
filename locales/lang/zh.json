@@ -873,6 +873,8 @@
     "Children.index.645257-25": "云端产品不存在",
     "Children.index.645257-26": "该设备所属产品不是由云端模板创建，不支持支持直接在云端生成对应设备",
     "Children.index.645257-27": "编辑绑定子设备成功",
+    "Children.index.645257-28": "存在未保存的映射关系，是否保存",
+    "Children.index.645257-29": "提示",
     "Children.ChildrenModal.763264-0": "未保存",
     "Children.ChildrenModal.763264-1": "存在未保存数据,确认关闭",
     "Children.ChildrenModal.763264-2": "不保存，直接关闭",
