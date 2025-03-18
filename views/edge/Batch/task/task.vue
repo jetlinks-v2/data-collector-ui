@@ -120,6 +120,7 @@ import {Modal} from "ant-design-vue";
 import {onlyMessage} from "@jetlinks-web/utils";
 import ChildrenModal from './Children/ChildrenModal.vue'
 import { useI18n } from 'vue-i18n';
+import {  cloneDeep } from 'lodash-es';
 
 const { t: $t } = useI18n();
 
@@ -151,7 +152,7 @@ const formRef = ref()
 const formModel = reactive({
   name: '',
   jobType: undefined,
-  thingList: props.list,
+  thingList: cloneDeep(props.list),
   description: undefined
 })
 const modalVisible = ref(false)
