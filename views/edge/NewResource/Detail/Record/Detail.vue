@@ -14,7 +14,7 @@
                         {{resourceStore.resource.creatorName}}
                     </a-descriptions-item>
                     <a-descriptions-item :label="$t('Record.Detail.913748-2')" :labelStyle="{width: '110px'}">
-                        {{dayjs(resourceStore.resource.createTime).format('YYYY-MM-DD HH:mm:ss')}}
+                        {{record.createTime ? dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') : '--'}}
                     </a-descriptions-item>
                     <a-descriptions-item :label="$t('Record.Detail.913748-3')" :labelStyle="{width: '110px'}">
                         {{ record.thingTotal }}
@@ -82,8 +82,12 @@
                                 <span>{{item.total}}</span>
                             </a-space>
                         </span>
+                        <a-space>
+                          <span>{{$t('Record.Card.931797-4')}}</span>
+                          <span>{{ record.taskTotal || 0 }}</span>
+                        </a-space>
                     </a-space>
-                    <span>{{ $t('Record.Detail.913748-14') }}{{ record.thingTotal }}{{ $t('Record.Detail.913748-15') }}</span>
+<!--                    <span>{{ $t('Record.Detail.913748-14') }}{{ record.thingTotal }}{{ $t('Record.Detail.913748-15') }}</span>-->
                 </div>
                 <JProTable
                     ref="tableRef"
@@ -132,12 +136,7 @@
                                     title: $t('Record.Detail.913748-16'),
                                 }"
                                 style="padding: 0"
-                                :popConfirm="{
-                                    title: $t('Record.Detail.913748-17'),
-                                    onConfirm: async () => {
-                                        stopUpgrades(record.id);
-                                    },
-                                }"
+                                @click="stopUpgrades(record.id)"
                             >
                                 <AIcon type="StopOutlined" />
                             </j-permission-button>
@@ -148,12 +147,7 @@
                                     title: $t('Record.Detail.913748-18'),
                                 }"
                                 style="padding: 0"
-                                :popConfirm="{
-                                    title: $t('Record.Detail.913748-19'),
-                                    onConfirm: () => {
-                                        startUpgrades(record.id);
-                                    },
-                                }"
+                                @click="startUpgrades(record.id)"
                             >
                                 <AIcon type="ReloadOutlined" />
                             </j-permission-button>
@@ -164,12 +158,7 @@
                                     title: $t('Record.Detail.913748-20'),
                                 }"
                                 style="padding: 0"
-                                :popConfirm="{
-                                    title: $t('Record.Detail.913748-21'),
-                                    onConfirm: async () => {
-                                        startUpgrades(record.id);
-                                    },
-                                }"
+                                @click="startUpgrades(record.id)"
                             >
                                 <AIcon type="PlayCircleOutlined" />
                             </j-permission-button>

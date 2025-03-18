@@ -142,7 +142,7 @@ const handleOk = async () => {
 };
 
 const onChange = async (val) => {
-  if(val !== 'COLLECTOR_GATEWAY'){
+  if(val && val !== 'COLLECTOR_GATEWAY'){
     jsonData.value = await devGetProtocol(val, 'channel');
   }
 };

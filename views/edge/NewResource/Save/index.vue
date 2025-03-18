@@ -8,8 +8,14 @@
         @cancel="emit('close')"
         @ok="handleSave"
     >
+        <div class="tip" v-if="!data.id">
+          {{ $t('Save.index.001090-17') }}
+        </div>
         <a-form ref="formRef" layout="vertical" :model="formData" :rules="rules">
-            <a-form-item name="targetType">
+            <a-form-item name="targetType" :label="$t('Save.index.001090-16')" :rules="{
+                    required: true,
+                    message: $t('Scan.Table.400147-1'),
+                }">
                 <j-card-select
                     :disabled="!!data.id"
                     v-model:value="formData.targetType"
@@ -21,15 +27,16 @@
             <a-form-item name="targetId">
                 <template #label>
                     <span>
-                        <span v-if="formData.targetType === 'AiModel'">
-                            {{ $t('Save.index.001090-2') }}
-                        </span>
-                        <span v-else-if="formData.targetType === 'PluginDriver'">
-                            {{ $t('Save.index.001090-14') }}
-                        </span>
-                        <span v-else>
-                            {{ $t('Save.index.001090-15') }}
-                        </span>
+                      ID
+<!--                        <span v-if="formData.targetType === 'AiModel'">-->
+<!--                            {{ $t('Save.index.001090-2') }}-->
+<!--                        </span>-->
+<!--                        <span v-else-if="formData.targetType === 'PluginDriver'">-->
+<!--                            {{ $t('Save.index.001090-14') }}-->
+<!--                        </span>-->
+<!--                        <span v-else>-->
+<!--                            {{ $t('Save.index.001090-15') }}-->
+<!--                        </span>-->
                         <a-tooltip
                             :title="$t('Save.index.001090-3')"
                         >
@@ -40,7 +47,7 @@
                         </a-tooltip>
                     </span>
                 </template>
-                <a-input v-model:value="formData.targetId" :disabled="data.targetId" :placeholder="$t('Save.index.001090-4')"></a-input>
+                <a-input v-model:value="formData.id" :disabled="data.id" :placeholder="$t('Save.index.001090-4')"></a-input>
             </a-form-item>
             <a-form-item :label="$t('Save.index.001090-5')" name="name">
                 <a-input v-model:value="formData.name" :placeholder="$t('Save.index.001090-6')"></a-input>
@@ -171,7 +178,7 @@ const formData = ref<Record<string, any>>({
 })
 
 const rules = {
-    targetId: [
+    id: [
         {
             pattern: /^[a-zA-Z0-9_\-]+$/,
             message: $t('Save.index.001090-10'),
@@ -230,6 +237,7 @@ const handleSave = () => {
     formRef.value?.validate().then(async () => {
         loading.value = true;
         formData.value.metadata.name = formData.value.name;
+        formData.value.targetId = formData.value.id;
         const params = {
             ...formData.value,
             metadata: JSON.stringify(formData.value.metadata)
@@ -273,5 +281,11 @@ const handleChangeTargetType = (e: any) => {
 </script>
 
 <style scoped lang="less">
-
+.tip {
+  padding: 8px 14px;
+  border: 1px solid #91CAFF;
+  background-color: #E6F4FF;
+  margin-bottom: 16px;
+  border-radius: 2px;
+}
 </style>
