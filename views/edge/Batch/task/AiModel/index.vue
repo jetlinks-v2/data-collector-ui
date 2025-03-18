@@ -47,8 +47,8 @@ const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll, selectNone }
 const columns = [
   {
     title: $t('AiModel.index.311326-2'),
-    key: 'id',
-    dataIndex: 'id',
+    key: 'targetId',
+    dataIndex: 'targetId',
     search: {
       type: 'string',
     },
