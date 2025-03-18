@@ -52,6 +52,7 @@ const columns = [
     search: {
       type: 'string',
     },
+    ellipsis: true,
   },
   {
     title: $t('AiModel.index.311326-3'),
@@ -73,6 +74,15 @@ const columns = [
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,
+  },
+  {
+    title: $t('Plugin.index.879212-6'),
+    key: 'id',
+    dataIndex: 'id',
+    search: {
+      type: 'string',
+    },
+    width: 200
   },
 ]
 
