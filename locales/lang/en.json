@@ -670,7 +670,7 @@
     "Batch.util.131400-0": "Distribute plugins",
     "Batch.util.131400-1": "Batch distribute plugins to the edge gateway",
     "Batch.util.131400-2": "Bind sub devices",
-    "Batch.util.131400-3": "Batch binding cloud terminal devices",
+    "Batch.util.131400-3": "Batch binding cloud and edge devices",
     "Batch.util.131400-4": "Distribute AI models",
     "Batch.util.131400-5": "Batch distribute AI models to edge gateways",
     "Batch.util.131400-6": "Distribute AI database",
