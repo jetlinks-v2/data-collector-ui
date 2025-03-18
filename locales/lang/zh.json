@@ -817,7 +817,7 @@
     "Remote.Firmware.492667-4": "创建时间",
     "Remote.Firmware.492667-5": "说明",
     "Plugin.index.879212-0": "插件",
-    "Plugin.index.879212-1": "若插件重复，边端已安装的插件将自动跳过，避免重复安装",
+    "Plugin.index.879212-1": "若插件重复，边端已安装的插件将自动覆盖",
     "Plugin.index.879212-2": "插件ID",
     "Plugin.index.879212-3": "插件名称",
     "Plugin.index.879212-4": "文件",
