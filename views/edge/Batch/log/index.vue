@@ -48,6 +48,7 @@
         <TaskDetail
             v-if="visible"
             :data="current"
+            :type="type"
             @copy="onCopy"
             @refresh="reload"
             @closeDetail="taskDetailClose"
