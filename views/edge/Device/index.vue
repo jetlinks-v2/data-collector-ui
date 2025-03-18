@@ -69,12 +69,6 @@
                             <a-row style="margin-top: 18px">
                                 <a-col :span="12">
                                     <div class="card-item-content-text">
-                                        {{ $t('Device.index.911422-2') }}
-                                    </div>
-                                    <div>{{ slotProps.deviceType?.text }}</div>
-                                </a-col>
-                                <a-col :span="12">
-                                    <div class="card-item-content-text">
                                         {{ $t('Device.index.911422-3') }}
                                     </div>
                                     <j-ellipsis style="width: 100%">
