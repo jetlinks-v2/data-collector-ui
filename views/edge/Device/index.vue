@@ -304,7 +304,13 @@ const columns = [
             rename: 'productId',
             options: () =>
                 new Promise((resolve) => {
-                    queryNoPagingPost({ paging: false }).then((resp: any) => {
+                    queryNoPagingPost({ paging: false, terms: [
+                        {
+                          column: 'accessProvider',
+                          termType: 'in',
+                          value: ['agent-device-gateway','agent-media-device-gateway','official-edge-gateway']
+                        }
+                      ]}).then((resp: any) => {
                         resolve(
                             resp.result.map((item: any) => ({
                                 label: item.name,

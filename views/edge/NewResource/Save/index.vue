@@ -8,8 +8,14 @@
         @cancel="emit('close')"
         @ok="handleSave"
     >
+        <div class="tip" v-if="!data.id">
+          {{ $t('Save.index.001090-17') }}
+        </div>
         <a-form ref="formRef" layout="vertical" :model="formData" :rules="rules">
-            <a-form-item name="targetType">
+            <a-form-item name="targetType" :label="$t('Save.index.001090-16')" :rules="{
+                    required: true,
+                    message: $t('Scan.Table.400147-1'),
+                }">
                 <j-card-select
                     :disabled="!!data.id"
                     v-model:value="formData.targetType"
@@ -275,5 +281,11 @@ const handleChangeTargetType = (e: any) => {
 </script>
 
 <style scoped lang="less">
-
+.tip {
+  padding: 8px 14px;
+  border: 1px solid #91CAFF;
+  background-color: #E6F4FF;
+  margin-bottom: 16px;
+  border-radius: 2px;
+}
 </style>
