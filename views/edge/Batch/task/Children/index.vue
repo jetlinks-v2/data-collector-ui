@@ -576,8 +576,13 @@ const onDelete = (item) => {
         } else {
             edgeList.value.push(item.Mapping);
             _edgeInitList.value.push(item.Mapping);
-            _dataSource.value = _dataSource.value.filter(
-                (i) => i.Mapping?.id !== item.Mapping?.id,
+            _dataSource.value?.forEach(
+                (i) => {
+                    if(i.Mapping?.id === item.Mapping?.id) {
+                        i.Mapping = {};
+                        i.MappingStatus = 'none';
+                    }
+                },
             );
             // item.Mapping = {};
             // item.MappingStatus = 'none';
@@ -586,8 +591,13 @@ const onDelete = (item) => {
     } else {
         edgeList.value.push(item.Mapping);
         _edgeInitList.value.push(item.Mapping);
-        _dataSource.value = _dataSource.value.filter(
-            (i) => i.Mapping?.id !== item.Mapping?.id,
+        _dataSource.value?.forEach(
+            (i) => {
+                if(i.Mapping?.id === item.Mapping?.id) {
+                    i.Mapping = {};
+                    i.MappingStatus = 'none';
+                }
+            },
         );
         _dropList.value = _dropList.value.filter(
             (i) => i.Mapping?.id !== item.Mapping?.id,
