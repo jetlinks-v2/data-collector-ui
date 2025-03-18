@@ -288,7 +288,7 @@ const formData = reactive({
 const onChange = async (_, node) => {
   channel.value = node
   if (
-      !["COLLECTOR_GATEWAY"].includes(node?.provider)
+      node?.provider && !["COLLECTOR_GATEWAY"].includes(node.provider)
   ) {
     jsonData.value = await devGetProtocol(node.provider, "collector");
   } else {
@@ -393,7 +393,7 @@ watch(
         }
 
         provider.value = copyValue?.provider
-        channel.value = props.channelListAll.find(item => item.id === value.channelId)
+        channel.value = props.channelListAll.find(item => item.id === value.channelId) || {id: value.channelId, name: value.channelName, provider: value.provider}
 
         if (copyValue.provider === 'COLLECTOR_GATEWAY') {
           Object.assign(formData, copyValue)

@@ -14,7 +14,7 @@
                         {{resourceStore.resource.creatorName}}
                     </a-descriptions-item>
                     <a-descriptions-item :label="$t('Record.Detail.913748-2')" :labelStyle="{width: '110px'}">
-                        {{dayjs(resourceStore.resource.createTime).format('YYYY-MM-DD HH:mm:ss')}}
+                        {{record.createTime ? dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') : '--'}}
                     </a-descriptions-item>
                     <a-descriptions-item :label="$t('Record.Detail.913748-3')" :labelStyle="{width: '110px'}">
                         {{ record.thingTotal }}
