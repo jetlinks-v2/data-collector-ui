@@ -1,6 +1,6 @@
 <template>
   <div class="operate-warp">
-    <div :class="{'operate-item': true }" v-for="item in batchOperateOptions">
+    <div :class="{'operate-item': true }" v-for="item in batchOperateOptions" :key="item.value">
       <div class="img"></div>
       <div class="content">
         <div class="content-title">

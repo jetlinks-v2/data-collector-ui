@@ -120,6 +120,7 @@ import {Modal} from "ant-design-vue";
 import {onlyMessage} from "@jetlinks-web/utils";
 import ChildrenModal from './Children/ChildrenModal.vue'
 import { useI18n } from 'vue-i18n';
+import {  cloneDeep } from 'lodash-es';
 
 const { t: $t } = useI18n();
 
@@ -140,6 +141,7 @@ const { loading, run } = useRequest( createTask, {
   immediate: false,
   onSuccess() {
     emit('ok')
+    onlyMessage($t('log.TaskDetail.866822-30'))
   }
 })
 
@@ -150,7 +152,7 @@ const formRef = ref()
 const formModel = reactive({
   name: '',
   jobType: undefined,
-  thingList: props.list,
+  thingList: cloneDeep(props.list),
   description: undefined
 })
 const modalVisible = ref(false)
@@ -259,7 +261,7 @@ const onOk = async () => {
   const commandArgs = await contentRef.value.getValue()
 
   if (!commandArgs.length) {
-    onlyMessage($t('task.task.010223-20'), 'warning')
+    onlyMessage($t('task.task.010223-20', [title.value]), 'warning')
     return
   }
 

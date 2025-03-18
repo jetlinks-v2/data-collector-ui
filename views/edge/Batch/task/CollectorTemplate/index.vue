@@ -28,7 +28,7 @@
         selectedRowKeys: selectedRowKeys,
         onSelect: onSelectChange,
         onSelectAll: selectAll,
-        onSelectNone: () => (selectedRowKeys = []),
+        onSelectNone: selectNone,
       }"
     />
   </div>
@@ -43,16 +43,17 @@ const { t: $t } = useI18n();
 
 
 const params = ref()
-const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
+const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll, selectNone } = useTemplateRowSelection()
 
 const columns = [
   {
     title: $t('CollectorTemplate.index.429253-2'),
-    key: 'id',
-    dataIndex: 'id',
+    key: 'targetId',
+    dataIndex: 'targetId',
     search: {
       type: 'string',
     },
+    ellipsis: true,
   },
   {
     title: $t('CollectorTemplate.index.429253-3'),
@@ -74,6 +75,15 @@ const columns = [
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,
+  },
+  {
+    title: $t('Plugin.index.879212-6'),
+    key: 'id',
+    dataIndex: 'id',
+    search: {
+      type: 'string',
+    },
+    width: 200
   },
 ]
 

@@ -6,6 +6,21 @@ export const getContext = () => {
     return inject(ContextName, {})
 }
 
+export const taskDetailColumnMap = {
+    'plugin': {
+        label: i18n.global.t('Plugin.index.879212-3'),
+        labelID: i18n.global.t('Plugin.index.879212-2'),
+    },
+    'AiModel': {
+        label: i18n.global.t('AiModel.index.311326-3'),
+        labelID: i18n.global.t('AiModel.index.311326-2'),
+    },
+    'CollectorTemplate': {
+        label: i18n.global.t('CollectorTemplate.index.429253-3'),
+        labelID: i18n.global.t('CollectorTemplate.index.429253-2'),
+    },
+}
+
 export const BatchOperateOptions = [
     {
         icon: 'icon-anzhuangchajian',
@@ -113,10 +128,16 @@ export const useTemplateRowSelection = () => {
         handleSelect(selected, changeRows)
     };
 
+    const selectNone = () => {
+        selectedRowKeys.value = [];
+        selectedRowMap.clear();
+    }
+
     return {
         selectedRowKeys,
         selectedRowMap,
         onSelectChange,
-        selectAll
+        selectAll,
+        selectNone
     }
 }

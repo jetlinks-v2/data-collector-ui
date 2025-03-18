@@ -1,11 +1,21 @@
 <template>
     <div class="log-warp">
-        <pro-search
+        <div style="text-align: right;">
+            <a-space>
+                <a-select
+                    v-model:value="searchItem.state"
+                    :options="stateOptions"
+                    style="width: 100px;text-align: left;"
+                />
+                <a-input-search v-model:value="searchItem.name" placeholder="请输入任务名称" @search="handleSearch"></a-input-search>
+            </a-space>
+        </div>
+        <!-- <pro-search
             type="simple"
             :columns="columns"
             :style="{ padding: 0, marginBottom: 0 }"
             @search="handleSearch"
-        />
+        /> -->
         <JProTable
             ref="tableRef"
             mode="CARD"
@@ -38,6 +48,7 @@
         <TaskDetail
             v-if="visible"
             :data="current"
+            :type="type"
             @copy="onCopy"
             @refresh="reload"
             @closeDetail="taskDetailClose"
@@ -65,7 +76,30 @@ const params = ref();
 const tableRef = ref();
 const visible = ref(false);
 const current = ref({});
+const searchItem = reactive({
+    state: 'all',
+    name: '',
+});
 
+
+const stateOptions = [
+    {
+        label: $t('log.index.741299-3'),
+        value: 'all',
+    },
+    {
+        label: $t('log.index.741299-4'),
+        value: 'complete',
+    },
+    {
+        label: $t('log.index.741299-5'),
+        value: 'running',
+    },
+    {
+        label: $t('log.index.741299-6'),
+        value: 'incomplete',
+    },
+];
 const columns = [
     {
         title: $t('log.index.741299-0'),
@@ -116,42 +150,31 @@ const columns = [
     },
 ];
 
-const handleSearch = (e, terms) => {
-    const _terms = terms?.terms?.[0]?.terms?.filter((item) => item);
-    if (_terms?.length) {
-        const newParams = [];
-        const termsItem = _terms[0];
-
-        if (termsItem.value) {
-            const item = e.terms[0].terms[0];
-            newParams.push({
-                ...item,
-                column: 'name',
-            });
-        }
-
-        if (termsItem.column !== 'all') {
-            newParams.push({
-                column: 'state',
-                value: termsItem.column,
-                type: 'and',
-            });
-        }
-
-        params.value = newParams.length
-            ? {
-                  terms: [
-                      {
-                          terms: newParams,
-                          type: 'and',
-                      },
-                  ],
-              }
-            : e;
-    } else {
-        params.value = e;
+const handleSearch = () => {
+    const terms = [];
+    if (searchItem.state !== 'all') {
+        terms.push({
+            column: 'state',
+            value: searchItem.state,
+            type: 'and',
+        });
     }
-};
+    if (searchItem.name) {
+        terms.push({
+            column:'name',
+            value: `%${searchItem.name}%`,
+            termType: 'like',
+        });
+    }
+    params.value = {
+        terms: terms.length ? [
+            {
+                terms,
+                type: 'and',
+            },
+        ] : undefined,
+    };
+}
 
 const reload = () => {
     tableRef.value?.reload();

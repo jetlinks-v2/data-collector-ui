@@ -161,10 +161,10 @@
                 ],
             }"
         >
-            <template #pulginId="{ detail }">
-                <j-ellipsis style="width: 100%">{{ detail.data.id }}</j-ellipsis>
+            <template #pluginId="{ detail }">
+                <j-ellipsis style="width: 100%">{{ detail.data.targetId }}</j-ellipsis>
             </template>
-            <template #pulginName="{ detail }">
+            <template #pluginName="{ detail }">
                 <j-ellipsis style="width: 100%"> {{ detail.data.name }}</j-ellipsis>
             </template>
             <template #thingName="{ thingName }">
@@ -174,7 +174,9 @@
                 <j-ellipsis style="width: 100%"> {{ timeoutSeconds }}s</j-ellipsis>
             </template>
             <template #id="{ id }">
-                <j-ellipsis style="width: 100%"> {{ id }}</j-ellipsis>
+                <div>
+                    <j-ellipsis style="width: 100%"> {{ id }}</j-ellipsis>
+                </div>
             </template>
             <template #filename="{ detail }">
                 <j-ellipsis style="width: 100%">
@@ -318,6 +320,7 @@ import dayjs from 'dayjs';
 import { onlyMessage } from '@/utils/comm';
 import Icon from '../components/Icon.vue';
 import { useI18n } from 'vue-i18n';
+import { taskDetailColumnMap } from '../util';
 
 const { t: $t } = useI18n();
 const props = defineProps({
@@ -328,18 +331,21 @@ const props = defineProps({
     deviceId: {
         type: String,
     },
+    type: {
+        type: String,
+    }
 });
 const emit = defineEmits(['closeDetail', 'refresh', 'copy']);
 const columns = computed(()=>([
     {
-        title: 'ID',
-        key: 'pulginId',
+        title: taskDetailColumnMap[props.type]?.labelID,
+        key: 'pluginId',
         scopedSlots: true,
         width: 150,
     },
     {
-        title:$t('log.TaskDetail.866822-21'),
-        key: 'pulginName',
+        title: taskDetailColumnMap[props.type]?.label,
+        key: 'pluginName',
         scopedSlots: true,
         width: 150,
     },
@@ -354,7 +360,6 @@ const columns = computed(()=>([
         title: $t('log.TaskDetail.866822-23'),
         key: 'id',
         dataIndex: 'id',
-        ellipsis: true,
         scopedSlots: true,
         width: 100,
     },
@@ -395,6 +400,7 @@ const columns = computed(()=>([
         dataIndex: 'action',
         key: 'action',
         width: 120,
+        fixed: 'right',
         scopedSlots: true,
     },
 ]));

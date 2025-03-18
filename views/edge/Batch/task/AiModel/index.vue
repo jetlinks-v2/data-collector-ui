@@ -28,7 +28,7 @@
             selectedRowKeys: selectedRowKeys,
             onSelect: onSelectChange,
             onSelectAll: selectAll,
-            onSelectNone: () => (selectedRowKeys = []),
+            onSelectNone: selectNone,
         }"
     />
   </div>
@@ -42,16 +42,17 @@ import { useI18n } from 'vue-i18n';
 const { t: $t } = useI18n();
 
 const params = ref()
-const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll } = useTemplateRowSelection()
+const { selectedRowKeys, selectedRowMap, onSelectChange, selectAll, selectNone } = useTemplateRowSelection()
 
 const columns = [
   {
     title: $t('AiModel.index.311326-2'),
-    key: 'id',
-    dataIndex: 'id',
+    key: 'targetId',
+    dataIndex: 'targetId',
     search: {
       type: 'string',
     },
+    ellipsis: true,
   },
   {
     title: $t('AiModel.index.311326-3'),
@@ -73,6 +74,15 @@ const columns = [
     dataIndex: 'description',
     key: 'description',
     ellipsis: true,
+  },
+  {
+    title: $t('Plugin.index.879212-6'),
+    key: 'id',
+    dataIndex: 'id',
+    search: {
+      type: 'string',
+    },
+    width: 200
   },
 ]
 
