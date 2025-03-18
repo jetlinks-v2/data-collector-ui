@@ -25,6 +25,12 @@
                 :params="params"
                 :defaultParams="defaultParams"
                 :gridColumn="3"
+                :rowSelection="{
+                    selectedRowKeys: deviceRowKeys,
+                    onSelect: handleClick,
+                    onSelectAll: selectAll,
+                    onSelectNone: onSelectNone,
+                }"
             >
                 <template #card="slotProps">
                     <CardBox
@@ -275,6 +281,18 @@ const handleClick = (record) => {
         deviceRowKeys.value.push(record.id)
     }
 }
+
+const onSelectNone = () => {
+    deviceSelected.splice(0)
+    deviceRowKeys.value = []
+}
+
+const selectAll = (selected, selectedRows, changeRows) => {
+    changeRows.forEach(item => {
+        handleClick(item)
+    })
+};
+
 
 </script>
 
