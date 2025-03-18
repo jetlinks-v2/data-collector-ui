@@ -18,9 +18,8 @@
             />
             <JProTable
                 ref="edgeDeviceRef"
-                mode="CARD"
                 :columns="columns"
-                :style="{ padding: 0 }"
+                :style="{ padding: '24px 0' }"
                 :request="query"
                 :params="params"
                 :defaultParams="defaultParams"
