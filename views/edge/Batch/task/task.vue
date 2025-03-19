@@ -47,7 +47,7 @@
             />
           </a-form-item>
       </div>
-      <div class="task-content">
+      <div v-if="formModel.jobType" class="task-content">
         <div v-if="!showBindChildren">
           <a-row :gutter="16">
             <a-col :span="12">
@@ -82,6 +82,14 @@
         <ContentAiModel v-else-if="formModel.jobType === 'AiModel'" ref="contentRef" :options="formModel.thingList" />
         <ContentAiResource v-else-if="formModel.jobType === 'AiResource'" ref="contentRef" :options="formModel.thingList" />
         <ContentCollectorTemplate v-else-if="formModel.jobType === 'CollectorTemplate'" ref="contentRef"  :options="formModel.thingList" />
+      </div>
+      <div v-else class="task-content" style="margin-top: 15%;">
+        <j-empty>
+          <template #description>
+            <p>{{$t('Tree.index.4001410-10')}}</p>
+            <span>{{$t('task.task.010223-22')}}</span>
+          </template>
+        </j-empty>
       </div>
 
       <GatewayModal
@@ -292,18 +300,19 @@ const batchOperateChange = (e) => {
   if (e === formModel.jobType) {
     return
   }
-
-  return new Promise((resolve, reject) => {
-    Modal.confirm({
-      title: $t('task.task.010223-21'),
-      onOk() {
-        resolve(true)
-      },
-      onCancel() {
-        resolve(false)
-      }
+  if(formModel.jobType) {
+    return new Promise((resolve, reject) => {
+      Modal.confirm({
+        title: $t('task.task.010223-21'),
+        onOk() {
+          resolve(true)
+        },
+        onCancel() {
+          resolve(false)
+        }
+      })
     })
-  })
+  }
 }
 
 const init = () => {

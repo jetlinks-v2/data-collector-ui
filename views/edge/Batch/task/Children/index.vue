@@ -15,7 +15,7 @@
                     <template #tab>
                         <div style="text-wrap: initial; display: flex">
                             <j-badge-status
-                                :status="item.state.value"
+                                :status="item.state?.value"
                                 :statusNames="{
                                     online: 'success',
                                     offline: 'error',
