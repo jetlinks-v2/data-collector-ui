@@ -424,6 +424,7 @@ const handleSearch = async (e) => {
 
 const getNoMapping = async () => {
     const res = await _queryByEdge(edgeId.value, {
+        sorts: [{ name: 'createTime', order: 'desc' }],
         terms: [{ column: 'key', value: '', termType: 'isnull' }],
     });
     if (res.success) {
