@@ -313,6 +313,10 @@ stateMap.set('none', {
     text: $t('Children.index.645257-20'),
     status: 'default',
 });
+stateMap.set('delete', {
+    text: $t('Children.index.645257-20'),
+    status: 'default',
+});
 
 const columns = [
     {
