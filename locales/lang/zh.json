@@ -788,6 +788,7 @@
     "task.task.010223-19": "请输入响应超时时间",
     "task.task.010223-20": "请选择{0}",
     "task.task.010223-21": "切换任务类型会清空之前的数据",
+    "task.task.010223-22": "请先选择任务类型",
     "task.GatewayModal.823128-0": "选择设备",
     "task.GatewayModal.823128-1": "按设备选择",
     "task.GatewayModal.823128-2": "产品名称",

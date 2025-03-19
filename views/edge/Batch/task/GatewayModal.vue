@@ -194,7 +194,14 @@ const columns = [
             rename: 'productId',
             options: () =>
                 new Promise((resolve) => {
-                    queryNoPagingPost({paging: false}).then((resp) => {
+                    queryNoPagingPost({
+                        paging: false,
+                        terms: [{
+                            column: 'accessProvider',
+                            value: ['agent-device-gateway','agent-media-device-gateway','official-edge-gateway'],
+                            termType: 'in',
+                        }]
+                    }).then((resp) => {
                         resolve(
                             resp.result.map((item) => ({
                                 label: item.name,

@@ -187,7 +187,6 @@ const onCopy = () => {
             label: item.name || item.thingName,
             value: item.id || item.thingId,
         })),
-        jobType: props.type,
     });
 };
 

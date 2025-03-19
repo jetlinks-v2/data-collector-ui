@@ -15,7 +15,7 @@
                     <template #tab>
                         <div style="text-wrap: initial; display: flex">
                             <j-badge-status
-                                :status="item.state.value"
+                                :status="item.state?.value"
                                 :statusNames="{
                                     online: 'success',
                                     offline: 'error',
@@ -310,6 +310,10 @@ stateMap.set('warning', {
     status: 'warning',
 });
 stateMap.set('none', {
+    text: $t('Children.index.645257-20'),
+    status: 'default',
+});
+stateMap.set('delete', {
     text: $t('Children.index.645257-20'),
     status: 'default',
 });

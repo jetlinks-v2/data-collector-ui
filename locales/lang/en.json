@@ -788,6 +788,7 @@
     "task.task.010223-19": "Please enter the response timeout time",
     "task.task.010223-20": "Please select {0}",
     "task.task.010223-21": "Switching task types will clear previous data",
+    "task.task.010223-22": "Please select task type first",
     "task.GatewayModal.823128-0": "Select device",
     "task.GatewayModal.823128-1": "Select by device",
     "task.GatewayModal.823128-2": "Product Name",
