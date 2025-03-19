@@ -10,7 +10,7 @@
             </span>
         </div>
         <div style="width: 65vw">
-            <a-tabs v-model:activeKey="edgeId">
+            <a-tabs :activeKey="edgeId" @change="handleChangeTab">
                 <a-tab-pane v-for="item in options" :key="item.id">
                     <template #tab>
                         <div style="text-wrap: initial; display: flex">
@@ -261,6 +261,7 @@ import { cloneDeep } from 'lodash-es';
 import DeviceDetail from './DeviceDetail/index.vue';
 import EmptyChildImg from '../../../../../assets/edge/empty-child.png';
 import { useI18n } from 'vue-i18n';
+import { Modal } from 'ant-design-vue';
 
 const { t: $t } = useI18n();
 
@@ -392,21 +393,29 @@ const handleSearch = async (e) => {
                 _dropList.value = [...resp.result];
                 _bindInitList.value = [...resp.result];
             }
-            _dataSource.value = res.result.map((item) => {
+            _dataSource.value = [];
+            _dropList.value?.forEach((i) => {
+                const isMap = res.result.find(
+                    (item) => i.id === item.id || i.mappingId === item.id,
+                );
+                if(isMap?.id) {
+                    _dataSource.value.push({
+                        ...isMap,
+                        MappingStatus: 'success',
+                        Mapping: i,
+                    })
+                }
+            })
+            
+            res.result.forEach((item) => {
                 const isMap = _dropList.value?.find(
                     (i) => i.id === item.id || i.mappingId === item.id,
                 );
-                if (isMap?.id) {
-                    return {
-                        ...item,
-                        MappingStatus: 'success',
-                        Mapping: isMap,
-                    };
-                } else {
-                    return {
+                if (!isMap?.id) {
+                    _dataSource.value.push({
                         ...item,
                         MappingStatus: 'none',
-                    };
+                    })
                 }
             });
         }
@@ -415,6 +424,7 @@ const handleSearch = async (e) => {
 
 const getNoMapping = async () => {
     const res = await _queryByEdge(edgeId.value, {
+        sorts: [{ name: 'createTime', order: 'desc' }],
         terms: [{ column: 'key', value: '', termType: 'isnull' }],
     });
     if (res.success) {
@@ -576,8 +586,13 @@ const onDelete = (item) => {
         } else {
             edgeList.value.push(item.Mapping);
             _edgeInitList.value.push(item.Mapping);
-            _dataSource.value = _dataSource.value.filter(
-                (i) => i.Mapping?.id !== item.Mapping?.id,
+            _dataSource.value?.forEach(
+                (i) => {
+                    if(i.Mapping?.id === item.Mapping?.id) {
+                        i.Mapping = {};
+                        i.MappingStatus = 'delete';
+                    }
+                },
             );
             // item.Mapping = {};
             // item.MappingStatus = 'none';
@@ -586,8 +601,13 @@ const onDelete = (item) => {
     } else {
         edgeList.value.push(item.Mapping);
         _edgeInitList.value.push(item.Mapping);
-        _dataSource.value = _dataSource.value.filter(
-            (i) => i.Mapping?.id !== item.Mapping?.id,
+        _dataSource.value?.forEach(
+            (i) => {
+                if(i.Mapping?.id === item.Mapping?.id) {
+                    i.Mapping = {};
+                    i.MappingStatus = 'none';
+                }
+            },
         );
         _dropList.value = _dropList.value.filter(
             (i) => i.Mapping?.id !== item.Mapping?.id,
@@ -595,7 +615,7 @@ const onDelete = (item) => {
     }
 };
 
-const onSaveAll = async () => {
+const onSaveAll = async (isRefresh = true) => {
     const _arr = _dataSource.value
         .map((item) => {
             if (
@@ -632,7 +652,7 @@ const onSaveAll = async () => {
     const res = await _commandByEdge(edgeId.value, 'BatchBindDevice', {
         bindInfo: _arr,
     });
-    if (res.success) {
+    if (res.success && isRefresh) {
         handleRefresh();
         onlyMessage($t('Children.index.645257-27'));
     }
@@ -677,6 +697,25 @@ const isModal = () => {
   return _dataSource.value.some(item => (item && item.MappingStatus === 'warning' && item.id));
 };
 
+//切换标签页
+const handleChangeTab = (e) => {
+    if(_dataSource.value.some(item => item.MappingStatus && ['warning', 'delete'].includes(item.MappingStatus))) {
+        Modal.confirm({
+            title: $t('Children.index.645257-29'),
+            content: $t('Children.index.645257-28'),
+            async onOk() {
+                await onSaveAll(false)
+                edgeId.value = e
+            },
+            onCancel() {
+                edgeId.value = e;
+            },
+        });
+    } else {
+        edgeId.value = e;
+    }
+}
+
 onMounted(() => {
     if (props.options?.length) {
         edgeId.value = props.options[0].value;
@@ -699,6 +738,7 @@ watch(
         if (val && obj?.state?.value === 'online') {
             handleRefresh();
         } else {
+            _dataSource.value = [];
             _edgeInitList.value = [];
             edgeList.value = [];
         }
