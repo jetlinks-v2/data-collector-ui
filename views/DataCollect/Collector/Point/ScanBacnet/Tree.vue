@@ -19,17 +19,20 @@
       >
         <template #title="{ data, name, key }">
           <a-space>
-            <a-ellipsis>
-                            <span
-                                :class="[
-                                    selectKeys.includes(key)
-                                        ? 'tree-selected'
-                                        : 'tree-title',
-                                ]"
-                            >
-                                {{ name }}
-                            </span>
-            </a-ellipsis>
+            <span class="tree-title">
+              <j-ellipsis>
+                {{ i.name }}
+                </j-ellipsis>
+              </span>
+            <!--                            <span-->
+            <!--                                :class="[-->
+            <!--                                    selectKeys.includes(key)-->
+            <!--                                        ? 'tree-selected'-->
+            <!--                                        : 'tree-title',-->
+            <!--                                ]"-->
+            <!--                            >-->
+            <!--                                {{ name }}-->
+            <!--                            </span>-->
             <a-button type="link" @click="onCheck(data)">
               <AIcon type="ArrowRightOutlined"/>
             </a-button>
@@ -81,8 +84,8 @@ const onLoadData = async () => {
   const resp: any = await scanOpcUAList(channelId, "GetDeviceObjects", {
     instanceNumber: Number(instanceNumber),
   }).finally(() => (spinning.value = false));
-  if (resp.status === 200) {
-    treeData.value = resp.result.map((item: any) => {
+  if (resp.success) {
+    treeData.value = resp.result.filter((i: any) => !selectKeys.value.includes(i.id)).map((item: any) => {
       return {
         ...item,
         key: item.id,
@@ -181,7 +184,7 @@ const getPoint = async () => {
       },
     ],
   });
-  if (res.status === 200) {
+  if (res.success) {
     selectKeys.value = res.result.map((item: any) => item.pointKey);
   }
 };

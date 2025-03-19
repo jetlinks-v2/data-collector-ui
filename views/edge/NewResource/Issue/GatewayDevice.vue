@@ -12,6 +12,7 @@
         :request="query"
         :defaultParams="defaultParams"
         :params="params"
+        modeValue="CARD"
         :gridColumn="2"
         :gridColumns="[2]"
         :pagination="{
