@@ -571,7 +571,7 @@ const onAuto = async (item) => {
 
 const onDelete = (item) => {
     item.action = 'delete';
-    if (item.id) {
+    if (item.id && item.parentId) {
         if (_checked.value) {
             item.loading = true;
             _commandByEdge(edgeId.value, 'UnbindDevice', {
