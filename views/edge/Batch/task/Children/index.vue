@@ -391,6 +391,7 @@ const handleSearch = async (e) => {
 
         if (res.success) {
             const resp = await _queryByEdge(edgeId.value, {
+                sorts: [{  name: '_bind.createTime', order: 'desc'}],
                 terms: [{ column: 'key', value: '', termType: 'notnull' }],
             });
             if (resp.success) {
@@ -570,7 +571,7 @@ const onAuto = async (item) => {
 
 const onDelete = (item) => {
     item.action = 'delete';
-    if (item.id) {
+    if (item.id && item.parentId) {
         if (_checked.value) {
             item.loading = true;
             _commandByEdge(edgeId.value, 'UnbindDevice', {
