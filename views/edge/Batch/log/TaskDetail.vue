@@ -232,12 +232,7 @@
                             title: $t('log.TaskDetail.866822-12'),
                         }"
                         style="padding: 0"
-                        :popConfirm="{
-                            title: $t('log.TaskDetail.866822-13'),
-                            onConfirm: async () => {
-                                stopUpgrades(record.id);
-                            },
-                        }"
+                        @click="stopUpgrades(record.id)"
                     >
                         <AIcon type="StopOutlined" />
                     </j-permission-button>
@@ -248,12 +243,7 @@
                             title: $t('log.TaskDetail.866822-14'),
                         }"
                         style="padding: 0"
-                        :popConfirm="{
-                            title: $t('log.TaskDetail.866822-15'),
-                            onConfirm: async () => {
-                                startUpgrades(record.id);
-                            },
-                        }"
+                        @click="startUpgrades(record.id);"
                     >
                         <AIcon type="ReloadOutlined" />
                     </j-permission-button>
@@ -264,12 +254,7 @@
                             title: $t('log.TaskDetail.866822-16'),
                         }"
                         style="padding: 0"
-                        :popConfirm="{
-                            title: $t('log.TaskDetail.866822-17'),
-                            onConfirm: async () => {
-                                startUpgrades(record.id);
-                            },
-                        }"
+                        @click="startUpgrades(record.id)"
                     >
                         <AIcon type="PlayCircleOutlined" />
                     </j-permission-button>
