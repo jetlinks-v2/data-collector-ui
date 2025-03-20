@@ -589,30 +589,30 @@ const onDelete = (item) => {
                     item.loading = false;
                 });
         } else {
-            edgeList.value.push(item.Mapping);
-            _edgeInitList.value.push(item.Mapping);
-            _dataSource.value?.forEach(
-                (i) => {
-                    if(i.Mapping?.id === item.Mapping?.id) {
-                        i.Mapping = {};
-                        i.MappingStatus = 'delete';
-                    }
-                },
-            );
-            // item.Mapping = {};
-            // item.MappingStatus = 'none';
-            _dropList.value = _dropList.value.filter((i) => i.id !== item.id);
+            edgeList.value.unshift(item.Mapping);
+            _edgeInitList.value.unshift(item.Mapping);
+            if (item.MappingStatus === 'error') {
+                item.Mapping = {};
+                item.MappingStatus = 'none';
+            } else {
+                _dataSource.value?.forEach(
+                    (i) => {
+                        if(i.Mapping?.id === item.Mapping?.id) {
+                            i.Mapping = {};
+                            i.MappingStatus = 'none';
+                        }
+                    },
+                );
+                _dropList.value = _dropList.value.filter(
+                    (i) => i.Mapping?.id !== item.Mapping?.id,
+                );
+            }
         }
     } else {
         edgeList.value.push(item.Mapping);
         _edgeInitList.value.push(item.Mapping);
-        _dataSource.value?.forEach(
-            (i) => {
-                if(i.Mapping?.id === item.Mapping?.id) {
-                    i.Mapping = {};
-                    i.MappingStatus = 'none';
-                }
-            },
+        _dataSource.value = _dataSource.value.filter(
+            (i) => i.Mapping?.id !== item.Mapping?.id,
         );
         _dropList.value = _dropList.value.filter(
             (i) => i.Mapping?.id !== item.Mapping?.id,
