@@ -27,15 +27,16 @@
                         :type="i?.folder ? 'icon-wenjianjia' : 'icon-dianwei'"
                         style="margin-right: 10px"
                     ></AIcon>
-                    <span
-                        :class="[
-                            selectKeys.includes(i.key)
-                                ? 'tree-selected'
-                                : 'tree-title',
-                        ]"
-                    >
-                        {{ i.name }}
-                    </span>
+                  <span class="tree-title">{{ i.name }}</span>
+<!--                    <span-->
+<!--                        :class="[-->
+<!--                            selectKeys.includes(i.key)-->
+<!--                                ? 'tree-selected'-->
+<!--                                : 'tree-title',-->
+<!--                        ]"-->
+<!--                    >-->
+<!--                        {{ i.name }}-->
+<!--                    </span>-->
                 </div>
             </div>
             <a-empty v-else style="margin-top: 22%" />
@@ -69,7 +70,6 @@ const checkedKeys = ref<string[]>([]);
 const selectKeys = ref<string[]>([]);
 const spinning = ref(false);
 
-const isSelected = ref(false);
 const treeData = ref<TreeProps['treeData']>();
 const breadcrumb = ref([
     {
@@ -170,7 +170,7 @@ const getPoint = async () => {
             },
         ],
     });
-    if (res.status === 200) {
+    if (res.success) {
         selectKeys.value = res.result.map((item: any) => item.pointKey);
     }
     getScanOpcUAList(undefined);
@@ -219,7 +219,7 @@ const allControl = () => {
 const getScanOpcUAList = async (nodeId: string | undefined) => {
     spinning.value = true;
     const res: any = await scanOpcUAList(channelId, 'BrowseNodes', { nodeId: nodeId });
-    treeData.value = res.result.map((item: any) => ({
+    treeData.value = res.result.filter((i: any) => !selectKeys.value.includes(i.id)).map((item: any) => ({
         ...item,
         key: item.id,
         title: item.name,
@@ -253,9 +253,9 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .tree-content {
-    padding: 16px;
-    padding-left: 0;
+    padding-right: 16px;
     min-width: 180px;
+
     .tree-header {
         margin-bottom: 16px;
         display: flex;

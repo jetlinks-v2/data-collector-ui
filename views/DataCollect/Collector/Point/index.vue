@@ -887,8 +887,37 @@ onUnmounted(() => {
   subRef.value?.unsubscribe();
 });
 
+const handleTerms = (arr: any[]) => {
+  return arr.map(i => {
+    const obj = {...i};
+    if(i.column === 'accessModes$in$any'){
+      if(i.termType === 'eq'){
+        obj.column = 'accessModes$eq'
+      }
+      if(i.termType === 'not'){
+        obj.column = 'accessModes$neq'
+        obj.termType = 'neq'
+      }
+      if(i.termType === 'in'){
+        obj.column = 'accessModes$in$any'
+      }
+      if(i.termType === 'nin'){
+        obj.column = 'accessModes$nin$any'
+      }
+    }
+    if(i?.terms?.length){
+      obj.terms = handleTerms(i.terms || [])
+    }
+    return obj
+  })
+}
+
+
 const handleSearch = (e: any) => {
-  params.value = e;
+  params.value = {
+    ...e,
+    terms: handleTerms(e.terms)
+  }
 };
 </script>
 <style lang="less" scoped>

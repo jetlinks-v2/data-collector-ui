@@ -84,7 +84,7 @@
                         </span>
                         <a-space>
                           <span>{{$t('Record.Card.931797-4')}}</span>
-                          <span>{{ record.taskTotal || 0 }}</span>
+                          <span>{{ taskTotal || 0 }}</span>
                         </a-space>
                     </a-space>
 <!--                    <span>{{ $t('Record.Detail.913748-14') }}{{ record.thingTotal }}{{ $t('Record.Detail.913748-15') }}</span>-->
@@ -322,6 +322,11 @@ const progressStyles = computed(() => {
     }
 })
 
+const taskTotal = computed(() => {
+  return Object.keys(props.record?.stateCount || {}).reduce((sum, key) => {
+    return sum + (props.record?.stateCount?.[key]?.total || 0)
+  }, 0)
+})
 const onCancel = () => {
     emit('cancel')
 }

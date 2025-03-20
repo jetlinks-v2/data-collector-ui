@@ -40,6 +40,7 @@ import { savePointBatch } from '../../../../../api/data-collect/collector';
 import Table from './Table.vue';
 import Tree from './Tree.vue';
 import { useI18n } from 'vue-i18n';
+import {onlyMessage} from "@jetlinks-web/utils";
 
 const { t: $t } = useI18n();
 
@@ -79,6 +80,10 @@ const handleOk = async () => {
             accessModes: item.accessModes?.value || [],
         };
     });
+    if(!list.length){
+      onlyMessage($t('Scan.index.400148-3'), 'error')
+      return
+    }
     loading.value = true;
     const resp = await savePointBatch([...list]).catch(() => {});
     emit('change', resp?.status === 200);
