@@ -27,16 +27,15 @@
                         :type="i?.folder ? 'icon-wenjianjia' : 'icon-dianwei'"
                         style="margin-right: 10px"
                     ></AIcon>
-                  <span class="tree-title">{{ i.name }}</span>
-<!--                    <span-->
-<!--                        :class="[-->
-<!--                            selectKeys.includes(i.key)-->
-<!--                                ? 'tree-selected'-->
-<!--                                : 'tree-title',-->
-<!--                        ]"-->
-<!--                    >-->
-<!--                        {{ i.name }}-->
-<!--                    </span>-->
+                    <span
+                        :class="[
+                            checkedKeys.includes(i.key)
+                                ? 'tree-selected'
+                                : 'tree-title',
+                        ]"
+                    >
+                        {{ i.name }}
+                    </span>
                 </div>
             </div>
             <a-empty v-else style="margin-top: 22%" />
@@ -263,7 +262,7 @@ onMounted(() => {
     }
     .tree-selected {
         padding: 2px 5px;
-        background-color: #d6e4ff;
+        background-color: var(--ant-primary-2);
         border-radius: 2px;
     }
     .tree-title {
