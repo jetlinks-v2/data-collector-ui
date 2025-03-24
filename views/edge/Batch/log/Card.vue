@@ -5,7 +5,6 @@
       <div class="item-body">
         <div class="body-header">
           <div class="header-title">
-
               <j-ellipsis> {{ detail.name  }}</j-ellipsis>
           </div>
           <div class="header-status bg-color-200">
