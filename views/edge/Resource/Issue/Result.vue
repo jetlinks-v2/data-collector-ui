@@ -26,8 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import {getToken, LocalStore, setToken} from "@jetlinks-web/utils";
-// import { BASE_API_PATH, TOKEN_KEY } from '@/utils/variable';
+import { LocalStore} from "@jetlinks-web/utils";
 import { BASE_API,TOKEN_KEY } from '@jetlinks-web/constants';
 import dayjs from 'dayjs';
 import { EventSourcePolyfill } from 'event-source-polyfill';

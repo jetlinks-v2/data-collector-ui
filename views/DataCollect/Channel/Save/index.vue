@@ -81,7 +81,7 @@ import {
   update,
   getProviders,
 } from '@collector/api/data-collect/channel';
-import {FormValidate, FormState} from '../data';
+import {FormValidate} from '../data';
 import {cloneDeep, omit} from 'lodash-es';
 import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";

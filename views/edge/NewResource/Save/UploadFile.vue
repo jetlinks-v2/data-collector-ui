@@ -31,7 +31,6 @@ import { TOKEN_KEY } from '@jetlinks-web/constants';
 import { onlyMessage } from '@jetlinks-web/utils';
 import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
 import { notification as Notification } from 'ant-design-vue';
-import { useSystemStore } from '@/store/system';
 import { FileStaticPath } from "@/api/comm";
 import { useI18n } from "vue-i18n";
 

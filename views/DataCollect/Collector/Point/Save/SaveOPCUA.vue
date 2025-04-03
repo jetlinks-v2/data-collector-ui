@@ -92,7 +92,6 @@
 import {
     savePoint,
     updatePoint,
-    _validateField,
     queryTypeList
 } from '../../../../../api/data-collect/collector';
 import type { FormInstance } from 'ant-design-vue';
@@ -161,7 +160,7 @@ onMounted(() => {
         if(resp.status === 200){
             options.value = (resp?.result || []).map((item: any) => {
                 return {
-                    label: item, 
+                    label: item,
                     value: item
                 }
             })

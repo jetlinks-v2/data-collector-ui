@@ -128,7 +128,6 @@
 import {
     savePoint,
     updatePoint,
-    _validateField,
     getArea,
     getSnapTypes
 } from '../../../../../api/data-collect/collector';

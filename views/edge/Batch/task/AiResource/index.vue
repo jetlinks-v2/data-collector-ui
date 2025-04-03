@@ -37,7 +37,6 @@
 <script setup name="AiResource">
 import { queryPage } from '../../../../../api/edge/newResource'
 import {useTemplateRowSelection} from '../../util'
-import {pick} from "lodash-es";
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();
