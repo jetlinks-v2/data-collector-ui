@@ -13,40 +13,73 @@
         <a-tree
           :tree-data="treeData"
           :load-data="onLoadData"
+          :selected-keys="selectedKeys"
+          :fieldNames="{ key: 'id' }"
           blockNode
+          @select="treeSelect"
         >
           <template #title="node">
-            <a-space v-if="!node.channelId">
-              <j-ellipsis>
-                {{node.name}}
-              </j-ellipsis>
-              <j-badge-status
-              v-if="node.id !== 'all'"
-              :status="node.state?.value"
-              :statusNames="{
-                  enabled: 'success',
-                  disabled: 'error',
-              }"
-              ></j-badge-status>
-            </a-space>
+            <div v-if="!node.channelId">
+              <a-dropdown :key="node.id" class="menu-icon" :trigger="['contextmenu']">
+                <a-space style="width: 100%;">
+                  <Icon v-if="node.id !== '*'" :type="protocolIcon[node.provider]" style="font-size: 20px;"></Icon>
+                  <AIcon v-else type="AppstoreOutlined"></AIcon>
+                  <j-ellipsis>
+                    {{node.name}}
+                  </j-ellipsis>
+                  <j-badge-status
+                    v-if="node.id !== '*'"
+                    :status="node.state?.value"
+                    :statusNames="{
+                        enabled: 'success',
+                        disabled: 'error',
+                    }"
+                  ></j-badge-status>
+                </a-space>
+                <template #overlay>
+                  <a-menu v-if="node.id !== '*'">
+                    <a-menu-item v-for="item in channelActions(node)" :key="item.key">
+                      <j-permission-button type="text" block style="text-align: left">
+                        <AIcon :type="item.icon"></AIcon>
+                        {{ item.text }}
+                      </j-permission-button>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </div>
             <div v-else>
-              <a-space style="font-size: 14px;">
-                <j-ellipsis>
-                  {{node.name}}
-                </j-ellipsis>
-                <a-tag
-                  class="tree-left-tag"
-                  v-if="node.id !== 'all'"
-                  :color="colorMap.get(node.state?.value === 'disabled' ? node.state?.value : node?.runningState?.value)"
-                >{{ node.state?.value === 'disabled' ? node.state?.text : node?.runningState?.text }}
-                </a-tag>
-              </a-space>
-                <div style="font-size: 12px;margin-top: 5px;">
-                  <a-space>
-                    <AIcon type="icon-caijiqichufa"></AIcon>
-                    点位数量{{ node.pointNumber }}
+              <a-dropdown trigger="contextmenu">
+                <div>
+                  <a-space style="font-size: 14px;">
+                    <j-ellipsis>
+                      {{node.name}}
+                    </j-ellipsis>
+                    <a-tag
+                      class="tree-left-tag"
+                      v-if="node.id !== '*'"
+                      :color="colorMap.get(node.state?.value === 'disabled' ? node.state?.value : node?.runningState?.value)"
+                    >{{ node.state?.value === 'disabled' ? node.state?.text : node?.runningState?.text }}
+                    </a-tag>
                   </a-space>
+                  <div style="font-size: 12px;margin-top: 5px;">
+                    <a-space>
+                      <AIcon type="icon-caijiqichufa"></AIcon>
+                      点位数量{{ node.pointNumber }}
+                    </a-space>
+                  </div>
                 </div>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item v-for="item in collectorActions(node)" :key="item.key">
+                      <j-permission-button type="text" block style="text-align: left">
+                        <AIcon :type="item.icon"></AIcon>
+                        {{ item.text }}
+                      </j-permission-button>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
             </div>
           </template>
           <template #switcherIcon="{switcherCls}">
@@ -56,28 +89,78 @@
       </div>
     </a-space>
   </div>
+  <!-- <SaveChannel /> -->
 </template>
-<script setup>
+<script setup lang="ts">
+import type from '@/modules/device-manager-ui/components/Metadata/components/Type/data';
 import { queryNoPaging } from '@collector/api/data-collect/channel';
 import { queryCollectorTree } from '@collector/api/data-collect/collector';
+import Icon from './components/Icon.vue';
+import { protocolIcon, colorMap } from './type';
+import SaveChannel from './SaveChannel/index.vue';
 
-const colorMap = new Map();
-colorMap.set('running', 'success');
-colorMap.set('partialError', 'warning');
-colorMap.set('partError', 'warning'); // 部分错误
-colorMap.set('failed', 'error');
-colorMap.set('allError', 'error'); // 全部错误
-colorMap.set('stopped', 'default');
-colorMap.set('processing', '#cccccc');
-colorMap.set('enabled', 'processing');
-colorMap.set('disabled', 'error');
 const props = defineProps({
   isCollapse: {
     type: Boolean,
     default: false,
   },
 });
-const treeData = ref([]);
+
+const emit = defineEmits(['change']);
+const visibleMenu = ref(false);
+const treeData = ref<any[]>([]);
+const selectedKeys = ref<string[]>([]);
+const channelActions = (data: any) => {
+  return [
+    {
+      text: '新增采集器',
+      icon: 'PlusCircleOutlined',
+      key: 'add-collector',
+      onClick: () => {
+        // emit('change', 'add-collector', data);
+      },
+    },
+    {
+      text: '编辑',
+      icon: 'EditOutlined',
+      key: 'edit-channel',
+      onClick: () => {
+        
+      }
+    },
+    {
+      text: data?.state?.value === 'disabled' ? '启用' : '禁用',
+      icon: data?.state?.value === 'disabled' ? 'PlayCircleOutlined' : 'StopOutlined',
+      key: 'enable-channel',
+    },
+    {
+      text: '删除',
+      icon: 'DeleteOutlined',
+      key: 'delete-channel',
+    }
+  ]
+}
+
+//采集器节点按钮
+const collectorActions = (data: any) => {
+  return [
+    {
+      text: '编辑',
+      icon: 'EditOutlined',
+      key: 'edit-collector',
+    },
+    {
+      text: data?.state?.value === 'disabled'? '启用' : '禁用',
+      icon: data?.state?.value === 'disabled'? 'PlayCircleOutlined' : 'StopOutlined',
+      key: 'enable-collector',
+    },
+    {
+      text: '删除',
+      icon: 'DeleteOutlined',
+      key: 'delete-collector',
+    }
+  ] 
+}
 //查询通道列表
 const getChannelList = async () => {
   const res = await queryNoPaging({
@@ -89,10 +172,16 @@ const getChannelList = async () => {
     ]
   });
   if (res.success) {
-    treeData.value = res.result
+    treeData.value = res.result.map(item => {
+      return {
+        ...item,
+        isLeaf: item.collectorNumber === 0,
+        isChannel: true,
+      }
+    })
     treeData.value.unshift({
       name: '全部',
-      id: 'all',
+      id: '*',
       isLeaf: true,
     })
   }
@@ -133,6 +222,13 @@ const onLoadData = (node) => {
     })
   });
 }
+
+//选中节点
+const treeSelect = (keys: string, e: any) => {
+  // visibleMenu.value = false;
+  selectedKeys.value = [e.node?.id];
+  emit('change', e.node?.id === '*' ? '*' : e.node?.isChannel ? 'channel' : 'collector', e.node)
+}
 </script>
 
 <style scoped lang="less">
@@ -143,6 +239,19 @@ const onLoadData = (node) => {
   .channel-collector-tree {
    height: calc(100vh - 300px);
    overflow: auto;
+   .channel-node {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .menu-icon {
+     display: none;
+    }
+    &:hover {
+      .menu-icon {
+       display: block; 
+      }
+    }
+   }
  }
 }
 </style>
