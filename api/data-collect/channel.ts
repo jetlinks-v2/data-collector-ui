@@ -3,6 +3,9 @@ import { request } from '@jetlinks-web/core'
 export const query = (data: any) =>
     request.post(`/data-collect/channel/_query`, data);
 
+export const queryCount = (data: any) =>
+    request.post(`/data-collect/channel/_count`, data);
+
 export const queryNoPaging = (data: any) =>
   request.post(`/data-collect/channel/_query/no-paging`, data);
 

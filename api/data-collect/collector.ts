@@ -3,6 +3,8 @@ import { request } from '@jetlinks-web/core'
 export const queryCollector = (data: any) =>
     request.post(`/data-collect/collector/_query/no-paging?paging=false`, data);
 
+export const queryCollectorCount = (data: any) =>
+    request.post(`/data-collect/collector/_count`, data);
 export const queryCollectorTree = (data: any) =>
     request.post(`/data-collect/collector/_detail/no-paging?paging=false`, data);
 
@@ -22,6 +24,9 @@ export const remove = (id: string) =>
 
 export const queryPoint = (data: any) =>
     request.post(`/data-collect/point/_query`, data);
+
+export const queryPointCount = (data: any) =>
+    request.post(`/data-collect/point/_count`, data);
 
 export const _validateField = (id: string, data?: any) =>
     request.get(`/data-collect/point/${id}/_validate`, data);
