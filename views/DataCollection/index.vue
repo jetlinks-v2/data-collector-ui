@@ -12,11 +12,12 @@
 <script setup>
 import LeftTree from './LeftTree/index.vue';
 import Right from './Right/index.vue'
+import {omit} from "lodash-es";
 
 const data = ref({});
 const nodeType = ref('');
 const treeChange = (type, node) => {
-  data.value = node;
+  data.value = omit(node, ['dataRef', 'dragOver']);
   nodeType.value = type;
 }
 
