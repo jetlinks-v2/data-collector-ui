@@ -2,7 +2,7 @@
   <a-space>
     <j-ellipsis>{{ _value }}</j-ellipsis>
     <template v-if="isWrite">
-      <a-popover v-model:visible="visible" trigger="click">
+      <a-popover v-model:visible="visible" trigger="click" :title="$t('WritePoint.index.769007-0')" :destroyTooltipOnHide="true">
         <template #content>
           <WritePoint :data="data" @close="visible = false" @save="onSave"/>
         </template>

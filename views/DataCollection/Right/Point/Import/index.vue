@@ -1,5 +1,5 @@
 <template>
-    <a-modal visible :title="$t('Import.index.4001420-0')" @cancel="emit('closeImport')" :width="800" :maskClosable="false">
+    <a-modal visible :title="$t('Import.index.4001420-0')" @cancel="emit('close')" :width="800" :maskClosable="false">
         <div class="import-content">
             <div class="column">
                 <p>{{ $t('Import.index.4001420-1') }}</p>
@@ -41,7 +41,7 @@
             </div>
         </div>
         <template #footer>
-            <a-button type="primary" @click="emit('closeImport')">{{ $t('Import.index.4001420-9') }}</a-button>
+            <a-button type="primary" @click="emit('close')">{{ $t('Import.index.4001420-9') }}</a-button>
         </template>
     </a-modal>
 </template>
@@ -62,7 +62,7 @@ const props = defineProps({
         default: {}
     }
 })
-const emit = defineEmits(['closeImport'])
+const emit = defineEmits(['close'])
 const fileList = ref()
 type ImportStatus = 'wait' | 'importing' | 'done';
 const importStatus = ref<ImportStatus>('wait'); //导入进度
@@ -108,12 +108,7 @@ const handleImport = async (file: any) => {
         }&fileUrl=${file.result.accessUrl}`,
         { withCredentials: true },
     );
-    event.onopen = (e) => {
-        // pushMessage.value = []
-        console.log('open');
-    };
     event.onmessage = (e) => {
-        console.log(e, '123')
         const result = JSON.parse(e.data);
         if (result.success) {
             successNumber.value++;

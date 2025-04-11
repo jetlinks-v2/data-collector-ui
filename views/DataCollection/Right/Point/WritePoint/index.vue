@@ -1,11 +1,10 @@
 <template>
-  <div>
+  <div style="min-width: 200px">
     <a-form
         class="form"
         layout="vertical"
         :model="formData"
         name="basic"
-        autocomplete="off"
         ref="formRef"
     >
       <a-form-item
@@ -14,7 +13,7 @@
           :rules="[
                     {
                         required: true,
-                        message: $t('WritePoint.index.769007-1', [data.name]),
+                        message: $t('WritePoint.index.769007-5', [data.name]),
                     },
                 ]"
           v-if="
@@ -22,12 +21,20 @@
                     data?.configuration.function === 'Coils'
                 "
       >
-        <a-textarea
-            :placeholder="$t('WritePoint.index.769007-2')"
+        <j-card-select
+            :showImage="false"
             v-model:value="formData.value"
-            :maxlength="200"
-            :rows="3"
-            showCount
+            :column="2"
+            :options="[
+                {
+                  label: 'true',
+                  value: true
+                },
+                {
+                  label: 'false',
+                  value: false
+                }
+            ]"
         />
       </a-form-item>
       <a-form-item
@@ -98,7 +105,7 @@
               />
             </div>
           </template>
-          <div style="margin-top: 10px">
+          <a-space style="margin-top: 10px">
             <a-button @click="formData.value.push('')">+</a-button>
             <a-button
                 v-if="formData.value.length !== 1"
@@ -108,7 +115,7 @@
             >-
             </a-button
             >
-          </div>
+          </a-space>
         </div>
       </a-form-item>
       <a-form-item
@@ -257,7 +264,7 @@
       </a-form-item>
     </a-form>
   </div>
-  <div style="display: flex; justify-content: flex-end; gap: 16px;">
+  <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid rgba(0, 0, 0, .06); padding-top: 12px">
     <a-button key="back" @click="handleCancel">{{ $t('WritePoint.index.769007-12') }}</a-button>
     <j-permission-button
         key="submit"
@@ -265,7 +272,7 @@
         :loading="loading"
         @click="handleOk"
         style="margin-left: 8px"
-        :hasPermission="`DataCollect/Collector:update`"
+        :hasPermission="`DataCollection:updatePoint`"
     >
       {{ $t('WritePoint.index.769007-13') }}
     </j-permission-button>
