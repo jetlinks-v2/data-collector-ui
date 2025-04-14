@@ -1,7 +1,7 @@
 <template>
   <pro-search
       :columns="columns"
-      target="search-datacollect-point"
+      target="search-data-collect-point"
       @search="handleSearch"
       style="padding: 0"
   />
@@ -25,12 +25,12 @@
         "
     >
       <template #headerLeftRender>
-        <a-space v-if="type === 'collector'">
+        <a-space v-if="type === 'collector' && data.id">
           <j-permission-button
               v-if="pointActions.add"
               type="primary"
               @click="handleAdd"
-              hasPermission="DataCollect/Collector:add"
+              hasPermission="DataCollection:addPoint"
           >
             <template #icon>
               <AIcon type="PlusOutlined"/>
@@ -41,7 +41,7 @@
               v-if="pointActions.scan"
               type="primary"
               @click="handleScan"
-              hasPermission="DataCollect/Collector:add"
+              hasPermission="DataCollection:addPoint"
           >
             <template #icon>
               <AIcon type="PlusOutlined"/>
@@ -49,23 +49,20 @@
             {{ $t('Point.index.400149-1') }}
           </j-permission-button>
           <j-permission-button
-              v-if="data?.id && data.id !== '*'"
               type="primary"
               @click="handleImport"
-              hasPermission="DataCollect/Collector:add"
+              hasPermission="DataCollection:importPoint"
           >
             {{ $t('Point.index.400149-2') }}
           </j-permission-button>
           <j-permission-button
-              v-if="data?.id && data.id !== '*'"
               type="primary"
               @click="handleExport"
-              hasPermission="DataCollect/Collector:add"
+              hasPermission="DataCollection:exportPoint"
           >
             {{ $t('Point.index.400149-3') }}
           </j-permission-button>
           <BatchDropdown
-              v-if="data?.id && data.id !== '*'"
               ref="batchRef"
               v-model:isCheck="isCheck"
               :actions="batchActions"
@@ -81,6 +78,13 @@
       </template>
       <template #pointValue="slotProps">
         <ValueItem @refresh="onRefresh" :data="slotProps" :value="propertyValue.get(slotProps.id)"/>
+      </template>
+      <template #source="slotProps">
+        {{
+          propertyValue.get(
+              slotProps.id,
+          )?.hex || '--'
+        }}
       </template>
       <template #updateTime="slotProps">
         {{
@@ -103,7 +107,9 @@
         <a-tag v-for="item in slotProps.accessModes" :key="item.value">{{ item.text }}</a-tag>
       </template>
       <template #runningState="slotProps">
-        <a-tag color="green">{{ slotProps.runningState?.text }}</a-tag>
+        <a-tag :color="slotProps.runningState.value === 'running' ? 'success' : 'error'">
+          {{ slotProps.runningState.value === 'running' ? slotProps.runningState?.text : $t('Channel.index.290640-10') }}
+        </a-tag>
       </template>
       <template #description="slotProps">
         <EditInput :data="slotProps" @refresh="onRefresh"/>
@@ -112,8 +118,9 @@
         <a-space>
           <j-permission-button
               type="link"
+              style="padding: 0"
               @click="handleEdit(slotProps)"
-              hasPermission="DataCollect/Collector:update"
+              hasPermission="DataCollection:updatePoint"
           >
             <AIcon type="FormOutlined"/>
           </j-permission-button>
@@ -121,7 +128,7 @@
               type="link"
               danger
               :tooltip="{title: $t('Point.index.400149-5')}"
-              hasPermission="DataCollect/Collector:delete"
+              hasPermission="DataCollection:deletePoint"
               :popConfirm="{
                   title: $t('Point.index.400149-6'),
                   onConfirm: () =>
@@ -144,6 +151,7 @@
       :data="editData.current"
       :collector="data"
       @close="editData.visible = false"
+      @save="onSave"
   />
   <Import
       v-if="importData.visible"
@@ -155,17 +163,18 @@
       :data="batchUpdate.current"
       :provider="data.provider"
       @close="batchUpdate.visible = false"
+      @save="onBatchSave"
   />
 </template>
 
 <script setup>
-import {queryPoint, getStates, batchDeletePoint, removePoint, exportPoint} from "@collector/api/data-collect/collector";
+import {queryPoint, batchDeletePoint, removePoint, exportPoint} from "@collector/api/data-collect/collector";
 import {getProviders} from "@collector/api/data-collect/channel";
 import {useI18n} from "vue-i18n";
 import {imgUrl} from "@collector/views/DataCollection/data";
 import {wsClient} from "@jetlinks-web/core";
 import {map} from "rxjs/operators";
-import {cloneDeep, throttle} from "lodash-es";
+import {cloneDeep, omit, throttle} from "lodash-es";
 import dayjs from "dayjs";
 import ValueItem from './ValueItem.vue'
 import {downloadFileByUrl, onlyMessage} from "@jetlinks-web/utils";
@@ -177,11 +186,11 @@ import Import from "./Import/index.vue";
 import BatchUpdate from './BatchUpdate/index.vue';
 
 const {t: $t} = useI18n();
-const data = inject('collector-data')
-const type = inject('collector-type')
+const data = inject('collector-data', ref({}))
+const type = inject('collector-type', )
 const jsonData = ref();
 
-const columns = [
+const initColumns = [
   {
     title: $t('Point.index.400149-9'),
     dataIndex: 'name',
@@ -193,64 +202,43 @@ const columns = [
     width: 180,
     scopedSlots: true,
   },
-  { // todo: 仅在选中「全部」时，展示此筛选项
-    title: $t('Channel.index.290640-4'),
-    dataIndex: 'provider',
-    key: 'provider',
-    hideInTable: true,
-    search: {
-      type: 'select',
-      options: async () => {
-        const resp = await getProviders();
-        if (resp.success) {
-          return resp.result.map((i) => {
-            return {
-              label: i.name,
-              value: i.id
-            }
-          })
-        }
-      },
-    },
-  },
-  {// todo: 运行中，已停止
+  {
     title: $t('Point.index.400149-12'),
     dataIndex: 'runningState',
     key: 'runningState',
     width: 150,
     search: {
       type: 'select',
-      options: async () => {
-        const resp = await getStates();
-        if (resp.success) {
-          return resp.result.map((item) => ({
-            label: item.text,
-            value: item.value,
-          }));
-        } else {
-          return [];
+      options: [
+        {
+          label: $t('Channel.index.290640-9'),
+          value: 'running',
+        },
+        {
+          label: $t('Channel.index.290640-10'),
+          value: 'stopped',
         }
-      },
+      ],
     },
     scopedSlots: true,
   },
   {
-    title: '点位值',
+    title: $t('Save.DeathArea.4001417-5'),
     dataIndex: 'pointValue',
     key: 'pointValue',
     scopedSlots: true,
-    width: 150
+    width: 160
   },
   {
-    title: '源数据',
-    dataIndex: 'value1',
-    key: 'value1',
+    title: $t('DataCollection.Right.Point.Table.476751-1'),
+    dataIndex: 'source',
+    key: 'source',
     scopedSlots: true,
     ellipsis: true,
     width: 100
   },
   {
-    title: '更新时间',
+    title: $t('DataCollection.Right.Point.Table.476751-2'),
     dataIndex: 'updateTime',
     key: 'updateTime',
     width: 200,
@@ -310,6 +298,7 @@ const columns = [
     dataIndex: 'interval',
     key: 'interval',
     scopedSlots: true,
+    ellipsis: true,
     width: 120,
   },
   {
@@ -324,14 +313,39 @@ const columns = [
     scopedSlots: true,
   },
   {
-    title: '操作',
+    title: $t('Channel.index.290640-11'),
     dataIndex: 'actions',
     key: 'actions',
     fixed: 'right',
-    width: 150,
+    width: 120,
     scopedSlots: true,
   },
 ]
+const columns = computed(() => {
+  if(!data.value.id || data.value.id === '*') {
+    return [...initColumns, {
+      title: $t('Channel.index.290640-4'),
+      dataIndex: 'provider',
+      key: 'provider',
+      hideInTable: true,
+      search: {
+        type: 'select',
+        options: async () => {
+          const resp = await getProviders();
+          if (resp.success) {
+            return resp.result.map((i) => {
+              return {
+                label: i.name,
+                value: i.id
+              }
+            })
+          }
+        },
+      },
+    }]
+  }
+  return initColumns
+})
 const params = ref({})
 const subRef = ref()
 const tableRef = ref()
@@ -371,6 +385,10 @@ const defaultParams = ref({
   sorts: [{name: 'id', order: 'desc'}],
   terms: [],
 })
+
+const onRefresh = () => {
+  tableRef.value?.reload();
+}
 
 const getDataSource = (p) => {
   return queryPoint(p).then(resp => {
@@ -438,27 +456,29 @@ const selectAll = (selected, selectedRows, changeRows) => {
   }
 };
 const handleDelete = (id) => {
-  // spinning.value = true;
   const response = !id ? batchDeletePoint(_selectedRowKeys.value) : removePoint(id)
   response.then((res) => {
     if (res.success) {
       _selectedRowKeys.value = [];
-      tableRef.value?.reload();
+      onRefresh()
       onlyMessage($t('Point.index.400149-14'), 'success');
     }
-    // spinning.value = false;
   });
   return response;
 };
 
 const handleEdit = (dt) => {
   editData.visible = true
-  editData.current = dt
+  editData.current = omit(dt, 'column')
 }
 
 const handleAdd = () => {
   editData.visible = true
-  editData.current = {}
+  editData.current = {
+    collectorId: data.value?.id,
+    provider: data.value?.provider,
+  };
+  editData.visible = true;
 }
 
 const handleScan = () => {
@@ -512,7 +532,7 @@ const updateBatchActions = () => {
     {
       key: 'update',
       text: $t('Point.index.400149-22'),
-      permission: 'DataCollect/Collector:update',
+      permission: 'DataCollection:updatePoint',
       icon: 'FormOutlined',
       selected: {
         onClick: handleBatchUpdate,
@@ -522,7 +542,7 @@ const updateBatchActions = () => {
       key: 'delete',
       text: $t('Point.index.400149-23'),
       danger: true,
-      permission: 'DataCollect/Collector:delete',
+      permission: 'DataCollection:deletePoint',
       icon: 'DeleteOutlined',
       selected: {
         popConfirm: {
@@ -542,13 +562,15 @@ const updateDefaultParams = () => {
     obj = {
       column: 'channelId',
       termType: 'eq',
-      value: data.value?.id
+      value: data.value?.id,
+      type: 'and'
     }
   } else if (type.value === 'collector') {
     obj = {
       column: 'collectorId',
       termType: 'eq',
-      value: data.value?.id
+      value: data.value?.id,
+      type: 'and'
     }
   }
   defaultParams.value.terms[0] = obj
@@ -559,7 +581,7 @@ watch(
     (value) => {
       if (!!value) {
         updateDefaultParams()
-        tableRef.value?.reload?.();
+        onRefresh()
         if (value.provider === 'COLLECTOR_GATEWAY') {// COLLECTOR_GATEWAY写死
           pointActions.add = true
           pointActions.scan = false
@@ -604,16 +626,22 @@ const handleTerms = (arr) => {
   })
 }
 
+const onSave = () => {
+  editData.visible = false
+  onRefresh()
+}
+
+const onBatchSave = () => {
+  batchUpdate.visible = false
+  onRefresh()
+  _selectedRowKeys.value = []
+}
 
 const handleSearch = (e) => {
   params.value = {
     ...e,
     terms: handleTerms(e.terms)
   }
-};
-
-const onRefresh = () => {
-  tableRef.value?.reload();
 }
 </script>
 

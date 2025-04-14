@@ -1,9 +1,9 @@
-<template >
+<template>
   <a-drawer
       :title="data.id ? $t('Save.SaveModBus.4001413-0') : $t('Point.index.400149-0')"
       :visible="true"
-      @cancel="handleCancel"
-      width="500px"
+      @close="handleCancel"
+      width="650px"
   >
     <a-form
         class="form"
@@ -11,18 +11,41 @@
         :model="formData"
         ref="formRef"
     >
-      <a-form-item :label="$t('Save.SaveModBus.4001413-2')" name="name">
+      <a-form-item
+          :label="$t('Save.SaveModBus.4001413-2')"
+          name="name"
+          :rules="[
+              {
+                  required: true,
+                  message: $t('Collector.data.400141-1'),
+              },
+              {
+                  max: 64,
+                  message: $t('Collector.data.400141-2'),
+              },
+          ]"
+      >
         <a-input
             :placeholder="$t('Save.SaveModBus.4001413-3')"
             v-model:value="formData.name"
         />
       </a-form-item>
-      <a-divider />
-      <RenderComponents v-if="jsonData" :value="jsonData" />
-
+      <a-divider/>
+      <RenderComponents v-if="jsonData" :value="jsonData"/>
       <a-form-item
+          v-if="formData.accessModes?.includes('read')"
           :label="$t('Save.SaveModBus.4001413-30')"
           :name="['configuration', 'interval']"
+          :rules="[
+              {
+                  required: true,
+                  message: $t('Collector.data.400141-13'),
+              },
+              {
+                  pattern: regOnlyNumber,
+                  message: $t('Collector.data.400141-14'),
+              },
+          ]"
       >
         <a-input-number
             style="width: 100%"
@@ -36,18 +59,22 @@
 
       <a-form-item label="" :name="['features']">
         <a-checkbox-group v-model:value="formData.features">
-          <a-checkbox value="changedOnly" name="type"
-          >{{$t('Save.SaveModBus.4001413-32')}}</a-checkbox
-          >
+          <a-checkbox value="changedOnly" name="type">
+            {{ $t('Save.SaveModBus.4001413-32') }}
+          </a-checkbox>
         </a-checkbox-group>
       </a-form-item>
 
-      <a-divider />
-      <j-title data="数据预处理" />
-      <DeathArea v-model:value="formData.configuration.terms" />
-
-      <a-divider />
-      <a-form-item :label="$t('Save.SaveModBus.4001413-33')" :name="['description']">
+      <a-divider/>
+<!--      todo: 默认不展示此块内容，点位若为数值类型，再展示此块区域-->
+      <j-title :data="$t('DataCollection.Right.Point.Save.476751-1')"/>
+      <DeathArea v-model:value="formData.configuration.terms"/>
+      <a-divider/>
+      <a-form-item
+          :label="$t('Save.SaveModBus.4001413-33')"
+          :name="['description']"
+          :rules="[{ max: 200, message: $t('Collector.data.400141-15') }]"
+      >
         <a-textarea
             :placeholder="$t('Save.SaveModBus.4001413-34')"
             v-model:value="formData.description"
@@ -58,19 +85,15 @@
       </a-form-item>
     </a-form>
     <template #footer>
-      <a-button key="back" @click="handleCancel">{{$t('Save.SaveModBus.4001413-35')}}</a-button>
-      <j-permission-button
-          key="submit"
+      <a-button key="back" @click="handleCancel">{{ $t('Save.SaveModBus.4001413-35') }}</a-button>
+      <a-button
           type="primary"
           :loading="loading"
           @click="handleOk"
           style="margin-left: 8px"
-          :hasPermission="`DataCollect/Collector:${
-                    id ? 'update' : 'add'
-                }`"
       >
-        {{$t('Save.SaveModBus.4001413-36')}}
-      </j-permission-button>
+        {{ $t('Save.SaveModBus.4001413-36') }}
+      </a-button>
     </template>
   </a-drawer>
 </template>
@@ -79,22 +102,24 @@ import {
   savePointBatch,
   updatePoint,
 } from '@collector/api/data-collect/collector';
-import { cloneDeep } from 'lodash-es';
-import { useI18n } from 'vue-i18n';
+import {cloneDeep, map} from 'lodash-es';
+import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
 import DeathArea from "./DeathArea.vue";
+import {regOnlyNumber} from "@collector/views/DataCollection/data";
+import {onlyMessage} from "@jetlinks-web/utils";
 
-const { t: $t } = useI18n();
+const {t: $t} = useI18n();
 
 const props = defineProps({
   data: {
     type: Object,
-    default: () => {},
+    default: () => ({}),
   },
   collector: {
     type: Object,
-    default: () => {},
+    default: () => ({}),
   },
 });
 
@@ -122,32 +147,38 @@ provide("plugin-form-collector", props.collector);
 const handleOk = async () => {
   await formRef.value?.validate();
   loading.value = true;
-  const response = !id
-      ? await savePointBatch(formData).catch(() => {})
-      : await updatePoint(id, { ...props.data, ...formData }).catch(() => {});
-  emit('change', response?.status === 200);
-  loading.value = false;
+  const response = !id ? await savePointBatch(formData).finally(() => {
+        loading.value = false;
+      })
+      : await updatePoint(id, {...props.data, ...formData}).finally(() => {
+        loading.value = false;
+      });
+  if(response.success){
+    emit('save');
+    onlyMessage($t('Point.index.400149-14'), 'success');
+  }
 };
 
 const handleCancel = () => {
   emit('close');
 };
+
 watch(
     () => props.data,
     () => {
       Object.assign(formData, cloneDeep(props.data));
-      formData.features = props.data.features?.[0]?.value;
+      formData.features = map(props.data?.features || [], 'value')
       if (props.data.accessModes?.length !== 0) {
-        formData.accessModes =
-            props.data.accessModes?.map((item) => item.value) || [];
+        formData.accessModes = props.data.accessModes?.map((item) => item.value) || [];
       }
     },
-    { immediate: true, deep: true },
+    {immediate: true, deep: true},
 );
 
 const getProtocol = async () => {
-  jsonData.value = await devGetProtocol(props.collector.provider, "point");
+  jsonData.value = await devGetProtocol(props.data.provider || props.collector.provider, "point");
 };
+
 getProtocol();
 
 provide("plugin-form", formData);
