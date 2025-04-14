@@ -167,11 +167,11 @@ const onRefresh = (id, action) => {
 }
 
 const onSaveChannelSuccess = (dt) => {
-  emits('refresh', dt.id, 'update')
+  emits('refresh', dt.id || data.value?.id, 'update', 'update')
 }
 
 const onSaveCollector = (dt) => {
-  emits('refresh', dt.id, 'update')
+  emits('refresh', dt.id || data.value?.id, 'update', 'update')
 }
 
 const getActions = () => {

@@ -17,10 +17,10 @@
     />
     <template #footer>
       <a-space v-if="provider">
-        <j-permission-button :loading="loading" type="primary" @click="handleOk">
+        <j-permission-button :loading="loading" type="primary" @click="handleOk" hasPermission="DataCollection:updateChannel">
           确定
         </j-permission-button>
-        <j-permission-button @click="emits('close')">取消</j-permission-button>
+        <a-button @click="emits('close')">取消</a-button>
       </a-space>
     </template>
   </a-drawer>

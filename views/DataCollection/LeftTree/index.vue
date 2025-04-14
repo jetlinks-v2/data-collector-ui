@@ -1,13 +1,12 @@
 <template>
   <div class="channel-collector">
-    {{ filterValue }}123
     <div class="channel-collector-content">
       <a-button>
         <AIcon type="MenuFoldOutlined"></AIcon>
       </a-button>
       <a-input-search  placeholder="请输入通道名称" @search="handleSearch"></a-input-search>
       <div class="content-operation">
-        <AIcon type="FilterOutlined" @click="filterModalVisible = true"></AIcon>
+        <AIcon type="FilterOutlined" :class="{'filter-active': filterIconActive}" @click="filterModalVisible = true"></AIcon>
         <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:addChannel">
           <AIcon type="PlusOutlined"></AIcon>
           新增通道
@@ -249,22 +248,20 @@ const currentCollector = ref<CollectorEntity>({});
 const searchValue = ref('');
 const filterValue = ref<any>({})
 const channelChildrenMap = new Map();
+const filterIconActive = computed(() => {
+  return Object.keys(filterValue.value).some(item => filterValue.value?.[item]?.length);
+})
 const filterTreeData = computed(() => {
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
     if(item.name.includes(searchValue.value) 
       && (filterValue.value?.provider?.includes(item.provider) || !filterValue.value?.provider?.length)
       && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
-      && item.id !== '*'
+      && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
     ) {
-      if(item.children && item.children?.length) {
-        // const childrenArr = channelChildrenMap.get(item.id)?.filter((child) => {
-        //   return (filterValue.value?.collectorState?.includes(child.state?.value) || !filterValue.value?.collectorState?.length) 
-        // })
-        // item.children = cloneDeep(childrenArr);
-      } else {
-        item.children = channelChildrenMap.get(item.id) || undefined;
-      }
+      item.children = channelChildrenMap.get(item.id)?.filter((child) => {
+        return (filterValue.value?.collectorState?.includes(child.runningState?.value) || filterValue.value?.collectorState?.includes(child.state?.value) || !filterValue.value?.collectorState?.length) 
+      })
       return true
     }
   });
@@ -597,12 +594,18 @@ const refreshChannel = async (data: ChannelEntity) => {
       },
     ],
   });
-  treeData.value.find(item => item.id === data.id).children = resp.result.map((item) => {
-    return {
-      ...item,
-      isLeaf: true,
-    };
-  });
+  const node = treeData.value.find(item => item.id === data.id);
+  if(node?.children) {
+    node.children = resp.result.map((item) => {
+      return {
+        ...item,
+        isLeaf: true,
+      };
+    });
+  }
+  if(data.id === selectedKeys.value?.[0]) {
+    emit('change', 'channel', res.result?.[0]);
+  }
   updateNode(data.id!, res.result?.[0]);
 }
 
@@ -616,6 +619,18 @@ const refreshCollector = async (data: CollectorEntity) => {
       },
     ],
   });
+  if(data.id === selectedKeys.value?.[0]) {
+    emit('change', 'collector', res.result?.[0]);
+  }
+  channelChildrenMap.set(res.result?.[0]?.channelId, channelChildrenMap.get(res.result?.[0]?.channelId)?.map((item: any) => {
+    if(item.id === data.id) {
+      item = {
+        ...res.result?.[0],
+        isLeaf: true,
+      }
+    }
+    return item
+  }))
   updateNode(data.id!, res.result?.[0]);
 }
 
@@ -642,6 +657,11 @@ const handleAdd = () => {
   saveChannelVisible.value = true;
   currentChannel.value = {};
 };
+defineExpose({
+  refreshChannel: (data ) => refreshChannel(data),
+  refreshCollector: (data) => refreshCollector(data),
+  deleteNode: (id: string) => handleDelete({id: id}),
+})
 </script>
 
 <style scoped lang="less">
@@ -660,6 +680,9 @@ const handleAdd = () => {
       justify-content: space-between;
       align-items: center;
       padding: 0 10px;
+      .filter-active {
+        color: @primary-color;
+      }
     }
   }
   .channel-collector-tree {

@@ -2,7 +2,7 @@
   <j-page-container>
     <FullPage>
       <div class="collection">
-        <LeftTree @change="treeChange"></LeftTree>
+        <LeftTree ref="treeRef" @change="treeChange"></LeftTree>
         <Right @refresh="onRefresh" />
       </div>
     </FullPage>
@@ -16,6 +16,7 @@ import {omit} from "lodash-es";
 
 const data = ref({});
 const nodeType = ref('');
+const treeRef = ref(null);
 const treeChange = (type, node) => {
   data.value = omit(node, ['dataRef', 'dragOver']);
   nodeType.value = type;
@@ -25,7 +26,14 @@ provide('collector-data', data)
 provide('collector-type', nodeType)
 
 const onRefresh = (id, action) => {
-  console.log('refresh', id, action)
+  if(action === 'delete') {
+    treeRef.value.deleteNode(id)
+  }
+  if(nodeType.value === 'collector') {
+    treeRef.value.refreshCollector({id})
+  } else {
+    treeRef.value.refreshChannel({id})
+  }
 }
 </script>
 

@@ -3,10 +3,10 @@
     title="筛选"
     visible
     width="50%"
-    @close="emits('close')"
+    @cancel="emits('close')"
   >
-    <div v-for="item in filterColumn" :key="item.key">
-      <h3>{{item.title}}</h3>
+    <div v-for="item in filterColumn" style="margin-bottom: 20px;" :key="item.key">
+      <JTitle :data="item.title">{{item.title}}</JTitle>
       <CardSelect multiple v-model:value="filterData[item.key]" :showImage="false" :options="item.options"></CardSelect>
     </div>
     <template #footer>

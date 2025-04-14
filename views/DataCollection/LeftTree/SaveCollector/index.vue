@@ -154,11 +154,12 @@
         <j-permission-button
           :loading="loading"
           type="primary"
+          hasPermission="DataCollection:updateCollector"
           @click="handleOk"
         >
           确定
         </j-permission-button>
-        <j-permission-button @click="emits('close')">取消</j-permission-button>
+        <a-button @click="emits('close')">取消</a-button>
       </a-space>
     </template>
   </a-drawer>
