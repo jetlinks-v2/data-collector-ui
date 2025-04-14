@@ -66,6 +66,7 @@
       </a-form-item>
 
       <a-divider/>
+<!--      todo: 默认不展示此块内容，点位若为数值类型，再展示此块区域-->
       <j-title :data="$t('DataCollection.Right.Point.Save.476751-1')"/>
       <DeathArea v-model:value="formData.configuration.terms"/>
       <a-divider/>

@@ -27,18 +27,15 @@ import {queryPointCount} from "@collector/api/data-collect/collector";
 import {useRouteQuery} from "@vueuse/router";
 import {useI18n} from "vue-i18n";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
-})
 const count = reactive({
   total: 0,
   running: 0,
   stopped: 0
 })
 const {t: $t} = useI18n();
+const _data = inject('collector-data', ref({}))
+const type = inject('collector-type', ref(''))
+
 const key = ref(0)
 const search = useRouteQuery('q')
 const searchTarget = useRouteQuery('target');
@@ -50,29 +47,44 @@ const queryCount = async (data, type) => {
 }
 
 const handleSearch = () => {
-  queryCount({}, 'total')
+  const params = []
+  if(_data.value.id && _data.value.id !== '*'){
+    params.push({
+      column: type.value === 'channel' ? "channelId" : "collectorId",
+      value: _data.value.id
+    })
+  }
+  queryCount({terms: params}, 'total')
   queryCount({
     terms: [
       {
         column: "runningState",
         termType: "eq",
-        value: "running"
-      }
+        value: "running",
+        type: 'and'
+      },
+        ...params
     ]
   }, 'running')
   queryCount({
     terms: [
       {
         column: "runningState",
-        termType: "not",
-        value: "running"
-      }
+        termType: "eq",
+        value: "stopped"
+      },
+        ...params
     ]
   }, 'stopped')
 }
 
-handleSearch()
 
+watch(() => _data.value, () => {
+  handleSearch()
+}, {
+  immediate: true,
+  deep: true
+})
 const handleRouteQuery = (v) => {
   const terms = [
     {

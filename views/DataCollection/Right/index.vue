@@ -1,6 +1,6 @@
 <template>
   <div class="collection-right">
-    <Top />
+    <Top @refresh="onRefresh" />
     <div class="content">
       <div class="more-btn">
         <a-button @click="visible = !visible" type="link">
@@ -16,13 +16,18 @@
 </template>
 
 <script setup>
-import Top from './Top/index.vue'
+import Top from './Top.vue'
 import Point from './Point/index.vue'
 import Card from "./Card.vue";
 import {useI18n} from "vue-i18n";
 
+const emits = defineEmits(['refresh'])
 const visible = ref(false)
 const {t: $t} = useI18n();
+
+const onRefresh = (id, action) => {
+  emits('refresh', id, action)
+}
 </script>
 
 <style lang="less" scoped>

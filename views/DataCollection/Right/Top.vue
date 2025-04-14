@@ -118,6 +118,7 @@ import {onlyMessage} from "@jetlinks-web/utils";
 import SaveCollector from "@collector/views/DataCollection/LeftTree/SaveCollector/index.vue";
 import SaveChannel from "@collector/views/DataCollection/LeftTree/SaveChannel/index.vue";
 
+const emits = defineEmits(['refresh'])
 const {t: $t} = useI18n();
 
 const data = inject('collector-data')
@@ -161,16 +162,16 @@ const stateData = computed(() => {
   }
 })
 
-const onRefresh = () => {
-
+const onRefresh = (id, action) => {
+  emits('refresh', id, action)
 }
 
-const onSaveChannelSuccess = () => {
-
+const onSaveChannelSuccess = (dt) => {
+  emits('refresh', dt.id, 'update')
 }
 
-const onSaveCollector = () => {
-
+const onSaveCollector = (dt) => {
+  emits('refresh', dt.id, 'update')
 }
 
 const getActions = () => {
@@ -227,7 +228,7 @@ const getActions = () => {
             }
 
             if (response && response.success) {
-              onRefresh()
+              onRefresh(response.result.id || data.value?.id, 'update')
               onlyMessage($t('Channel.index.290640-15'));
             }
           },
@@ -255,7 +256,7 @@ const getActions = () => {
             }
 
             if (response && response.success) {
-              onRefresh()
+              onRefresh(response.result?.id || data.value?.id, 'delete')
               onlyMessage($t('Channel.index.290640-15'));
             }
           },
@@ -267,40 +268,46 @@ const getActions = () => {
   return []
 };
 
-const queryCollector = async (terms = {}) => {
-  const resp = await queryCollectorCount({terms: [terms]})
+const queryCollector = async (terms) => {
+  let params = {}
+  if(terms){
+    params = {terms: [terms]}
+  }
+  const resp = await queryCollectorCount(params)
   if (resp.success) {
     count.collectorTotal = resp.result || 0
   }
-  const response = await queryCollectorCount({
+  const _params = {
     terms: [
       {
-        "value": "running",
-        "termType": "not",
-        "column": "runningState",
+        column: 'runningState',
+        termType: 'not',
+        value: 'running',
         type: "and"
       },
-      terms,
     ]
-  })
+  }
+  if(terms){
+    _params.terms.push(terms)
+  }
+  const response = await queryCollectorCount(_params)
   if (response.success) {
     count.collectorError = response.result || 0
   }
 }
 const handleSearch = async () => {
   if (!data.value?.id || data.value?.id === '*') {
+    const obj = {
+      column: 'runningState',
+      termType: 'not',
+      value: 'running',
+    }
     const resp1 = await queryCount({})
     if (resp1.success) {
       count.channelTotal = resp1.result || 0
     }
     const resp2 = await queryCount({
-      terms: [
-        {
-          "value": "running",
-          "termType": "not",
-          "column": "runningState"
-        }
-      ]
+      terms: [obj]
     })
     if (resp2.success) {
       count.channelError = resp2.result || 0
@@ -311,20 +318,14 @@ const handleSearch = async () => {
       count.pointTotal = resp3.result || 0
     }
     const resp4 = await queryPointCount({
-      terms: [
-        {
-          "value": "running",
-          "termType": "not",
-          "column": "runningState"
-        }
-      ]
+      terms: [obj]
     })
     if (resp3.success) {
       count.pointError = resp4.result || 0
     }
   } else {
     if (type.value === 'channel') {
-      queryCollector({
+      await queryCollector({
         column: "channelId",
         value: data.value.id
       })

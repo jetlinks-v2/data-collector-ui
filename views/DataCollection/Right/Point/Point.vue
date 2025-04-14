@@ -227,7 +227,7 @@ const initColumns = [
     dataIndex: 'pointValue',
     key: 'pointValue',
     scopedSlots: true,
-    width: 150
+    width: 160
   },
   {
     title: $t('DataCollection.Right.Point.Table.476751-1'),
@@ -562,13 +562,15 @@ const updateDefaultParams = () => {
     obj = {
       column: 'channelId',
       termType: 'eq',
-      value: data.value?.id
+      value: data.value?.id,
+      type: 'and'
     }
   } else if (type.value === 'collector') {
     obj = {
       column: 'collectorId',
       termType: 'eq',
-      value: data.value?.id
+      value: data.value?.id,
+      type: 'and'
     }
   }
   defaultParams.value.terms[0] = obj
@@ -617,9 +619,6 @@ const handleTerms = (arr) => {
         obj.column = 'accessModes$nin$any'
       }
     }
-    // else if (i.column === 'runningState') {
-    //   console.log(i)
-    // }
     if (i?.terms?.length) {
       obj.terms = handleTerms(i.terms || [])
     }

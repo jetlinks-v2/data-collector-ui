@@ -3,7 +3,7 @@
     <FullPage>
       <div class="collection">
         <LeftTree @change="treeChange"></LeftTree>
-        <Right />
+        <Right @refresh="onRefresh" />
       </div>
     </FullPage>
   </j-page-container>
@@ -23,6 +23,10 @@ const treeChange = (type, node) => {
 
 provide('collector-data', data)
 provide('collector-type', nodeType)
+
+const onRefresh = (id, action) => {
+  console.log('refresh', id, action)
+}
 </script>
 
 <style scoped lang="less">

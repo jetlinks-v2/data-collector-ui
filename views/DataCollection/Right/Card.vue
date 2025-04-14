@@ -30,17 +30,16 @@
 </template>
 
 <script lang="ts" setup>
-
 import {useI18n} from 'vue-i18n';
 import {dashboard} from "@collector/api/others";
 
 const {t: $t} = useI18n();
 
-const chartRef = ref<Record<string, any>>({});
 const loading = ref(false);
+const time = ref({})
 
-const _data = inject('collector-data')
-const type = inject('collector-type')
+const _data = inject('collector-data', ref({}))
+const type = inject('collector-type', ref(''))
 
 const data = reactive({
   xAxis: [],
@@ -100,8 +99,9 @@ const options = computed(() => {
   }
 })
 
-const initQueryTime = (e) => {
-  getEcharts(e)
+const initQueryTime = (e: any) => {
+  time.value = e
+  getEcharts()
 }
 
 const getParams = (dt: any) => {
@@ -141,38 +141,47 @@ const getParams = (dt: any) => {
   }
 };
 
-const getEcharts = async (val: any) => {
-  const params = [
-    {
-      dashboard: 'collector',
-      object: 'pointData',
-      measurement: 'quantity',
-      dimension: 'agg',
-      params: {
-        from: val.start,
-        to: val.end,
-        limit: getParams(val).limit,
-        interval: getParams(val).interval,
-        format: getParams(val).format
+const getEcharts = async () => {
+  if(time.value.start && time.value.end){
+    const params = [
+      {
+        dashboard: 'collector',
+        object: 'pointData',
+        measurement: 'quantity',
+        dimension: 'agg',
+        params: {
+          from: time.value.start,
+          to: time.value.end,
+          limit: getParams(time.value).limit,
+          interval: getParams(time.value).interval,
+          format: getParams(time.value).format
+        },
       },
-    },
-  ]
-  loading.value = true;
-  const resp: any = await dashboard(params);
-  if (resp.success && resp?.result?.length) {
-    data.xAxis = resp.result
-        .map((item: any) => item.data.timeString)
-        .reverse();
-    data.y = resp.result.map((item: any) => item.data.value).reverse();
+    ];
+    if(_data.value.id){
+      if(type.value === 'channel'){
+        params[0].params.channelId = _data.value.id
+      }
+      if(type.value === 'collector'){
+        params[0].params.collectorId = _data.value.id
+      }
+    }
+    loading.value = true;
+    const resp: any = await dashboard(params);
+    if (resp.success && resp?.result?.length) {
+      data.xAxis = resp.result
+          .map((item: any) => item.data.timeString)
+          .reverse();
+      data.y = resp.result.map((item: any) => item.data.value).reverse();
+    }
+    setTimeout(() => {
+      loading.value = false;
+    }, 300)
   }
-  setTimeout(() => {
-    loading.value = false;
-  }, 300)
 };
 
 watch(() => _data.value, () => {
-  // todo: 处理选中通道和采集器的情况
-  console.log(_data.time)
+  getEcharts()
 }, {
   immediate: true,
   deep: true
