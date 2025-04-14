@@ -1,13 +1,14 @@
 <template>
   <div class="channel-collector">
-    <div class="channel-collector-content" direction="vertical">
+    {{ filterValue }}123
+    <div class="channel-collector-content">
       <a-button>
         <AIcon type="MenuFoldOutlined"></AIcon>
       </a-button>
       <a-input-search  placeholder="请输入通道名称" @search="handleSearch"></a-input-search>
       <div class="content-operation">
         <AIcon type="FilterOutlined" @click="filterModalVisible = true"></AIcon>
-        <j-permission-button type="primary" @click="handleAdd">
+        <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:addChannel">
           <AIcon type="PlusOutlined"></AIcon>
           新增通道
         </j-permission-button>
@@ -65,6 +66,7 @@
                             :popConfirm="item.popConfirm"
                             :disabled="item.disabled"
                             :tooltip="item.tooltip"
+                            :hasPermission="`DataCollection:${item.key}`"
                             @click="item.onClick"
                           >
                             <AIcon :type="item.icon"></AIcon>
@@ -88,6 +90,7 @@
                         :popConfirm="item.popConfirm"
                         :disabled="item.disabled"
                         :tooltip="item.tooltip"
+                        :hasPermission="`DataCollection:${item.key}`"
                         @click="item.onClick"
                       >
                         <AIcon :type="item.icon"></AIcon>
@@ -140,6 +143,7 @@
                               :popConfirm="item.popConfirm"
                               :disabled="item.disabled"
                               :tooltip="item.tooltip"
+                              :hasPermission="`DataCollection:${item.key}`"
                               @click="item.onClick"
                             >
                               <AIcon :type="item.icon"></AIcon>
@@ -170,6 +174,7 @@
                         :popConfirm="item.popConfirm"
                         :disabled="item.disabled"
                         :tooltip="item.tooltip"
+                        :hasPermission="`DataCollection:${item.key}`"
                         @click="item.onClick"
                       >
                         <AIcon :type="item.icon"></AIcon>
@@ -223,6 +228,7 @@ import FilterModal from "./components/FilterModal.vue";
 import { useI18n } from "vue-i18n";
 import { onlyMessage } from "@jetlinks-web/utils";
 import type { ChannelEntity, CollectorEntity } from "./type";
+import { cloneDeep } from "lodash-es";
 
 const { t: $t } = useI18n();
 const props = defineProps({
@@ -242,11 +248,26 @@ const currentChannel = ref<ChannelEntity>({});
 const currentCollector = ref<CollectorEntity>({});
 const searchValue = ref('');
 const filterValue = ref<any>({})
+const channelChildrenMap = new Map();
 const filterTreeData = computed(() => {
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
-    return item.name.includes(searchValue.value);
-  })
+    if(item.name.includes(searchValue.value) 
+      && (filterValue.value?.provider?.includes(item.provider) || !filterValue.value?.provider?.length)
+      && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
+      && item.id !== '*'
+    ) {
+      if(item.children && item.children?.length) {
+        // const childrenArr = channelChildrenMap.get(item.id)?.filter((child) => {
+        //   return (filterValue.value?.collectorState?.includes(child.state?.value) || !filterValue.value?.collectorState?.length) 
+        // })
+        // item.children = cloneDeep(childrenArr);
+      } else {
+        item.children = channelChildrenMap.get(item.id) || undefined;
+      }
+      return true
+    }
+  });
 })
 
 //通道节点按钮
@@ -260,7 +281,7 @@ const channelActions = (data: any) => {
     {
       text: "新增采集器",
       icon: "PlusCircleOutlined",
-      key: "add-collector",
+      key: "addCollector",
       disabled: state === "disabled",
       tooltip: {
         title:
@@ -278,7 +299,7 @@ const channelActions = (data: any) => {
     {
       text: $t("Channel.index.290640-13"),
       icon: "EditOutlined",
-      key: "edit-channel",
+      key: "updateChannel",
       tooltip: {
         title: $t("Channel.index.290640-13"),
       },
@@ -290,7 +311,7 @@ const channelActions = (data: any) => {
     {
       text: stateText,
       icon: state === "disabled" ? "PlayCircleOutlined" : "StopOutlined",
-      key: "action-channel",
+      key: "actionChannel",
       tooltip: {
         title: stateText,
       },
@@ -308,7 +329,7 @@ const channelActions = (data: any) => {
     {
       text: $t("Channel.index.290640-16"),
       icon: "DeleteOutlined",
-      key: "delete-channel",
+      key: "deleteChannel",
       tooltip: {
         title:
           state === "enabled"
@@ -343,7 +364,7 @@ const collectorActions = (data: any) => {
     {
       text: "编辑",
       icon: "EditOutlined",
-      key: "edit-collector",
+      key: "updateCollector",
       onClick: () => {
         saveCollectorVisible.value = true;
         currentCollector.value = data;
@@ -356,7 +377,7 @@ const collectorActions = (data: any) => {
         state === "disabled"
           ? "PlayCircleOutlined"
           : "StopOutlined",
-      key: "enable-collector",
+      key: "actionCollector",
       disabled: runningState === 'stopped' &&
       state !== 'disabled',
       tooltip: {
@@ -379,7 +400,7 @@ const collectorActions = (data: any) => {
     {
       text: $t("Channel.index.290640-16"),
       icon: "DeleteOutlined",
-      key: "delete-collector",
+      key: "deleteCollector",
       tooltip: {
         title:
           state === "enabled"
@@ -462,6 +483,7 @@ const onLoadData = (node: any) => {
             isLeaf: true,
           };
         });
+        channelChildrenMap.set(node.dataRef.id, node.dataRef.children);
       }
       treeData.value = [...treeData.value];
       resolve(node.dataRef.children);

@@ -25,6 +25,7 @@
 import CardSelect from "@/components/CardSelect/CardSelect.vue";
 import { useRequest } from "@jetlinks-web/hooks";
 import { getProviders } from '@collector/api/data-collect/channel';
+import { cloneDeep } from "lodash-es";
 
 const props = defineProps({
   value: {
@@ -45,7 +46,7 @@ const { data } = useRequest(getProviders, {
   }
 });
 
-const filterData = reactive(props.value || {
+const filterData = reactive(cloneDeep(props.value) || {
   provider: [],
   runningState: [],
   state: [],
@@ -109,7 +110,10 @@ const filterColumn = computed(() => {
 })
 
 const handleOk = () => {
-  emits('update:value', filterData);
+  Object.keys(filterData).forEach((key) => {
+    filterData[key] = filterData[key].filter((item: string) => !!item)
+  })
+  emits('update:value', cloneDeep(filterData));
   emits('close');
 }
 
