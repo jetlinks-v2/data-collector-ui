@@ -322,8 +322,9 @@ const initColumns = [
   },
 ]
 const columns = computed(() => {
+  const arr = cloneDeep(initColumns)
   if(!data.value.id || data.value.id === '*') {
-    return [...initColumns, {
+    return [...arr, {
       title: $t('Channel.index.290640-4'),
       dataIndex: 'provider',
       key: 'provider',
@@ -344,7 +345,7 @@ const columns = computed(() => {
       },
     }]
   }
-  return initColumns
+  return arr
 })
 const params = ref({})
 const subRef = ref()
@@ -560,17 +561,14 @@ const updateDefaultParams = () => {
   let obj = {};
   if (type.value === 'channel') {
     obj = {
-      column: 'channelId',
-      termType: 'eq',
+      column: 'collectorId$in-channel-collector',
       value: data.value?.id,
-      type: 'and'
     }
   } else if (type.value === 'collector') {
     obj = {
       column: 'collectorId',
       termType: 'eq',
       value: data.value?.id,
-      type: 'and'
     }
   }
   defaultParams.value.terms[0] = obj

@@ -41,10 +41,6 @@
                   required: true,
                   message: $t('Collector.data.400141-13'),
               },
-              {
-                  pattern: regOnlyNumber,
-                  message: $t('Collector.data.400141-14'),
-              },
           ]"
       >
         <a-input-number
@@ -54,6 +50,7 @@
             addon-after="ms"
             :max="2147483648"
             :min="0"
+            :precision="0"
         />
       </a-form-item>
 
@@ -64,11 +61,12 @@
           </a-checkbox>
         </a-checkbox-group>
       </a-form-item>
-
-      <a-divider/>
-<!--      todo: 默认不展示此块内容，点位若为数值类型，再展示此块区域-->
-      <j-title :data="$t('DataCollection.Right.Point.Save.476751-1')"/>
-      <DeathArea v-model:value="formData.configuration.terms"/>
+      <template v-if="showDeathArea">
+        <a-divider/>
+        <!-- 默认不展示此块内容，点位若为数值类型，再展示此块区域-->
+        <j-title :data="$t('DataCollection.Right.Point.Save.476751-1')"/>
+        <DeathArea v-model:value="formData.configuration.terms"/>
+      </template>
       <a-divider/>
       <a-form-item
           :label="$t('Save.SaveModBus.4001413-33')"
@@ -107,7 +105,6 @@ import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
 import DeathArea from "./DeathArea.vue";
-import {regOnlyNumber} from "@collector/views/DataCollection/data";
 import {onlyMessage} from "@jetlinks-web/utils";
 
 const {t: $t} = useI18n();
@@ -141,8 +138,10 @@ const formData = reactive({
   features: [],
   description: props.data.description || "",
 });
+const showDeathArea = ref(false)
 
 provide("plugin-form-collector", props.collector);
+provide("plugin-form-death-area-show", showDeathArea);
 
 const handleOk = async () => {
   await formRef.value?.validate();
@@ -153,7 +152,7 @@ const handleOk = async () => {
       : await updatePoint(id, {...props.data, ...formData}).finally(() => {
         loading.value = false;
       });
-  if(response.success){
+  if (response.success) {
     emit('save');
     onlyMessage($t('Point.index.400149-14'), 'success');
   }

@@ -50,8 +50,9 @@ const handleSearch = () => {
   const params = []
   if(_data.value.id && _data.value.id !== '*'){
     params.push({
-      column: type.value === 'channel' ? "channelId" : "collectorId",
-      value: _data.value.id
+      column: type.value === 'channel' ? "collectorId$in-channel-collector" : "collectorId",
+      value: _data.value.id,
+      type: 'and'
     })
   }
   queryCount({terms: params}, 'total')
@@ -60,8 +61,7 @@ const handleSearch = () => {
       {
         column: "runningState",
         termType: "eq",
-        value: "running",
-        type: 'and'
+        value: "running"
       },
         ...params
     ]
@@ -77,7 +77,6 @@ const handleSearch = () => {
     ]
   }, 'stopped')
 }
-
 
 watch(() => _data.value, () => {
   handleSearch()
@@ -113,6 +112,14 @@ const onClick = (type) => {
   }
   handleRouteQuery(obj[type])
 }
+
+watch(
+    () => _data.value?.id,
+    () => {
+      key.value++;
+    },
+    {immediate: true, deep: true},
+);
 </script>
 
 <style lang="less" scoped>

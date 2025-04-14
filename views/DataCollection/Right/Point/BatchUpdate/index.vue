@@ -44,15 +44,7 @@
                     ]"
                 />
             </a-form-item>
-            <a-form-item
-                :name="['interval']"
-                :rules="[
-                    {
-                        pattern: regOnlyNumber,
-                        message: $t('BatchUpdate.index.4001419-9'),
-                    },
-                ]"
-            >
+            <a-form-item :name="['interval']">
                 <template #label>
                     <span>
                         {{ $t('BatchUpdate.index.4001419-10') }}
@@ -107,7 +99,6 @@ import {
     getBacnetValueType,
 } from '@collector/api/data-collect/collector';
 import { cloneDeep, isObject  } from 'lodash-es';
-import { regOnlyNumber } from '../../../data';
 import { useI18n } from 'vue-i18n';
 import {onlyMessage} from "@jetlinks-web/utils";
 

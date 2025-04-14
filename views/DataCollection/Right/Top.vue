@@ -283,7 +283,6 @@ const queryCollector = async (terms) => {
         column: 'runningState',
         termType: 'not',
         value: 'running',
-        type: "and"
       },
     ]
   }
@@ -327,7 +326,8 @@ const handleSearch = async () => {
     if (type.value === 'channel') {
       await queryCollector({
         column: "channelId",
-        value: data.value.id
+        value: data.value.id,
+        type: "and"
       })
     }
   }
