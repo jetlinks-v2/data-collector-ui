@@ -1,7 +1,7 @@
 <template>
   <a-drawer
     visible
-    :title="data?.id ? '编辑' : '新增'"
+    :title="data.id ? $t('Save.index.290643-0') : $t('Save.index.290643-1')"
     width="40%"
     @close="emits('close')"
   >
@@ -18,9 +18,9 @@
     <template #footer>
       <a-space v-if="provider">
         <j-permission-button :loading="loading" type="primary" @click="handleOk" hasPermission="DataCollection:updateChannel">
-          确定
+          {{ $t('Issue.index.517977-14') }}
         </j-permission-button>
-        <a-button @click="emits('close')">取消</a-button>
+        <a-button @click="emits('close')">{{ $t('Issue.index.517977-12') }}</a-button>
       </a-space>
     </template>
   </a-drawer>

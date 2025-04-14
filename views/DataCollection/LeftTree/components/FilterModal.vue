@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="筛选"
+    :title="$t('DataCollection.LeftTree.components.FilterModal.594410-0')"
     visible
     width="50%"
     @cancel="emits('close')"
@@ -11,10 +11,10 @@
     </div>
     <template #footer>
       <div class="footer">
-        <a-button @click="handleRest">重置</a-button>
+        <a-button @click="handleRest">{{ $t('DataCollection.LeftTree.components.FilterModal.594410-1') }}</a-button>
         <a-space>
-          <a-button @click="emits('close')">取消</a-button>
-          <a-button type="primary" @click="handleOk">确定</a-button>
+          <a-button @click="emits('close')">{{ $t('Save.index.290643-38') }}</a-button>
+          <a-button type="primary" @click="handleOk">{{ $t('Save.index.290643-39') }}</a-button>
         </a-space>
       </div>
     </template>
@@ -26,7 +26,9 @@ import CardSelect from "@/components/CardSelect/CardSelect.vue";
 import { useRequest } from "@jetlinks-web/hooks";
 import { getProviders } from '@collector/api/data-collect/channel';
 import { cloneDeep } from "lodash-es";
+import { useI18n } from "vue-i18n";
 
+const { t: $t } = useI18n()
 const props = defineProps({
   value: {
     type: Object,
@@ -56,52 +58,52 @@ const filterData = reactive(cloneDeep(props.value) || {
 const filterColumn = computed(() => {
   return [
     {
-      title: '通讯协议',
+      title: $t('Channel.index.290640-4'),
       key: 'provider',
       options: data.value,
     },
     {
-      title: '通道运行状态',
+      title: $t('DataCollection.LeftTree.components.FilterModal.594410-2'),
       key: 'runningState',
       options: [
         {
-          label: '运行中',
+          label: $t('Channel.index.290640-9'),
           value: 'running',
         },
         {
-          label: '已停止',
+          label: $t('Channel.index.290640-10'),
           value: 'stopped',
         }
       ]
     },
     {
-      title: '通道状态',
+      title: $t('DataCollection.LeftTree.components.FilterModal.594410-3'),
       key: 'state',
       options: [
         {
-          label: '正常',
+          label: $t('Channel.index.290640-6'),
           value: 'enabled',
         },
         {
-          label: '禁用',
+          label: $t('Channel.index.290640-7'),
           value:'disabled',
         }
       ]
     },
     {
-      title: '采集器状态',
+      title: $t('DataCollection.LeftTree.components.FilterModal.594410-4'),
       key:'collectorState',
       options: [
         {
-          label: '运行中',
+          label: $t('Channel.index.290640-9'),
           value: 'running',
         },
         {
-          label: '禁用',
+          label: $t('Channel.index.290640-7'),
           value:'disabled',
         },
         {
-          label: '已停止',
+          label: $t('Channel.index.290640-10'),
           value:'stopped',
         }
       ]

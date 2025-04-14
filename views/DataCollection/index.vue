@@ -17,11 +17,13 @@ import {omit} from "lodash-es";
 const data = ref({});
 const nodeType = ref('');
 const treeRef = ref(null);
+const foldTree = ref(false);
 const treeChange = (type, node) => {
   data.value = omit(node, ['dataRef', 'dragOver']);
   nodeType.value = type;
 }
 
+provide('fold-tree', foldTree)
 provide('collector-data', data)
 provide('collector-type', nodeType)
 

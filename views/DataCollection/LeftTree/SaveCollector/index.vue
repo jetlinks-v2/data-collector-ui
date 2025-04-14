@@ -1,13 +1,13 @@
 <template>
   <a-drawer
     visible
-    :title="data.id ? '编辑' : '新增'"
+    :title="data.id ? $t('Save.index.290643-0') : $t('Save.index.290643-1')"
     width="40%"
     @close="emits('close')"
   >
     <div class="collector-form-header">
       <a-space size="large">
-        <span>通道</span>
+        <span>{{ $t('DataCollection.LeftTree.SaveCollector.index.594410-0') }}</span>
         <span style="font-weight: bold">{{ channel.name }}</span>
       </a-space>
     </div>
@@ -30,7 +30,7 @@
         />
       </a-form-item>
       <template v-if="jsonData">
-        <h3 style="font-weight: bold">基本参数</h3>
+        <h3 style="font-weight: bold">{{ $t('DataCollection.LeftTree.SaveCollector.index.594410-1') }}</h3>
         <div class="collector-config">
           <RenderComponents :value="jsonData" />
         </div>
@@ -157,9 +157,9 @@
           hasPermission="DataCollection:updateCollector"
           @click="handleOk"
         >
-          确定
+          {{ $t('Issue.index.517977-14') }}
         </j-permission-button>
-        <a-button @click="emits('close')">取消</a-button>
+        <a-button @click="emits('close')">{{ $t('Issue.index.517977-12') }}</a-button>
       </a-space>
     </template>
   </a-drawer>

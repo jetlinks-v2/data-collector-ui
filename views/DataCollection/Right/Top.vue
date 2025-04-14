@@ -2,21 +2,33 @@
   <div class="top">
     <a-descriptions layout="vertical" :column="4">
       <template #title>
-        <a-space v-if="type === 'channel'">
-          <j-ellipsis>{{ data.name }}</j-ellipsis>
-          <j-badge-status
-              :status="stateData?.value"
-              :statusNames="{
-                  running: 'success',
-                  stopped: 'error',
-              }"
-          />
+        <a-space>
+          <j-permission-button 
+            v-if="foldTree" 
+            style="font-size: 20px;padding: 0" 
+            :hasPermission="true" 
+            :tooltip="{title: $t('DataCollection.Right.index.476751-1')}" 
+            type="text" 
+            @click="foldTree = !foldTree"
+          >
+          <AIcon type="InboxOutlined"></AIcon>
+          </j-permission-button>
+          <template v-if="type === 'channel'">
+            <j-ellipsis>{{ data.name }}</j-ellipsis>
+            <j-badge-status
+                :status="stateData?.value"
+                :statusNames="{
+                    running: 'success',
+                    stopped: 'error',
+                }"
+            />
+          </template>
+          <template v-else-if="type === 'collector'">
+            <j-ellipsis>{{ data.name }}</j-ellipsis>
+            <a-tag v-if="stateData.value" :color="StatusColorEnum[stateData.value]">{{ stateData.text }}</a-tag>
+          </template>
+          <span v-else>{{ $t('DataCollection.Right.Top.index.476751-1') }}</span>
         </a-space>
-        <a-space v-else-if="type === 'collector'">
-          <j-ellipsis>{{ data.name }}</j-ellipsis>
-          <a-tag v-if="stateData.value" :color="StatusColorEnum[stateData.value]">{{ stateData.text }}</a-tag>
-        </a-space>
-        <span v-else>{{ $t('DataCollection.Right.Top.index.476751-1') }}</span>
       </template>
       <template #extra>
         <a-space v-if="type === 'channel' || type === 'collector'">
@@ -123,6 +135,7 @@ const {t: $t} = useI18n();
 
 const data = inject('collector-data')
 const type = inject('collector-type')
+const foldTree = inject('fold-tree')
 const count = reactive({
   channelTotal: 0,
   channelError: 0,

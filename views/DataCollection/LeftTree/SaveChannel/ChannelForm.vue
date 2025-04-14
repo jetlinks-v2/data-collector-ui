@@ -1,11 +1,11 @@
 <template>
   <div class="channel-form-header">
     <a-space size="large">
-      <span>通讯协议</span>
+      <span>{{ $t('Info.index.077901-4') }}</span>
       <span style="font-weight: bold">{{ provider }}</span>
     </a-space>
     <a-button :disabled="formData.id" type="link" @click="handleClear"
-      >重新选择</a-button
+      >{{ $t('Save.GateWayFormItem.290644-1') }}</a-button
     >
   </div>
   <a-form ref="formRef" layout="vertical" :model="formData" :rules="rules">

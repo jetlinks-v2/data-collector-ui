@@ -1,5 +1,5 @@
 <template>
-  <a-input-search style="width: 50%;" placeholder="请输入名称" @search="handleSearch"></a-input-search>
+  <a-input-search style="width: 50%;" :placeholder="$t('DataCollection.LeftTree.SaveChannel.Provider.594410-1')" @search="handleSearch"></a-input-search>
   <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}" @click="handleChooseProvider(item.id)">
     <img v-if="ImageMap.get(item.id)" :src="ImageMap.get(item.id)" alt="">
     <div v-else class="no-image"></div>
@@ -7,7 +7,7 @@
       <p>
         {{item.name}}
       </p>
-      <p>适用于支持{{item.name}}通讯协议的设备</p>
+      <p>{{ $t('DataCollection.LeftTree.SaveChannel.Provider.594410-0', [item.name]) }}</p>
     </div>
   </div>
   <div style="margin: 40% 0">

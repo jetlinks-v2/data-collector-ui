@@ -1,15 +1,15 @@
 <template>
-  <div class="channel-collector">
+  <div class="channel-collector" :style="{width: treeWidth, padding: foldTree ? '10px 0' : '10px'}">
     <div class="channel-collector-content">
-      <a-button>
-        <AIcon type="MenuFoldOutlined"></AIcon>
-      </a-button>
-      <a-input-search  placeholder="请输入通道名称" @search="handleSearch"></a-input-search>
+      <j-permission-button style="font-size: 20px;padding: 0" :hasPermission="true" :tooltip="{title: $t('DataCollection.Right.index.476751-2')}" type="text" @click="foldTree = !foldTree">
+        <AIcon type="InboxOutlined"></AIcon>
+      </j-permission-button>
+      <a-input-search :placeholder="$t('Save.index.290643-3')" @search="handleSearch"></a-input-search>
       <div class="content-operation">
         <AIcon type="FilterOutlined" :class="{'filter-active': filterIconActive}" @click="filterModalVisible = true"></AIcon>
         <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:addChannel">
           <AIcon type="PlusOutlined"></AIcon>
-          新增通道
+          {{ $t('Channel.index.290640-0') }}
         </j-permission-button>
       </div>
       <div class="channel-collector-tree">
@@ -41,10 +41,10 @@
                     </j-ellipsis>
                     <j-badge-status
                       v-if="node.id !== '*'"
-                      :status="node.state?.value"
+                      :status="node.runningState?.value"
                       :statusNames="{
-                        enabled: 'success',
-                        disabled: 'error',
+                        running: 'success',
+                        stopped: 'error',
                       }"
                     ></j-badge-status>
                   </a-space>
@@ -153,12 +153,26 @@
                       </template>
                     </a-dropdown>
                   </div>
-                  <div style="font-size: 12px; margin-top: 5px">
-                    <a-space>
-                      <AIcon type="icon-caijiqichufa"></AIcon>
-                      点位数量{{ node.pointNumber }}
-                    </a-space>
-                  </div>
+                  <a-space class="collector-point-state">
+                    <AIcon type="icon-caijiqichufa"></AIcon>
+                    <div class="collector-point-state-count">
+                      <span>
+                        <j-badge-status
+                          status="success"
+                        >
+                        </j-badge-status>
+                        <a-space>
+                          <span>运行中</span>{{ node.pointStateCount?.running || 0 }}
+                        </a-space>
+                      </span>
+                      <span>
+                        <j-badge-status status="error"/>
+                        <a-space>
+                          <span>已停止</span>{{ node.pointStateCount?.stopped || 0 }}
+                        </a-space>
+                      </span>
+                    </div>
+                  </a-space>
                 </div>
                 <template #overlay>
                   <a-menu>
@@ -248,6 +262,11 @@ const currentCollector = ref<CollectorEntity>({});
 const searchValue = ref('');
 const filterValue = ref<any>({})
 const channelChildrenMap = new Map();
+const foldTree = inject('fold-tree')
+
+const treeWidth = computed(() => {
+  return !foldTree.value ? '350px' : '0px';
+});
 const filterIconActive = computed(() => {
   return Object.keys(filterValue.value).some(item => filterValue.value?.[item]?.length);
 })
@@ -276,15 +295,15 @@ const channelActions = (data: any) => {
       : $t("Channel.index.290640-12");
   return [
     {
-      text: "新增采集器",
+      text: $t('Tree.index.4001410-1'),
       icon: "PlusCircleOutlined",
       key: "addCollector",
       disabled: state === "disabled",
       tooltip: {
         title:
           state === "disabled"
-          ? '请先启用通道，再新增采集器'
-            : '新增采集器',
+          ? $t('DataCollection.LeftTree.index.273526-0')
+            : $t('Tree.index.4001410-1'),
       },
       onClick: () => {
         // emit('change', 'add-collector', data);
@@ -359,7 +378,7 @@ const collectorActions = (data: any) => {
       : $t("Channel.index.290640-12");
   return [
     {
-      text: "编辑",
+      text: $t('Channel.index.290640-13'),
       icon: "EditOutlined",
       key: "updateCollector",
       onClick: () => {
@@ -369,7 +388,7 @@ const collectorActions = (data: any) => {
       },
     },
     {
-      text: state === "disabled" ? "启用" : "禁用",
+      text: state === "disabled" ? stateText : stateText,
       icon:
         state === "disabled"
           ? "PlayCircleOutlined"
@@ -442,7 +461,7 @@ const getChannelList = async () => {
       };
     });
     treeData.value.unshift({
-      name: "全部",
+      name: $t('Tree.index.4001410-11'),
       id: "*",
       isLeaf: true,
     });
@@ -669,6 +688,8 @@ defineExpose({
   padding: 10px;
   width: 350px;
   transition: all 0.3s;
+  box-sizing: border-box;
+  overflow: hidden;
   .channel-collector-content {
     display: flex;
     flex-direction: column;
@@ -714,6 +735,15 @@ defineExpose({
        .more-button {
           display: block;
         }
+      }
+    }
+    .collector-point-state{
+      font-size: 12px;
+      margin-left: 10px;
+      .collector-point-state-count {
+        display: flex;
+        justify-content: space-between;
+        gap: 50px
       }
     }
   }
