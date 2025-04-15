@@ -3,7 +3,7 @@
         :title="$t('BatchUpdate.index.4001419-0')"
         :visible="true"
         width="700px"
-        @cancel="handleCancel"
+        @close="handleCancel"
         :destroyOnClose="true"
     >
         <div class="sizeText">
@@ -44,15 +44,7 @@
                     ]"
                 />
             </a-form-item>
-            <a-form-item
-                :name="['interval']"
-                :rules="[
-                    {
-                        pattern: regOnlyNumber,
-                        message: $t('BatchUpdate.index.4001419-9'),
-                    },
-                ]"
-            >
+            <a-form-item :name="['interval']">
                 <template #label>
                     <span>
                         {{ $t('BatchUpdate.index.4001419-10') }}
@@ -107,8 +99,8 @@ import {
     getBacnetValueType,
 } from '@collector/api/data-collect/collector';
 import { cloneDeep, isObject  } from 'lodash-es';
-import { regOnlyNumber } from '../../../data';
 import { useI18n } from 'vue-i18n';
+import {onlyMessage} from "@jetlinks-web/utils";
 
 const { t: $t } = useI18n();
 
@@ -123,7 +115,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['change']);
+const emit = defineEmits(['save', 'close']);
 const loading = ref(false);
 const formRef = ref<FormInstance>();
 
@@ -188,16 +180,16 @@ const handleOk = async () => {
             }
         });
         loading.value = true;
-        const response = await savePointBatch(params).catch(() => {});
-        emit('change', response?.status === 200);
-        loading.value = false;
-    } else {
-        emit('change', true);
+        const response = await savePointBatch(params).finally(() => { loading.value = false; });
+        if(response.success){
+          emit('save');
+          onlyMessage($t('Point.index.400149-14'), 'success');
+        }
     }
 };
 
 const handleCancel = () => {
-    emit('change', false);
+    emit('close');
 };
 
 watch(

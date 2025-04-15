@@ -1,9 +1,11 @@
 <template>
   <div class="collection-right">
-    <Top />
+    <Top @refresh="onRefresh" />
     <div class="content">
       <div class="more-btn">
-        <a-button @click="visible = !visible" type="link">{{ !visible ? '展开' : '收起' }}数据图表</a-button>
+        <a-button @click="visible = !visible" type="link">
+          {{ !visible ? $t('DataCollection.Right.index.476751-1') : $t('DataCollection.Right.index.476751-2')}}{{$t('DataCollection.Right.index.476751-0')}}
+        </a-button>
       </div>
       <div v-if="visible">
         <Card />
@@ -14,11 +16,18 @@
 </template>
 
 <script setup>
-import Top from './Top/index.vue'
+import Top from './Top.vue'
 import Point from './Point/index.vue'
 import Card from "./Card.vue";
+import {useI18n} from "vue-i18n";
 
+const emits = defineEmits(['refresh'])
 const visible = ref(false)
+const {t: $t} = useI18n();
+
+const onRefresh = (id, action) => {
+  emits('refresh', id, action)
+}
 </script>
 
 <style lang="less" scoped>
@@ -39,5 +48,7 @@ const visible = ref(false)
 .more-btn {
   display: flex;
   justify-content: center;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 12px;
 }
 </style>
