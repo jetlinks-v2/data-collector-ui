@@ -2,13 +2,13 @@
   <div class="top">
     <a-descriptions layout="vertical" :column="4">
       <template #title>
-        <a-space>
-          <j-permission-button 
-            v-if="foldTree" 
-            style="font-size: 20px;padding: 0" 
-            :hasPermission="true" 
-            :tooltip="{title: $t('DataCollection.Right.index.476751-1')}" 
-            type="text" 
+        <a-space style="white-space: normal;">
+          <j-permission-button
+            v-if="foldTree"
+            style="font-size: 20px;padding: 0"
+            :hasPermission="true"
+            :tooltip="{title: $t('DataCollection.Right.index.476751-1')}"
+            type="text"
             @click="foldTree = !foldTree"
           >
           <AIcon type="InboxOutlined"></AIcon>
@@ -31,7 +31,7 @@
         </a-space>
       </template>
       <template #extra>
-        <a-space v-if="type === 'channel' || type === 'collector'">
+        <a-space v-if="type === 'channel' || type === 'collector'" style="margin-left: 24px">
           <template v-for="item in getActions()" :key="item.key">
             <j-permission-button
                 :disabled="item.disabled"
@@ -49,49 +49,97 @@
         </a-space>
       </template>
       <template v-if="type === 'channel'">
-        <a-descriptions-item :label="$t('Dashboard.tool.772451-2')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="PieChartOutlined"></AIcon>
+            {{ $t('Dashboard.tool.772451-2') }}
+          </template>
           <div class="value">
             <div class="error">{{ count.collectorError }}</div>
             /
             <div class="count">{{ count.collectorTotal }}</div>
           </div>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('Channel.index.290640-4')">{{ data.provider }}</a-descriptions-item>
-        <a-descriptions-item :label="$t('DataCollection.Right.Top.index.476751-2')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="ForkOutlined"></AIcon>
+            {{ $t('Channel.index.290640-4') }}
+          </template>
+          {{ data.provider }}
+        </a-descriptions-item>
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="ProfileOutlined"></AIcon>
+            {{ $t('DataCollection.Right.Top.index.476751-2') }}
+          </template>
           <j-ellipsis>{{ data.id }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('Channel.index.290640-2')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="FileTextOutlined"></AIcon>
+            {{ $t('Channel.index.290640-2') }}
+          </template>
           <j-ellipsis>{{ data.description || "--" }}</j-ellipsis>
         </a-descriptions-item>
       </template>
       <template v-else-if="type === 'collector'">
-        <a-descriptions-item :label="$t('Channel.index.290640-3')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="InboxOutlined"></AIcon>
+            {{ $t('Channel.index.290640-3') }}
+          </template>
           <j-ellipsis>{{ data.channelName }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('Channel.index.290640-4')">{{ data.provider }}</a-descriptions-item>
-        <a-descriptions-item :label="$t('DataCollection.Right.Top.index.476751-3')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="ForkOutlined"></AIcon>
+            {{ $t('Channel.index.290640-4') }}
+          </template>
+          {{ data.provider }}
+        </a-descriptions-item>
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="ProfileOutlined"></AIcon>
+            {{ $t('DataCollection.Right.Top.index.476751-3') }}
+          </template>
           <j-ellipsis>{{ data.id }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('Channel.index.290640-2')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="FileTextOutlined"></AIcon>
+            {{ $t('Channel.index.290640-2') }}
+          </template>
           <j-ellipsis>{{ data.description || "--" }}</j-ellipsis>
         </a-descriptions-item>
       </template>
       <template v-else>
-        <a-descriptions-item :label="$t('Dashboard.tool.772451-0')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="PieChartOutlined"></AIcon>
+            {{ $t('Dashboard.tool.772451-0') }}
+          </template>
           <div class="value">
             <div class="error">{{ count.channelError }}</div>
             /
             <div class="count">{{ count.channelTotal }}</div>
           </div>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('Dashboard.tool.772451-2')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="PieChartOutlined"></AIcon>
+            {{ $t('Dashboard.tool.772451-2') }}
+          </template>
           <div class="value">
             <div class="error">{{ count.collectorError }}</div>
             /
             <div class="count">{{ count.collectorTotal }}</div>
           </div>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('Dashboard.tool.772451-4')">
+        <a-descriptions-item>
+          <template #label>
+            <AIcon type="PieChartOutlined"></AIcon>
+            {{ $t('Dashboard.tool.772451-4') }}
+          </template>
           <div class="value">
             <div class="error">{{ count.pointError }}</div>
             /
@@ -355,6 +403,17 @@ watch(() => data.value, () => {
 </script>
 
 <style lang="less" scoped>
+.top {
+  :deep(.ant-descriptions-item-label){
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    &:after {
+      content: '';
+    }
+  }
+}
 .value {
   display: flex;
   align-items: center;
