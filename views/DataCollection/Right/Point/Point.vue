@@ -168,6 +168,8 @@
   <Scan
     v-if="scanData.visible"
     :data="scanData.current"
+    @cancel="scanData.visible = false"
+
   />
 </template>
 

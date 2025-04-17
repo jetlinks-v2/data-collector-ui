@@ -7,6 +7,8 @@ import {
 import { useI18n } from 'vue-i18n';
 import {useScan} from "./useScan";
 import {pick} from "lodash-es";
+import RenderComponents from "@collector/components/RenderComponents";
+import {devGetProtocol} from "@collector/utils/utils";
 
 const props = defineProps({
   unSelectKeys: {
@@ -23,6 +25,7 @@ const { data: treeData, loading, run } = useRequest(scanOpcUAList, {
   immediate: false
 })
 
+const jsonData = ref();
 const isSelected = ref(false)
 const controlAllType = ref(false)
 const spinning = ref(false)
@@ -32,11 +35,18 @@ const breadcrumb = ref([
     nodeId: undefined,
   },
 ])
+const setting = reactive({
+  request: { type: undefined },
+  handleDataSourceItem: () => ({})
+})
+
+provide('scan-tree-setting', setting)
 
 const treeAllData = computed(() => {
   return treeData.value?.filter(item => !(isSelected.value && selectKeys.value.has(item.id))).map((i) => {
     return {
       ...i,
+      title: setting.treeTitle?.(i) || i.name,
       checked: selectKeys.value.has(i.id),
       key: i.id,
     }
@@ -50,30 +60,21 @@ const jumpFile = (breadcrumbNumber, nodeId) => {
   getFileList(nodeId);
 }
 
+const handleDataSourceItem = (info) => {
+  return {
+    id: info.id,
+    name: info.name,
+    type: info.type,
+    ...setting.handleDataSourceItem(info)
+  }
+}
+
 const onAllControl = () => {
   const points = treeAllData.value.filter(item => !item.folder)
   const filterData = points.filter(item => !item.checked)
 
   if (filterData.length) {
-    dataSource.value.push(...filterData.map(info => ({
-      ...pick(info, ['id', 'name', 'type']),
-      features: {
-        value: (info.features || []).includes('changedOnly'),
-        check: true,
-      },
-      accessModes: {
-        value: undefined,
-        check: true,
-      },
-      configuration: {
-        ...(info.configuration || {}),
-        interval: {
-          value: info.configuration?.interval || 3000,
-          check: true,
-        },
-        nodeId: info.id,
-      }
-    })))
+    dataSource.value.push(...filterData.map(handleDataSourceItem))
     selectKeys.value = new Set([...selectKeys.value, ...filterData.map(item => item.id)])
   } else {
     dataSource.value = dataSource.value.filter(item => {
@@ -91,25 +92,7 @@ const onCheck = (info) => {
 
   if (!selectKeys.value.has(info.id)) {
     selectKeys.value.add(info.id)
-    dataSource.value.push({
-      ...pick(info, ['id', 'name', 'type']),
-      features: {
-        value: (info.features || []).includes('changedOnly'),
-        check: true,
-      },
-      accessModes: {
-        value: undefined,
-        check: true,
-      },
-      configuration: {
-        ...(info.configuration || {}),
-        interval: {
-          value: info.configuration?.interval || 3000,
-          check: true,
-        },
-        nodeId: info.id,
-      }
-    })
+    dataSource.value.push(handleDataSourceItem(info))
   }
 }
 
@@ -126,7 +109,22 @@ const clickItem = (node) => {
 }
 
 const getFileList = async (nodeId) => {
-  await run(collectionData.value.channelId, 'BrowseNodes', { nodeId })
+  await run(collectionData.value.channelId, setting.request.type, setting.request.data?.() ||{ nodeId })
+  // treeData.value = Array.from({length: 20}, (_, index) =>  {
+  //   return {
+  //     objectId: {
+  //       type: 'string',
+  //       instanceNumber: index,
+  //     },
+  //     propertyId: 'propertyId' + index,
+  //     valueType: 'valueType' + index,
+  //     id: 'id'+index,
+  //     name: '点位'+ index,
+  //     vendorName: 'vendorName'+ index,
+  //     modelName: 'modelName'+ index,
+  //     address: 'address'+ index,
+  //   }
+  // })
 }
 
 const getSelectPoint = async () => {
@@ -149,15 +147,25 @@ const getSelectPoint = async () => {
 
   await getFileList()
 }
+const getProtocol = async () => {
+  jsonData.value = await devGetProtocol(collectionData.value.provider, "scanTree")
+};
 
-getSelectPoint()
+const renderMounted = () => {
+  nextTick(() => {
+    getSelectPoint()
+  })
+}
+
+getProtocol();
 
 </script>
 
 <template>
   <div class="scan-tree">
+    <RenderComponents v-if="jsonData" :value="jsonData" @mounted="renderMounted" />
     <div class="scan-tree-header">
-      <div> 数据源 </div>
+      <div> {{ $t('ScanBacnet.Tree.400142-0') }} </div>
       <a-checkbox v-model:checked="isSelected">隐藏已有节点</a-checkbox>
     </div>
     <div class="scan-tree-breadcrumb">
@@ -183,7 +191,7 @@ getSelectPoint()
         :loading="loading"
         @click="onAllControl"
       >
-        {{ controlAllType ? "全部撤销" : "全部添加" }}
+        {{ controlAllType ? $t('ScanBacnet.Tree.400142-1') :  $t('ScanBacnet.Tree.400142-2') }}
       </a-button>
       <div v-if="!!treeAllData" class="treeContainer">
         <div
@@ -200,7 +208,7 @@ getSelectPoint()
               class="item-label-content"
               :class="{'checked': i.checked}"
             >
-              <j-ellipsis>{{ i.name }}</j-ellipsis>
+              <j-ellipsis>{{ i.title }}</j-ellipsis>
             </div>
           </div>
 
@@ -222,11 +230,21 @@ getSelectPoint()
 <style scoped lang="less">
 .scan-tree {
   flex: 0 0 300px;
+  height: 570px;
 
   .scan-tree-header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
+  }
+
+  .scan-tree-content {
+    height: calc(100% - 56px);
+
+    .treeContainer {
+      height: calc(100% - 32px);
+      overflow-y: auto;
+    }
   }
 
   .tree-item {
@@ -249,6 +267,7 @@ getSelectPoint()
       .item-label-content {
         padding: 0 4px;
         max-width: calc(100% - 32px);
+
         &.checked {
           background-color: var(--ant-primary-2);
         }

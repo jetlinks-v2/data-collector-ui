@@ -5,19 +5,22 @@ import { useI18n } from 'vue-i18n';
 import { set, get } from 'lodash-es'
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
+import RowRender from './TableRowRender.vue'
 
 const { t: $t } = useI18n();
 const {dataSource, selectKeys} = useScan()
 const collectionData = inject('collector-data', {})
 const jsonData = ref();
-const scanSetting = reactive({
-  columns: []
+const scanSetting = ref({
+  columns: [],
+  selectKeys: new Set([]),
+  handleData: (v) => v
 })
 
 provide("plugin-scan-point", scanSetting);
 
 const columns = computed(() => {
-  return (scanSetting.columns || []).concat([
+  return (scanSetting.value.columns || []).concat([
     {
       title: i18n.global.t('Collector.data.400141-37'),
       dataIndex: 'accessModes',
@@ -102,17 +105,33 @@ const removeItem = (record) => {
 const getProtocol = async () => {
   jsonData.value = await devGetProtocol(collectionData.value.provider, "scan");
 };
+
 getProtocol();
+
+defineExpose({
+  handleData: () => {
+    return scanSetting.value.handleData(dataSource.value)
+  }
+})
 </script>
 
 <template>
   <div class="scan-table">
-    <RenderComponents v-if="jsonData" :value="jsonData" />
+    <RenderComponents v-if="jsonData" :value="jsonData" :object="scanSetting" />
     <j-edit-table
       :dataSource="dataSource"
       :columns="columns"
       :height="500"
     >
+      <template v-for="item in columns.filter(item => item.template)" #[item.dataIndex]="{ record, index }">
+        <RowRender
+          :props="item.template.props"
+          :name="item.template.components"
+          :value="get(record, item.path || item.dataIndex)"
+          :provider="collectionData.provider"
+          @change="(v) => { set(record, item.path || item.dataIndex, v)}"
+        />
+      </template>
       <template #accessModes="{ record, index }">
         <j-edit-table-form-item :name="[index, 'accessModes', 'value']">
           <div class="scan-ditto-box">
@@ -216,7 +235,7 @@ getProtocol();
 
 <style scoped lang="less">
 .scan-table {
-  flex: 1 1 auto;
+  width: calc(100% - 316px);
 
   .scan-ditto-box {
     display: flex;
