@@ -2,7 +2,7 @@
 import i18n from "@/locales";
 import {useScan} from "./useScan";
 import { useI18n } from 'vue-i18n';
-import { set, get } from 'lodash-es'
+import { set, get, isArray } from 'lodash-es'
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
 import RowRender from './TableRowRender.vue'
@@ -11,6 +11,7 @@ const { t: $t } = useI18n();
 const {dataSource, selectKeys} = useScan()
 const collectionData = inject('collector-data', {})
 const jsonData = ref();
+const tableRef = ref();
 const scanSetting = ref({
   columns: [],
   selectKeys: new Set([]),
@@ -28,12 +29,15 @@ const columns = computed(() => {
       width: 350,
       form: {
         required: true,
-        rules: [
-          {
-            required: true,
-            message: $t('Scan.Table.400147-1'),
+        rules: {
+          asyncValidator: (rule, value, cb) => {
+            const _value = isArray(value) ? value : value.value
+            if (!_value?.length) {
+              return Promise.reject($t('Scan.Table.400147-1'));
+            }
+            return Promise.resolve();
           },
-        ]
+        }
       }
     },
     {
@@ -69,14 +73,19 @@ const columns = computed(() => {
 })
 
 const valueChange = (index, path) => {
+  if (dataSource.value.length === 1) {
+    return
+  }
+
   const current = dataSource.value[index]
   let i = index
+
   while (index < dataSource.value.length) { // 循环只更新连续的“同上”项，减少不必要的遍历。
     const nextIndex = i + 1
     const nextItem = dataSource.value[nextIndex]
     const currentData = get(current, path)
     const nextItemData = get(nextItem, path)
-    if (nextItemData.check) {
+    if (nextItemData?.check) {
       set(nextItem, path+'.value', currentData.value)
       i = nextIndex
     } else {
@@ -109,8 +118,12 @@ const getProtocol = async () => {
 getProtocol();
 
 defineExpose({
-  handleData: () => {
-    return scanSetting.value.handleData(dataSource.value)
+  handleData: async () => {
+    const result = await tableRef.value.validate()
+    if (result) {
+      return scanSetting.value.handleData(dataSource.value)
+    }
+     return false
   }
 })
 </script>
@@ -119,6 +132,7 @@ defineExpose({
   <div class="scan-table">
     <RenderComponents v-if="jsonData" :value="jsonData" :object="scanSetting" />
     <j-edit-table
+      ref="tableRef"
       :dataSource="dataSource"
       :columns="columns"
       :height="500"

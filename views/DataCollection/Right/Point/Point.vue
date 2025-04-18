@@ -169,7 +169,7 @@
     v-if="scanData.visible"
     :data="scanData.current"
     @cancel="scanData.visible = false"
-
+    @change="onScanChange"
   />
 </template>
 
@@ -584,6 +584,11 @@ const updateDefaultParams = () => {
     }
   }
   defaultParams.value.terms[0] = obj
+}
+
+const onScanChange = () => {
+  scanData.visible = false
+  tableRef.value?.reload()
 }
 
 watch(

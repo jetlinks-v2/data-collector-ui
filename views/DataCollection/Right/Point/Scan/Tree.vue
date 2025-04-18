@@ -134,7 +134,7 @@ const getSelectPoint = async () => {
     terms: [
       {
         column: 'collectorId',
-        value: props.data?.id,
+        value: collectionData.value.id,
       },
     ]
   }).finally(() => {

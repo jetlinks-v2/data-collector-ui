@@ -29,10 +29,12 @@ const onCancel = () => {
   emit('cancel')
 }
 
-const onOk = () => {
+const onOk = async () => {
   if (dataSource.value.length) {
-
-    run(dataSource.value)
+    const result = await tableRef.value.handleData()
+    if (result) {
+      run(result)
+    }
   } else {
     onlyMessage($t('Scan.index.400148-3'), 'error')
   }
@@ -52,7 +54,7 @@ const onOk = () => {
   >
     <div class="scan-content">
       <Tree />
-      <Table />
+      <Table ref="tableRef"/>
     </div>
   </a-modal>
 </template>
