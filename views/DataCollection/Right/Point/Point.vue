@@ -165,6 +165,12 @@
       @close="batchUpdate.visible = false"
       @save="onBatchSave"
   />
+  <Scan
+    v-if="scanData.visible"
+    :data="scanData.current"
+    @cancel="scanData.visible = false"
+    @change="onScanChange"
+  />
 </template>
 
 <script setup>
@@ -184,6 +190,7 @@ import Save from "./Save/index.vue";
 import EditInput from "./EditInput.vue";
 import Import from "./Import/index.vue";
 import BatchUpdate from './BatchUpdate/index.vue';
+import Scan from './Scan/Scan.vue'
 
 const {t: $t} = useI18n();
 const data = inject('collector-data', ref({}))
@@ -371,6 +378,10 @@ const batchUpdate = reactive({
   current: {},
   visible: false
 })
+const scanData = reactive({
+  current: {},
+  visible: false
+})
 const batchActions = ref([]);
 
 ImageMap.set('OPC_UA', imgUrl.opcImage);
@@ -483,7 +494,8 @@ const handleAdd = () => {
 }
 
 const handleScan = () => {
-
+  scanData.visible = true
+  scanData.current = cloneDeep(data.value)
 }
 
 const handleImport = () => {
@@ -572,6 +584,11 @@ const updateDefaultParams = () => {
     }
   }
   defaultParams.value.terms[0] = obj
+}
+
+const onScanChange = () => {
+  scanData.visible = false
+  tableRef.value?.reload()
 }
 
 watch(
