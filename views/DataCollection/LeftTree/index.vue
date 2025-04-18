@@ -281,6 +281,13 @@ const filterTreeData = computed(() => {
       item.children = channelChildrenMap.get(item.id)?.filter((child) => {
         return (filterValue.value?.collectorState?.includes(child.runningState?.value) || filterValue.value?.collectorState?.includes(child.state?.value) || !filterValue.value?.collectorState?.length) 
       })
+      if(item.isLoadChildren && !item.children?.length) {
+        item.isLeaf = true;
+      } else if(item.collectorNumber) {
+        item.isLeaf = false;
+      } else {
+        item.isLeaf = true;
+      }
       return true
     }
   });
@@ -493,6 +500,7 @@ const onLoadData = (node: any) => {
       ],
     }).then((res: any) => {
       if (res.success) {
+        node.dataRef.isLoadChildren = true;
         node.dataRef.children = res.result.map((item) => {
           return {
             ...item,
