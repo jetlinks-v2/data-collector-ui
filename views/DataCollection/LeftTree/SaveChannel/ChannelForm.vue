@@ -1,44 +1,46 @@
 <template>
-  <div class="channel-form-header">
-    <a-space size="large">
-      <span>{{ $t('Info.index.077901-4') }}</span>
-      <span style="font-weight: bold">{{ provider }}</span>
-    </a-space>
-    <a-button :disabled="formData.id" type="link" @click="handleClear"
-      >{{ $t('Save.GateWayFormItem.290644-1') }}</a-button
-    >
+  <div>
+    <div class="channel-form-header">
+      <a-space size="large">
+        <span>{{ $t('Info.index.077901-4') }}</span>
+        <span style="font-weight: bold">{{ provider }}</span>
+      </a-space>
+      <a-button :disabled="formData.id" type="link" @click="handleClear"
+        >{{ $t('Save.GateWayFormItem.290644-1') }}</a-button
+      >
+    </div>
+    <a-form ref="formRef" layout="vertical" :model="formData" :rules="rules">
+      <a-form-item :label="$t('Save.index.290643-2')" name="name">
+        <a-input
+          :placeholder="$t('Save.index.290643-3')"
+          v-model:value="formData.name"
+        />
+      </a-form-item>
+      <a-form-item
+        v-if="formData.provider === 'COLLECTOR_GATEWAY'"
+        :name="['configuration', 'deviceId']"
+        :rules="[{ required: true, message: $t('Save.index.290643-15') }]"
+        :label="$t('Save.index.290643-16')"
+      >
+        <GateWayFormItem
+          v-model:name="formData.configuration.deviceName"
+          v-model:value="formData.configuration.deviceId"
+        />
+      </a-form-item>
+      <template v-else>
+        <RenderComponents v-if="jsonData" :value="jsonData" />
+      </template>
+      <a-form-item :label="$t('Save.index.290643-36')" name="description">
+        <a-textarea
+          :placeholder="$t('Save.index.290643-37')"
+          v-model:value="formData.description"
+          :maxlength="200"
+          :rows="3"
+          showCount
+        />
+      </a-form-item>
+    </a-form>
   </div>
-  <a-form ref="formRef" layout="vertical" :model="formData" :rules="rules">
-    <a-form-item :label="$t('Save.index.290643-2')" name="name">
-      <a-input
-        :placeholder="$t('Save.index.290643-3')"
-        v-model:value="formData.name"
-      />
-    </a-form-item>
-    <a-form-item
-      v-if="formData.provider === 'COLLECTOR_GATEWAY'"
-      :name="['configuration', 'deviceId']"
-      :rules="[{ required: true, message: $t('Save.index.290643-15') }]"
-      :label="$t('Save.index.290643-16')"
-    >
-      <GateWayFormItem
-        v-model:name="formData.configuration.deviceName"
-        v-model:value="formData.configuration.deviceId"
-      />
-    </a-form-item>
-    <template v-else>
-      <RenderComponents v-if="jsonData" :value="jsonData" />
-    </template>
-    <a-form-item :label="$t('Save.index.290643-36')" name="description">
-      <a-textarea
-        :placeholder="$t('Save.index.290643-37')"
-        v-model:value="formData.description"
-        :maxlength="200"
-        :rows="3"
-        showCount
-      />
-    </a-form-item>
-  </a-form>
 </template>
 
 <script setup lang="ts">
@@ -147,6 +149,9 @@ watch(
 
 defineExpose({
   submit: () => submit(),
+  reset: () => {
+    formRef.value?.resetFields();
+  },
 })
 </script>
 

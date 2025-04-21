@@ -1,14 +1,16 @@
 <template>
   <a-drawer
     visible
-    :title="data.id ? $t('Save.index.290643-0') : $t('Save.index.290643-1')"
+    :title="data.id ? $t('DataCollection.LeftTree.SaveCollector.index.594410-2') : $t('Tree.index.4001410-1')"
     width="40%"
     @close="emits('close')"
   >
     <div class="collector-form-header">
       <a-space size="large">
-        <span>{{ $t('DataCollection.LeftTree.SaveCollector.index.594410-0') }}</span>
-        <span style="font-weight: bold">{{ channel.name }}</span>
+        <span style="white-space: nowrap">{{ $t('DataCollection.LeftTree.SaveCollector.index.594410-0') }}</span>
+        <j-ellipsis>
+          <span style="font-weight: bold">{{ channel.name }}</span>
+        </j-ellipsis>
       </a-space>
     </div>
     <a-form

@@ -344,7 +344,9 @@ const channelActions = (data: any) => {
           const res = await updateChannel(data.id, updateStatus[state]);
           if (res.success) {
             onlyMessage($t("Channel.index.290640-15"), "success");
-            refreshChannel(data)
+            setTimeout(() => {
+              refreshChannel(data)
+            }, 500);
           }
         },
       },
@@ -415,7 +417,9 @@ const collectorActions = (data: any) => {
           });
           if (res.success) {
             onlyMessage($t("Channel.index.290640-15"), "success");
-            refreshCollector(data);
+            setTimeout(() => {
+              refreshCollector(data);
+            }, 500);
           }
         },
       },
@@ -622,14 +626,12 @@ const refreshChannel = async (data: ChannelEntity) => {
     ],
   });
   const node = treeData.value.find(item => item.id === data.id);
-  if(node?.children) {
-    node.children = resp.result.map((item) => {
+  channelChildrenMap.set(data.id, resp.result.map((item) => {
       return {
         ...item,
         isLeaf: true,
       };
-    });
-  }
+    }))
   if(data.id === selectedKeys.value?.[0]) {
     emit('change', 'channel', res.result?.[0]);
   }
