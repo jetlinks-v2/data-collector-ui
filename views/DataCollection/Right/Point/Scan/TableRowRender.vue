@@ -1,6 +1,6 @@
 <template>
   <Suspense v-if="myComponents">
-    <component :is="myComponents" :value="value" @change="v => emit('change', v)" v-bind="props.props" ref="componentRef" @vnode-mounted="handleMounted"></component>
+    <component :is="myComponents" :value="value" @change="v => emit('change', v)" v-bind="props.props" ref="componentRef" @vue:mounted="handleMounted"></component>
   </Suspense>
 </template>
 

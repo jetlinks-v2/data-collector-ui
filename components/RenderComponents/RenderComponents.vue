@@ -1,6 +1,6 @@
 <template>
   <Suspense v-if="!!props.value && myComponents">
-    <component :is="myComponents" ref="componentRef" @vnode-mounted="handleMounted"></component>
+    <component :is="myComponents" ref="componentRef" @vue:mounted="handleMounted"></component>
   </Suspense>
 </template>
 

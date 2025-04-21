@@ -228,10 +228,12 @@ const onRefresh = (id, action) => {
 }
 
 const onSaveChannelSuccess = (dt) => {
+  saveChannel.visible = false
   emits('refresh', dt.id || data.value?.id, 'update', 'update')
 }
 
 const onSaveCollector = (dt) => {
+  saveCollector.visible = false
   emits('refresh', dt.id || data.value?.id, 'update', 'update')
 }
 

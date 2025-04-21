@@ -92,16 +92,21 @@
         }}
       </template>
       <template #interval="slotProps">
-        {{ slotProps.configuration?.interval ? slotProps.configuration?.interval + 'ms' : '--' }}
+        {{ (slotProps.configuration?.interval || slotProps.configuration?.interval === 0) ? slotProps.configuration?.interval + 'ms' : '--' }}
       </template>
       <template #quantity="slotProps">
         {{ slotProps.configuration?.parameter?.quantity || '--' }}
       </template>
       <template #address="slotProps">
-        {{ slotProps.configuration?.parameter?.address || '--' }}
+        <template v-if="slotProps.provider === 'MODBUS_TCP'">
+          {{slotProps.pointKey || '--'}}
+        </template>
+        <template v-else>
+          {{ slotProps.configuration?.parameter?.address || '--' }}
+        </template>
       </template>
       <template #scaleFactor="slotProps">
-        {{ slotProps.configuration?.codec?.configuration.scaleFactor || "--" }}
+        {{ slotProps.configuration.scaleFactor || slotProps.configuration?.codec?.configuration.scaleFactor || "--" }}
       </template>
       <template #accessModes="slotProps">
         <a-tag v-for="item in slotProps.accessModes" :key="item.value">{{ item.text }}</a-tag>
@@ -313,7 +318,6 @@ const initColumns = [
     dataIndex: 'description',
     key: 'description',
     width: 120,
-    ellipsis: true,
     search: {
       type: 'string',
     },
