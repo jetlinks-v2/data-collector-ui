@@ -95,7 +95,7 @@
                   format="YYYY-MM-DD HH:mm:ss"
                   show-time
                   :placeholder="$t('WritePoint.index.769007-5')"
-                  @change="(value: Dayjs, dateString: string)=>onChange(value,dateString,index)"
+                  @change="(value, dateString)=>onChange(value,dateString,index)"
               />
 
               <a-input
