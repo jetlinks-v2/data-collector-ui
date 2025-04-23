@@ -1,6 +1,6 @@
 <template>
   <div class="death-area">
-    <span class="tip" style="margin-bottom: 12px">{{$t('DataCollection.Right.Point.DeathArea.476751-1')}}</span>
+    <span class="tip" style="margin-bottom: 12px">{{ $t('DataCollection.Right.Point.DeathArea.476751-1') }}</span>
     <div class="top">
       <div>
         <div>{{ $t('Save.SaveBACNet.4001416-13') }}</div>
@@ -10,72 +10,112 @@
     </div>
     <div v-if="deathArea" class="area">
       <div class="content">
-        <a-form-item-rest>
-          <a-radio-group v-model:value="tag" @change="handleTag">
-            <a-radio-button value="currentValue">{{ $t('Save.DeathArea.4001417-0') }}</a-radio-button>
-            <a-radio-button value="this['currentValue'] - this['lastValue']">{{$t('Save.DeathArea.4001417-1')}}</a-radio-button>
-          </a-radio-group>
-        </a-form-item-rest>
-        <a-tooltip v-if="tag !== 'currentValue'"
-                   :title="$t('Save.DeathArea.4001417-2')">
+        <a-radio-group v-model:value="tag" @change="handleTag">
+          <a-radio-button value="currentValue">{{ $t('Save.DeathArea.4001417-0') }}</a-radio-button>
+          <a-radio-button value="this['currentValue'] - this['lastValue']">{{ $t('Save.DeathArea.4001417-1') }}
+          </a-radio-button>
+        </a-radio-group>
+        <a-tooltip v-if="tag !== 'currentValue'" :title="$t('Save.DeathArea.4001417-2')">
           <AIcon type="QuestionCircleOutlined" style="margin-left: 10px;font-size: 18px;color: rgb(153, 153, 153)"/>
         </a-tooltip>
       </div>
-      <a-form-item-rest>
-        <div v-if="tag === 'currentValue'" class="fixed">
+      <div v-if="tag === 'currentValue'" class="fixed">
+        <a-form :model="_value" ref="formRef">
           <div class="fixed-content">
             <template v-for="(item, index) in _value">
               <div class="fixed-content-item">
-                <a-space v-if="item.terms.length == 1">
-                  <a-input-number
-                      v-model:value="item.terms[0].value"
-                      style="width: 100%"
-                      :placeholder="$t('Save.DeathArea.4001417-3')"
-                      :max="item.terms[1] ? item.terms[1].value : 65536"
-                      :min="1"
-                      @change="handleChange"
-                  />
-                  <a-select
-                      v-model:value="item.terms[0].termType"
-                      :showArrow="false"
-                      :options="item.terms.length !== 2 ? termTypeOptions(item.terms.length) : leftOptions"
-                      :placeholder="$t('Save.DeathArea.4001417-4')"
-                      @change="handleChange"
-                  />
-                </a-space>
-                <a-space v-else>
-                  <a-input-number
-                      v-model:value="item.terms[0].value"
-                      style="width: 100%"
-                      :placeholder="$t('Save.DeathArea.4001417-3')"
-                      :max="item.terms[1] ? item.terms[1].value : 65536"
-                      :min="1"
-                      @change="handleChange"
-                  />
-                  <a-select
-                      v-model:value="item.terms[0].termType"
-                      :showArrow="false"
-                      :options="item.terms.length !== 2 ? termTypeOptions(item.terms.length) : leftOptions"
-                      :placeholder="$t('Save.DeathArea.4001417-4')"
-                      @change="handleChange"
-                  />
-
-                  <span style="white-space: nowrap">{{ $t('Save.DeathArea.4001417-5') }}</span>
-                  <a-select
-                      :showArrow="false"
-                      v-model:value="item.terms[1].termType"
-                      :options="termTypeOptions(item.terms.length)"
-                      :placeholder="$t('Save.DeathArea.4001417-4')"
-                      @change="handleChange"
-                  />
-                  <a-input-number
-                      v-model:value="item.terms[1].value"
-                      style="width: 100%"
-                      :placeholder="$t('Save.DeathArea.4001417-3')"
-                      :min="item.terms[0].value"
-                      @change="handleChange"
-                  />
-                </a-space>
+                <div class="fixed-content-item-item" v-if="item.terms.length == 1">
+                  <a-form-item :name="[index, 'terms', 0, 'value']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-3')
+                      }
+                  ]">
+                    <a-input-number
+                        v-model:value="item.terms[0].value"
+                        style="width: 100%"
+                        :placeholder="$t('Save.DeathArea.4001417-3')"
+                        :max="item.terms[1] ? item.terms[1].value : 65536"
+                        :min="1"
+                        @change="handleChange"
+                    />
+                  </a-form-item>
+                  <a-form-item :name="[index, 'terms', 0, 'termType']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-4')
+                      }
+                  ]">
+                    <a-select
+                        v-model:value="item.terms[0].termType"
+                        :showArrow="false"
+                        :options="item.terms.length !== 2 ? termTypeOptions(item.terms.length) : leftOptions"
+                        :placeholder="$t('Save.DeathArea.4001417-4')"
+                        @change="handleChange"
+                    />
+                  </a-form-item>
+                </div>
+                <div class="fixed-content-item-item" v-else>
+                  <a-form-item :name="[index, 'terms', 0, 'value']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-3')
+                      }
+                  ]">
+                    <a-input-number
+                        v-model:value="item.terms[0].value"
+                        style="width: 100%"
+                        :placeholder="$t('Save.DeathArea.4001417-3')"
+                        :max="item.terms[1] ? item.terms[1].value : 65536"
+                        :min="1"
+                        @change="handleChange"
+                    />
+                  </a-form-item>
+                  <a-form-item :name="[index, 'terms', 0, 'termType']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-4')
+                      }
+                  ]">
+                    <a-select
+                        v-model:value="item.terms[0].termType"
+                        :showArrow="false"
+                        :options="item.terms.length !== 2 ? termTypeOptions(item.terms.length) : leftOptions"
+                        :placeholder="$t('Save.DeathArea.4001417-4')"
+                        @change="handleChange"
+                    />
+                  </a-form-item>
+                  <span style="white-space: nowrap; margin-top: 4px">{{ $t('Save.DeathArea.4001417-5') }}</span>
+                  <a-form-item :name="[index, 'terms', 1, 'termType']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-4')
+                      }
+                  ]">
+                    <a-select
+                        :showArrow="false"
+                        v-model:value="item.terms[1].termType"
+                        :options="termTypeOptions(item.terms.length)"
+                        :placeholder="$t('Save.DeathArea.4001417-4')"
+                        @change="handleChange"
+                    />
+                  </a-form-item>
+                  <a-form-item :name="[index, 'terms', 1, 'value']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-3')
+                      }
+                  ]">
+                    <a-input-number
+                        v-model:value="item.terms[1].value"
+                        style="width: 100%"
+                        :placeholder="$t('Save.DeathArea.4001417-3')"
+                        :min="item.terms[0].value"
+                        :max="65536"
+                        @change="handleChange"
+                    />
+                  </a-form-item>
+                </div>
                 <a-button @click="handleSwap(index)" shape="round">
                   <AIcon type="SwapOutlined"/>
                 </a-button>
@@ -87,23 +127,32 @@
               </div>
             </template>
           </div>
-          <a-button :disabled="_value.length > 20" shape="circle" @click="addTerms">
+          <a-button :disabled="_value.length >= 20" shape="circle" @click="addTerms">
             <AIcon type="PlusOutlined"></AIcon>
           </a-button>
-        </div>
-        <div v-else class="percent">
-          <div class="percent-title">{{ $t('Save.DeathArea.4001417-5') }}</div>
-          <a-input-number
-              v-model:value="percentValue"
-              style="width: 200px"
-              addon-after="%"
-              :placeholder="$t('Save.DeathArea.4001417-3')"
-              :min="1"
-              @change="handlePercent"
-              :max="65535"
-          />
-        </div>
-      </a-form-item-rest>
+        </a-form>
+      </div>
+      <div v-else class="percent">
+        <div class="percent-title">{{ $t('Save.DeathArea.4001417-5') }}</div>
+        <a-form :model="percentValue" ref="percentRef">
+          <a-form-item :name="['value']" :rules="[
+                      {
+                        required: true,
+                        message: $t('Save.DeathArea.4001417-3')
+                      }
+                  ]">
+            <a-input-number
+                v-model:value="percentValue.value"
+                style="width: 200px"
+                addon-after="%"
+                :placeholder="$t('Save.DeathArea.4001417-3')"
+                :min="1"
+                @change="handlePercent"
+                :max="65536"
+            />
+          </a-form-item>
+        </a-form>
+      </div>
     </div>
   </div>
 </template>
@@ -127,8 +176,11 @@ const emits = defineEmits(['update:value', 'change']);
 const _value = ref<any>(props.value)
 const deathArea = ref(false);
 const tag = ref<string>('currentValue')
-const percentValue = ref()
-
+const percentValue = reactive({
+  value: undefined
+})
+const formRef = ref()
+const percentRef = ref()
 
 const termTypeOptions = computed(() => {
   return (val: number) => {
@@ -266,7 +318,7 @@ const handlePercent = (e: any) => {
 const handlePercentProps = (arr: any) => {
   const obj = arr.find((item: any) => item.termType === 'lt')
   const val = obj.column.split('*')[1].split('/')[0]
-  percentValue.value = val !== 'init' ? 100 - val : undefined
+  percentValue.value = val !== 'init' ? (1000 - val * 10) / 10 : undefined
 }
 
 const handleChange = () => {
@@ -307,7 +359,24 @@ watch(
     {deep: true, immediate: true}
 )
 
+const onSave = () => {
+  return new Promise(async (resolve) => {
+    let resp = undefined;
+    if (tag.value === 'currentValue') {
+      resp = await formRef.value?.validate()
 
+    } else {
+      resp = await percentRef.value?.validate()
+    }
+    if (resp) {
+      resolve(true);
+    } else {
+      resolve(false);
+    }
+  });
+};
+
+defineExpose({onSave});
 </script>
 
 <style scoped lang='less'>
@@ -346,11 +415,16 @@ watch(
     .fixed-content-item {
       display: flex;
       gap: 12px;
-      padding: 12px;
+      padding: 20px 12px;
       border: 1px solid #d9d9d9;
       border-radius: 6px;
       position: relative;
       margin-bottom: 12px;
+
+      .fixed-content-item-item {
+        display: flex;
+        gap: 12px;
+      }
 
       .remove {
         position: absolute;
@@ -371,11 +445,11 @@ watch(
 
 .percent {
   display: flex;
-  align-items: center;
   padding: 12px;
 
   .percent-title {
     margin-right: 10px;
+    margin-top: 6px;
   }
 }
 </style>

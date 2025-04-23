@@ -1,5 +1,5 @@
 <template>
-    <a-modal visible :title="$t('Import.index.4001420-0')" @cancel="emit('close')" :width="800" :maskClosable="false">
+    <a-modal visible :title="$t('Import.index.4001420-0')" @cancel="emit('close', !!successNumber)" :width="800" :maskClosable="false">
         <div class="import-content">
             <div class="column">
                 <p>{{ $t('Import.index.4001420-1') }}</p>
@@ -17,31 +17,36 @@
                     </a-upload-dragger>
                 </div>
             </div>
-            <div class="importing-status" v-if="importStatus == 'importing'">
+            <div class="column importing-status" v-if="importStatus === 'importing'">
                 <AIcon  type="LoadingOutlined" />
                 {{ $t('Import.index.4001420-4') }}
             </div>
-            <div class="column" v-if="importStatus != 'wait'">
+            <div class="column" v-if="importStatus === 'done'">
                 <p>
-                    <AIcon style="color: #00a4ff"  type="CheckOutlined"/>{{ $t('Import.index.4001420-5') }}
-                    {{ successNumber }}
+                  <span class="success"><AIcon type="CheckCircleOutlined" /></span>
+                  {{ $t('Import.index.4001420-4-1') }}
                 </p>
-                <span v-if="failNumber">
-                    <AIcon style="color: #e50012" type="CloseOutlined"/>{{ $t('Import.index.4001420-6') }}
-                    {{ failNumber }}
-                </span>
+                <p>
+                    {{ $t('Import.index.4001420-5') }}: {{ successNumber }}
+                </p>
+                <p>
+                  {{ $t('Import.index.4001420-6') }}: {{ failNumber }} <a-button v-if="!!failNumber" type="link" @click="onDownload">下载</a-button>
+                </p>
             </div>
             <div class="column">
-                <p>{{ $t('Import.index.4001420-7') }}</p>
+                <p>{{ $t('Import.index.4001420-8') }}</p>
                     <div class="file-download">
                         <a-button @click="downTemplate('xlsx')"  class="btn">
-                            {{ $t('Import.index.4001420-8') }}
+                            {{ $t('Import.index.4001420-7') + '.xlsx' }}
+                        </a-button>
+                        <a-button @click="downTemplate('csv')"  class="btn">
+                          {{ $t('Import.index.4001420-7') + '.csv' }}
                         </a-button>
                     </div>
             </div>
         </div>
         <template #footer>
-            <a-button type="primary" @click="emit('close')">{{ $t('Import.index.4001420-9') }}</a-button>
+            <a-button type="primary" @click="emit('close', !!successNumber)">{{ $t('Import.index.4001420-9') }}</a-button>
         </template>
     </a-modal>
 </template>
@@ -50,16 +55,14 @@
 import { FileStaticPath } from '@/api/comm';
 import { BASE_API,TOKEN_KEY } from '@jetlinks-web/constants';
 import { onlyMessage,downloadFileByUrl,LocalStore,getToken } from '@jetlinks-web/utils'
-import {
-    exportTemplate
-} from '@collector/api/data-collect/collector';
+import { exportTemplate } from '@collector/api/data-collect/collector';
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();
 const props = defineProps({
     data: {
         type: Object,
-        default: {}
+        default: () => ({})
     }
 })
 const emit = defineEmits(['close'])
@@ -103,7 +106,7 @@ const handleImport = async (file: any) => {
     importStatus.value = 'importing';
     let event: EventSource
     event = new EventSource(
-        `${BASE_API}/data-collect/point/${props.data?.collectorId
+        `${BASE_API}/data-collect/point/${props.data?.id
         }/${params}/import?:X_Access_Token=${getToken()
         }&fileUrl=${file.result.accessUrl}`,
         { withCredentials: true },
@@ -132,7 +135,9 @@ const handleImport = async (file: any) => {
     };
 };
 
-
+const onDownload = () => {
+  window.open(errMessage.value);
+}
 </script>
 <style lang="less" scoped>
 .import-content {
@@ -142,10 +147,10 @@ const handleImport = async (file: any) => {
     justify-content: center;
     align-items: flex-start;
     padding: 20px;
+    gap: 12px;
 
     .column {
         width: 100%;
-        margin-bottom: 20px;
         position: relative;
 
         span {
@@ -158,9 +163,6 @@ const handleImport = async (file: any) => {
         }
         .importing-status {
             align-items: center;
-        }
-        &.last {
-            margin-top: 135px;
         }
     }
 
@@ -205,4 +207,9 @@ const handleImport = async (file: any) => {
         width: 152px;
         color: #666666;
     }
-}</style>
+}
+
+.success {
+  color: @success-color;
+}
+</style>

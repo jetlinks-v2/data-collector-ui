@@ -137,7 +137,7 @@
               :popConfirm="{
                   title: $t('Point.index.400149-6'),
                   onConfirm: () =>
-                      handleDelete(slotProps.id),
+                      handleDelete(slotProps),
               }"
           >
             <AIcon type="DeleteOutlined"/>
@@ -161,7 +161,7 @@
   <Import
       v-if="importData.visible"
       :data="importData.current"
-      @close="importData.visible = false"
+      @close="onClose"
   />
   <BatchUpdate
       v-if="batchUpdate.visible"
@@ -197,6 +197,7 @@ import Import from "./Import/index.vue";
 import BatchUpdate from './BatchUpdate/index.vue';
 import Scan from './Scan/Scan.vue'
 
+const emits = defineEmits(['refresh'])
 const {t: $t} = useI18n();
 const data = inject('collector-data', ref({}))
 const type = inject('collector-type', )
@@ -345,7 +346,7 @@ const columns = computed(() => {
         options: async () => {
           const resp = await getProviders();
           if (resp.success) {
-            return resp.result.map((i) => {
+            return resp.result.filter(i => ['BACNetIp', 'snap7', 'MODBUS_TCP', 'OPC_UA'].includes(i.id)).map((i) => {
               return {
                 label: i.name,
                 value: i.id
@@ -471,13 +472,18 @@ const selectAll = (selected, selectedRows, changeRows) => {
     _selectedRowKeys.value = _ids;
   }
 };
-const handleDelete = (id) => {
-  const response = !id ? batchDeletePoint(_selectedRowKeys.value) : removePoint(id)
+const handleDelete = (dt) => {
+  const response = !dt.id ? batchDeletePoint(_selectedRowKeys.value) : removePoint(dt.id)
   response.then((res) => {
     if (res.success) {
       _selectedRowKeys.value = [];
       onRefresh()
       onlyMessage($t('Point.index.400149-14'), 'success');
+      if(dt.collectorId){
+        emits('refresh', dt.collectorId, 'update')
+      } else {
+        emits('refresh', data.value?.id, 'update')
+      }
     }
   });
   return response;
@@ -593,6 +599,7 @@ const updateDefaultParams = () => {
 const onScanChange = () => {
   scanData.visible = false
   tableRef.value?.reload()
+  emits('refresh', data.value?.id, 'update')
 }
 
 watch(
@@ -648,18 +655,28 @@ const handleTerms = (arr) => {
 const onSave = () => {
   editData.visible = false
   onRefresh()
+  emits('refresh', data.value?.id, 'update')
 }
 
 const onBatchSave = () => {
   batchUpdate.visible = false
   onRefresh()
   _selectedRowKeys.value = []
+  emits('refresh', data.value?.id, 'update')
 }
 
 const handleSearch = (e) => {
   params.value = {
     ...e,
     terms: handleTerms(e.terms)
+  }
+}
+
+const onClose = (flag) => {
+  importData.visible = false
+  if(flag){
+    onRefresh()
+    emits('refresh', data.value?.id, 'update')
   }
 }
 </script>
