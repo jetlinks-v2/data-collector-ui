@@ -7,10 +7,12 @@
       <a-input-search :placeholder="$t('Save.index.290643-3')" @search="handleSearch"></a-input-search>
       <div class="content-operation">
         <AIcon type="FilterOutlined" :class="{'filter-active': filterIconActive}" @click="filterModalVisible = true"></AIcon>
-        <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:addChannel">
-          <AIcon type="PlusOutlined"></AIcon>
-          {{ $t('Channel.index.290640-0') }}
-        </j-permission-button>
+        <a-space>
+          <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:addChannel">
+            <AIcon type="PlusOutlined"></AIcon>
+            {{ $t('Channel.index.290640-0') }}
+          </j-permission-button>
+        </a-space>
       </div>
       <div class="channel-collector-tree">
         <a-tree
@@ -220,7 +222,11 @@
     @close="saveCollectorVisible = false"
     @save="onSaveCollector"
   />
-  <FilterModal v-if="filterModalVisible" v-model:value="filterValue" @close="filterModalVisible = false"/>
+  <FilterModal
+    v-if="filterModalVisible"
+    v-model:value="filterValue"
+    @close="filterModalVisible = false"
+  />
 </template>
 <script setup lang="ts">
 import {
@@ -241,7 +247,6 @@ import FilterModal from "./components/FilterModal.vue";
 import { useI18n } from "vue-i18n";
 import { onlyMessage } from "@jetlinks-web/utils";
 import type { ChannelEntity, CollectorEntity } from "./type";
-import { cloneDeep } from "lodash-es";
 
 const { t: $t } = useI18n();
 const props = defineProps({
@@ -346,7 +351,7 @@ const channelActions = (data: any) => {
             onlyMessage($t("Channel.index.290640-15"), "success");
             setTimeout(() => {
               refreshChannel(data)
-            }, 500);
+            }, 1000);
           }
         },
       },
@@ -419,7 +424,7 @@ const collectorActions = (data: any) => {
             onlyMessage($t("Channel.index.290640-15"), "success");
             setTimeout(() => {
               refreshCollector(data);
-            }, 500);
+            }, 1000);
           }
         },
       },
@@ -618,6 +623,12 @@ const refreshChannel = async (data: ChannelEntity) => {
     ],
   });
   const resp = await queryCollectorTree({
+    sorts: [
+      {
+        name: "createTime",
+        order: "desc",
+      },
+    ],
     terms: [
       {
         column: "channelId",

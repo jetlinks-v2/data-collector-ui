@@ -492,7 +492,6 @@
             "icon": "icon-keshihua",
             "showPage": [
               "data-collect-channel",
-              "data-collect-opc",
               "data-collector",
               "things-collector"
             ],
@@ -552,7 +551,6 @@
             "icon": "icon-rizhifuwu",
             "showPage": [
               "data-collect-channel",
-              "data-collect-opc",
               "data-collector",
               "things-collector"
             ],
@@ -780,7 +778,6 @@
             "icon": "icon-yingyongguanli",
             "showPage": [
               "data-collect-channel",
-              "data-collect-opc",
               "data-collector",
               "things-collector"
             ],
@@ -1064,7 +1061,6 @@
         ],
         "showPage": [
           "data-collect-channel",
-          "data-collect-opc",
           "data-collector",
           "things-collector"
         ],
@@ -1563,6 +1559,24 @@
               "en": "Data Export"
             },
             "permissions": []
+          },
+          {
+            "id": "importChannel",
+            "name": "批量导入通道",
+            "i18nMessages": {
+              "zh_CN": "批量导入通道",
+              "en_US": "Batch Import Channel",
+              "en": "Batch Import Channel"
+            }
+          },
+          {
+            "id": "importCollector",
+            "name": "批量导入采集器",
+            "i18nMessages": {
+              "zh_CN": "批量导入采集器",
+              "en_US": "Batch Import Collector",
+              "en": "Batch Import Collector"
+            }
           }
         ],
         "accessSupport": {
