@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import CardSelect from "@/components/CardSelect/CardSelect.vue";
-import { useRequest } from "@jetlinks-web/hooks";
+import { useProvider } from "../../hook/useProvider";
 import { getProviders } from '@collector/api/data-collect/channel';
 import { cloneDeep } from "lodash-es";
 import { useI18n } from "vue-i18n";
@@ -37,16 +37,7 @@ const props = defineProps({
 })
 
 const emits = defineEmits(['update:value', 'close'])
-const { data } = useRequest(getProviders, {
-  onSuccess: (res) => {
-    return res.result.map((item: any) => {
-      return {
-        label: item.name,
-        value: item.id,
-      };
-    });
-  }
-});
+const { data } = useProvider();
 
 const filterData = reactive(cloneDeep(props.value) || {
   provider: [],
@@ -60,7 +51,12 @@ const filterColumn = computed(() => {
     {
       title: $t('Channel.index.290640-4'),
       key: 'provider',
-      options: data.value,
+      options: data.value?.map((item: any) => {
+        return {
+          label: item.name,
+          value: item.id,
+        }
+      }),
     },
     {
       title: $t('DataCollection.LeftTree.components.FilterModal.594410-2'),

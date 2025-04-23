@@ -1,18 +1,18 @@
 <template>
   <a-drawer
     visible
-    :title="data.id ? $t('Save.index.290643-0') : $t('Save.index.290643-1')"
+    :title="data.id ? $t('DataCollection.LeftTree.SaveChannel.index.594410-0') : $t('Channel.index.290640-0')"
     width="40%"
     @close="emits('close')"
   >
-    <Provider v-if="!provider" :options="options" v-model:value="provider" />
+    <Provider v-if="step === 0" :options="options" v-model:value="provider" @change="step = 1"/>
     <ChannelForm
-      v-else
+      v-show="step === 1"
       ref="channelForm"
       v-model:loading="loading"
       :provider="provider"
       :data="data"
-      @clear="provider = ''"
+      @clear="step = 0"
       @change="saveChange"
     />
     <template #footer>
@@ -31,7 +31,7 @@ import { PropType } from "vue";
 import Provider from "./Provider.vue";
 import ChannelForm from "./ChannelForm.vue";
 import { getProviders } from "@collector/api/data-collect/channel";
-import { useRequest } from "@jetlinks-web/hooks";
+import { useProvider } from "../../hook/useProvider";
 import { onlyMessage } from '@jetlinks-web/utils'
 import { useI18n } from 'vue-i18n';
 
@@ -42,9 +42,10 @@ const props = defineProps({
     default: () => {},
   },
 });
-const emits = defineEmits(['close', 'saveSuccess']);
+const emits = defineEmits(['close', 'saveSuccess']);0
 
-const { data: options } = useRequest(getProviders);
+const { data: options } = useProvider();
+const step = ref(0);
 const provider = ref("");
 const channelForm = ref();
 const loading = ref(false);
@@ -65,10 +66,18 @@ watch(
   (val) => {
     if (val?.provider) {
       provider.value = val?.provider;
+      step.value = 1;
     }
   },
   { immediate: true }
 );
+
+watch(
+  () => provider.value,
+  () => {
+    channelForm.value?.reset();
+  }
+)
 </script>
 
 <style lang="less" scoped>
