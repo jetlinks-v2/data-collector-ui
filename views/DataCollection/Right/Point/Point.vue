@@ -19,7 +19,7 @@
                   selectedRowKeys: _selectedRowKeys,
                   onSelect: onSelect,
                   onSelectAll: selectAll,
-                  onSelectNone: () => (_selectedRowKeys = []),
+                  onSelectNone: onSelectNone,
               }
             : false
         "
@@ -397,6 +397,7 @@ ImageMap.set('COLLECTOR_GATEWAY', imgUrl.gatewayImage);
 
 const isCheck = ref(false);
 const _selectedRowKeys = ref([])
+const dataMap = new Map()
 
 const defaultParams = ref({
   sorts: [{name: 'id', order: 'desc'}],
@@ -451,8 +452,14 @@ const onSelect = (item, state) => {
   } else {
     arr.delete(item.id);
   }
+  dataMap.set(item.id, item)
   _selectedRowKeys.value = [...arr.values()];
 };
+
+const onSelectNone = () => {
+  _selectedRowKeys.value = [];
+  dataMap.clear();
+}
 
 const selectAll = (selected, selectedRows, changeRows) => {
   if (selected) {
@@ -460,6 +467,7 @@ const selectAll = (selected, selectedRows, changeRows) => {
       if (!_selectedRowKeys.value.includes(i.id)) {
         _selectedRowKeys.value.push(i.id);
       }
+      dataMap.set(i.id, i)
     });
   } else {
     const arr = changeRows.map((item) => item.id);
@@ -473,13 +481,13 @@ const selectAll = (selected, selectedRows, changeRows) => {
   }
 };
 const handleDelete = (dt) => {
-  const response = !dt.id ? batchDeletePoint(_selectedRowKeys.value) : removePoint(dt.id)
+  const response = !dt?.id ? batchDeletePoint(_selectedRowKeys.value) : removePoint(dt.id)
   response.then((res) => {
     if (res.success) {
       _selectedRowKeys.value = [];
       onRefresh()
       onlyMessage($t('Point.index.400149-14'), 'success');
-      if(dt.collectorId){
+      if(dt?.collectorId){
         emits('refresh', dt.collectorId, 'update')
       } else {
         emits('refresh', data.value?.id, 'update')
@@ -535,11 +543,10 @@ const handleBatchUpdate = () => {
     return
   }
   const dataSet = new Set(_selectedRowKeys.value);
-  const dataMap = new Map();
-  tableRef?.value?.dataSource.forEach((i) => {
-    dataSet.has(i.id) && dataMap.set(i.id, i);
+  const _arr = [...dataSet.values()].map((i) => {
+    return dataMap.get(i)
   });
-  batchUpdate.current = [...dataMap.values()];
+  batchUpdate.current = [..._arr];
   batchUpdate.visible = true;
 }
 const handleBatchDelete = () => {
@@ -655,14 +662,15 @@ const handleTerms = (arr) => {
 const onSave = () => {
   editData.visible = false
   onRefresh()
-  emits('refresh', data.value?.id, 'update')
+  if(!editData.current?.id){
+    emits('refresh', data.value?.id, 'update')
+  }
 }
 
 const onBatchSave = () => {
   batchUpdate.visible = false
   onRefresh()
   _selectedRowKeys.value = []
-  emits('refresh', data.value?.id, 'update')
 }
 
 const handleSearch = (e) => {
