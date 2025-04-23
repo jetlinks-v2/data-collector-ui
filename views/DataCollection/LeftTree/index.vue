@@ -262,12 +262,14 @@ const selectedKeys = ref<string[]>([]);
 const saveChannelVisible = ref(false);
 const saveCollectorVisible = ref(false);
 const filterModalVisible = ref(false);
+const importModalVisible = ref(false);
 const currentChannel = ref<ChannelEntity>({});
 const currentCollector = ref<CollectorEntity>({});
 const searchValue = ref('');
 const filterValue = ref<any>({})
 const channelChildrenMap = new Map();
-const foldTree = inject('fold-tree')
+const foldTree = inject('fold-tree');
+const importType = ref<'channel' | 'collector'>('channel');
 
 const treeWidth = computed(() => {
   return !foldTree.value ? '350px' : '0px';
@@ -567,6 +569,9 @@ const deleteNode = (id: string) => {
     for (let i = 0; i < data.length; i++) {
       if (data[i].id === id) {
         data.splice(i, 1);
+        if(data[i].channelId) {
+          channelChildrenMap.set(data[i].channelId, channelChildrenMap.get(data[i].channelId)?.filter((item: any) => item.id !== id))
+        }
         return;
       }
       if (data[i].children) {
@@ -594,6 +599,10 @@ const addNode = (_data: any) => {
             ..._data,
             isLeaf: true,
           });
+          channelChildrenMap.set(data[i].id, [{
+            ..._data,
+            isLeaf: true,
+          }, ...channelChildrenMap.get(data[i].id)])
           return;
         }
       }
