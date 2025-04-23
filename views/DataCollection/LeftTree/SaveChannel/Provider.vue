@@ -29,7 +29,7 @@ const props = defineProps({
     default: () => ([])
   }
 })
-const emits = defineEmits(['update:value']);
+const emits = defineEmits(['update:value', 'change']);
 const searchValue = ref('');
 
 const filterOptions = computed(() => {
@@ -40,6 +40,7 @@ const filterOptions = computed(() => {
 
 const handleChooseProvider = (val: string) => {
   emits('update:value', val);
+  emits('change')
 };
 
 const handleSearch = (val: string) => {
