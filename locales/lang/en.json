@@ -944,7 +944,7 @@
   "DataCollection.Right.Point.DeathArea.476751-1": "Clean, transform, or calculate raw data before reporting to the platform",
   "DataCollection.LeftTree.index.273526-0": "Please enable the channel first before adding a collector",
   "DataCollection.LeftTree.SaveChannel.index.594410-0": "Edit channel",
-  "DataCollection.LeftTree.SaveCollector.index.594410-0": "Channel", 
+  "DataCollection.LeftTree.SaveCollector.index.594410-0": "Channel",
   "DataCollection.LeftTree.SaveCollector.index.594410-1": "Basic Parameters",
   "DataCollection.LeftTree.SaveCollector.index.594410-2": "Edit collector",
   "DataCollection.LeftTree.SaveChannel.Provider.594410-0": "Applicable to devices supporting {0} communication protocol",

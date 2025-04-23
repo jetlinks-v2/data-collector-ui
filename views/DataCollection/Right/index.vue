@@ -26,7 +26,6 @@ const visible = ref(false)
 const {t: $t} = useI18n();
 
 const onRefresh = (id, action) => {
-  console.log(id, action)
   emits('refresh', id, action)
 }
 </script>

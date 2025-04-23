@@ -207,7 +207,7 @@ const labelName = computed(() => {
     if (formData.value.accessModes.length) {
         arr.push($t('BatchUpdate.index.4001419-5'));
     }
-    if (!!formData.value.interval) {
+    if (!!formData.value.interval || formData.value.interval === 0) {
         arr.push($t('BatchUpdate.index.4001419-10'));
     }
     if (formData.value.features.length) {
