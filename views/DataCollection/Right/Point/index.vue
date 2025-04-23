@@ -16,7 +16,7 @@
       </div>
     </div>
     <div class="point-box">
-      <Point :key="key" />
+      <Point :key="key" @refresh="onRefresh" />
     </div>
   </div>
 </template>
@@ -27,6 +27,7 @@ import {queryPointCount} from "@collector/api/data-collect/collector";
 import {useRouteQuery} from "@vueuse/router";
 import {useI18n} from "vue-i18n";
 
+const emits = defineEmits(['refresh'])
 const count = reactive({
   total: 0,
   running: 0,
@@ -39,6 +40,10 @@ const type = inject('collector-type', ref(''))
 const key = ref(0)
 const search = useRouteQuery('q')
 const searchTarget = useRouteQuery('target');
+
+const onRefresh = (id, action) => {
+  emits('refresh', id, action)
+}
 const queryCount = async (data, type) => {
   const resp = await queryPointCount(data)
   if (resp.success) {
