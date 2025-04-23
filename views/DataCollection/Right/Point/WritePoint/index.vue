@@ -67,6 +67,7 @@
                                 ].includes(valueType)
                             "
                   style="width: 100%"
+                  :stringMode="true"
                   :placeholder="$t('WritePoint.index.769007-2')"
                   v-model:value="formData.value[index]"
               />
@@ -134,6 +135,7 @@
             style="width: 100%"
             :placeholder="$t('WritePoint.index.769007-2')"
             v-model:value="formData.value"
+            :stringMode="true"
         />
         <a-select
             v-else-if="['Bool'].includes(data.configuration?.type)"
@@ -189,6 +191,7 @@
             style="width: 100%"
             :placeholder="$t('WritePoint.index.769007-2')"
             v-model:value="formData.value"
+            stringMode
         />
         <a-select
             v-else-if="['boolean'].includes(valueType)"

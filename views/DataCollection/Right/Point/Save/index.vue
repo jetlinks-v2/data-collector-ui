@@ -65,7 +65,7 @@
         <a-divider/>
         <!-- 默认不展示此块内容，点位若为数值类型，再展示此块区域-->
         <j-title :data="$t('DataCollection.Right.Point.Save.476751-1')"/>
-        <DeathArea v-model:value="formData.configuration.terms"/>
+        <DeathArea ref="deathRef" v-model:value="formData.configuration.terms"/>
       </template>
       <a-divider/>
       <a-form-item
@@ -139,22 +139,26 @@ const formData = reactive({
   description: props.data.description || "",
 });
 const showDeathArea = ref(false)
+const deathRef = ref()
 
 provide("plugin-form-collector", props.collector);
 provide("plugin-form-death-area-show", showDeathArea);
 
 const handleOk = async () => {
-  await formRef.value?.validate();
-  loading.value = true;
-  const response = !id ? await savePointBatch(formData).finally(() => {
-        loading.value = false;
-      })
-      : await updatePoint(id, {...props.data, ...formData}).finally(() => {
-        loading.value = false;
-      });
-  if (response.success) {
-    emit('save');
-    onlyMessage($t('Point.index.400149-14'), 'success');
+  const resp = await formRef.value?.validate();
+  const res = await deathRef.value?.onSave()
+  if(resp && (!showDeathArea.value || (showDeathArea.value && res))){
+    loading.value = true;
+    const response = !id ? await savePointBatch(formData).finally(() => {
+          loading.value = false;
+        })
+        : await updatePoint(id, {...props.data, ...formData}).finally(() => {
+          loading.value = false;
+        });
+    if (response.success) {
+      emit('save');
+      onlyMessage($t('Point.index.400149-14'), 'success');
+    }
   }
 };
 
