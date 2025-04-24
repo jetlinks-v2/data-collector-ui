@@ -92,7 +92,12 @@
         }}
       </template>
       <template #interval="slotProps">
-        {{ (slotProps.configuration?.interval || slotProps.configuration?.interval === 0) ? slotProps.configuration?.interval + 'ms' : '--' }}
+        <template v-if="slotProps.accessModes?.length === 1 && (slotProps.accessModes || []).map(i => i.value).includes('read')">
+          --
+        </template>
+        <template v-else>
+          {{ (slotProps.configuration?.interval || slotProps.configuration?.interval === 0) ? slotProps.configuration?.interval + 'ms' : '--' }}
+        </template>
       </template>
       <template #quantity="slotProps">
         {{ slotProps.configuration?.parameter?.quantity || '--' }}
