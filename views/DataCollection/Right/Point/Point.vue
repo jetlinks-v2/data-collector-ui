@@ -466,7 +466,7 @@ const onSelectNone = () => {
   dataMap.clear();
 }
 
-const selectAll = (selected, selectedRows, changeRows) => {
+const selectAll = (selected, _, changeRows) => {
   if (selected) {
     changeRows.map((i) => {
       if (!_selectedRowKeys.value.includes(i.id)) {
