@@ -2,7 +2,7 @@
 import i18n from "@/locales";
 import {useScan} from "./useScan";
 import { useI18n } from 'vue-i18n';
-import { set, get, isArray } from 'lodash-es'
+import { set, get, isArray, isNil } from 'lodash-es'
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
 import RowRender from './TableRowRender.vue'
@@ -49,8 +49,14 @@ const columns = computed(() => {
         required: true,
         rules: [
           {
-            required: true,
-            message: $t('Scan.Table.400147-0'),
+            validator: (rule, value) => {
+              console.log(isNil(value.interval.value))
+              if (isNil(value.interval.value)) {
+                return Promise.reject($t('Scan.Table.400147-0'));
+              } else {
+                return Promise.resolve();
+              }
+            }
           },
         ]
       }
@@ -62,10 +68,10 @@ const columns = computed(() => {
       width: 170,
       form: {
         required: true,
-      }
+      },
     },
     {
-      title: '操作',
+      title: i18n.global.t('Collector.data.400141-40'),
       dataIndex: 'actions',
       width: 80
     }
@@ -134,6 +140,7 @@ defineExpose({
     <j-edit-table
       ref="tableRef"
       :dataSource="dataSource"
+      :serial="false"
       :columns="columns"
       :height="500"
     >
@@ -185,6 +192,7 @@ defineExpose({
             addon-after="ms"
             :max="2147483647"
             :min="0"
+            :precision="0"
             :disabled="index !== 0 && record.configuration.interval.check"
             class="ditto-grow"
             @change="valueChange(index, 'configuration.interval')"
