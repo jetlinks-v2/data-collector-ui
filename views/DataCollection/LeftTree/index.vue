@@ -512,6 +512,7 @@ const onLoadData = (node: any) => {
     }).then((res: any) => {
       if (res.success) {
         node.dataRef.isLoadChildren = true;
+        node.dataRef.collectorNumber = res.result.length;
         node.dataRef.children = res.result.map((item) => {
           return {
             ...item,
@@ -568,10 +569,10 @@ const deleteNode = (id: string) => {
   const find = (data: any[]) => {
     for (let i = 0; i < data.length; i++) {
       if (data[i].id === id) {
-        data.splice(i, 1);
         if(data[i].channelId) {
           channelChildrenMap.set(data[i].channelId, channelChildrenMap.get(data[i].channelId)?.filter((item: any) => item.id !== id))
         }
+        data.splice(i, 1);
         return;
       }
       if (data[i].children) {
