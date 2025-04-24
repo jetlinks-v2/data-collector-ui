@@ -17,7 +17,7 @@
         />
       </a-form-item>
       <a-form-item
-        v-if="formData.provider === 'COLLECTOR_GATEWAY'"
+        v-if="props.provider === 'COLLECTOR_GATEWAY'"
         :name="['configuration', 'deviceId']"
         :rules="[{ required: true, message: $t('Save.index.290643-15') }]"
         :label="$t('Save.index.290643-16')"
@@ -71,7 +71,6 @@ const emits = defineEmits(["clear", 'update:loading', 'change']);
 const formData = reactive({
   id: undefined,
   type: "device",
-  provider: props.provider,
   name: undefined,
   description: undefined,
   configuration: {},
@@ -106,11 +105,11 @@ const submit = async () => {
     emits('update:loading', true)
     const submitData =
       formData.type === "device"
-        ? omit(formData, ["type"])
+        ? omit({...formData, provider: props.provider}, ["type"])
         : {
             name: formData.name,
             description: formData.description,
-            provider: formData.provider,
+            provider: props.provider,
           };
 
     const response = !props.data?.id
@@ -152,7 +151,6 @@ defineExpose({
   submit: () => submit(),
   reset: () => {
     formRef.value?.resetFields();
-    formData.provider = props.provider;
   },
 })
 </script>
