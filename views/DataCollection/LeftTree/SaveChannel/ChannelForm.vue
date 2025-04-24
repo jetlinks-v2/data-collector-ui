@@ -141,6 +141,7 @@ watch(
   () => props.provider,
   (value) => {
     if (value) {
+      jsonData.value = undefined;
       onChange(value);
     }
   },
@@ -151,6 +152,7 @@ defineExpose({
   submit: () => submit(),
   reset: () => {
     formRef.value?.resetFields();
+    formData.provider = props.provider;
   },
 })
 </script>

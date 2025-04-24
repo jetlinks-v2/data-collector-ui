@@ -29,6 +29,8 @@ const jsonData = ref();
 const isSelected = ref(false)
 const controlAllType = ref(false)
 const spinning = ref(false)
+const searchValue = ref('')
+const savedKeys = ref()
 const breadcrumb = ref([
   {
     breadcrumbName: $t('Scan.Tree.400146-3'),
@@ -43,7 +45,7 @@ const setting = reactive({
 provide('scan-tree-setting', setting)
 
 const treeAllData = computed(() => {
-  return treeData.value?.filter(item => !(isSelected.value && selectKeys.value.has(item.id))).map((i) => {
+  return treeData.value?.filter(item => !(isSelected.value && selectKeys.value.has(item.id)) && item.name.includes(searchValue.value)).map((i) => {
     return {
       ...i,
       title: setting.treeTitle?.(i) || i.name,
@@ -70,13 +72,14 @@ const handleDataSourceItem = (info) => {
 }
 
 const onAllControl = () => {
-  const points = treeAllData.value.filter(item => !item.folder)
-  const filterData = points.filter(item => !item.checked)
+  const points = treeData.value.filter(item => !item.folder && !savedKeys.value.has(item.id))
+  const filterData = points.filter(item => !item.checked && item.name.includes(searchValue.value))
 
-  if (filterData.length) {
+  if (!controlAllType.value) {
     dataSource.value.push(...filterData.map(handleDataSourceItem))
     selectKeys.value = new Set([...selectKeys.value, ...filterData.map(item => item.id)])
   } else {
+    selectKeys.value = new Set([...savedKeys.value])
     dataSource.value = dataSource.value.filter(item => {
       const isFilter = points.some(tItem => tItem.id === item.id)
       if (isFilter) {
@@ -143,6 +146,7 @@ const getSelectPoint = async () => {
 
   if (resp.success) {
     selectKeys.value = new Set(resp.result.map((item) => item.pointKey))
+    savedKeys.value = new Set(resp.result.map((item) => item.pointKey))
   }
 
   await getFileList()
@@ -172,6 +176,7 @@ getProtocol();
       <a-breadcrumb>
         <a-breadcrumb-item
           v-for="(i, index) in breadcrumb"
+          :key="i.nodeId"
           @click="() => jumpFile(index, i.nodeId)"
         >
           <a-button type="text" style="padding: 0">
@@ -183,6 +188,11 @@ getProtocol();
       </a-breadcrumb>
     </div>
     <div class="scan-tree-content">
+      <a-input-search
+        style="margin-bottom: 12px;"
+        placeholder="请输入"
+        @search="(value) => searchValue = value"
+      ></a-input-search>
       <a-button
         block
         shape="round"
@@ -197,6 +207,7 @@ getProtocol();
         <div
           v-for="i in treeAllData"
           class="tree-item"
+          :key="i.key"
           @click="() => clickItem(i)"
         >
           <div class="item-label">
