@@ -32,6 +32,7 @@
 <script lang="ts" setup>
 import {useI18n} from 'vue-i18n';
 import {dashboard} from "@collector/api/others";
+import {cloneDeep, map} from "lodash-es";
 
 const {t: $t} = useI18n();
 
@@ -47,7 +48,7 @@ const data = reactive({
 })
 
 const options = computed(() => {
-  const maxY: number = data.y.sort((a, b) => {
+  const maxY: number = cloneDeep(data.y).sort((a, b) => {
     return b - a
   })?.[0];
   return {

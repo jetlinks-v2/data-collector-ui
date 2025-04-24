@@ -35,7 +35,7 @@
                         v-model:value="item.terms[0].value"
                         style="width: 100%"
                         :placeholder="$t('Save.DeathArea.4001417-3')"
-                        :max="item.terms[1] ? item.terms[1].value : 65536"
+                        :max="65536"
                         :min="1"
                         @change="handleChange"
                     />
@@ -60,23 +60,29 @@
                       {
                         required: true,
                         message: $t('Save.DeathArea.4001417-3')
+                      },
+                      {
+                        validator: (_, value) => onValidatorValue(value, item.terms[1].value, false),
                       }
-                  ]">
+                  ]" validate-first>
                     <a-input-number
                         v-model:value="item.terms[0].value"
                         style="width: 100%"
                         :placeholder="$t('Save.DeathArea.4001417-3')"
-                        :max="item.terms[1] ? item.terms[1].value : 65536"
+                        :max="65536"
                         :min="1"
                         @change="handleChange"
                     />
                   </a-form-item>
-                  <a-form-item :name="[index, 'terms', 0, 'termType']" :rules="[
-                      {
-                        required: true,
-                        message: $t('Save.DeathArea.4001417-4')
-                      }
-                  ]">
+                  <a-form-item
+                      :name="[index, 'terms', 0, 'termType']"
+                      :rules="[
+                          {
+                            required: true,
+                            message: $t('Save.DeathArea.4001417-4')
+                          }
+                      ]"
+                  >
                     <a-select
                         v-model:value="item.terms[0].termType"
                         :showArrow="false"
@@ -86,12 +92,15 @@
                     />
                   </a-form-item>
                   <span style="white-space: nowrap; margin-top: 4px">{{ $t('Save.DeathArea.4001417-5') }}</span>
-                  <a-form-item :name="[index, 'terms', 1, 'termType']" :rules="[
-                      {
-                        required: true,
-                        message: $t('Save.DeathArea.4001417-4')
-                      }
-                  ]">
+                  <a-form-item
+                      :name="[index, 'terms', 1, 'termType']"
+                      :rules="[
+                          {
+                            required: true,
+                            message: $t('Save.DeathArea.4001417-4')
+                          }
+                      ]"
+                  >
                     <a-select
                         :showArrow="false"
                         v-model:value="item.terms[1].termType"
@@ -104,13 +113,16 @@
                       {
                         required: true,
                         message: $t('Save.DeathArea.4001417-3')
+                      },
+                      {
+                        validator: (_, value) => onValidatorValue(value, item.terms[0].value, true),
                       }
-                  ]">
+                  ]" validate-first>
                     <a-input-number
                         v-model:value="item.terms[1].value"
                         style="width: 100%"
                         :placeholder="$t('Save.DeathArea.4001417-3')"
-                        :min="item.terms[0].value"
+                        :min="1"
                         :max="65536"
                         @change="handleChange"
                     />
@@ -239,6 +251,30 @@ const handleSwap = (index: number) => {
   handleChange()
 }
 
+const onValidatorValue = (value, _value, flag) => {
+  return new Promise(async (resolve, reject) => {
+    if(value >= 1 && value <=65536){
+      if(flag){ // 大值
+        const __value = _value || 1
+        if(value <= __value){
+          reject($t(`${$t('Save.DeathArea.4001417-6')}${__value}`))
+        } else {
+          resolve('');
+        }
+      } else {
+        const __value = _value || 65536
+        if(value >= __value){
+          reject($t(`${$t('Save.DeathArea.4001417-7')}${__value}`))
+        } else {
+          resolve('');
+        }
+      }
+    } else {
+      reject($t(`${$t('Save.DeathArea.4001417-8')}[1-65536]`))
+    }
+  });
+}
+
 const handleTag = (e: any) => {
   if (e.target.value === 'currentValue') {
     _value.value = [{
@@ -361,7 +397,7 @@ watch(
 
 const onSave = () => {
   return new Promise(async (resolve) => {
-    if(!deathArea.value){
+    if (!deathArea.value) {
       resolve(true);
     }
     let resp = undefined;
