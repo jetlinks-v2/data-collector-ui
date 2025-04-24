@@ -361,6 +361,9 @@ watch(
 
 const onSave = () => {
   return new Promise(async (resolve) => {
+    if(!deathArea.value){
+      resolve(true);
+    }
     let resp = undefined;
     if (tag.value === 'currentValue') {
       resp = await formRef.value?.validate()
