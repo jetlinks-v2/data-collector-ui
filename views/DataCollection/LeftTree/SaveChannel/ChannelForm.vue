@@ -151,6 +151,7 @@ defineExpose({
   submit: () => submit(),
   reset: () => {
     formRef.value?.resetFields();
+    formData.provider = props.provider;
   },
 })
 </script>

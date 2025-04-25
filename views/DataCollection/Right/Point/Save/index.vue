@@ -48,7 +48,7 @@
             :placeholder="$t('Save.SaveModBus.4001413-31')"
             v-model:value="formData.configuration.interval"
             addon-after="ms"
-            :max="2147483648"
+            :max="2147483647"
             :min="0"
             :precision="0"
         />

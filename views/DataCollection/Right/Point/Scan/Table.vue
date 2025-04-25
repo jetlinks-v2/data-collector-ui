@@ -163,6 +163,7 @@ defineExpose({
     <j-edit-table
       ref="tableRef"
       :dataSource="dataSource"
+      :serial="false"
       :columns="columns"
       :height="500"
     >

@@ -573,6 +573,9 @@ const deleteNode = (id: string) => {
           channelChildrenMap.set(data[i].channelId, channelChildrenMap.get(data[i].channelId)?.filter((item: any) => item.id !== id))
         }
         data.splice(i, 1);
+        if(data[i].channelId) {
+          channelChildrenMap.set(data[i].channelId, channelChildrenMap.get(data[i].channelId)?.filter((item: any) => item.id !== id))
+        }
         return;
       }
       if (data[i].children) {
