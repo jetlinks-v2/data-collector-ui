@@ -74,7 +74,6 @@ const columns = computed(() => {
         rules: [
           {
             validator: (rule, value) => {
-              console.log(isNil(value.interval.value))
               if (isNil(value.interval.value)) {
                 return Promise.reject($t('Scan.Table.400147-0'));
               } else {
