@@ -5,7 +5,9 @@ import { useI18n } from 'vue-i18n';
 import { set, get, isArray, isNil } from 'lodash-es'
 import {devGetProtocol} from "@collector/utils/utils";
 import RenderComponents from "@collector/components/RenderComponents";
-import RowRender from './TableRowRender.vue'
+import RowRender from './TableRowRender.vue';
+import { Tooltip, Space } from "ant-design-vue";
+import { QuestionCircleOutlined } from '@ant-design/icons-vue';
 
 const { t: $t } = useI18n();
 const {dataSource, selectKeys} = useScan()
@@ -45,6 +47,28 @@ const columns = computed(() => {
       key: 'configuration',
       dataIndex: 'configuration',
       width: 220,
+      render: (val) => h(
+        Space,
+        {},
+        [
+          h(
+            'span',
+            {},
+            val
+          ),
+          h(
+            Tooltip,
+            {
+              title: i18n.global.t('Scan.Table.400147-12'),
+            },
+            [
+              h(
+                QuestionCircleOutlined
+              )
+            ]
+          )
+        ]
+      ),
       form: {
         required: true,
         rules: [
@@ -140,7 +164,6 @@ defineExpose({
     <j-edit-table
       ref="tableRef"
       :dataSource="dataSource"
-      :serial="false"
       :columns="columns"
       :height="500"
     >
