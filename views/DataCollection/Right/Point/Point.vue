@@ -92,7 +92,7 @@
         }}
       </template>
       <template #interval="slotProps">
-        <template v-if="slotProps.accessModes?.length === 1 && (slotProps.accessModes || []).map(i => i.value).includes('read')">
+        <template v-if="slotProps.accessModes?.length === 1 && (slotProps.accessModes || []).map(i => i.value).includes('write')">
           --
         </template>
         <template v-else>
@@ -535,7 +535,7 @@ const handleExport = async () => {
   if (res) {
     const blob = new Blob([res], {type: 'xlsx'});
     const url = URL.createObjectURL(blob);
-    downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.channelName]), 'xlsx');
+    downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.name]), 'xlsx');
   }
 };
 const onCheckChange = () => {
