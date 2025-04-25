@@ -95,7 +95,13 @@ const onCheck = (info) => {
 
   if (!selectKeys.value.has(info.id)) {
     selectKeys.value.add(info.id)
-    dataSource.value.push(handleDataSourceItem(info))
+    const item = handleDataSourceItem(info)
+    const last = dataSource.value[dataSource.value.length - 1]
+    if(last) {
+      item.configuration.interval.value = last.configuration.interval.value
+      item.accessModes.value = [...last.accessModes.value]
+    }
+    dataSource.value.push({...item})
   }
 }
 
