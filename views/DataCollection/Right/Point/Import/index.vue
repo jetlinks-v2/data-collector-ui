@@ -30,7 +30,7 @@
                     {{ $t('Import.index.4001420-5') }}: {{ successNumber }}
                 </p>
                 <p>
-                  {{ $t('Import.index.4001420-6') }}: {{ failNumber }} <a-button v-if="!!failNumber" type="link" @click="onDownload">下载</a-button>
+                  {{ $t('Import.index.4001420-6') }}: {{ failNumber }} <a-button v-if="!!failNumber && detailFile" type="link" @click="onDownload">下载</a-button>
                 </p>
             </div>
             <div class="column">
@@ -136,7 +136,7 @@ const handleImport = async (file: any) => {
 };
 
 const onDownload = () => {
-  window.open(errMessage.value);
+  window.open(detailFile.value);
 }
 </script>
 <style lang="less" scoped>

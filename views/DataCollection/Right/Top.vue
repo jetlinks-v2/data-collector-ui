@@ -14,7 +14,7 @@
           <AIcon type="InboxOutlined"></AIcon>
           </j-permission-button>
           <template v-if="type === 'channel'">
-            <j-ellipsis>{{ data.name }}</j-ellipsis>
+            <j-ellipsis style="max-width: 400px">{{ data.name }}</j-ellipsis>
             <j-badge-status
                 :status="stateData?.value"
                 :statusNames="{
@@ -24,7 +24,7 @@
             />
           </template>
           <template v-else-if="type === 'collector'">
-            <j-ellipsis>{{ data.name }}</j-ellipsis>
+            <j-ellipsis style="max-width: 400px">{{ data.name }}</j-ellipsis>
             <a-tag v-if="stateData.value" :color="StatusColorEnum[stateData.value]">{{ stateData.text }}</a-tag>
           </template>
           <span v-else>{{ $t('DataCollection.Right.Top.index.476751-1') }}</span>
