@@ -98,8 +98,9 @@ const onCheck = (info) => {
     const item = handleDataSourceItem(info)
     const last = dataSource.value[dataSource.value.length - 1]
     if(last) {
-      item.configuration.interval.value = last.configuration.interval.value
+      item.configuration.interval.value = last.configuration?.interval.value
       item.accessModes.value = [...last.accessModes.value]
+      item.features = {...last.features}
     }
     dataSource.value.push({...item})
   }
