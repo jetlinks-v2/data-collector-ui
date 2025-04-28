@@ -22,7 +22,13 @@ const collectionData = inject('collector-data', {})
 const {dataSource, selectKeys} = useScan()
 
 const { data: treeData, loading, run } = useRequest(scanOpcUAList, {
-  immediate: false
+  immediate: false,
+  onWarn: (e) => {
+    const el = document.getElementsByClassName('ant-notification');
+    for (let i = 0; i < el.length; i++) {
+      el[i].getElementsByClassName('ant-notification-notice-description')[0].innerHTML = e.response.data.message.toLowerCase().includes('connection') ? $t('DataCollection.Right.Point.Scan.Tree.476751-1') : e.response.data.message;
+    }
+  }
 })
 
 const jsonData = ref();
