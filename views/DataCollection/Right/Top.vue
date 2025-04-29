@@ -36,7 +36,7 @@
             <j-permission-button
                 :disabled="item.disabled"
                 :popConfirm="item.popConfirm"
-                :tooltip="item.tooltip"
+                :tooltip="{...item.tooltip}"
                 size="small"
                 type="link"
                 @click="item.onClick"
@@ -252,7 +252,7 @@ const getActions = () => {
         tooltip: {
           title: $t('Channel.index.290640-13'),
         },
-        permission: `DataCollection:update${permission}`,
+        permission: `DataCollection:update`,
         icon: 'EditOutlined',
         onClick: () => {
           if (type.value === 'channel') {
@@ -270,7 +270,7 @@ const getActions = () => {
         tooltip: {
           title: stateText,
         },
-        permission: `DataCollection:action${permission}`,
+        permission: `DataCollection:action`,
         icon: state === 'enabled' ? 'StopOutlined' : 'CheckCircleOutlined',
         disabled: _disabled,
         popConfirm: {
@@ -302,10 +302,11 @@ const getActions = () => {
         disabled: state === 'enabled',
         tooltip: {
           title: _title,
+          placement: 'topLeft'
         },
-        permission: `DataCollection:delete${permission}`,
+        permission: `DataCollection:delete`,
         popConfirm: {
-          placement: 'topRight',
+          placement: 'topLeft',
           title: $t('Channel.index.290640-18'),
           onConfirm: async () => {
             let response;

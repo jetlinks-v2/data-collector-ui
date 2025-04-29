@@ -30,7 +30,7 @@
               v-if="pointActions.add"
               type="primary"
               @click="handleAdd"
-              hasPermission="DataCollection:addPoint"
+              hasPermission="DataCollection:add"
           >
             <template #icon>
               <AIcon type="PlusOutlined"/>
@@ -41,7 +41,7 @@
               v-if="pointActions.scan"
               type="primary"
               @click="handleScan"
-              hasPermission="DataCollection:addPoint"
+              hasPermission="DataCollection:add"
           >
             <template #icon>
               <AIcon type="PlusOutlined"/>
@@ -51,14 +51,14 @@
           <j-permission-button
               type="primary"
               @click="handleImport"
-              hasPermission="DataCollection:importPoint"
+              hasPermission="DataCollection:import"
           >
             {{ $t('Point.index.400149-2') }}
           </j-permission-button>
           <j-permission-button
               type="primary"
               @click="handleExport"
-              hasPermission="DataCollection:exportPoint"
+              hasPermission="DataCollection:export"
           >
             {{ $t('Point.index.400149-3') }}
           </j-permission-button>
@@ -122,7 +122,7 @@
         </a-tag>
       </template>
       <template #description="slotProps">
-        <EditInput :data="slotProps" @refresh="onRefresh"/>
+        <EditInput :disabled="!isPermission" :data="slotProps" @refresh="onRefresh"/>
       </template>
       <template #actions="slotProps">
         <a-space>
@@ -130,7 +130,7 @@
               type="link"
               style="padding: 0"
               @click="handleEdit(slotProps)"
-              hasPermission="DataCollection:updatePoint"
+              hasPermission="DataCollection:update"
           >
             <AIcon type="FormOutlined"/>
           </j-permission-button>
@@ -138,7 +138,7 @@
               type="link"
               danger
               :tooltip="{title: $t('Point.index.400149-5')}"
-              hasPermission="DataCollection:deletePoint"
+              hasPermission="DataCollection:delete"
               :popConfirm="{
                   title: $t('Point.index.400149-6'),
                   onConfirm: () =>
@@ -201,12 +201,17 @@ import EditInput from "./EditInput.vue";
 import Import from "./Import/index.vue";
 import BatchUpdate from './BatchUpdate/index.vue';
 import Scan from './Scan/Scan.vue'
+import {useAuthStore} from "@/store";
 
 const emits = defineEmits(['refresh'])
 const {t: $t} = useI18n();
 const data = inject('collector-data', ref({}))
 const type = inject('collector-type', )
 const jsonData = ref();
+
+const isPermission = useAuthStore().hasPermission(
+    'DataCollection:update',
+);
 
 const initColumns = [
   {
@@ -567,7 +572,7 @@ const updateBatchActions = () => {
     {
       key: 'update',
       text: $t('Point.index.400149-22'),
-      permission: 'DataCollection:updatePoint',
+      permission: 'DataCollection:update',
       icon: 'FormOutlined',
       selected: {
         onClick: handleBatchUpdate,
@@ -577,7 +582,7 @@ const updateBatchActions = () => {
       key: 'delete',
       text: $t('Point.index.400149-23'),
       danger: true,
-      permission: 'DataCollection:deletePoint',
+      permission: 'DataCollection:delete',
       icon: 'DeleteOutlined',
       selected: {
         popConfirm: {
