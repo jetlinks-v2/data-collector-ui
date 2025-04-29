@@ -8,7 +8,7 @@
       <div class="content-operation">
         <AIcon type="FilterOutlined" :class="{'filter-active': filterIconActive}" @click="filterModalVisible = true"></AIcon>
         <a-space>
-          <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:addChannel">
+          <j-permission-button type="primary" @click="handleAdd" hasPermission="DataCollection:add">
             <AIcon type="PlusOutlined"></AIcon>
             {{ $t('Channel.index.290640-0') }}
           </j-permission-button>
@@ -164,13 +164,13 @@
                         >
                         </j-badge-status>
                         <a-space>
-                          <span>运行中</span>{{ node.pointStateCount?.running || 0 }}
+                          <span>{{ $t('Channel.index.290640-9') }}</span>{{ node.pointStateCount?.running || 0 }}
                         </a-space>
                       </span>
                       <span>
                         <j-badge-status status="error"/>
                         <a-space>
-                          <span>已停止</span>{{ node.pointStateCount?.stopped || 0 }}
+                          <span>{{ $t('Channel.index.290640-10') }}</span>{{ node.pointStateCount?.stopped || 0 }}
                         </a-space>
                       </span>
                     </div>
@@ -311,7 +311,7 @@ const channelActions = (data: any) => {
     {
       text: $t('Tree.index.4001410-1'),
       icon: "PlusCircleOutlined",
-      key: "addCollector",
+      key: "add",
       disabled: state === "disabled",
       tooltip: {
         title:
@@ -329,7 +329,7 @@ const channelActions = (data: any) => {
     {
       text: $t("Channel.index.290640-13"),
       icon: "EditOutlined",
-      key: "updateChannel",
+      key: "update",
       tooltip: {
         title: $t("Channel.index.290640-13"),
       },
@@ -341,7 +341,7 @@ const channelActions = (data: any) => {
     {
       text: stateText,
       icon: state === "disabled" ? "PlayCircleOutlined" : "StopOutlined",
-      key: "actionChannel",
+      key: "action",
       tooltip: {
         title: stateText,
       },
@@ -361,7 +361,7 @@ const channelActions = (data: any) => {
     {
       text: $t("Channel.index.290640-16"),
       icon: "DeleteOutlined",
-      key: "deleteChannel",
+      key: "delete",
       tooltip: {
         title:
           state === "enabled"
@@ -396,7 +396,7 @@ const collectorActions = (data: any) => {
     {
       text: $t('Channel.index.290640-13'),
       icon: "EditOutlined",
-      key: "updateCollector",
+      key: "update",
       onClick: () => {
         saveCollectorVisible.value = true;
         currentCollector.value = data;
@@ -409,7 +409,7 @@ const collectorActions = (data: any) => {
         state === "disabled"
           ? "PlayCircleOutlined"
           : "StopOutlined",
-      key: "actionCollector",
+      key: "action",
       disabled: runningState === 'stopped' &&
       state !== 'disabled',
       tooltip: {
@@ -434,7 +434,7 @@ const collectorActions = (data: any) => {
     {
       text: $t("Channel.index.290640-16"),
       icon: "DeleteOutlined",
-      key: "deleteCollector",
+      key: "delete",
       tooltip: {
         title:
           state === "enabled"
