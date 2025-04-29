@@ -945,6 +945,7 @@
   "DataCollection.Right.Point.Table.476751-1": "Raw Data",
   "DataCollection.Right.Point.Table.476751-2": "Update Time",
   "DataCollection.Right.Point.Save.476751-1": "Data Preprocessing",
+  "DataCollection.Right.Point.Scan.Tree.476751-1": "Please enter the correct endpoint URL",
   "DataCollection.Right.Point.DeathArea.476751-1": "Clean, transform, or calculate raw data before reporting to the platform",
   "DataCollection.LeftTree.index.273526-0": "Please enable the channel first before adding a collector",
   "DataCollection.LeftTree.SaveChannel.index.594410-0": "Edit channel",
