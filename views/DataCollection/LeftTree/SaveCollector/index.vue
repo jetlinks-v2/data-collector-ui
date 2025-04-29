@@ -156,7 +156,6 @@
         <j-permission-button
           :loading="loading"
           type="primary"
-          hasPermission="DataCollection:updateCollector"
           @click="handleOk"
         >
           {{ $t('Issue.index.517977-14') }}
