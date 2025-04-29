@@ -446,6 +446,7 @@
   "Scan.Table.400147-9": "删除",
   "Scan.Table.400147-10": "确认删除？",
   "Scan.Table.400147-11": "最多可输入64个字符",
+  "Scan.Table.400147-12": "仅在访问类型选择读时生效",
   "ScanBacnet.PropertyId.400144-0": "请选择",
   "ScanBacnet.index.400145-0": "扫描",
   "ScanBacnet.index.400145-1": "取消",

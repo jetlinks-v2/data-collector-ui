@@ -446,6 +446,7 @@
   "Scan.Table.400147-9": "delete",
   "Scan.Table.400147-10": "Are you sure to delete?",
   "Scan.Table.400147-11": "Up to 64 characters can be entered",
+  "Scan.Table.400147-12": "Only effective when read access type is selected",
   "ScanBacnet.PropertyId.400144-0": "Please choose",
   "ScanBacnet.index.400145-0": "scanning",
   "ScanBacnet.index.400145-1": "Cancel",
