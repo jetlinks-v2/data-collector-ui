@@ -17,7 +17,7 @@
     />
     <template #footer>
       <a-space v-if="provider">
-        <j-permission-button :loading="loading" type="primary" @click="handleOk" hasPermission="DataCollection:updateChannel">
+        <j-permission-button :loading="loading" type="primary" @click="handleOk">
           {{ $t('Issue.index.517977-14') }}
         </j-permission-button>
         <a-button @click="emits('close')">{{ $t('Issue.index.517977-12') }}</a-button>
