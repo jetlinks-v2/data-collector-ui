@@ -1066,83 +1066,40 @@
         ],
         "buttons": [
           {
-            "id": "addChannel",
-            "name": "新增通道",
+            "id": "view",
+            "name": "查看",
             "i18nMessages": {
-              "zh_CN": "新增通道",
-              "en_US": "Add Channel",
-              "en": "Add Channel"
+              "zh_CN": "查看",
+              "en_US": "View",
+              "en": "View"
             },
             "permissions": [
               {
                 "permission": "data-collect-channel",
                 "actions": [
-                  "save",
                   "query"
                 ]
               },
               {
                 "permission": "data-collector",
                 "actions": [
-                  "save",
                   "query"
                 ]
               },
               {
                 "permission": "data-collect-opc",
                 "actions": [
-                  "save",
                   "query"
                 ]
               },
               {
                 "permission": "things-collector",
                 "actions": [
-                  "save",
-                  "query"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "updateChannel",
-            "name": "编辑通道",
-            "i18nMessages": {
-              "zh_CN": "编辑通道",
-              "en_US": "Edit Channel",
-              "en": "Edit Channel"
-            },
-            "permissions": [
-              {
-                "permission": "data-collect-channel",
-                "actions": [
-                  "save",
                   "query"
                 ]
               },
               {
-                "permission": "data-collector",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              },
-              {
-                "permission": "data-collect-opc",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              },
-              {
-                "permission": "things-collector",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              },
-              {
-                "permission": "certificate",
+                "permission": "s7-client",
                 "actions": [
                   "query"
                 ]
@@ -1150,90 +1107,12 @@
             ]
           },
           {
-            "id": "actionChannel",
-            "name": "禁用/启用通道",
+            "id": "add",
+            "name": "新增",
             "i18nMessages": {
-              "zh_CN": "禁用/启用通道",
-              "en_US": "Disable/Enable Channel",
-              "en": "Disable/Enable Channel"
-            },
-            "permissions": [
-              {
-                "permission": "data-collect-channel",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              },
-              {
-                "permission": "data-collector",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              },
-              {
-                "permission": "data-collect-opc",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              },
-              {
-                "permission": "things-collector",
-                "actions": [
-                  "save",
-                  "query"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "deleteChannel",
-            "name": "删除通道",
-            "i18nMessages": {
-              "zh_CN": "删除通道",
-              "en_US": "Delete Channel",
-              "en": "Delete Channel"
-            },
-            "permissions": [
-              {
-                "permission": "data-collect-channel",
-                "actions": [
-                  "delete",
-                  "query"
-                ]
-              },
-              {
-                "permission": "data-collector",
-                "actions": [
-                  "delete",
-                  "query"
-                ]
-              },
-              {
-                "permission": "data-collect-opc",
-                "actions": [
-                  "delete",
-                  "query"
-                ]
-              },
-              {
-                "permission": "things-collector",
-                "actions": [
-                  "delete",
-                  "query"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "addCollector",
-            "name": "新增采集器",
-            "i18nMessages": {
-              "zh_CN": "新增采集器",
-              "en_US": "Add Collector",
-              "en": "Add Collector"
+              "zh_CN": "新增",
+              "en_US": "Add",
+              "en": "Add"
             },
             "permissions": [
               {
@@ -1273,12 +1152,12 @@
             ]
           },
           {
-            "id": "updateCollector",
-            "name": "编辑采集器",
+            "id": "update",
+            "name": "编辑",
             "i18nMessages": {
-              "zh_CN": "编辑采集器",
-              "en_US": "Edit Collector",
-              "en": "Edit Collector"
+              "zh_CN": "编辑",
+              "en_US": "Edit",
+              "en": "Edit"
             },
             "permissions": [
               {
@@ -1324,12 +1203,12 @@
             ]
           },
           {
-            "id": "actionCollector",
-            "name": "禁用/启用采集器",
+            "id": "action",
+            "name": "禁用/启用",
             "i18nMessages": {
-              "zh_CN": "禁用/启用采集器",
-              "en_US": "Enable/Disable Collector",
-              "en": "Enable/Disable Collector"
+              "zh_CN": "禁用/启用",
+              "en_US": "Enable/Disable",
+              "en": "Enable/Disable"
             },
             "permissions": [
               {
@@ -1367,12 +1246,12 @@
             ]
           },
           {
-            "id": "deleteCollector",
-            "name": "删除采集器",
+            "id": "delete",
+            "name": "删除",
             "i18nMessages": {
-              "zh_CN": "删除采集器",
-              "en_US": "Delete Collector",
-              "en": "Delete Collector"
+              "zh_CN": "删除",
+              "en_US": "Delete",
+              "en": "Delete"
             },
             "permissions": [
               {
@@ -1406,142 +1285,7 @@
             ]
           },
           {
-            "id": "addPoint",
-            "name": "新增点位",
-            "i18nMessages": {
-              "zh_CN": "新增点位",
-              "en_US": "Add Point",
-              "en": "Add Point"
-            },
-            "permissions": [
-              {
-                "permission": "data-collect-channel",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "data-collector",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "data-collect-opc",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "things-collector",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "s7-client",
-                "actions": [
-                  "query"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "updatePoint",
-            "name": "编辑点位",
-            "i18nMessages": {
-              "zh_CN": "编辑点位",
-              "en_US": "Edit Point",
-              "en": "Edit Point"
-            },
-            "permissions": [
-              {
-                "permission": "data-collect-channel",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "data-collector",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "data-collect-opc",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "things-collector",
-                "actions": [
-                  "query",
-                  "save"
-                ]
-              },
-              {
-                "permission": "certificate",
-                "actions": [
-                  "query"
-                ]
-              },
-              {
-                "permission": "s7-client",
-                "actions": [
-                  "query"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "deletePoint",
-            "name": "删除点位",
-            "i18nMessages": {
-              "zh_CN": "删除点位",
-              "en_US": "Delete Point",
-              "en": "Delete Point"
-            },
-            "permissions": [
-              {
-                "permission": "data-collect-channel",
-                "actions": [
-                  "query",
-                  "delete"
-                ]
-              },
-              {
-                "permission": "data-collector",
-                "actions": [
-                  "query",
-                  "delete"
-                ]
-              },
-              {
-                "permission": "data-collect-opc",
-                "actions": [
-                  "query",
-                  "delete"
-                ]
-              },
-              {
-                "permission": "things-collector",
-                "actions": [
-                  "query",
-                  "delete"
-                ]
-              }
-            ]
-          },
-          {
-            "id": "importPoint",
+            "id": "import",
             "name": "批量导入",
             "i18nMessages": {
               "zh_CN": "批量导入",
@@ -1551,7 +1295,7 @@
             "permissions": []
           },
           {
-            "id": "exportPoint",
+            "id": "export",
             "name": "数据导出",
             "i18nMessages": {
               "zh_CN": "数据导出",
@@ -1559,24 +1303,6 @@
               "en": "Data Export"
             },
             "permissions": []
-          },
-          {
-            "id": "importChannel",
-            "name": "批量导入通道",
-            "i18nMessages": {
-              "zh_CN": "批量导入通道",
-              "en_US": "Batch Import Channel",
-              "en": "Batch Import Channel"
-            }
-          },
-          {
-            "id": "importCollector",
-            "name": "批量导入采集器",
-            "i18nMessages": {
-              "zh_CN": "批量导入采集器",
-              "en_US": "Batch Import Collector",
-              "en": "Batch Import Collector"
-            }
           }
         ],
         "accessSupport": {
@@ -1584,7 +1310,7 @@
           "value": "support"
         },
         "supportDataAccess": true,
-        "assetType": "dataCollectCollector"
+        "assetType": "dataCollectChannel"
       }
     ]
   }

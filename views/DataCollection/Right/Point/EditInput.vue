@@ -15,6 +15,10 @@ const props = defineProps({
   data: {
     type: Object,
     default: () => ({})
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
 })
 const emits = defineEmits(['refresh'])
@@ -23,6 +27,9 @@ const inputRef = ref()
 const _value = ref(props.data.description)
 
 const onClick = () => {
+  if(props.disabled){
+    return
+  }
   visible.value = true
   setTimeout(() => {
     inputRef.value?.focus()
