@@ -266,7 +266,7 @@ getProtocol();
     height: calc(100% - 56px);
 
     .treeContainer {
-      height: calc(100% - 32px);
+      height: calc(100% - 80px);
       overflow-y: auto;
     }
   }
