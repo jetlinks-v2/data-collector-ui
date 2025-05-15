@@ -275,7 +275,7 @@
         :loading="loading"
         @click="handleOk"
         style="margin-left: 8px"
-        :hasPermission="`DataCollection:updatePoint`"
+        :hasPermission="`DataCollection:update`"
     >
       {{ $t('WritePoint.index.769007-13') }}
     </j-permission-button>
