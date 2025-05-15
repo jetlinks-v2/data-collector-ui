@@ -1010,7 +1010,10 @@
             "supportDataAccess": true,
             "assetType": "dataCollectCollector"
           }
-        ]
+        ],
+        "options": {
+          "hasProtocol": true
+        }
       },
       {
         "code": "DataCollection",
@@ -1310,7 +1313,10 @@
           "value": "support"
         },
         "supportDataAccess": true,
-        "assetType": "dataCollectChannel"
+        "assetType": "dataCollectChannel",
+        "options": {
+          "hasProtocol": true
+        }
       }
     ]
   }
