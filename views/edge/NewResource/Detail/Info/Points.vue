@@ -18,8 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import _ from "lodash-es";
-import { randomString } from "@jetlinks-web/utils";
+import { cloneDeep} from "lodash-es";
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();
@@ -66,7 +65,7 @@ const query = (params: Record<string, any>) => {
     return new Promise((resolve) => {
         const _from = params.pageIndex * params.pageSize;
         const _to = (params.pageIndex + 1) * params.pageSize;
-        let arr = _.cloneDeep(props.dataSource);
+        let arr = cloneDeep(props.dataSource);
         resolve({
             success: true,
             message: 'success',
