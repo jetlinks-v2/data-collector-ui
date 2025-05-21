@@ -2,6 +2,7 @@
   <a-drawer
     visible
     :title="data.id ? $t('DataCollection.LeftTree.SaveChannel.index.594410-0') : $t('Channel.index.290640-0')"
+    :maskClosable="false"
     width="40%"
     @close="emits('close')"
   >

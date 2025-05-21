@@ -2,6 +2,7 @@
   <a-drawer
     visible
     :title="data.id ? $t('DataCollection.LeftTree.SaveCollector.index.594410-2') : $t('Tree.index.4001410-1')"
+    :maskClosable="false"
     width="40%"
     @close="emits('close')"
   >
@@ -37,6 +38,28 @@
           <RenderComponents :value="jsonData" />
         </div>
       </template>
+      <div>
+        <h3 style="font-weight: bold">点位模板配置</h3>
+        <a-alert message="下述配置仅作用于点位，其下属点位默认自动集成此规则" type="info" show-icon></a-alert>
+        <div class="collector-config">
+          <div style="padding: 8px;">
+            <h4 style="font-weight: bold;">异常处理</h4>
+            <span>当发生点位异常行为时，</span>
+            <div style="border: 1px solid #999;padding: 8px;border-radius: 6px; display: flex;align-items: center;gap: 16px;margin: 8px 0;justify-content: space-between">
+              <a-space size="middle">
+                <div style="display: flex;align-items: center;justify-content: center;border: 1px solid #999;width: 40px;height: 40px;border-radius: 6px;">
+                  <AIcon type="icon-gaojing"></AIcon>
+                </div>
+                <div>
+                  <p style="font-weight: bold;margin-bottom: 8px;">触发告警</p>
+                  <span>可在告警记录tab查看点位告警情况</span>
+                </div>
+              </a-space>
+              <a-switch></a-switch>
+            </div>
+          </div>
+        </div>
+      </div>
       <template v-if="provider !== 'COLLECTOR_GATEWAY'">
         <a-form-item
           :name="['configuration', 'inheritBreakerSpec', 'type']"
@@ -362,7 +385,7 @@ provide("plugin-form-channel", props.channel);
 .collector-config {
   border: 1px solid #f0f0f0;
   padding: 10px;
-  margin-bottom: 10px;
+  margin: 10px 0;
   border-radius: 5px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
