@@ -27,7 +27,7 @@
             :params="params"
         >
           <template #headerLeftRender>
-            <a-space>
+            <a-space v-if="data.id && data.id !== '*'">
               <j-permission-button
                   v-if="pointActions.add"
                   type="primary"
@@ -55,7 +55,6 @@
                 {{ $t('Point.index.400149-1') }}
               </j-permission-button>
               <j-permission-button
-                  v-if="data?.id && data.id !== '*'"
                   type="primary"
                   @click="handleImport"
                   hasPermission="DataCollect/Collector:add"
@@ -63,7 +62,6 @@
                 {{ $t('Point.index.400149-2') }}
               </j-permission-button>
               <j-permission-button
-                  v-if="data?.id && data.id !== '*'"
                   type="primary"
                   @click="handleExport"
                   hasPermission="DataCollect/Collector:add"
@@ -71,7 +69,6 @@
                 {{ $t('Point.index.400149-3') }}
               </j-permission-button>
               <BatchDropdown
-                  v-if="data?.id && data.id !== '*'"
                   ref="batchRef"
                   v-model:isCheck="isCheck"
                   :actions="batchActions"
