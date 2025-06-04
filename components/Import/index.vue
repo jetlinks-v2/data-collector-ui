@@ -90,6 +90,11 @@ watch(
                     column: 'accessProvider',
                     value: props?.type,
                     termType: typeof props?.type === 'string' ? 'eq' : 'in',
+                },
+                {
+                  "value": "gateway",
+                  "termType": "eq",
+                  "column": "deviceType"
                 }
             ],
             sorts: [{ name: 'createTime', order: 'desc' }]

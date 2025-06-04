@@ -196,7 +196,7 @@
         />
         <Import
             v-if="importVisible"
-            :type="['agent-device-gateway', 'agent-media-device-gateway']"
+            :type="['agent-device-gateway', 'agent-media-device-gateway', 'official-edge-gateway']"
             @save="onRefresh"
             @close="importVisible = false"
         />
