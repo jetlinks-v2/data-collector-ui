@@ -10,14 +10,17 @@ export const taskDetailColumnMap = {
     'plugin': {
         label: i18n.global.t('Plugin.index.879212-3'),
         labelID: i18n.global.t('Plugin.index.879212-2'),
+        numberLabel: i18n.global.t('log.TaskDetail.866822-2'),
     },
     'AiModel': {
         label: i18n.global.t('AiModel.index.311326-3'),
         labelID: i18n.global.t('AiModel.index.311326-2'),
+        numberLabel: i18n.global.t('log.TaskDetail.866822-2-1'),
     },
     'CollectorTemplate': {
         label: i18n.global.t('CollectorTemplate.index.429253-3'),
         labelID: i18n.global.t('CollectorTemplate.index.429253-2'),
+        numberLabel: i18n.global.t('log.TaskDetail.866822-2-2'),
     },
 }
 
