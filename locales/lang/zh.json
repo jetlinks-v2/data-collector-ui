@@ -737,6 +737,8 @@
     "log.TaskDetail.866822-0": "任务详情",
     "log.TaskDetail.866822-1": "网关数量",
     "log.TaskDetail.866822-2": "插件数量",
+    "log.TaskDetail.866822-2-1": "AI模型数量",
+    "log.TaskDetail.866822-2-2": "采集器模版数量",
     "log.TaskDetail.866822-3": "全部暂停",
     "log.TaskDetail.866822-4": "全部开始",
     "log.TaskDetail.866822-5": "批量重试",
