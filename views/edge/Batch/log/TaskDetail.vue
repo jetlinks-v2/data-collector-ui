@@ -50,7 +50,7 @@
                                     type="icon-chajianbao"
                                     style="font-size: 16px"
                                 />
-                                <label class="text-color-500">{{ $t('log.TaskDetail.866822-2') }}</label>
+                                <label class="text-color-500">{{ taskDetailColumnMap[type]?.numberLabel }}</label>
                                 <span class="text-color-900">{{
                                     _detail?.others.commandTotal || 0
                                 }}</span>

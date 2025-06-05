@@ -86,7 +86,7 @@
           <div>
             <a-space>
               <Icon type="icon-chajianbao" style="font-size: 16px" />
-              <label class="text-color-500">{{ $t('log.Card.332932-7') }}</label>
+              <label class="text-color-500">{{ taskDetailColumnMap[type]?.numberLabel }}</label>
               <span class="text-color-900">{{ detail.others.commandTotal || 0 }}</span>
             </a-space>
           </div>
@@ -121,7 +121,7 @@
 </template>
 
 <script setup name="LogCard">
-import {getContext} from "../util";
+import {getContext, taskDetailColumnMap} from "../util";
 import dayjs from 'dayjs'
 import Icon from '../components/Icon.vue'
 import {deleteAllTask} from "../../../../api/edge/batch";

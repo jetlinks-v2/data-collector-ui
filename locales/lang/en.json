@@ -737,6 +737,8 @@
     "log.TaskDetail.866822-0": "Task Details",
     "log.TaskDetail.866822-1": "Number of gateways",
     "log.TaskDetail.866822-2": "Number of plugins",
+    "log.TaskDetail.866822-2-1": "Number of AI models",
+    "log.TaskDetail.866822-2-2": "Number of collector templates",
     "log.TaskDetail.866822-3": "Pause All",
     "log.TaskDetail.866822-4": "Start All",
     "log.TaskDetail.866822-5": "Batch retry",
