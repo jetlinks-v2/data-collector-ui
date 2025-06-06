@@ -59,7 +59,7 @@ const getData = () => {
             targetId: props.data.targetId,
             targetType: props.data.targetType,
             category: props.data.category,
-            metadata: props.data?.metadata,
+            metadata: props.data?.metadata
         }),
     };
     const url = new URLSearchParams();
