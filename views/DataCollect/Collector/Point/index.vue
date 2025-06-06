@@ -341,7 +341,7 @@
       :data="current"
       @close-import="closeImport"
   />
-  <RenderComponents :key="data.id" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
+  <RenderComponents :key="data.id + data.state?.value" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
 <script lang="ts" setup name="PointPage">
 import {

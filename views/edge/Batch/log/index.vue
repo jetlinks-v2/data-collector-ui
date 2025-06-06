@@ -32,6 +32,12 @@
                         column: 'jobType',
                         value: type,
                     },
+                    {
+                        type: 'and',
+                        column: 'source',
+                        termType: 'eq',
+                        value: 'batch',
+                    }
                 ],
             }"
         >

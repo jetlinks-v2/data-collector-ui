@@ -147,7 +147,8 @@ const handleSubmit = () => {
                             thingName: item.name
                         }
                     })
-                }
+                },
+                source: 'resource'
             }
             const res = await createTask(data);
             if(res.success) {
