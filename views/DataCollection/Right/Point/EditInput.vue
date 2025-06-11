@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import {updatePoint} from "@/modules/data-collector-ui/api/data-collect/collector";
+import {updatePoint} from "@collector/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
 
 const props = defineProps({
