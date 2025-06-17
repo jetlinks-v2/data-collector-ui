@@ -770,6 +770,7 @@ const closeImport = () => {
 };
 
 const getPointAction = async () => {
+  jsonData.value = ''
   jsonData.value = await devGetProtocol(props.data.provider, "pointActions");
 };
 
