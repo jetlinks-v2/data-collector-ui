@@ -290,7 +290,8 @@ const onOk = async () => {
     others: {
       thingList: newThingList,
       commandTotal: commandArgs.length || 0
-    }
+    },
+    source: 'batch'
   }
 
   run(newParams)

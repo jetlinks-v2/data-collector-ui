@@ -214,17 +214,18 @@ const handleEdit = (data: object) => {
 
 const handleUpdate = (data: any) => {
   const state = data?.state?.value;
-  const response = update(data?.id, {
+  const obj = {
     state: state !== 'disabled' ? 'disabled' : 'enabled',
     runningState: state !== 'disabled' ? 'stopped' : 'running',
-  });
+  }
+  const response = update(data?.id, obj);
   response.then((resp) => {
     if (resp.status === 200) {
       handleSearch(params.value);
       const _item = collectorAll.value.find(
           (i: any) => i?.id === selectedKeys.value?.[0],
       );
-      emits('change', _item);
+      emits('change', {..._item, ...obj});
       onlyMessage($t('Tree.index.4001410-12'), 'success');
     }
   });
@@ -307,6 +308,10 @@ const handleSearch = async (value: any) => {
       const _selectedKeys = cloneDeep(selectedKeys.value);
       selectedKeys.value = [];
       selectedKeys.value = _selectedKeys;
+      const row = collectorAll.value.find((i: any) => i.id === selectedKeys.value?.[0]);
+      if(row) {
+        emits('change', row);
+      }
     }, 0);
   }
   spinning.value = false;

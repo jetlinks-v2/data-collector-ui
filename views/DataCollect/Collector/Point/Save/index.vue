@@ -137,7 +137,7 @@ watch(
     () => props.data,
     () => {
       Object.assign(formData, cloneDeep(props.data));
-      formData.features = props.data.features?.[0]?.value;
+      formData.features =  props.data.features?.map((item: any) => item.value) || [];
       if (props.data.accessModes?.length !== 0) {
         formData.accessModes =
             props.data.accessModes?.map((item: any) => item.value) || [];

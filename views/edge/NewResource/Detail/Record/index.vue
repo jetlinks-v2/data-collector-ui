@@ -47,6 +47,12 @@ const defaultParams = {
             column: "targetId",
             termType: "eq",
             value: props.data.targetId,
+        },
+        {
+          type: 'and',
+          column: "source",
+          termType: "eq",
+          value: 'resource',
         }
     ]
 }

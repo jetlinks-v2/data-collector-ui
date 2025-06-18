@@ -27,7 +27,7 @@
             :params="params"
         >
           <template #headerLeftRender>
-            <a-space>
+            <a-space v-if="data.id && data.id !== '*'">
               <j-permission-button
                   v-if="pointActions.add"
                   type="primary"
@@ -55,7 +55,6 @@
                 {{ $t('Point.index.400149-1') }}
               </j-permission-button>
               <j-permission-button
-                  v-if="data?.id && data.id !== '*'"
                   type="primary"
                   @click="handleImport"
                   hasPermission="DataCollect/Collector:add"
@@ -63,7 +62,6 @@
                 {{ $t('Point.index.400149-2') }}
               </j-permission-button>
               <j-permission-button
-                  v-if="data?.id && data.id !== '*'"
                   type="primary"
                   @click="handleExport"
                   hasPermission="DataCollect/Collector:add"
@@ -71,7 +69,6 @@
                 {{ $t('Point.index.400149-3') }}
               </j-permission-button>
               <BatchDropdown
-                  v-if="data?.id && data.id !== '*'"
                   ref="batchRef"
                   v-model:isCheck="isCheck"
                   :actions="batchActions"
@@ -344,7 +341,7 @@
       :data="current"
       @close-import="closeImport"
   />
-  <RenderComponents :key="data.id" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
+  <RenderComponents :key="data.id + (data.state?.value || data.state)" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
 <script lang="ts" setup name="PointPage">
 import {
@@ -770,6 +767,7 @@ const closeImport = () => {
 };
 
 const getPointAction = async () => {
+  jsonData.value = ''
   jsonData.value = await devGetProtocol(props.data.provider, "pointActions");
 };
 
