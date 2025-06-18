@@ -308,6 +308,10 @@ const handleSearch = async (value: any) => {
       const _selectedKeys = cloneDeep(selectedKeys.value);
       selectedKeys.value = [];
       selectedKeys.value = _selectedKeys;
+      const row = collectorAll.value.find((i: any) => i.id === selectedKeys.value?.[0]);
+      if(row) {
+        emits('change', row);
+      }
     }, 0);
   }
   spinning.value = false;
