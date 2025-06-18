@@ -206,7 +206,7 @@
 <script lang="ts" setup>
 import { useMenuStore } from '@/store/menu';
 import { onlyMessage } from '@jetlinks-web/utils'
-import { openEdgeUrl } from '../../../utils/utils';
+import { openEdgeUrl } from '@/utils/utils';
 import dayjs from 'dayjs';
 import { query, _delete, _deploy, _undeploy,queryNoPagingPost,queryTree} from '../../../api/others';
 import url from '../../../assets/device-gateway.png'
