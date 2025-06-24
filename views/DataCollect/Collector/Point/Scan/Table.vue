@@ -1,355 +1,318 @@
-<template>
-    <a-form class="table" ref="formTableRef" :model="modelRef">
-        <a-table
-            v-if="modelRef.dataSource.length !== 0"
-            :dataSource="modelRef.dataSource"
-            :columns="FormTableColumns"
-            :scroll="{ y: 580 }"
-            :pagination="false"
-        >
-            <template #headerCell="{ column }">
-                <template
-                    v-if="column.key === 'nodeId' || column.key === 'action'"
-                >
-                    <span> {{ column.title }} </span>
-                </template>
-                <template v-else>
-                    <span> {{ column.title }} </span>
-                    <span style="margin-left: 5px; color: red">*</span>
-                </template>
-            </template>
-            <template #bodyCell="{ column: { dataIndex }, record, index }">
-                <template v-if="dataIndex === 'name'">
-                    <a-form-item
-                        :name="['dataSource', index, 'name']"
-                        :rules="[
-                            {
-                                required: true,
-                                message: $t('Scan.Table.400147-0'),
-                            },
-                            {
-                                validator: checkLength,
-                                trigger: 'change',
-                            },
-                        ]"
-                    >
-                        <a-input
-                            v-model:value="record[dataIndex]"
-                            :placeholder="$t('Scan.Table.400147-0')"
-                            allowClear
-                        ></a-input>
-                    </a-form-item>
-                </template>
-                <template v-if="dataIndex === 'id'">
-                    <a-form-item
-                        v-show="false"
-                        :name="['dataSource', index, 'id']"
-                    >
-                        <a-input
-                            v-model:value="record[dataIndex]"
-                            disabled
-                            :bordered="false"
-                        ></a-input>
-                    </a-form-item>
-                    <div
-                        style="
-                            margin: -24px 0 0 10px;
-                            overflow: hidden;
-                            white-space: nowrap;
-                            text-overflow: ellipsis;
-                        "
-                    >
-                        <a-tooltip>
-                            <template #title>{{ record[dataIndex] }}</template>
-                            {{ record[dataIndex] }}
-                        </a-tooltip>
-                    </div>
-                </template>
-                <template v-if="dataIndex === 'accessModes'">
-                    <a-form-item
-                        class="form-item"
-                        :name="['dataSource', index, 'accessModes', 'value']"
-                        :rules="[
-                            {
-                                required: true,
-                                message: $t('Scan.Table.400147-1'),
-                            },
-                        ]"
-                    >
-                        <a-select
-                            style="width: 75%"
-                            v-model:value="record[dataIndex].value"
-                            :placeholder="$t('Scan.Table.400147-1')"
-                            allowClear
-                            mode="multiple"
-                            :filter-option="filterOption"
-                            :options="[
-                                { label: $t('Scan.Table.400147-2'), value: 'read' },
-                                { label: $t('Scan.Table.400147-3'), value: 'write' },
-                                { label: $t('Scan.Table.400147-4'), value: 'subscribe' },
-                            ]"
-                            :disabled="index !== 0 && record[dataIndex].check"
-                            @change="changeValue(index, dataIndex)"
-                        >
-                        </a-select>
-                        <a-checkbox
-                            style="margin-left: 5px"
-                            v-if="index !== 0"
-                            v-model:checked="record[dataIndex].check"
-                            @click="changeCheckbox(index, dataIndex)"
-                            >{{ $t('Scan.Table.400147-5') }}</a-checkbox
-                        >
-                    </a-form-item>
-                </template>
-                <template v-if="dataIndex === 'interval'">
-                    <a-form-item
-                        class="form-item"
-                        :name="[
-                            'dataSource',
-                            index,
-                            'configuration',
-                            'interval',
-                            'value',
-                        ]"
-                        :rules="[
-                            {
-                                required: true,
-                                message: $t('Scan.Table.400147-0'),
-                            },
-                            {
-                                pattern: regOnlyNumber,
-                                message: $t('Scan.Table.400147-6'),
-                            },
-                        ]"
-                    >
-                        <a-input-number
-                            style="width: 60%"
-                            v-model:value="
-                                record.configuration[dataIndex].value
-                            "
-                            :placeholder="$t('Scan.Table.400147-0')"
-                            allowClear
-                            addon-after="ms"
-                            :max="2147483647"
-                            :min="0"
-                            :disabled="
-                                index !== 0 &&
-                                record.configuration[dataIndex].check
-                            "
-                            @blur="changeValue(index, dataIndex)"
-                        ></a-input-number>
-                        <a-checkbox
-                            style="margin-left: 5px; margin-top: 5px"
-                            v-show="index !== 0"
-                            v-model:checked="
-                                record.configuration[dataIndex].check
-                            "
-                            @click="changeCheckbox(index, dataIndex)"
-                            >{{ $t('Scan.Table.400147-5') }}</a-checkbox
-                        >
-                    </a-form-item>
-                </template>
-                <template v-if="dataIndex === 'features'">
-                    <a-form-item
-                        class="form-item"
-                        :name="['dataSource', index, 'features', 'value']"
-                        :rules="[
-                            {
-                                required: true,
-                                message: $t('Scan.Table.400147-1'),
-                            },
-                        ]"
-                    >
-                        <a-select
-                            style="width: 40%"
-                            v-model:value="record[dataIndex].value"
-                            :placeholder="$t('Scan.Table.400147-1')"
-                            allowClear
-                            :filter-option="filterOption"
-                            :options="[
-                                {
-                                    label: $t('Scan.Table.400147-7'),
-                                    value: true,
-                                },
-                                {
-                                    label: $t('Scan.Table.400147-8'),
-                                    value: false,
-                                },
-                            ]"
-                            :disabled="index !== 0 && record[dataIndex].check"
-                            @change="changeValue(index, dataIndex)"
-                        >
-                        </a-select>
+<script setup name="ScanPointTable">
+import i18n from "@/locales";
+import {useI18n} from 'vue-i18n';
+import {set, get, isArray, isNil} from 'lodash-es'
+import {Space, Tooltip} from "ant-design-vue";
+import {QuestionCircleOutlined} from "@ant-design/icons-vue";
 
-                        <a-checkbox
-                            style="margin-left: 5px"
-                            v-show="index !== 0"
-                            v-model:checked="record[dataIndex].check"
-                            @click="changeCheckbox(index, dataIndex)"
-                            >{{ $t('Scan.Table.400147-5') }}</a-checkbox
-                        >
-                    </a-form-item>
-                </template>
+const {t: $t} = useI18n();
 
-                <template v-if="dataIndex === 'action'">
-                    <j-permission-button
-                        :tooltip="{
-                            title: $t('Scan.Table.400147-9'),
-                        }"
-                        :popConfirm="{
-                            title: $t('Scan.Table.400147-10'),
-                            onConfirm: () => clickDelete(record.id),
-                        }"
-                    >
-                        <a style="color: red"><AIcon type="DeleteOutlined" /></a
-                    ></j-permission-button>
-                </template>
-            </template>
-        </a-table>
-        <a-empty v-else style="margin-top: 10%" />
-    </a-form>
-</template>
-
-<script lang="ts" setup>
-import { FormTableColumns, regOnlyNumber } from '../../data';
-import { Rule } from 'ant-design-vue/lib/form';
-import { useI18n } from 'vue-i18n';
-
-const { t: $t } = useI18n();
 const props = defineProps({
-    data: {
-        type: Array,
-        default: () => [],
-    },
+  data: {
+    type: Array,
+    default: () => [],
+  },
 });
 const emits = defineEmits(['change']);
+const _defaultType = ['accessModes', 'configuration.interval', 'features'];
+const tableRef = ref();
 
-const formTableRef = ref();
-const defaultType = ['accessModes', 'interval', 'features'];
-const modelRef: any = reactive({
-    dataSource: [],
-});
+const dataSource = ref([])
 
-const checkLength = (_rule: Rule, value: string): Promise<any> =>
-    new Promise(async (resolve, reject) => {
-        if (value) {
-            return String(value).length > 64
-                ? reject($t('Scan.Table.400147-11'))
-                : resolve('');
-        } else {
-            resolve('');
+const columns = computed(() => {
+  return [
+    {
+      title: i18n.global.t('Collector.data.400141-36'),
+      dataIndex: 'name',
+      template: {
+        components: 'a-input',
+        props: {
+          allowClear: true
         }
-    });
-
-const filterOption = (input: string, option: any) => {
-    return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-};
-
-const clickDelete = (value: string) => {
-    emits('change', value);
-
-    // 删除时需要做同上操作 todo
-};
-
-const getTargetData = (index: number, type: string) => {
-    const { dataSource } = modelRef;
-    const Interval = type === 'interval';
-    return !Interval
-        ? dataSource[index][type]
-        : dataSource[index].configuration[type];
-};
-
-const changeValue = (index: number, type: string) => {
-    const { dataSource } = modelRef;
-    const originData = getTargetData(index, type);
-    for (let i = index + 1; i < dataSource.length; i++) {
-        const targetType = getTargetData(i, type);
-        if (!targetType.check) return;
-        targetType.value = originData.value;
-    }
-};
-
-const changeCheckbox = async (index: number, type: string) => {
-    //Dom未更新完成，需要用 setTimeout 或者 await nextTick() 处理
-    setTimeout(() => {
-        let startIndex = 0;
-        const { dataSource } = modelRef;
-        const currentCheck = getTargetData(index, type).check;
-        if (!currentCheck) return;
-        for (let i = index; i >= 0; i--) {
-            const preDataCheck = getTargetData(i, type).check;
-            if (!preDataCheck) {
-                startIndex = i;
-                break;
+      },
+      ellipsis: true,
+    },
+    {
+      title: 'nodeId',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: i18n.global.t('Collector.data.400141-37'),
+      dataIndex: 'accessModes',
+      key: 'accessModes',
+      width: 350,
+      form: {
+        required: true,
+        rules: {
+          asyncValidator: (rule, value, cb) => {
+            const _value = isArray(value) ? value : value.value
+            if (!_value?.length) {
+              return Promise.reject($t('Scan.Table.400147-1'));
             }
+            return Promise.resolve();
+          },
         }
-        const originData = getTargetData(startIndex, type);
-        for (let i = startIndex; i < dataSource.length - 1; i++) {
-            const targetType = getTargetData(i + 1, type);
-            if (!targetType.check) return;
-            targetType.value = originData.value;
-        }
-    }, 0);
-};
+      }
+    },
+    {
+      title: i18n.global.t('Collector.data.400141-38'),
+      key: 'configuration',
+      dataIndex: 'configuration',
+      width: 220,
+      render: (val) => h(
+          Space,
+          {},
+          [
+            h(
+                'span',
+                {},
+                val
+            ),
+            h(
+                Tooltip,
+                {
+                  title: i18n.global.t('Scan.Table.400147-12'),
+                },
+                [
+                  h(
+                      QuestionCircleOutlined
+                  )
+                ]
+            )
+          ]
+      ),
+      form: {
+        required: true,
+        rules: [
+          {
+            validator: (rule, value) => {
+              if (value && isNil(value.interval.value)) {
+                return Promise.reject($t('Scan.Table.400147-0'));
+              } else {
+                return Promise.resolve();
+              }
+            }
+          },
+        ]
+      }
+    },
+    {
+      title: i18n.global.t('Collector.data.400141-39'),
+      key: 'features',
+      dataIndex: 'features',
+      width: 170,
+      form: {
+        required: true,
+      },
+    },
+    {
+      title: i18n.global.t('Collector.data.400141-40'),
+      dataIndex: 'actions',
+      width: 80
+    }
+  ]
+})
 
-const validate = () => {
-    return new Promise((res, rej) => {
-        formTableRef.value
-            .validate()
-            .then(() => {
-                res(modelRef.dataSource);
-            })
-            .catch((err: any) => {
-                rej(err);
-            });
-    });
-};
+const valueChange = (index, path) => {
+  if (dataSource.value.length === 1) {
+    return
+  }
+
+  const current = dataSource.value[index]
+  let i = index
+
+  while (index < dataSource.value.length) { // 循环只更新连续的“同上”项，减少不必要的遍历。
+    const nextIndex = i + 1
+    const nextItem = dataSource.value[nextIndex]
+    const currentData = get(current, path)
+    const nextItemData = get(nextItem, path)
+    if (nextItemData?.check) {
+      set(nextItem, path + '.value', currentData.value)
+      i = nextIndex
+    } else {
+      break
+    }
+  }
+}
+
+const changeCheckbox = (record, path, index, e) => {
+  const checked = e.target.checked
+
+  if (checked) {
+    const lastItem = dataSource.value[index - 1]
+    set(record, path, get(lastItem, path))
+    valueChange(index, path.split('.value')[0])
+  }
+}
+
+const removeItem = (record) => {
+  emits('change', record.id);
+}
+
 defineExpose({
-    validate,
-});
+  handleData: async () => {
+    const result = await tableRef.value.validate()
+    if (result) {
+      return dataSource.value
+    }
+    return false
+  }
+})
+
 watch(
     () => props.data,
     (value, preValue) => {
-        modelRef.dataSource = value;
-        // 有新增时同上数据
-        const vlength = value.length,
-            plength = preValue.length;
-        if (plength !== 0 && plength < vlength) {
-            defaultType.forEach((type) => {
-                vlength === 2
-                    ? changeValue(0, type)
-                    : changeCheckbox(vlength - 1, type);
-            });
-        }
+      dataSource.value = value;
+      // 有新增时同上数据
+      const vlength = value.length,  plength = preValue.length;
+      if (plength !== 0 && plength < vlength && vlength > 1) {
+        _defaultType.forEach((type) => {
+          valueChange(0, type)
+        });
+      }
     },
-    { deep: true },
+    {deep: true},
 );
 </script>
 
-<style lang="less" scoped>
-.table {
-    width: 100%;
-    min-width: 600px;
-    :deep(.ant-table-header) {
-        .ant-table-cell {
-            padding: 16px 5px;
-        }
-    }
+<template>
+  <div class="scan-table">
+    <j-edit-table
+        ref="tableRef"
+        :dataSource="dataSource"
+        :serial="false"
+        :columns="columns"
+        :height="500"
+    >
+      <template #name="{ record, index }">
+        <j-edit-table-form-item :name="[index, 'name']">
+          <div class="scan-ditto-box">
+            <a-input
+                v-model:value="record.name"
+                :placeholder="$t('Scan.Table.400147-0')"
+                allowClear
+                class="ditto-grow"
+                @change="valueChange(index, 'name')"
+            />
+          </div>
+        </j-edit-table-form-item>
+      </template>
+      <template #accessModes="{ record, index }">
+        <j-edit-table-form-item :name="[index, 'accessModes', 'value']">
+          <div class="scan-ditto-box">
+            <a-select
+                class="ditto-grow"
+                v-model:value="record.accessModes.value"
+                mode="multiple"
+                allowClear
+                :placeholder="$t('Scan.Table.400147-1')"
+                :options="[
+                 { label: $t('Scan.Table.400147-2'), value: 'read' },
+                 { label: $t('Scan.Table.400147-3'), value: 'write' },
+                 { label: $t('Scan.Table.400147-4'), value: 'subscribe' },
+              ]"
+                :disabled="index !== 0 && record.accessModes.check"
+                optionFilterProp="label"
+                @change="valueChange(index, 'accessModes')"
+            />
+            <a-checkbox
+                v-if="index !== 0"
+                class="ditto-checkbox"
+                v-model:checked="record.accessModes.check"
+                @change="e => changeCheckbox(record, 'accessModes.value', index, e)"
+            >
+              {{ $t('Scan.Table.400147-5') }}
+            </a-checkbox>
+          </div>
+        </j-edit-table-form-item>
+      </template>
+      <template #configuration="{ record, index }">
+        <j-edit-table-form-item :name="[index, 'configuration', 'interval', 'value']">
+          <div class="scan-ditto-box">
+            <a-input-number
+                v-model:value="record.configuration.interval.value"
+                :placeholder="$t('Scan.Table.400147-0')"
+                allowClear
+                addon-after="ms"
+                :max="2147483647"
+                :min="0"
+                :precision="0"
+                :disabled="index !== 0 && record.configuration.interval.check"
+                class="ditto-grow"
+                @change="valueChange(index, 'configuration.interval')"
+            />
+            <a-checkbox
+                v-if="index !== 0"
+                class="ditto-checkbox"
+                v-model:checked="record.configuration.interval.check"
+                @change="e => changeCheckbox(record, 'configuration.interval.value', index, e)"
+            >
+              {{ $t('Scan.Table.400147-5') }}
+            </a-checkbox>
+          </div>
+        </j-edit-table-form-item>
+      </template>
+      <template #features="{ record, index }">
+        <div class="scan-ditto-box">
+          <a-select
+              class="ditto-grow"
+              v-model:value="record.features.value"
+              :placeholder="$t('Scan.Table.400147-1')"
+              :options="[
+                 {
+                     label: $t('Scan.Table.400147-7'),
+                     value: true,
+                 },
+                 {
+                     label: $t('Scan.Table.400147-8'),
+                     value: false,
+                 },
+              ]"
+              :disabled="index !== 0 && record.features.check"
+              @change="valueChange(index, 'features')"
+          />
+          <a-checkbox
+              v-if="index !== 0"
+              class="ditto-checkbox"
+              v-model:checked="record.features.check"
+              @change="e => changeCheckbox(record, 'features.value', index, e)"
+          >
+            {{ $t('Scan.Table.400147-5') }}
+          </a-checkbox>
+        </div>
+      </template>
+      <template #actions="{ record }">
+        <j-permission-button
+            :tooltip="{
+            title: $t('Scan.Table.400147-9'),
+          }"
+            :popConfirm="{
+            title: $t('Scan.Table.400147-10'),
+            onConfirm: () => removeItem(record),
+          }"
+            danger type="link"
+        >
+          <AIcon type="DeleteOutlined"/>
+        </j-permission-button>
+      </template>
+    </j-edit-table>
+  </div>
+</template>
 
-    :deep(.ant-table-tbody) {
-        .ant-table-cell {
-            padding: 24px 0 0 0;
-        }
-        .ant-table-cell-fix-right-first {
-            padding: 0 0 0 10px;
-        }
-    }
-    :deep(.ant-pagination) {
-        display: none;
-    }
-}
+<style scoped lang="less">
+.scan-table {
+  width: calc(100% - 316px);
 
-.form-item {
+  .scan-ditto-box {
     display: flex;
+    gap: 8px;
+    align-items: center;
+
+    .ditto-grow {
+      width: calc(100% - 68px);
+    }
+
+  }
 }
 </style>

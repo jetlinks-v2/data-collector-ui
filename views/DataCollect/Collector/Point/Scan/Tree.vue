@@ -1,67 +1,87 @@
 <template>
-    <div class="tree-content">
-        <div class="tree-header">
-            <div>{{ $t('Scan.Tree.400146-0') }}</div>
-            <!-- <a-checkbox v-model:checked="isSelected">隐藏已有节点</a-checkbox> -->
-        </div>
-        <a-spin :spinning="spinning">
-            <a-breadcrumb>
-                <a-breadcrumb-item
-                    v-for="(i, index) in breadcrumb"
-                    @click="() => jumpFile(index, i.nodeId)"
-                    ><a href="javascript:void(0);">{{
-                        i.breadcrumbName
-                    }}</a></a-breadcrumb-item
-                >
-            </a-breadcrumb>
-            <a-button @click="allControl" block style="margin-bottom: 10px">{{
-                controlAllType ? $t('Scan.Tree.400146-1') : $t('Scan.Tree.400146-2')
-            }}</a-button>
-            <div v-if="!!treeData" class="treeContainer">
-                <div
-                    v-for="i in treeData"
-                    class="treeItem"
-                    @click="() => clickItem(i)"
-                >
-                    <AIcon
-                        :type="i?.folder ? 'icon-wenjianjia' : 'icon-dianwei'"
-                        style="margin-right: 10px"
-                    ></AIcon>
-                    <span
-                        :class="[
-                            checkedKeys.includes(i.key)
-                                ? 'tree-selected'
-                                : 'tree-title',
-                        ]"
-                    >
-                        {{ i.name }}
-                    </span>
-                </div>
-            </div>
-            <a-empty v-else style="margin-top: 22%" />
-        </a-spin>
+  <div class="tree-content">
+    <div class="tree-header">
+      <div>{{ $t('Scan.Tree.400146-0') }}</div>
+      <!-- <a-checkbox v-model:checked="isSelected">隐藏已有节点</a-checkbox> -->
     </div>
+    <a-spin :spinning="spinning">
+      <a-breadcrumb>
+        <a-breadcrumb-item
+            v-for="(i, index) in breadcrumb"
+            @click="() => jumpFile(index, i.nodeId)"
+        >
+          <a href="javascript:void(0);">{{
+            i.breadcrumbName
+          }}</a>
+        </a-breadcrumb-item>
+      </a-breadcrumb>
+      <a-button @click="allControl" block style="margin-bottom: 10px">{{
+          controlAllType ? $t('Scan.Tree.400146-1') : $t('Scan.Tree.400146-2')
+        }}
+      </a-button>
+      <div v-if="!!treeData.length" class="treeContainer">
+        <!--                <div-->
+        <!--                    v-for="i in treeData"-->
+        <!--                    class="treeItem"-->
+        <!--                    @click="() => clickItem(i)"-->
+        <!--                >-->
+        <!--                    <AIcon-->
+        <!--                        :type="i?.folder ? 'icon-wenjianjia' : 'icon-dianwei'"-->
+        <!--                        style="margin-right: 10px"-->
+        <!--                    ></AIcon>-->
+        <!--                    <span-->
+        <!--                        :class="[-->
+        <!--                            checkedKeys.includes(i.key)-->
+        <!--                                ? 'tree-selected'-->
+        <!--                                : 'tree-title',-->
+        <!--                        ]"-->
+        <!--                    >-->
+        <!--                        {{ i.name }}-->
+        <!--                    </span>-->
+        <!--                </div>-->
+        <VirtualScroll :data="treeData" :itemHeight="40">
+          <template #renderItem="i">
+            <div
+                class="treeItem"
+                @click="() => clickItem(i)"
+            >
+              <AIcon :type="i?.folder ? 'icon-wenjianjia' : 'icon-dianwei'"/>
+              <div
+                  :class="{
+                    'tree-selected': checkedKeys.includes(i.key),
+                    'tree-title': true
+                  }"
+              >
+                <j-ellipsis>{{ i.name }}</j-ellipsis>
+              </div>
+            </div>
+          </template>
+        </VirtualScroll>
+      </div>
+      <a-empty v-else style="margin-top: 22%"/>
+    </a-spin>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import type { TreeProps } from 'ant-design-vue';
+import type {TreeProps} from 'ant-design-vue';
 import {
-    scanOpcUAList,
-    queryPointNoPaging,
+  scanOpcUAList,
+  queryPointNoPaging,
 } from '../../../../../api/data-collect/collector';
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
-const { t: $t } = useI18n();
+const {t: $t} = useI18n();
 
 const props = defineProps({
-    data: {
-        type: Array,
-        default: () => [],
-    },
-    unSelectKeys: {
-        type: String || Array,
-        default: '',
-    },
+  data: {
+    type: Array,
+    default: () => [],
+  },
+  unSelectKeys: {
+    type: String || Array,
+    default: '',
+  },
 });
 const emits = defineEmits(['change', 'cancelAll', 'addAll']);
 const channelId = props.data?.channelId;
@@ -69,211 +89,219 @@ const checkedKeys = ref<string[]>([]);
 const selectKeys = ref<string[]>([]);
 const spinning = ref(false);
 
-const treeData = ref<TreeProps['treeData']>();
+const treeData = ref<TreeProps['treeData']>([]);
 const breadcrumb = ref([
-    {
-        breadcrumbName: $t('Scan.Tree.400146-3'),
-        nodeId: undefined,
-    },
+  {
+    breadcrumbName: $t('Scan.Tree.400146-3'),
+    nodeId: undefined,
+  },
 ]);
 const controlAllType = computed(() => {
-    return treeData.value?.some((i: any) => {
-        return checkedKeys.value.some((item: any) => {
-            return item === i.id;
-        });
+  return treeData.value?.some((i: any) => {
+    return checkedKeys.value.some((item: any) => {
+      return item === i.id;
     });
+  });
 });
 
 const onCheck = (info: any) => {
-    const one: any = { ...info };
-    const list: any = [];
-    const last: any = list.length ? list[list.length - 1] : undefined;
-    if (list.map((i: any) => i?.id).includes(one.id)) {
-        return;
+  const one: any = {...info};
+  const list: any = [];
+  const last: any = list.length ? list[list.length - 1] : undefined;
+  if (list.map((i: any) => i?.id).includes(one.id)) {
+    return;
+  }
+  const item = {
+    features: {
+      value: last
+          ? last?.features?.value
+          : (one?.features || []).includes('changedOnly'),
+      check: true,
+    },
+    id: one?.id || '',
+    name: one?.name || '',
+    accessModes: {
+      value: last ? last?.accessModes?.value : one?.accessModes || [],
+      check: true,
+    },
+    type: one?.type,
+    configuration: {
+      ...one?.configuration,
+      interval: {
+        value: last
+            ? last?.configuration?.interval?.value
+            : one?.configuration?.interval || 3000,
+        check: true,
+      },
+      nodeId: one?.id,
+    },
+  };
+  const controlType = checkedKeys.value?.includes(one.id);
+  if (!controlType) {
+    checkedKeys.value.push(one.id);
+    emits('change', item, true);
+  }
+};
+
+const clickItem = async (node: any) => {
+  if (node?.folder) {
+    getScanOpcUAList(node.key);
+    breadcrumb.value.push({
+      breadcrumbName: node.name,
+      nodeId: node.key,
+    });
+  } else {
+    onCheck(node);
+  }
+};
+
+const updateTreeData = (list: any, key: string, children: any[]): any[] => {
+  const arr = list.map((node: any) => {
+    if (node.key === key) {
+      return {
+        ...node,
+        children,
+      };
     }
-    const item = {
+    if (node?.children && node?.children?.length) {
+      return {
+        ...node,
+        children: updateTreeData(node.children, key, children),
+      };
+    }
+    return node;
+  });
+  return arr;
+};
+
+const getPoint = async () => {
+  spinning.value = true;
+  const res: any = await queryPointNoPaging({
+    paging: false,
+    terms: [
+      {
+        terms: [
+          {
+            column: 'collectorId',
+            value: props.data?.id,
+          },
+        ],
+      },
+    ],
+  });
+  if (res.success) {
+    selectKeys.value = res.result.map((item: any) => item.pointKey);
+  }
+  getScanOpcUAList(undefined);
+  spinning.value = false;
+};
+
+const allControl = () => {
+  const currentPoints: any = [];
+  treeData.value?.forEach((i) => {
+    if (!i.folder) {
+      const one: any = {...i};
+      const item = {
         features: {
-            value: last
-                ? last?.features?.value
-                : (one?.features || []).includes('changedOnly'),
-            check: true,
+          value: (one?.features || []).includes('changedOnly'),
+          check: true,
         },
         id: one?.id || '',
         name: one?.name || '',
         accessModes: {
-            value: last ? last?.accessModes?.value : one?.accessModes || [],
-            check: true,
+          value: one?.accessModes || [],
+          check: true,
         },
         type: one?.type,
         configuration: {
-            ...one?.configuration,
-            interval: {
-                value: last
-                    ? last?.configuration?.interval?.value
-                    : one?.configuration?.interval || 3000,
-                check: true,
-            },
-            nodeId: one?.id,
+          ...one?.configuration,
+          interval: {
+            value: one?.configuration?.interval || 3000,
+            check: true,
+          },
+          nodeId: one?.id,
         },
-    };
-    const controlType = checkedKeys.value?.includes(one.id);
-    if (!controlType) {
-        checkedKeys.value.push(one.id);
-        emits('change', item, true);
+      };
+      currentPoints.push(item);
     }
-};
-
-const clickItem = async (node: any) => {
-    if (node?.folder) {
-        getScanOpcUAList(node.key);
-        breadcrumb.value.push({
-            breadcrumbName: node.name,
-            nodeId: node.key,
-        });
-    } else {
-        onCheck(node);
-    }
-};
-
-const updateTreeData = (list: any, key: string, children: any[]): any[] => {
-    const arr = list.map((node: any) => {
-        if (node.key === key) {
-            return {
-                ...node,
-                children,
-            };
-        }
-        if (node?.children && node?.children?.length) {
-            return {
-                ...node,
-                children: updateTreeData(node.children, key, children),
-            };
-        }
-        return node;
+  });
+  if (controlAllType.value) {
+    emits('cancelAll', currentPoints);
+  } else {
+    currentPoints.forEach((i: any) => {
+      checkedKeys.value.push(i.id);
     });
-    return arr;
-};
-
-const getPoint = async () => {
-    spinning.value = true;
-    const res: any = await queryPointNoPaging({
-        paging: false,
-        terms: [
-            {
-                terms: [
-                    {
-                        column: 'collectorId',
-                        value: props.data?.id,
-                    },
-                ],
-            },
-        ],
-    });
-    if (res.success) {
-        selectKeys.value = res.result.map((item: any) => item.pointKey);
-    }
-    getScanOpcUAList(undefined);
-    spinning.value = false;
-};
-
-const allControl = () => {
-    const currentPoints: any = [];
-    treeData.value?.forEach((i) => {
-        if (!i.folder) {
-            const one: any = { ...i };
-            const item = {
-                features: {
-                    value: (one?.features || []).includes('changedOnly'),
-                    check: true,
-                },
-                id: one?.id || '',
-                name: one?.name || '',
-                accessModes: {
-                    value: one?.accessModes || [],
-                    check: true,
-                },
-                type: one?.type,
-                configuration: {
-                    ...one?.configuration,
-                    interval: {
-                        value: one?.configuration?.interval || 3000,
-                        check: true,
-                    },
-                    nodeId: one?.id,
-                },
-            };
-            currentPoints.push(item);
-        }
-    });
-    if (controlAllType.value) {
-        emits('cancelAll', currentPoints);
-    } else {
-        currentPoints.forEach((i: any) => {
-            checkedKeys.value.push(i.id);
-        });
-        emits('addAll', currentPoints);
-    }
+    emits('addAll', currentPoints);
+  }
 };
 
 const getScanOpcUAList = async (nodeId: string | undefined) => {
-    spinning.value = true;
-    const res: any = await scanOpcUAList(channelId, 'BrowseNodes', { nodeId: nodeId });
-    treeData.value = res.result.filter((i: any) => !selectKeys.value.includes(i.id)).map((item: any) => ({
-        ...item,
-        key: item.id,
-        title: item.name,
-    }));
-    spinning.value = false;
+  spinning.value = true;
+  const res: any = await scanOpcUAList(channelId, 'BrowseNodes', {nodeId: nodeId});
+  treeData.value = res.result.filter((i: any) => !selectKeys.value.includes(i.id)).map((item: any) => ({
+    ...item,
+    key: item.id,
+    title: item.name,
+  }));
+  spinning.value = false;
 };
 
 const jumpFile = (breadcrumbNumber: number, nodeId: string) => {
-    breadcrumb.value.splice(breadcrumbNumber + 1, breadcrumb.value.length - 1);
-    getScanOpcUAList(nodeId);
+  breadcrumb.value.splice(breadcrumbNumber + 1, breadcrumb.value.length - 1);
+  getScanOpcUAList(nodeId);
 };
 watch(
     () => props.unSelectKeys,
     (value) => {
-        if (typeof value === 'string') {
-            checkedKeys.value = checkedKeys.value.filter((i) => i !== value);
-        } else {
-            checkedKeys.value = checkedKeys.value.filter((i) => {
-                return !value?.some((item) => {
-                    return item === i;
-                });
-            });
-        }
+      if (typeof value === 'string') {
+        checkedKeys.value = checkedKeys.value.filter((i) => i !== value);
+      } else {
+        checkedKeys.value = checkedKeys.value.filter((i) => {
+          return !value?.some((item) => {
+            return item === i;
+          });
+        });
+      }
     },
-    { deep: true },
+    {deep: true},
 );
 onMounted(() => {
-    getPoint();
+  getPoint();
 });
 </script>
 
 <style lang="less" scoped>
 .tree-content {
-    padding-right: 16px;
-    min-width: 180px;
+  padding-right: 16px;
+  min-width: 180px;
 
-    .tree-header {
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-    }
-    .tree-selected {
-        padding: 2px 5px;
-        background-color: var(--ant-primary-2);
-        border-radius: 2px;
-    }
-    .tree-title {
-        color: black;
-    }
+  .tree-header {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+  }
 }
+
 .treeContainer {
-    max-height: 600px;
-    overflow-y: auto;
-    .treeItem {
-        cursor: pointer;
+  height: 500px;
+  //overflow-y: auto;
+
+  .treeItem {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .tree-title {
+      flex: 1;
+      min-width: 0;
     }
+
+    .tree-selected {
+      padding: 2px 5px;
+      background-color: var(--ant-primary-2);
+      border-radius: 2px;
+    }
+  }
 }
 </style>
