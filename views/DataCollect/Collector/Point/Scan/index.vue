@@ -59,7 +59,7 @@ const tableDataMap = new Map();
 const unSelectKeys = ref();
 
 const handleOk = async () => {
-    const data: any = await formTableRef.value?.validate().catch(() => {});
+    const data: any = await formTableRef.value?.handleData().catch(() => {});
     if (!data) return;
     const list: any = data.map((item: any) => {
         return {
