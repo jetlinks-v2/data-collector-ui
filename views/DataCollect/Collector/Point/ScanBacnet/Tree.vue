@@ -21,7 +21,7 @@
           <a-space>
             <span class="tree-title">
               <j-ellipsis>
-                {{ i.name }}
+                {{ name }}
                 </j-ellipsis>
               </span>
             <!--                            <span-->

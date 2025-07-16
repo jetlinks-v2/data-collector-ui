@@ -89,7 +89,7 @@ export const getBacnetObjectList = (channelId: string, instanceNumber: string) =
  * 查询未使用的属性id
  * @param data 采集器Id
  */
-export const getBacnetPropertyIdNotUse = (data: any) => request.post(`/collect/bacnet/${data.collectorId}/unused/ids`, data)
+export const getBacnetPropertyIdNotUse = (data: any) => request.post(`/data-collect/BACNetIp/command/QueryUnusedPropertyIds`, data)
 
 // /**
 //  * 查询所有属性id
