@@ -44,7 +44,7 @@ const columns = computed(() => {
       width: 350,
       form: {
         required: true,
-        rules: {
+        rules: [{
           asyncValidator: (rule, value, cb) => {
             const _value = isArray(value) ? value : value.value
             if (!_value?.length) {
@@ -52,7 +52,7 @@ const columns = computed(() => {
             }
             return Promise.resolve();
           },
-        }
+        }]
       }
     },
     {
@@ -161,18 +161,14 @@ defineExpose({
 })
 
 watch(
-    () => props.data,
-    (value, preValue) => {
-      dataSource.value = value;
+    () => props.data.length,
+    () => {
+      dataSource.value = props.data || [];
       // 有新增时同上数据
-      const vlength = value.length,  plength = preValue.length;
-      if (plength !== 0 && plength < vlength && vlength > 1) {
-        _defaultType.forEach((type) => {
-          valueChange(0, type)
-        });
-      }
-    },
-    {deep: true},
+      _defaultType.forEach((type) => {
+        valueChange(0, type)
+      });
+    }
 );
 </script>
 
