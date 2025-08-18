@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        visible
+        open
         title="下发设备"
         :width="1000"
         @ok="onSave"

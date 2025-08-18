@@ -1,5 +1,5 @@
 <template>
-    <a-modal :title="$t('ScanBacnet.index.400145-0')" :visible="true" :maskClosable="false" width="95%" @cancel="handleCancel">
+    <a-modal :title="$t('ScanBacnet.index.400145-0')" :open="true" :maskClosable="false" width="95%" @cancel="handleCancel">
         <div class="content">
             <Tree
                 :data="treeData"

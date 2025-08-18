@@ -27,7 +27,7 @@
     </div>
   </div>
   <a-drawer
-    v-model:visible="visible"
+    v-model:open="visible"
     :width="800"
     :footer="null"
     :closable="false"

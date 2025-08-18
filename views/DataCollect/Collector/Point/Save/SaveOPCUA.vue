@@ -1,5 +1,5 @@
 <template >
-    <a-modal :title="$t('Save.SaveOPCUA.4001412-0')" :visible="true" width="700px" @cancel="handleCancel">
+    <a-modal :title="$t('Save.SaveOPCUA.4001412-0')" :open="true" width="700px" @cancel="handleCancel">
         <a-form
             class="form"
             layout="vertical"

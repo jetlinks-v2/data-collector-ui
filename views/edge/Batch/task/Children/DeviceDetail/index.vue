@@ -1,5 +1,5 @@
 <template>
-    <a-modal visible :footer="null" width="70vw" @cancel="emit('close')" :centered="true" :maskClosable="false">
+    <a-modal open :footer="null" width="70vw" @cancel="emit('close')" :centered="true" :maskClosable="false">
         <template #title>
             <span style="margin-right: 24px">{{ data.name }}</span>
             <a-badge

@@ -1,7 +1,7 @@
 <template>
     <a-modal
         :title="$t('BatchUpdate.index.4001419-0')"
-        :visible="true"
+        :open="true"
         width="700px"
         @cancel="handleCancel"
         :destroyOnClose="true"

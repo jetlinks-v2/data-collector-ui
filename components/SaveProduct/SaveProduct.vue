@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        v-model:visible="_vis"
+        v-model:open="_vis"
         :title="$t('SaveProduct.SaveProduct.476751-0')"
         :cancelText="$t('SaveProduct.SaveProduct.476751-1')"
         :okText="$t('SaveProduct.SaveProduct.476751-2')"

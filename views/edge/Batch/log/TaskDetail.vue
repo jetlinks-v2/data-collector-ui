@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        visible
+        open
         :title="$t('log.TaskDetail.866822-0')"
         width="75vw"
         @cancel="$emit('closeDetail')"

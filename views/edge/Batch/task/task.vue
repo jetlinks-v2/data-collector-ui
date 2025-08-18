@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    visible
+    open
     :title="title"
     width="90vw"
     :okText="$t('task.task.010223-0')"

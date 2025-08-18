@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        visible
+        open
         :maskClosable="false"
         :title="!!data?.id ? $t('Save.index.001090-0') : $t('Save.index.001090-1')"
         width="650px"

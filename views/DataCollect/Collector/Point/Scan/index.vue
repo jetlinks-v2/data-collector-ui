@@ -1,5 +1,5 @@
 <template>
-    <a-modal :title="$t('Scan.index.400148-0')" :visible="true" width="95%" @cancel="handleCancel">
+    <a-modal :title="$t('Scan.index.400148-0')" :open="true" width="95%" @cancel="handleCancel">
         <div class="content">
             <Tree
                 :data="treeData"

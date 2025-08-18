@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        visible
+        open
         title="下发结果"
         :width="900"
         @ok="emit('close')"
