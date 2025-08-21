@@ -1,6 +1,6 @@
 <template>
     <a-drawer
-        visible
+        open
         :title="record?.name"
         width="70%"
         :maskClosable="false"

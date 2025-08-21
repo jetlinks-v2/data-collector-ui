@@ -3,7 +3,7 @@
     :maskClosable="false"
     :width='820'
     :title="$t('Save.GateWayDeviceModal.290645-0')"
-    visible
+    open
     @cancel="cancel"
     @ok="confirm"
   >

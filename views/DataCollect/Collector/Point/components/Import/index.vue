@@ -1,5 +1,5 @@
 <template>
-    <a-modal visible :title="$t('Import.index.4001420-0')" @cancel="emit('closeImport')" :width="800" :maskClosable="false">
+    <a-modal open :title="$t('Import.index.4001420-0')" @cancel="emit('closeImport')" :width="800" :maskClosable="false">
         <div class="import-content">
             <div class="column">
                 <p>{{ $t('Import.index.4001420-1') }}</p>

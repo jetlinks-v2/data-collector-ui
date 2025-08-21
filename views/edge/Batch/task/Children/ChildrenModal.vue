@@ -1,5 +1,5 @@
 <template>
-    <a-modal visible :title="$t('Children.ChildrenModal.763264-0')" width="500px" @cancel="emit('close')">
+    <a-modal open :title="$t('Children.ChildrenModal.763264-0')" width="500px" @cancel="emit('close')">
         <span style="margin: 12px 0;">{{ $t('Children.ChildrenModal.763264-1') }}</span> 
         <template #footer>
             <div class="footer">

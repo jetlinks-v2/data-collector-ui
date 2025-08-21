@@ -1,6 +1,6 @@
 <template>
     <a-modal
-        visible
+        open
         :title="$t('task.GatewayModal.823128-0')"
         :width="1300"
         @cancel="onCancel"

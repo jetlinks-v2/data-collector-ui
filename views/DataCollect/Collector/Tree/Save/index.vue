@@ -1,7 +1,7 @@
 <template>
   <a-modal
       :title="data.id ? $t('Save.index.4001415-0') : $t('Save.index.4001415-1')"
-      :visible="true"
+      :open="true"
       width="700px"
       :maskClosable="false"
       @cancel="handleCancel"

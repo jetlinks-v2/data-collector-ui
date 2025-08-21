@@ -1,6 +1,6 @@
 <template>
   <a-drawer
-    visible
+    open
     :title="$t('log.Detail.389002-0')"
     :width="1000"
     :maskClosable="false"

@@ -1,5 +1,5 @@
 <template>
-    <a-modal :title="data.id ? $t('Save.SaveBACNet.4001416-0') : $t('Save.SaveBACNet.4001416-1')" visible @cancel="handleCancel">
+    <a-modal :title="data.id ? $t('Save.SaveBACNet.4001416-0') : $t('Save.SaveBACNet.4001416-1')" open @cancel="handleCancel">
         <a-form :model="formData" layout="vertical" ref="formRef">
             <a-form-item :label="$t('Save.SaveBACNet.4001416-2')" name="name" :rules="rules.name">
                 <a-input

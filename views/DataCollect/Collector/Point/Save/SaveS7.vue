@@ -1,5 +1,5 @@
 <template >
-    <a-modal :title="data.id ? $t('Save.SaveS7.4001411-0') : $t('Save.SaveS7.4001411-1')" :visible="true" width="700px" @cancel="handleCancel">
+    <a-modal :title="data.id ? $t('Save.SaveS7.4001411-0') : $t('Save.SaveS7.4001411-1')" :open="true" width="700px" @cancel="handleCancel">
         <a-form :model="form" layout="vertical" ref="formRef">
             <a-form-item :label="$t('Save.SaveS7.4001411-2')" name="name">
                 <a-input :placeholder="$t('Save.SaveS7.4001411-3')" v-model:value="form.name" />

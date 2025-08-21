@@ -1,5 +1,5 @@
 <template>
-    <a-modal :title="$t('WritePoint.index.769007-0')" :visible="true" width="500px" @cancel="handleCancel">
+    <a-modal :title="$t('WritePoint.index.769007-0')" :open="true" width="500px" @cancel="handleCancel">
         <a-form
             class="form"
             layout="vertical"
