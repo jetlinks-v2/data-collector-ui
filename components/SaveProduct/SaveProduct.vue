@@ -211,6 +211,7 @@ import { providerType } from './const';
 import { useAuthStore } from '@/store/auth';
 import { pick } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
+import { useTabSaveSuccess } from '@/hooks'
 
 const { t: $t } = useI18n();
 const isPermission = useAuthStore().hasPermission(
@@ -270,6 +271,14 @@ const formData = ref({
     transportProtocol: '',
     metadata: '',
 });
+
+const { onOpen } = useTabSaveSuccess('link/AccessConfig/Detail', {
+  async onSuccess(value) {
+    await getGatewayList();
+    handleClick(gatewayList.value?.[0]);
+  }
+})
+
 const getGatewayList = async () => {
     const params = {
         pageSize: 100,
@@ -430,18 +439,17 @@ const handleCancel = () => {
  * 添加接入网关
  */
 const handleAdd = () => {
-    const sourceId = `accessConfig_add_${randomString()}`; // 唯一标识
   const tab: any = props.channels?.length > 1
-      ? window.open(
-          `${origin}/#/iot/link/accessConfig/detail/:id?save=true&view=false&sourceId=${sourceId}`,
-      )
-      : window.open(`${origin}/#/iot/link/accessConfig/detail/:id?save=true&view=false&type=${props.channel}&sourceId=${sourceId}`);
-    tab.onTabSaveSuccess = async (_sourceId: string, value: any) => {
-        if(sourceId === _sourceId){
-            await getGatewayList();
-            handleClick(gatewayList.value?.[0]);
-        }
-    };
+  const params:any = {
+    save: true,
+    view: false,
+  }
+
+  if (!tab) {
+    params.type = props.channel
+  }
+
+  onOpen(params)
 };
 </script>
 
