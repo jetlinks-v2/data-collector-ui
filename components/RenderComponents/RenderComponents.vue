@@ -18,7 +18,7 @@ import * as pinia from 'pinia'
 import * as Router from 'vue-router'
 import * as LocalUtils from '@/utils'
 import * as LodashEs from 'lodash-es'
-import * as hooks from '@collector/hooks'
+import * as hooks from '@data-collector-ui/hooks'
 
 defineOptions({name: 'RenderComponents'})
 
