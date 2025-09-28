@@ -43,9 +43,10 @@
                         >
                             <template #img>
                                 <slot name="img">
-                                    <img
-                                        :src="ImageMap.get(slotProps.provider)"
-                                    />
+                                  <Image
+                                    :src="ImageMap.get(slotProps.provider)"
+                                    class="card-list-img-80"
+                                  />
                                 </slot>
                             </template>
                             <template #content>
@@ -85,7 +86,7 @@
                                                 </a-tooltip>
                                             </div>
                                         </a-col>
-                
+
                                         <a-col :span="12">
                                             <div class="card-item-content-text">
                                                 {{ $t('Channel.index.290640-2') }}
@@ -142,6 +143,7 @@ import { useMenuStore } from '@/store/menu';
 import Save from './Save/index.vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
+import url from '@data-collector-ui/assets/device-gateway.png'
 
 const {t: $t} = useI18n();
 const menuStory = useMenuStore();

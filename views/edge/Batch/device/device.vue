@@ -39,14 +39,10 @@
                     }"
                     >
                         <template #img>
-                            <img
-                                :width="80"
-                                :height="80"
-                                :src="
-                                slotProps?.photoUrl ||
-                                DeviceCardImg
-                            "
-                            />
+                          <Image
+                            :src="slotProps?.photoUrl || DeviceCardImg"
+                            class="card-list-img-80"
+                          />
                         </template>
                         <template #content>
                             <j-ellipsis
@@ -98,6 +94,7 @@ import { omit } from 'lodash-es';
 import dayjs from 'dayjs';
 import DeviceCardImg from '../../../../assets/device-card.png';
 import { useI18n } from 'vue-i18n';
+import { device } from '@device-manager-ui/assets'
 
 const { t: $t } = useI18n();
 

@@ -52,13 +52,10 @@
                         }"
                     >
                         <template #img>
-                            <img
-                                :width="80"
-                                :height="80"
-                                :src="
-                                    slotProps?.photoUrl || url
-                                "
-                            />
+                          <Image
+                            :src="slotProps?.photoUrl || url"
+                            class="card-list-img-80"
+                          />
                         </template>
                         <template #content>
                             <j-ellipsis style="width: calc(100% - 100px)">
@@ -213,6 +210,7 @@ import url from '../../../assets/device-gateway.png'
 import Save from './Save/index.vue';
 import Import from '../../../components/Import/index.vue';
 import { useI18n } from 'vue-i18n';
+import DeviceCardImg from '@data-collector-ui/assets/device-card.png'
 
 const { t: $t } = useI18n();
 

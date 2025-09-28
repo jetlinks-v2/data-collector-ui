@@ -12,7 +12,7 @@
                 />
             </a-col>
         </a-row>
-        <a-row :gutter="24" style="margin-top: 24px;">
+        <a-row :gutter="24">
             <a-col :span="24" >
                 <Card />
             </a-col>
