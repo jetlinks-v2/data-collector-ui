@@ -44,15 +44,17 @@ const columns = computed(() => {
       width: 350,
       form: {
         required: true,
-        rules: {
-          asyncValidator: (rule, value, cb) => {
-            const _value = isArray(value) ? value : value.value
-            if (!_value?.length) {
-              return Promise.reject($t('Scan.Table.400147-1'));
-            }
-            return Promise.resolve();
-          },
-        }
+        rules: [
+          {
+            asyncValidator: (rule, value, cb) => {
+              const _value = isArray(value) ? value : value.value
+              if (!_value?.length) {
+                return Promise.reject($t('Scan.Table.400147-1'));
+              }
+              return Promise.resolve();
+            },
+          }
+        ]
       }
     },
     {
