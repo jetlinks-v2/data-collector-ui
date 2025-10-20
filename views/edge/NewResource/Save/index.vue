@@ -246,9 +246,9 @@ const handleSave = () => {
       ...formData.value,
       metadata: JSON.stringify(formData.value.metadata)
     }
-    if (!formData.value.targetId) {
-      params.targetId = randomString()
-    }
+    // if (!formData.value.targetId) {
+    //   params.targetId = randomString()
+    // }
     if (formData.value.targetType !== 'AiModel') {
       delete params.properties
     }
