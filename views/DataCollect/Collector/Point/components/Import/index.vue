@@ -197,7 +197,8 @@ const handleImport = async (file: any) => {
     display: flex;
     flex-direction: column;
     color: #666666;
-
+    justify-content: center;
+    align-items: center;
     .icon {
         font-size: 30px;
         color: @primary-color;
