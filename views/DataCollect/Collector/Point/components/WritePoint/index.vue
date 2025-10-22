@@ -333,7 +333,7 @@ const validatorOpc_UA = async (rule: any, value: any) => {
     }));
     return value.length &&
     value.every((i) => {
-        return i || i === 0;
+        return i !== undefined && i !== null && i !== '' || i === 0;
     })
         ? Promise.resolve()
         : Promise.reject($t('WritePoint.index.769007-15', [props.data.name]));
