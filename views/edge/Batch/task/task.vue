@@ -225,7 +225,7 @@ const updateDevice = (id) => {
   detail(id).then(resp => {
     if (resp.success) {
       formModel.thingList = formModel.thingList.map(item => {
-        if (item.id) {
+        if (item.id == id) {
           item.state = resp.result.state
         }
         return item
