@@ -162,29 +162,25 @@
             }"
         >
             <template #pluginId="{ detail }">
-                <j-ellipsis style="width: 100%">{{ detail.data.targetId }}</j-ellipsis>
+                {{ detail.data.targetId }}
             </template>
             <template #pluginName="{ detail }">
-                <j-ellipsis style="width: 100%"> {{ detail.data.name }}</j-ellipsis>
+                {{ detail.data.name }}
             </template>
             <template #thingName="{ thingName }">
-                <j-ellipsis style="width: 100%"> {{ thingName }}</j-ellipsis>
+                {{ thingName }}
             </template>
             <template #timeoutSeconds="{ timeoutSeconds }">
-                <j-ellipsis style="width: 100%"> {{ timeoutSeconds }}s</j-ellipsis>
+                {{ timeoutSeconds }}s
             </template>
             <template #id="{ id }">
-                <div>
-                    <j-ellipsis style="width: 100%"> {{ id }}</j-ellipsis>
-                </div>
+                {{ id }}
             </template>
             <template #filename="{ detail }">
-                <j-ellipsis style="width: 100%">
-                    {{
-                        JSON.parse(detail.data.metadata || '{}')?.filename || detail.data.file ||
-                        '--'
-                    }}</j-ellipsis
-                >
+                {{
+                    JSON.parse(detail.data.metadata || '{}')?.filename || detail.data.file ||
+                    '--'
+                }}
             </template>
             <template #completeTime="record">
                 {{
@@ -328,12 +324,14 @@ const columns = computed(()=>([
         title: taskDetailColumnMap[props.type]?.labelID,
         key: 'pluginId',
         scopedSlots: true,
+        ellipsis: true,
         width: 150,
     },
     {
         title: taskDetailColumnMap[props.type]?.label,
         key: 'pluginName',
         scopedSlots: true,
+        ellipsis: true,
         width: 150,
     },
     {
@@ -348,6 +346,7 @@ const columns = computed(()=>([
         key: 'id',
         dataIndex: 'id',
         scopedSlots: true,
+        ellipsis: true,
         width: 100,
     },
     {
@@ -355,6 +354,7 @@ const columns = computed(()=>([
         key: 'thingName',
         dataIndex: 'thingName',
         scopedSlots: true,
+        ellipsis: true,
         width: 150,
     },
     {
@@ -362,24 +362,28 @@ const columns = computed(()=>([
         key: 'timeoutSeconds',
         dataIndex: 'timeoutSeconds',
         scopedSlots: true,
+        ellipsis: true,
         width: 200,
     },
     {
         title: $t('log.TaskDetail.866822-26'),
         key: 'maxRetry',
         dataIndex: 'maxRetry',
+        ellipsis: true,
         width: 150,
     },
     {
         title: $t('log.TaskDetail.866822-27'),
         key: 'completeTime',
         scopedSlots: true,
+        ellipsis: true,
         width: 300,
     },
     {
         title: $t('log.TaskDetail.866822-28'),
         key: 'state',
         scopedSlots: true,
+        ellipsis: true,
         width: 180,
     },
     {

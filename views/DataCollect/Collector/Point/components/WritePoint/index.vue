@@ -61,6 +61,8 @@
                             style="width: 100%"
                             :placeholder="$t('WritePoint.index.769007-2')"
                             v-model:value="formData.value[index]"
+                            :min="-999999999999999"
+                            :max="999999999999999"
                         />
                         <a-select
                             v-else-if="['boolean'].includes(valueType)"
@@ -124,6 +126,8 @@
                     style="width: 100%"
                     :placeholder="$t('WritePoint.index.769007-2')"
                     v-model:value="formData.value"
+                    :min="-999999999999999"
+                    :max="999999999999999"
                 />
                 <a-select
                     v-else-if="['Bool'].includes(data.configuration?.type)"
@@ -179,6 +183,8 @@
                     style="width: 100%"
                     :placeholder="$t('WritePoint.index.769007-2')"
                     v-model:value="formData.value"
+                    :min="-999999999999999"
+                    :max="999999999999999"
                 />
                 <a-select
                     v-else-if="['boolean'].includes(valueType)"
