@@ -19,7 +19,7 @@
           </div>
           <div class="header-action">
             <a-dropdown>
-              <a-button type="text">
+              <a-button type="text" @click.stop>
                 <template #icon>
                   <AIcon type="EllipsisOutlined" />
                 </template>
@@ -125,6 +125,7 @@ import {getContext, taskDetailColumnMap} from "../util";
 import dayjs from 'dayjs'
 import Icon from '../components/Icon.vue'
 import {deleteAllTask} from "../../../../api/edge/batch";
+import {theme} from "ant-design-vue";
 
 const props = defineProps({
   detail: {
@@ -138,7 +139,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['reload','click'])
-
+const { token } = theme.useToken()
 const context = getContext()
 const colorMap = {
   'success': 'success',
@@ -157,7 +158,12 @@ const iconMap = {
   'waiting': 'icon-paiduizhong',
 }
 
-
+const colorMaps = {
+  waiting: token.value.colorPrimary,
+  processing: token.value.colorWarning,
+  failed: token.value.colorError,
+  success: token.value.colorSuccess
+}
 
 const taskTotal = computed(() => {
   return props.detail.stateCount?.reduce((prev, next) => prev + next.total, 0) || 0
@@ -174,8 +180,8 @@ const options = computed(() => {
       value: item.total,
       icon: iconMap[item.state.value],
       per: key ? per : 0,
-      bgc: key ? `var(--ant-${key}-color)` : 'transparent',
-      color: key ? `var(--ant-${key}-color)` : '#646C73',
+      bgc: key ? colorMaps[key] : 'transparent',
+      color: key ? colorMaps[key] : '#646C73',
     }
   }) || []
 })
