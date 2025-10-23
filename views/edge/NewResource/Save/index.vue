@@ -241,14 +241,17 @@ const handleSave = () => {
   formRef.value?.validate().then(async () => {
     loading.value = true;
     formData.value.metadata.name = formData.value.name;
-    formData.value.targetId = formData.value.id;
+    // formData.value.targetId = formData.value.id;
+    if(formData.value.id?.length === 0) {
+      formData.value.id = undefined
+    }
     const params = {
       ...formData.value,
       metadata: JSON.stringify(formData.value.metadata)
     }
-    // if (!formData.value.targetId) {
-    //   params.targetId = randomString()
-    // }
+    if (!formData.value.targetId) {
+      params.targetId = randomString()
+    }
     if (formData.value.targetType !== 'AiModel') {
       delete params.properties
     }
