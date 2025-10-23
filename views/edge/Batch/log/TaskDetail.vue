@@ -306,8 +306,10 @@ import { onlyMessage } from '@/utils/comm';
 import Icon from '../components/Icon.vue';
 import { useI18n } from 'vue-i18n';
 import { taskDetailColumnMap } from '../util';
+import {theme} from "ant-design-vue";
 
 const { t: $t } = useI18n();
+const { token } = theme.useToken()
 const props = defineProps({
     data: {
         type: Object,
@@ -416,6 +418,13 @@ const taskTotal = computed(() => {
     );
 });
 
+const colorMaps = {
+  waiting: token.value.colorPrimary,
+  processing: token.value.colorWarning,
+  failed: token.value.colorError,
+  success: token.value.colorSuccess
+}
+
 const options = computed(() => {
     return (
         _detail.value.stateCount?.map((item) => {
@@ -429,8 +438,8 @@ const options = computed(() => {
                 value: item.total,
                 icon: iconMap[item.state.value],
                 per: key ? per : 0,
-                bgc: key ? `var(--ant-${key}-color)` : 'transparent',
-                color: key ? `var(--ant-${key}-color)` : '#646C73',
+                bgc: key ? colorMaps[key] : 'transparent',
+                color: key ? colorMaps[key] : '#646C73',
             };
         }) || []
     );
