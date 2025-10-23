@@ -171,7 +171,8 @@ const columns = [
         width: 200,
         search: {
             type: 'string'
-        }
+        },
+        ellipsis: true
     },
     {
         title: $t('NewResource.index.035355-3'),
@@ -180,7 +181,8 @@ const columns = [
         width: 200,
         search: {
             type: 'string'
-        }
+        },
+        ellipsis: true
     },
     {
         title: $t('NewResource.index.035355-1'),
@@ -211,7 +213,8 @@ const columns = [
         dataIndex: 'describe',
         key: 'describe',
         width: 200,
-        scopedSlots: true
+        scopedSlots: true,
+        ellipsis: true
     },
     {
         title: $t('NewResource.index.035355-7'),
