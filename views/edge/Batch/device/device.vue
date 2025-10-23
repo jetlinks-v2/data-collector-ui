@@ -70,7 +70,7 @@
                 </template>
                 <template #registryTime="slotProps">
                     {{
-                        slotProps.registryTime ?dayjs(slotProps.registryTime).format('YYYY-MM-DD hh:mm:ss'):'--'
+                        slotProps.registryTime ?dayjs(slotProps.registryTime).format('YYYY-MM-DD HH:mm:ss'):'--'
                     }}
                 </template>
                 <template #describe="scopedSlots">
