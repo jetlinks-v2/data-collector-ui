@@ -107,6 +107,9 @@
                 <template #describe="slotProps">
                     {{ JSON.parse(slotProps.metadata || '{}')?.description || '--' }}
                 </template>
+                <template #targetType="slotProps">
+                    {{ TargetTypeOptions.find(item => slotProps.targetType === item.value)?.label }}
+                </template>
                 <template #state="slotProps">
                     <JBadgeStatus
                         :status="slotProps.state?.value"
@@ -189,6 +192,7 @@ const columns = [
         dataIndex: 'targetType',
         key: 'targetType',
         width: 150,
+        scopedSlots: true,
         search: {
             type: 'select',
             options: TargetTypeOptions
