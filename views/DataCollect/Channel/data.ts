@@ -6,6 +6,8 @@ import modbusImage from '../../../assets/DataCollect/channel-modbus.png'
 import s7Image from '../../../assets/DataCollect/s7.png'
 import gatewayImage from '../../../assets/DataCollect/gateway.png'
 import iecImage from '../../../assets/DataCollect/IEC104.png'
+import BACNetImage from '../../../assets/DataCollect/BACNet.png'
+import protocolImage from '../../../assets/DataCollect/protocol.png'
 import i18n from '@/locales'
 
 export const FormState: FormDataType = {
@@ -234,6 +236,8 @@ export const imgUrl = {
     modbusImage:modbusImage,
     s7Image:s7Image,
     gatewayImage:gatewayImage,
-    iecImage:iecImage
+    iecImage:iecImage,
+    BACNetImage:BACNetImage,
+    protocolImage:protocolImage,
 }
 

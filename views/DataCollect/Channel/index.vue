@@ -44,7 +44,7 @@
                             <template #img>
                                 <slot name="img">
                                   <Image
-                                    :src="ImageMap.get(slotProps.provider)"
+                                    :src="ImageMap.get(slotProps.provider)?ImageMap.get(slotProps.provider):ImageMap.get('protocol')"
                                     class="card-list-img-80"
                                   />
                                 </slot>
@@ -144,6 +144,7 @@ import Save from './Save/index.vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
 import url from '@data-collector-ui/assets/device-gateway.png'
+import { imgMap } from '@/modules/rule-engine-manager-ui/views/Scene/Save/Collector/data';
 
 const {t: $t} = useI18n();
 const menuStory = useMenuStore();
@@ -159,6 +160,10 @@ ImageMap.set('MODBUS_TCP', imgUrl.modbusImage);
 ImageMap.set('snap7', imgUrl.s7Image);
 ImageMap.set('iec104', imgUrl.iecImage);
 ImageMap.set('COLLECTOR_GATEWAY', imgUrl.gatewayImage);
+ImageMap.set('BACNetIp', imgUrl.BACNetImage);
+ImageMap.set('protocol', imgUrl.protocolImage);
+
+
 
 const columns = [
     {
