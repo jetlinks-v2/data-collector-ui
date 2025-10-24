@@ -13,7 +13,7 @@
               :status="detail.state.value"
               :statusNames="{
                 ...colorMap,
-                'running': 'primary'
+                'running': 'processing'
               }"
             />
           </div>
@@ -144,7 +144,7 @@ const context = getContext()
 const colorMap = {
   'success': 'success',
   'complete': 'success',
-  'running': 'warning',
+  'running': 'waiting',
   'incomplete': 'warning',
   'failed': 'error',
   'waiting': 'primary'
@@ -159,10 +159,11 @@ const iconMap = {
 }
 
 const colorMaps = {
-  waiting: token.value.colorPrimary,
+  primary: token.value.colorPrimary,
   processing: token.value.colorWarning,
   failed: token.value.colorError,
-  success: token.value.colorSuccess
+  success: token.value.colorSuccess,
+  error: token.value.colorError,
 }
 
 const taskTotal = computed(() => {
@@ -175,6 +176,7 @@ const options = computed(() => {
     const per = taskTotal.value ? Math.round(parseFloat(item.total / taskTotal.value) * 100) : 0 ; // 单个进度比例
     const key = colorMap[item.state.value]
     return {
+      key: key,
       label: item.state.text,
       type: item.state.value,
       value: item.total,

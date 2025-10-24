@@ -12,7 +12,7 @@
               :status="detail.state.value"
               :statusNames="{
                 ...colorMap,
-                  'running': 'primary'
+                  'running': 'processing'
                 }"
             />
           </div>
@@ -81,7 +81,9 @@ import Detail from './Detail.vue'
 import {getContext} from "../../../Batch/util";
 import dayjs from 'dayjs'
 import Icon from '../../../Batch/components/Icon.vue'
+import {theme} from "ant-design-vue";
 
+const { token } = theme.useToken()
 const props = defineProps({
   detail: {
     type: Object,
@@ -100,10 +102,18 @@ const context = getContext()
 const colorMap = {
   'success': 'success',
   'complete': 'success',
-  'running': 'warning',
+  'running': 'waiting',
   'incomplete': 'warning',
   'failed': 'error',
   'waiting': 'primary'
+}
+
+const colorMaps = {
+  primary: token.value.colorPrimary,
+  processing: token.value.colorWarning,
+  failed: token.value.colorError,
+  success: token.value.colorSuccess,
+  error: token.value.colorError,
 }
 
 const iconMap = {
@@ -129,13 +139,14 @@ const options = computed(() => {
     const per = taskTotal.value ? Math.round(parseFloat(item.total / taskTotal.value) * 100) : 0; // 单个进度比例
     const key = colorMap[item.state.value]
     return {
+      key: key,
       label: item.state.text,
       type: item.state.value,
       value: item.total,
       icon: iconMap[item.state.value],
       per: key ? per : 0,
-      bgc: key ? `var(--ant-${key}-color)` : 'transparent',
-      color: key ? `var(--ant-${key}-color)` : '#646C73',
+      bgc: key ? colorMaps[key] : 'transparent',
+      color: key ? colorMaps[key] : '#646C73',
     }
   }) || []
 })
