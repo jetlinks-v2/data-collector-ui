@@ -77,7 +77,7 @@
                     <a-space size="large">
                         <span v-for="item in record.stateCount">
                             <a-space>
-                                <Icon :type="iconMap[item.state.value]" :style="{color: `var(--ant-${colorMap[item.state.value]}-color)`}"></Icon>
+                                <Icon :type="iconMap[item.state.value]" :style="{color: `${colorMaps[item.state.value]}`}"></Icon>
                                 <span>{{item.state.text}}</span>
                                 <span>{{item.total}}</span>
                             </a-space>
@@ -100,8 +100,8 @@
                         <div
                             class="state"
                             :style="{
-                                color: colorMap[slotProps.state.value]
-                                ? `var(--ant-${colorMap[slotProps.state.value]}-color)`
+                                color: colorMaps[slotProps.state.value]
+                                ? `${colorMaps[slotProps.state.value]}`
                                 : '#646C73',
                     }"
                         >
@@ -206,7 +206,9 @@ import {onlyMessage} from "@jetlinks-web/utils";
 import Icon from '../../../Batch/components/Icon.vue';
 import { useResourceStore } from "../../../../../store/resource";
 import { useI18n } from 'vue-i18n';
+import {theme} from "ant-design-vue";
 
+const { token } = theme.useToken()
 const { t: $t } = useI18n();
 
 const props = defineProps({
@@ -223,6 +225,14 @@ const colorMap = {
     'incomplete': 'warning',
     'failed': 'error',
     'waiting': 'primary'
+}
+
+const colorMaps = {
+  waiting: token.value.colorPrimary,
+  processing: token.value.colorWarning,
+  failed: token.value.colorError,
+  success: token.value.colorSuccess,
+  error: token.value.colorError,
 }
 
 const iconMap = {
@@ -309,14 +319,15 @@ const progressStyles = computed(() => {
     const value = {
         'error': (props.record?.stateCount?.find(item => item.state?.value === 'failed')?.percent || 0) * 100,
         'success': (props.record?.stateCount?.find(item => item.state?.value === 'success')?.percent || 0) * 100,
-        'primary': (props.record?.stateCount?.find(item => item.state?.value === 'waiting')?.percent || 0) * 100,
+        'waiting': (props.record?.stateCount?.find(item => item.state?.value === 'waiting')?.percent || 0) * 100,
     }
     const bgi = Object.keys(value).reduce((prev, key, index) => {
+        console.log(key)
         const v = Object.values(value).splice(0, index + 1).reduce((a, b) => a + b, 0)
-        prev += `var(--ant-${key}-color) 0, var(--ant-${key}-color) ${v}%,`
+        prev += `${colorMaps[key] || '#EFF0F1'} 0, ${colorMaps[key] || '#EFF0F1'} ${v}%,`
         return prev
     }, '')
-
+    console.log(bgi)
     return {
         'background-image': 'linear-gradient(90deg,' + bgi + '#EFF0F1 0, #EFF0F1 100%)'
     }
@@ -449,6 +460,7 @@ const deleteUpgrades = async (id) => {
     border-radius: 3px;
     position: relative;
     margin: 16px 0;
+    background-color: #EFF0F1;
 }
 
 .progress-info {

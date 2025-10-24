@@ -18,7 +18,7 @@
                             :status="_detail.state.value"
                             :statusNames="{
                                 ...colorMap,
-                                running: 'primary',
+                                running: 'processing',
                             }"
                         />
                     </div>
@@ -423,10 +423,11 @@ const taskTotal = computed(() => {
 });
 
 const colorMaps = {
-  waiting: token.value.colorPrimary,
+  primary: token.value.colorPrimary,
   processing: token.value.colorWarning,
   failed: token.value.colorError,
-  success: token.value.colorSuccess
+  success: token.value.colorSuccess,
+  error: token.value.colorError,
 }
 
 const options = computed(() => {
