@@ -211,10 +211,12 @@ import Save from './Save/index.vue';
 import Import from '../../../components/Import/index.vue';
 import { useI18n } from 'vue-i18n';
 import DeviceCardImg from '@data-collector-ui/assets/device-card.png'
+import { useUserStore } from '@/store'
 
 const { t: $t } = useI18n();
 
 const menuStory = useMenuStore();
+const userStory = useUserStore();
 
 const defaultParams = {
     sorts: [{ name: 'createTime', order: 'desc' }],
@@ -470,6 +472,9 @@ const getActions = (
         },
     ];
 
+    if (!userStory.isAdmin) {
+      actions.splice(2,1)
+    }
 
     const deleteItem = {
         key: 'delete',
