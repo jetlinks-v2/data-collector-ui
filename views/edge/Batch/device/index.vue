@@ -10,7 +10,9 @@
           }"
           @click="() => typeSelect(item.value)"
         >
-            <div class="icon"></div>
+            <div class="icon">
+              <AIcon :type="item.icon"/>
+            </div>
             <div class="content">
               <div class="title">{{ item.label }}</div>
               <div class="tip">{{ item.tip }}</div>
@@ -39,7 +41,7 @@ const options = [
   {
     label: $t('device.index.407672-3'),
     tip: $t('device.index.407672-4'),
-    icon: '',
+    icon: 'icon-shebeitongdao',
     value: 'device'
   }
 ]
@@ -82,6 +84,11 @@ const typeSelect = (e) => {
         height: 40px;
         border-radius: 6px;
         background-color: #E6F4FF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: @primary-color;
+        font-size: 20px;
       }
 
       .content {
