@@ -6,6 +6,9 @@ export const queryCollector = (data: any) =>
 export const queryCollectorTree = (data: any) =>
     request.post(`/data-collect/collector/_detail/no-paging?paging=false`, data);
 
+export const queryCollectorDevice = (data:any) =>
+    request.post(`/data-collect/collector/_query`,data)
+
 export const queryChannelNoPaging = () =>
     request.post(`/data-collect/channel/_query/no-paging`, {
         paging: false,
@@ -51,6 +54,7 @@ export const writePoint = (collectorId: string, data: string[]) =>
 
 export const queryPointNoPaging = (data: any) =>
     request.post(`/data-collect/point/_query/no-paging`, data);
+
 
 // export const scanOpcUAList = (data: any) =>
 //     request.get(
@@ -101,3 +105,8 @@ export const exportPoint = (collectorId:string,provider:string) => request.get(`
 
 //获取iec104
 export const queryIEC104 = () => request.get("/collect/iec104/types");
+
+export const getFunction = () => request.get('/dictionary/streaming-agg-type/items')
+
+export const getOperator = () => request.get('/property-calculate-rule/description')
+

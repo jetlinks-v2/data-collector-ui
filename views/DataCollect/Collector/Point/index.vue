@@ -32,7 +32,7 @@
                   v-if="pointActions.add"
                   type="primary"
                   @click="handleAdd"
-                  hasPermission="DataCollect/Collector:add"
+                  :hasPermission="permissionCollectorKey + ':add'"
               >
                 <template #icon
                 >
@@ -45,7 +45,7 @@
                   v-if="pointActions.scan"
                   type="primary"
                   @click="handleScan"
-                  hasPermission="DataCollect/Collector:add"
+                  :hasPermission="permissionCollectorKey + ':add'"
               >
                 <template #icon
                 >
@@ -56,15 +56,17 @@
               </j-permission-button>
               <j-permission-button
                   type="primary"
+                  v-if="data.provider !== 'virtual'"
                   @click="handleImport"
-                  hasPermission="DataCollect/Collector:add"
+                  :hasPermission="permissionCollectorKey + ':add'"
               >
                 {{ $t('Point.index.400149-2') }}
               </j-permission-button>
               <j-permission-button
                   type="primary"
+                  v-if="data.provider !== 'virtual'"
                   @click="handleExport"
-                  hasPermission="DataCollect/Collector:add"
+                  :hasPermission="permissionCollectorKey + ':add'"
               >
                 {{ $t('Point.index.400149-3') }}
               </j-permission-button>
@@ -113,7 +115,7 @@
                       :tooltip="{
                                           title: $t('Point.index.400149-5'),
                                       }"
-                      hasPermission="DataCollect/Collector:delete"
+                      :hasPermission="permissionCollectorKey + ':delete'"
                       :popConfirm="{
                                           title: $t('Point.index.400149-6'),
                                           onConfirm: () =>
@@ -134,7 +136,7 @@
                   <j-permission-button
                       type="text"
                       @click="handleEdit(slotProps)"
-                      hasPermission="DataCollect/Collector:update"
+                      :hasPermission="permissionCollectorKey + ':update'"
                   >
                     <a style="font-size: 20px"
                     >
@@ -145,7 +147,7 @@
                 </div>
               </template>
               <template #img>
-                <img :src="ImageMap.get(slotProps.provider)"/>
+                <img :src="ImageMap.get(slotProps.provider) || ImageMap.get('protocol')"/>
               </template>
               <template #content>
                 <div class="card-box-content">
@@ -303,6 +305,12 @@
       :data="current"
       @change="saveChange"
   />
+  <VirtualSave
+      v-if="visible.virtualSave"
+      :data="current"
+      @change="saveChange"
+      @close="visible.virtualSave = false"
+  />
   <!--    <SaveOPCUA-->
   <!--        v-if="visible.saveOPCUA"-->
   <!--        :data="current"-->
@@ -371,6 +379,7 @@ import BatchDropdown from '@/components/BatchDropdown/index.vue';
 import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
+import VirtualSave from './Save/Virtual/index.vue';
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -379,6 +388,7 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+const permissionCollectorKey = inject('dataCollectCollectorPermissionKey', 'DataCollect/Collector')
 
 const tableRef = ref<Record<string, any>>({});
 const params = ref<Record<string, any>>({});
@@ -389,6 +399,7 @@ ImageMap.set('MODBUS_TCP', imgUrl.modbusImage);
 ImageMap.set('snap7', imgUrl.s7Image);
 ImageMap.set('iec104', imgUrl.iecImage);
 ImageMap.set('COLLECTOR_GATEWAY', imgUrl.gatewayImage);
+ImageMap.set('protocol', imgUrl.protocolImage);
 
 const visible = reactive({
   writePoint: false,
@@ -398,6 +409,7 @@ const visible = reactive({
   import: false,
   scanBacnet: false,
   saveModBus: false,
+  virtualSave: false
 });
 
 const current: any = ref({});
@@ -413,6 +425,7 @@ const pointActions = reactive({
   scan: false,
 });
 const jsonData = ref();
+const _filterList = ["COLLECTOR_GATEWAY", "virtual"]
 
 provide("point-actions", pointActions);
 
@@ -520,9 +533,15 @@ const handleAdd = () => {
   if (props.data?.provider === 'COLLECTOR_GATEWAY') {
     current.value = {
       collectorId: props.data?.id,
-      provider: props.data?.provider || 'COLLECTOR_GATEWAY',
+      provider: props.data?.provider
     };
     visible.saveModBus = true;
+  } else if(props.data?.provider === 'virtual') {
+    current.value = {
+      collectorId: props.data?.id,
+      provider: props.data?.provider,
+    };
+    visible.virtualSave = true;
   } else {
     if (props.data?.provider === 'snap7') {
       current.value = {
@@ -553,6 +572,8 @@ const handleEdit = (data: any) => {
   });
   if (data?.provider === 'COLLECTOR_GATEWAY') {
     visible.saveModBus = true;
+  } else if(props.data?.provider === 'virtual') {
+    visible.virtualSave = true;
   } else {
     visible.save = true;
   }
@@ -821,7 +842,7 @@ const updateBatchActions = () => {
     {
       key: 'update',
       text: $t('Point.index.400149-22'),
-      permission: 'DataCollect/Collector:update',
+      permission: permissionCollectorKey + ':update',
       icon: 'FormOutlined',
       selected: {
         onClick: handleBatchUpdate,
@@ -831,7 +852,7 @@ const updateBatchActions = () => {
       key: 'delete',
       text: $t('Point.index.400149-23'),
       danger: true,
-      permission: 'DataCollect/Collector:delete',
+      permission: permissionCollectorKey + ':delete',
       icon: 'DeleteOutlined',
       selected: {
         popConfirm: {
@@ -868,7 +889,7 @@ watch(
         batchRef.value?.reload();
         updateBatchActions()
         // COLLECTOR_GATEWAY写死
-        if (value.provider === 'COLLECTOR_GATEWAY') {
+        if (_filterList.includes(value.provider)) {
           pointActions.add = true
           pointActions.scan = false
         } else if (value.id && value.id !== '*') {
