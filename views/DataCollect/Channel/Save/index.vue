@@ -26,7 +26,7 @@
           <a-select
               style="width: 100%"
               v-model:value="formData.provider"
-              :options="providersList"
+              :options="providers"
               :placeholder="$t('Save.index.290643-5')"
               allowClear
               show-search
@@ -68,7 +68,7 @@
           :loading="loading"
           @click="handleOk"
           style="margin-left: 8px"
-          :hasPermission="`DataCollect/Channel:${id ? 'update' : 'add'}`"
+          :hasPermission="`${permissionKey}:${id ? 'update' : 'add'}`"
       >
         {{ $t('Save.index.290643-39') }}
       </j-permission-button>
@@ -79,7 +79,6 @@
 import {
   save,
   update,
-  getProviders,
 } from '@data-collector-ui/api/data-collect/channel';
 import {FormValidate} from '../data';
 import {cloneDeep, omit} from 'lodash-es';
@@ -87,8 +86,10 @@ import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import GateWayFormItem from "./GateWayFormItem.vue";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
+import {useCollectorProvider} from "@data-collector-ui/hooks";
 
 const {t: $t} = useI18n();
+const permissionKey = inject('dataCollectChannelPermissionKey', 'DataCollect/Channel')
 
 const props = defineProps({
   data: {
@@ -96,14 +97,13 @@ const props = defineProps({
     default: () => ({})
   },
 });
-
+const { providers } = useCollectorProvider(permissionKey);
 const emit = defineEmits(['change']);
 const loading = ref(false);
 const id = props.data.id;
 const formRef = ref();
 const jsonData = ref();
 
-const providersList = ref([]);
 const formData = reactive({
   id: undefined,
   type: "device",
@@ -142,7 +142,7 @@ const handleOk = async () => {
 };
 
 const onChange = async (val) => {
-  if(val && val !== 'COLLECTOR_GATEWAY'){
+  if(val && val !== 'COLLECTOR_GATEWAY' && val !== 'virtual'){
     jsonData.value = await devGetProtocol(val, 'channel');
   }
 };
@@ -154,20 +154,6 @@ const handleCancel = () => {
 
 const filterOption = (input, option) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-};
-
-const getProvidersList = async () => {
-  const resp = await getProviders();
-  if (resp.success) {
-    providersList.value = resp.result
-        .map((item) => {
-          return {
-            ...item,
-            value: item.id,
-            label: item.name,
-          };
-        });
-  }
 };
 watch(
     () => props.data,
@@ -181,10 +167,6 @@ watch(
     },
     {immediate: true, deep: true},
 );
-
-onMounted(() => {
-  getProvidersList();
-})
 </script>
 
 <style lang="less" scoped></style>

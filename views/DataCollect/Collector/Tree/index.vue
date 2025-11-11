@@ -11,7 +11,7 @@
           block
           type="primary"
           @click="handleAdd()"
-          hasPermission="DataCollect/Collector:add"
+          :hasPermission="permissionCollectorKey + ':add'"
       >
         <template #icon>
           <AIcon type="PlusOutlined"/>
@@ -72,7 +72,7 @@
                                 title: $t('Tree.index.4001410-2'),
                             }"
                   @click="handleEdit(data)"
-                  hasPermission="DataCollect/Collector:update"
+                  :hasPermission="permissionCollectorKey + ':update'"
                   size="small"
               >
                 <AIcon type="EditOutlined"/>
@@ -89,7 +89,7 @@
                                 data?.runningState?.value === 'stopped' &&
                                 data?.state?.value !== 'disabled'
                             "
-                  hasPermission="DataCollect/Collector:action"
+                  :hasPermission="permissionCollectorKey + ':action'"
                   :popConfirm="{
                                 title:
                                     data?.state?.value === 'disabled'
@@ -117,7 +117,7 @@
                                         : $t('Tree.index.4001410-8'),
                             }"
                   :danger="data?.state?.value === 'disabled'"
-                  hasPermission="DataCollect/Collector:delete"
+                  :hasPermission="permissionCollectorKey + ':delete'"
                   :popConfirm="{
                                 title: $t('Tree.index.4001410-9'),
                                 onConfirm: () => handleDelete(data.id),
@@ -153,6 +153,8 @@ import {onlyMessage} from '@jetlinks-web/utils'
 import {cloneDeep, isArray} from 'lodash-es';
 import {colorMap} from '../data';
 import {useI18n} from 'vue-i18n';
+
+const permissionCollectorKey = inject('dataCollectCollectorPermissionKey', 'DataCollect/Collector')
 
 const {t: $t} = useI18n();
 const props = defineProps({

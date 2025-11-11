@@ -241,3 +241,12 @@ export const imgUrl = {
     protocolImage:protocolImage,
 }
 
+export const ImageMap = new Map();
+ImageMap.set('OPC_UA', imgUrl.opcImage);
+ImageMap.set('MODBUS_TCP', imgUrl.modbusImage);
+ImageMap.set('snap7', imgUrl.s7Image);
+ImageMap.set('iec104', imgUrl.iecImage);
+ImageMap.set('COLLECTOR_GATEWAY', imgUrl.gatewayImage);
+ImageMap.set('BACNetIp', imgUrl.BACNetImage);
+ImageMap.set('protocol', imgUrl.protocolImage);
+

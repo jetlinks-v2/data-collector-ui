@@ -48,7 +48,7 @@
             v-if="jsonData"
             :value="jsonData"
         />
-        <template v-if="provider !== 'COLLECTOR_GATEWAY'">
+        <template v-if="!_filterList.includes(provider)">
           <a-form-item
               :name="['configuration', 'inheritBreakerSpec', 'type']"
               :rules="LeftTreeRules.type"
@@ -69,7 +69,7 @@
             {{ getTypeTooltip(formData.configuration.inheritBreakerSpec.type) }}
           </p>
         </template>
-        <template v-else>
+        <template v-else-if="provider === 'COLLECTOR_GATEWAY'">
           <a-form-item
               :label="$t('Channel.index.290640-4')"
               :name="['configuration','collectorProvider']"
@@ -173,7 +173,7 @@
           :loading="loading"
           @click="handleOk"
           style="margin-left: 8px"
-          :hasPermission="`DataCollect/Collector:${
+          :hasPermission="`${permissionCollectorKey}:${
                     id ? 'update' : 'add'
                 }`"
       >
@@ -190,10 +190,10 @@ import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
 
+const permissionCollectorKey = inject('dataCollectCollectorPermissionKey', 'DataCollect/Collector')
+
 const {t: $t} = useI18n();
 const jsonData = ref();
-
-const loading = ref(false);
 
 const props = defineProps({
   data: {
@@ -209,11 +209,13 @@ const props = defineProps({
 
 const emit = defineEmits(['change']);
 
+const _filterList = ["COLLECTOR_GATEWAY", "virtual"]
 const id = props.data.id;
 const formRef = ref();
 const provider = ref()
 const providerListItems = ref()
 const channel = ref({});
+const loading = ref(false)
 const getProviderList = async () => {
   const resp = await getProviders();
   if (resp.success) {
@@ -288,7 +290,7 @@ const formData = reactive({
 const onChange = async (_, node) => {
   channel.value = node
   if (
-      node?.provider && !["COLLECTOR_GATEWAY"].includes(node.provider)
+      node?.provider && !_filterList.includes(node.provider)
   ) {
     jsonData.value = await devGetProtocol(node.provider, "collector");
   } else {

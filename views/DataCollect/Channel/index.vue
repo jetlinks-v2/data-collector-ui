@@ -22,7 +22,7 @@
                         <j-permission-button
                             type="primary"
                             @click="handlAdd"
-                            hasPermission="DataCollect/Channel:add"
+                            :hasPermission="`${permissionKey}:add`"
                         >
                             <template #icon
                                 ><AIcon type="PlusOutlined"
@@ -108,9 +108,7 @@
                                         ...item.tooltip,
                                     }"
                                     @click="item.onClick"
-                                    :hasPermission="
-                                        'DataCollect/Channel:' + item.key
-                                    "
+                                    :hasPermission="`${permissionKey}:${item.key}`"
                                 >
                                     <AIcon
                                         type="DeleteOutlined"
@@ -135,16 +133,14 @@ import {
     query,
     remove,
     update,
-    getProviders,
 } from '../../../api/data-collect/channel';
 import { onlyMessage } from '@jetlinks-web/utils'
-import { StatusColorEnum, updateStatus ,protocolList,imgUrl} from './data';
+import { StatusColorEnum, updateStatus ,protocolList,ImageMap} from './data';
 import { useMenuStore } from '@/store/menu';
 import Save from './Save/index.vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
-import url from '@data-collector-ui/assets/device-gateway.png'
-import { imgMap } from '@/modules/rule-engine-manager-ui/views/Scene/Save/Collector/data';
+import {useCollectorProvider} from "@data-collector-ui/hooks";
 
 const {t: $t} = useI18n();
 const menuStory = useMenuStore();
@@ -152,18 +148,10 @@ const tableRef = ref<Record<string, any>>({});
 const params = ref<Record<string, any>>({});
 const visible = ref(false);
 const current = ref({});
+const permissionKey = inject('dataCollectChannelPermissionKey', 'DataCollect/Channel')
+const permissionCollectorKey = inject('dataCollectCollectorPermissionKey', 'DataCollect/Collector')
 
-
-const ImageMap = new Map();
-ImageMap.set('OPC_UA', imgUrl.opcImage);
-ImageMap.set('MODBUS_TCP', imgUrl.modbusImage);
-ImageMap.set('snap7', imgUrl.s7Image);
-ImageMap.set('iec104', imgUrl.iecImage);
-ImageMap.set('COLLECTOR_GATEWAY', imgUrl.gatewayImage);
-ImageMap.set('BACNetIp', imgUrl.BACNetImage);
-ImageMap.set('protocol', imgUrl.protocolImage);
-
-
+const { providers } = useCollectorProvider('data-collect/channel');
 
 const columns = [
     {
@@ -183,17 +171,7 @@ const columns = [
         ellipsis: true,
         search: {
             type: 'select',
-            options: async () => {
-                const resp: any = await getProviders();
-                if (resp.status === 200) {
-                    return resp.result.map((i:any)=>{
-                        return {
-                            label: i.name,
-                            value: i.id
-                        }
-                    })
-                }
-            },
+            options: providers
         },
     },
     {
@@ -320,7 +298,7 @@ const handleEdit = (data: object) => {
     visible.value = true;
 };
 const handlEye = (id: string) => {
-    menuStory.jumpPage(`DataCollect/Collector`, {
+    menuStory.jumpPage(permissionCollectorKey, {
         query: { channelId: id }
     });
 };

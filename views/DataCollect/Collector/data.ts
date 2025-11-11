@@ -5,13 +5,15 @@ import s7Image from '../../../assets/DataCollect/s7.png'
 import gatewayImage from '../../../assets/DataCollect/gateway.png'
 import iecImage from '../../../assets/DataCollect/IEC104.png'
 import i18n from '@/locales';
+import protocolImage from "../../../assets/DataCollect/protocol.png";
 
 export const imgUrl = {
     opcImage:opcImage,
     modbusImage:modbusImage,
     s7Image:s7Image,
     gatewayImage:gatewayImage,
-    iecImage:iecImage
+    iecImage:iecImage,
+    protocolImage:protocolImage,
 }
 
 
@@ -214,7 +216,7 @@ const validator1 = (rule:any, value:any, callback:any)  => {
       return Promise.resolve()
     }
   }
-  
+
   /**
    * 校验机架号
    */
@@ -228,7 +230,7 @@ const validator1 = (rule:any, value:any, callback:any)  => {
       return Promise.resolve()
     }
   }
-  
+
   /**
    *  校验槽位
    */
@@ -242,7 +244,7 @@ const validator1 = (rule:any, value:any, callback:any)  => {
       return Promise.resolve()
     }
   }
-  
+
   /**
    *  校验超时时间
    */
