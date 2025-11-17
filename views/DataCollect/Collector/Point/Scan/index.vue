@@ -24,7 +24,6 @@
                 :loading="loading"
                 @click="handleOk"
                 style="margin-left: 8px"
-                :hasPermission="`DataCollect/Collector:update`"
             >
                 {{ $t('Scan.index.400148-2') }}
             </j-permission-button>

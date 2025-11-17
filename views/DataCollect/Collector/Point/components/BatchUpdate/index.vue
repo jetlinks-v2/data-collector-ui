@@ -77,7 +77,7 @@
             <a-form-item :label="$t('BatchUpdate.index.4001419-13')">
                 <a-switch v-model:checked="formData.pushControl"></a-switch>
             </a-form-item>
-            <a-form-item :name="['features']" v-if="formData.pushControl"> 
+            <a-form-item :name="['features']" v-if="formData.pushControl">
                 <a-checkbox-group v-model:value="formData.features">
                     <a-checkbox value="changedOnly" name="type"
                         >{{ $t('BatchUpdate.index.4001419-14') }}</a-checkbox
@@ -93,7 +93,6 @@
                 :loading="loading"
                 @click="handleOk"
                 style="margin-left: 8px"
-                :hasPermission="`DataCollect/Collector:update`"
             >
                 {{ $t('BatchUpdate.index.4001419-16') }}
             </j-permission-button>
@@ -172,7 +171,7 @@ const handleOk = async () => {
                     i.features = [];
                 }
             }
-            
+
             if (!!interval || Number(interval) === 0) {
                 i.interval = data.interval;
                 i.configuration = {

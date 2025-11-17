@@ -26,7 +26,6 @@
                 :loading="loading"
                 @click="handleOk"
                 style="margin-left: 8px"
-                :hasPermission="`DataCollect/Collector:update`"
             >
                 {{ $t('ScanBacnet.index.400145-2') }}
             </j-permission-button>

@@ -65,9 +65,6 @@
           :loading="loading"
           @click="handleOk"
           style="margin-left: 8px"
-          :hasPermission="`DataCollect/Collector:${
-                    id ? 'update' : 'add'
-                }`"
       >
         {{$t('Save.SaveModBus.4001413-36')}}
       </j-permission-button>
