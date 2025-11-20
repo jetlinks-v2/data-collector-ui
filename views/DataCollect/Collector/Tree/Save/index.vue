@@ -87,14 +87,14 @@
             />
           </a-form-item>
           <a-form-item
-              :name="['configuration', 'configuration', 'unitId']"
+              :name="['configuration', 'unitId']"
               :rules="LeftTreeRules.unitId"
               :label="$t('Save.index.4001415-30')"
           >
             <a-input-number
                 style="width: 100%"
                 :placeholder="$t('Save.index.4001415-30')"
-                v-model:value="formData.configuration.configuration.unitId"
+                v-model:value="formData.configuration.unitId"
                 :min="0"
                 :max="255"
             />
