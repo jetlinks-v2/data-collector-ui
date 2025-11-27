@@ -4,10 +4,8 @@
             <div class="column">
                 <p>{{ $t('Import.index.4001420-1') }}</p>
                 <div class="import">
-                    <a-upload-dragger v-model:fileList="fileList" name="file" :action="`${FileStaticPath}?options=tempFile`"
-                        :headers="{
-                            [TOKEN_KEY]: LocalStore.get(TOKEN_KEY),
-                        }" :limit="1" :showUploadList="false" @change="uploadChange" :accept="['xlsx', 'xls', 'csv']"
+                    <a-upload-dragger v-model:fileList="fileList" name="file" :action="`${FileStaticPath()}?options=tempFile`"
+                        :headers="getUploadHeaders()" :limit="1" :showUploadList="false" @change="uploadChange" :accept="['xlsx', 'xls', 'csv']"
                         :before-upload="beforeUpload">
                         <div class="dragger-box">
                             <AIcon class="icon" type="PlusCircleFilled" />
@@ -48,16 +46,13 @@
 
 <script lang="ts" setup>
 import { FileStaticPath } from '@/api/comm';
-// import { TOKEN_KEY, BASE_API_PATH } from '@/utils/variable';
-import { BASE_API,TOKEN_KEY } from '@jetlinks-web/constants';
-// import { LocalStore, onlyMessage } from '@/utils/comm';
-import { onlyMessage,downloadFileByUrl,LocalStore,getToken } from '@jetlinks-web/utils'
+import { onlyMessage,downloadFileByUrl,getToken } from '@jetlinks-web/utils'
 import {
     exportTemplate
 } from '../../../../../../api/data-collect/collector';
-// import { downloadFileByUrl } from '@/utils/utils';
-// import { getToken } from '@/utils/comm';
 import { useI18n } from 'vue-i18n';
+import {getBaseApi, getUploadHeaders} from "@/utils";
+import {TOKEN_KEY_URL} from "@jetlinks-web/constants";
 
 const { t: $t } = useI18n();
 const props = defineProps({
@@ -107,8 +102,8 @@ const handleImport = async (file: any) => {
     importStatus.value = 'importing';
     let event: EventSource
     event = new EventSource(
-        `${BASE_API}/data-collect/point/${props.data?.collectorId
-        }/${params}/import?:X_Access_Token=${getToken()
+        `${getBaseApi()}/data-collect/point/${props.data?.collectorId
+        }/${params}/import?${TOKEN_KEY_URL}=${getToken()
         }&fileUrl=${file.result.accessUrl}`,
         { withCredentials: true },
     );

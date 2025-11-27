@@ -3,10 +3,8 @@
         <a-upload
             v-model:fileList="modelValue.upload"
             name="file"
-            :action="FileUpload"
-            :headers="{
-                [TOKEN_KEY]: LocalStore.get(TOKEN_KEY),
-            }"
+            :action="FileStaticPath()"
+            :headers="getUploadHeaders()"
             :maxCount="1"
             :showUploadList="false"
             @change="uploadChange"
@@ -49,11 +47,12 @@
 </template>
 
 <script lang="ts" setup>
-import { FileUpload,deviceImport ,templateDownload} from '../../api/others';
-import {LocalStore,onlyMessage,downloadFileByUrl} from "@jetlinks-web/utils";
-import { TOKEN_KEY, } from '@jetlinks-web/constants'
+import { deviceImport ,templateDownload} from '../../api/others';
+import {onlyMessage,downloadFileByUrl} from "@jetlinks-web/utils";
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { useI18n } from 'vue-i18n';
+import {FileStaticPath} from "@/api/comm";
+import {getUploadHeaders} from "@/utils";
 
 const { t: $t } = useI18n();
 

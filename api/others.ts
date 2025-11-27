@@ -1,10 +1,8 @@
 import { request } from '@jetlinks-web/core'
-import {LocalStore} from "@jetlinks-web/utils";
-import { TOKEN_KEY, } from '@jetlinks-web/constants'
+import {getToken} from "@jetlinks-web/utils";
+import {getBaseApi} from "@/utils";
+import {TOKEN_KEY_URL} from "@jetlinks-web/constants";
 
-
-const BASE_API_PATH = import.meta.env.VITE_APP_BASE_API
-export const FileUpload = `${BASE_API_PATH}/file/upload`;
 /**
  * 查询数据
  * @param data 分页搜索数据
@@ -158,7 +156,7 @@ export const templateDownload = (productId: string, type: string) => request.get
  * @param type 文件类型
  * @returns
  */
-export const deviceImport = (productId: string, fileUrl: string, autoDeploy: boolean) => `${BASE_API_PATH}/device-instance/${productId}/import/_withlog?fileUrl=${fileUrl}&autoDeploy=${autoDeploy}&:X_Access_Token=${LocalStore.get(TOKEN_KEY)}`
+export const deviceImport = (productId: string, fileUrl: string, autoDeploy: boolean) => `${getBaseApi()}/device-instance/${productId}/import/_withlog?fileUrl=${fileUrl}&autoDeploy=${autoDeploy}&${TOKEN_KEY_URL}=${getToken()}`
 
 /**
  * 保存产品

@@ -2,10 +2,8 @@
     <a-upload
         name="file"
         :accept="accept.join(',')"
-        :action="uploadUrl"
-        :headers="{
-            [TOKEN_KEY]: LocalStore.get(TOKEN_KEY),
-        }"
+        :action="uploadUrl || FileStaticPath()"
+        :headers="getUploadHeaders()"
         @change="handleChange"
         class="upload-box"
         :before-upload="beforeUpload"
@@ -26,13 +24,12 @@
 </template>
 
 <script setup lang="ts" name="fileUpload">
-import { LocalStore } from '@jetlinks-web/utils'
-import { TOKEN_KEY } from '@jetlinks-web/constants';
 import { onlyMessage } from '@jetlinks-web/utils';
 import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
 import { notification as Notification } from 'ant-design-vue';
 import { FileStaticPath } from "@/api/comm";
 import { useI18n } from "vue-i18n";
+import {getUploadHeaders} from "@/utils";
 
 const { t: $t } = useI18n();
 const emit = defineEmits(['update:modelValue', 'change', 'update:fileName']);
@@ -56,7 +53,6 @@ const props = defineProps({
     },
     uploadUrl: {
         type: String,
-        default: FileStaticPath
     },
     accept: {
         type: Array,

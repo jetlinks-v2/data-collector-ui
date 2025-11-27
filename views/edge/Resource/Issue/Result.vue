@@ -27,9 +27,10 @@
 
 <script setup lang="ts">
 import { LocalStore} from "@jetlinks-web/utils";
-import { BASE_API,TOKEN_KEY } from '@jetlinks-web/constants';
+import {TOKEN_KEY, TOKEN_KEY_URL} from '@jetlinks-web/constants';
 import dayjs from 'dayjs';
 import { EventSourcePolyfill } from 'event-source-polyfill';
+import {getBaseApi} from "@/utils";
 
 const props = defineProps({
     data: {
@@ -73,7 +74,7 @@ const getData = () => {
         }
     });
     const source = new EventSourcePolyfill(
-        `${BASE_API}/edge/operations/entity-template-save/invoke/_batch?:X_Access_Token=${LocalStore.get(
+        `${getBaseApi()}/edge/operations/entity-template-save/invoke/_batch?${TOKEN_KEY_URL}=${LocalStore.get(
             TOKEN_KEY,
         )}&${url}`,
     );
