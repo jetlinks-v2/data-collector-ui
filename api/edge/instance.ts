@@ -1,8 +1,8 @@
 import { request } from '@jetlinks-web/core'
 import {getToken} from '@jetlinks-web/utils'
 import {BASE_API, TOKEN_KEY_URL} from '@jetlinks-web/constants'
-import type { DeviceInstance } from '../views/device/Instance/typings'
-import type { DeviceMetadata, UnitType } from '../views/device/Product/typings';
+import type { DeviceInstance } from '../../views/edge/Batch/instance'
+import type { DeviceMetadata, UnitType } from '../../views/edge/Batch/product';
 
 /**
  * 重置设备继承产品的物模型规则
