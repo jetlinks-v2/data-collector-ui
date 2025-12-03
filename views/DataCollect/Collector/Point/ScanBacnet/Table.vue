@@ -244,9 +244,6 @@ import { getBacnetValueType  } from '../../../../../api/data-collect/collector';
 import { BacnetFormTableColumns, regOnlyNumber } from '../../data';
 import { Rule } from 'ant-design-vue/lib/form';
 import PropertyId from './PropertyId.vue';
-// import {
-//   EditTable
-// } from '@/components/Metadata/Table'
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();

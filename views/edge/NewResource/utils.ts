@@ -1,4 +1,4 @@
-import i18n from "@/locales";
+import i18n from "@jetlinks-web-core/locales";
 export const TargetTypeOptions = [
     {
         label: i18n.global.t('NewResource.utils.262184-0'),

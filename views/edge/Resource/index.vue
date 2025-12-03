@@ -149,7 +149,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useMenuStore } from '@/store/menu';
+import { useMenuStore } from '@jetlinks-web-core/store/menu';
 import { onlyMessage } from '@jetlinks-web/utils'
 import imgUrl from '../../../assets/device-card.png';
 import dayjs from 'dayjs';

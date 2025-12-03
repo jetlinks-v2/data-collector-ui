@@ -375,7 +375,7 @@ import { wsClient } from '@jetlinks-web/core';
 import {map} from 'rxjs/operators';
 import dayjs from 'dayjs';
 import Import from './components/Import/index.vue';
-import BatchDropdown from '@/components/BatchDropdown/index.vue';
+import BatchDropdown from '@jetlinks-web-core/components/BatchDropdown/index.vue';
 import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";

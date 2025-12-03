@@ -1,5 +1,5 @@
 <script setup name="ScanPointTable">
-import i18n from "@/locales";
+import i18n from "@jetlinks-web-core/locales";
 import {useI18n} from 'vue-i18n';
 import {set, get, isArray, isNil} from 'lodash-es'
 import {Space, Tooltip} from "ant-design-vue";

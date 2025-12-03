@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import GatewayDevice from './GatewayDevice.vue';
-import { onlyMessage } from "@/utils/comm";
+import { onlyMessage } from "@jetlinks-web-core/utils/comm";
 import { createTask } from '../../../../api/edge/newResource'
 import { useI18n } from 'vue-i18n';
 

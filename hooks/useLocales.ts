@@ -1,4 +1,4 @@
-import {useSystemStore} from "@/store";
+import {useSystemStore} from "@jetlinks-web-core/store";
 import axios from "axios";
 import {getResourceLangFile} from "../api/data-collect/channel";
 

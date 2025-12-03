@@ -8,7 +8,7 @@ import gatewayImage from '../../../assets/DataCollect/gateway.png'
 import iecImage from '../../../assets/DataCollect/IEC104.png'
 import BACNetImage from '../../../assets/DataCollect/BACnet.png'
 import protocolImage from '../../../assets/DataCollect/protocol.png'
-import i18n from '@/locales'
+import i18n from '@jetlinks-web-core/locales'
 
 export const FormState: FormDataType = {
     name: '',

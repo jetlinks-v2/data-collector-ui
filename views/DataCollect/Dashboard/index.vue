@@ -25,7 +25,7 @@ import TopCard from './components/TopCard.vue';
 import Card from './components/Card.vue';
 import { queryCount } from '../../../api/data-collect/dashboard';
 import { defaultParams, statusData } from './tool';
-import { useMenuStore } from '@/store/menu';
+import { useMenuStore } from '@jetlinks-web-core/store/menu';
 
 const menuPermission = useMenuStore().hasMenu;
 

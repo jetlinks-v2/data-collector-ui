@@ -1,4 +1,4 @@
-import i18n from '@/locales'
+import i18n from '@jetlinks-web-core/locales'
 export const PROVIDER_OPTIONS = [
     { label: 'GB/T28181', value: 'gb28181-2016' },
     { label: i18n.global.t('SaveProduct.const.911927-0'), value: 'fixed-media' },

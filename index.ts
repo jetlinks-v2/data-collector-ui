@@ -1,5 +1,5 @@
-import { moduleRegistry } from '@/utils/module-registry'
-import i18n from "@/locales";
+import { moduleRegistry } from '@jetlinks-web-core/utils/module-registry'
+import i18n from "@jetlinks-web-core/locales";
 import registerSetting from './register'
 import { name } from './package.json'
 

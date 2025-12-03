@@ -154,9 +154,7 @@
 </template>
 
 <script lang="ts" setup>
-// import { queryNoPagingPost } from '@/api/device/product';
 import { isExists, update, queryNoPagingPost } from '../../../../api/others';
-// import { getImage, onlyMessage } from '@/utils/comm';
 import { onlyMessage } from '@jetlinks-web/utils'
 import url from '../../../../assets/device-gateway.png'
 import SaveProduct from '../../../../components/SaveProduct/SaveProduct.vue';
