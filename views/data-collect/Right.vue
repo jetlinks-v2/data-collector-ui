@@ -1,11 +1,15 @@
 <template>
   <div class="right-warp">
     <Header />
+    <PointTop />
+    <PointTable />
   </div>
 </template>
 
 <script setup>
 import Header from './components/Header.vue'
+import PointTop from "./components/Point/PointTop.vue";
+import PointTable from "./components/Point/PointTable.vue";
 
 </script>
 
@@ -14,5 +18,6 @@ import Header from './components/Header.vue'
   display: flex;
   height: 100%;
   flex-direction: column;
+  gap: 8px;
 }
 </style>
