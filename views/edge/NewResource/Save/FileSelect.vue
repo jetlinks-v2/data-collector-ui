@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { onlyMessage } from "@/utils/comm";
+import { onlyMessage } from "@jetlinks-web-core/utils/comm";
 import { PropType } from "vue";
 import { cloneDeep } from "lodash-es";
 import { useI18n } from "vue-i18n";

@@ -203,15 +203,14 @@
 
 <script setup lang="ts">
 import {DeviceApi,getAccessConfig,getProductsById,savePluginData} from '../../api/others';
-// import { getImage, onlyMessage } from '@/utils/comm';
 import { onlyMessage, randomString } from '@jetlinks-web/utils'
 import url from '../../assets/device-access.png'
 import { gatewayType } from './typings';
 import { providerType } from './const';
-import { useAuthStore } from '@/store/auth';
+import { useAuthStore } from '@jetlinks-web-core/store/auth';
 import { pick } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
-import { useTabSaveSuccess } from '@/hooks'
+import { useTabSaveSuccess } from '@jetlinks-web-core/hooks'
 
 const { t: $t } = useI18n();
 const isPermission = useAuthStore().hasPermission(

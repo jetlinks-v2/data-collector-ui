@@ -30,7 +30,7 @@ import { LocalStore} from "@jetlinks-web/utils";
 import {TOKEN_KEY, TOKEN_KEY_URL} from '@jetlinks-web/constants';
 import dayjs from 'dayjs';
 import { EventSourcePolyfill } from 'event-source-polyfill';
-import {getBaseApi} from "@/utils";
+import {getBaseApi} from "@jetlinks-web-core/utils";
 
 const props = defineProps({
     data: {

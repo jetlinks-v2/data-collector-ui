@@ -1,5 +1,5 @@
 import { request } from '@jetlinks-web/core'
-import {getBaseApi} from "@/utils";
+import {getBaseApi} from "@jetlinks-web-core/utils";
 
 /**
  * 根据条件查询产品（不带翻页）

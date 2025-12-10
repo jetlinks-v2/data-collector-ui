@@ -27,9 +27,9 @@
 import { onlyMessage } from '@jetlinks-web/utils';
 import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
 import { notification as Notification } from 'ant-design-vue';
-import { FileStaticPath } from "@/api/comm";
+import { FileStaticPath } from "@jetlinks-web-core/api/comm";
 import { useI18n } from "vue-i18n";
-import {getUploadHeaders} from "@/utils";
+import {getUploadHeaders} from "@jetlinks-web-core/utils";
 
 const { t: $t } = useI18n();
 const emit = defineEmits(['update:modelValue', 'change', 'update:fileName']);

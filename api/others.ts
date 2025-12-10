@@ -1,6 +1,6 @@
 import { request } from '@jetlinks-web/core'
 import {getToken} from "@jetlinks-web/utils";
-import {getBaseApi} from "@/utils";
+import {getBaseApi} from "@jetlinks-web-core/utils";
 import {TOKEN_KEY_URL} from "@jetlinks-web/constants";
 
 /**
