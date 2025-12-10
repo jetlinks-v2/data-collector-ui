@@ -16,9 +16,7 @@ import Left from './Left.vue'
 import Right from './Right.vue'
 import {COLLECTOR_DATA, COLLECTOR_TYPE} from "./data";
 
-const current = ref({
-  id: 'all'
-})
+const current = ref({})
 const type = ref('all')
 
 provide(COLLECTOR_TYPE, type) // all/channel/collector
@@ -26,7 +24,7 @@ provide(COLLECTOR_DATA, current)
 
 const onChange = (_type) => {
   type.value = _type
-  if(_type === 'channel') {
+  if (_type === 'channel') {
     current.value = {
       "id": "1993224439875837952",
       "name": "这是通道",
@@ -53,7 +51,7 @@ const onChange = (_type) => {
       },
       "collectorNumber": 1
     }
-  } else if(_type === 'collector') {
+  } else if (_type === 'collector') {
     current.value = {
       "id": "1993224613490663424",
       "name": "这是采集器",
