@@ -5,7 +5,7 @@ export const devGetProtocol = async (protocol: string, module: string) => {
     try {
         const isDevelopment = import.meta.env.MODE === 'development'
 
-        if (isDevelopment) {
+        if (!isDevelopment) {
             const resp = await axios.get(`/protocol/${protocol}/${module}.vue`)
             return resp.data
         } else {

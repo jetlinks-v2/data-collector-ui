@@ -1,31 +1,107 @@
 <template>
-  <a-modal open title="新增">
-    <a-form :model="formData" :rules="rules" ref="formRef" layout="vertical">
-      <a-form-item label="名称" prop="name">
-        <a-input v-model:value="formData.name"/>
-      </a-form-item>
-      <Collapsible title="高级配置">
-        <a-form-item label="标签" prop="tags">
-          <a-input v-model:value="formData.tags"/>
-        </a-form-item>
-      </Collapsible>
-    </a-form>
-  </a-modal>
+  <a-drawer open title="新增点位" width="800px">
+    <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
+      <div style="flex: 1; min-height: 0; overflow: hidden auto">
+        <a-form :model="formData" ref="formRef" layout="vertical">
+          <a-row :gutter="[24, 24]">
+            <a-col :span="12">
+              <a-form-item :label="$t('Save.SaveModBus.4001413-2')" name="name"
+                           :rules="[{required: true, message: '请输入名称', trigger: ['blur']}]">
+                <a-input
+                    :placeholder="$t('Save.SaveModBus.4001413-3')"
+                    v-model:value="formData.name"
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item label="所属采集器" name="name">
+                <a-select
+                    placeholder="请选择"
+                    v-model:value="formData.name"
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
+          <div>
+            <h3>点位配置</h3>
+            <!--todo: 请求远程的动态配置-->
+            <div>
+              <RenderComponents v-if="jsonData" :value="jsonData" />
+            </div>
+          </div>
+          <DataParsing/>
+          <CollectionConfiguration/>
+          <DataConversion/>
+          <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
+            高级配置<AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
+          </div>
+          <template v-if="configVisible">
+            <AbnormalJudgment/>
+            <DeadZone/>
+            <StorageConfiguration/>
+            <ResultProcessing/>
+          </template>
+        </a-form>
+      </div>
+      <div>
+        <a-space>
+          <a-button type="primary">保存</a-button>
+          <a-button @click="emit('close')">确认并继续</a-button>
+          <a-button @click="emit('close')">取消</a-button>
+        </a-space>
+      </div>
+    </div>
+  </a-drawer>
 </template>
 
 <script setup>
-import Collapsible from '@data-collector-ui/components/Collapsible/index.vue'
+import DataParsing from "../../Config/DataParsing.vue";
+import CollectionConfiguration from "../../Config/CollectionConfiguration.vue";
+import DataConversion from "../../Config/DataConversion.vue";
+import AbnormalJudgment from "../../Config/AbnormalJudgment.vue";
+import DeadZone from "../../Config/DeadZone.vue";
+import StorageConfiguration from "../../Config/StorageConfiguration.vue";
+import ResultProcessing from "../../Config/ResultProcessing.vue";
+import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {useI18n} from "vue-i18n";
+import {devGetProtocol} from "@data-collector-ui/utils/utils";
+import RenderComponents from "@data-collector-ui/components/RenderComponents";
+
+const {t: $t} = useI18n();
+
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({})
+  }
+})
+const emit = defineEmits(['close'])
+
 const formData = reactive({
   name: '',
-  tags: []
-})
+  configuration: props.data.configuration || {
+    valueType: undefined,
+    terms: [],
+    pointAddress: "",
+    interval: 3000,
+  },
+  accessModes: [],
+  features: [],
+  description: props.data.description || "",
+});
 const formRef = ref(null)
+const jsonData = ref();
+const configVisible = ref(false)
 
-const rules = {
-  name: [
-    {required: true, message: '请输入名称', trigger: ['blur']}
-  ]
-}
+provide('formData', formData)
+provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
+
+const getProtocol = async () => {
+  jsonData.value = await devGetProtocol('MODBUS_TCP', "point");
+
+  // console.log(jsonData.value, 'jsonData.value')
+};
+getProtocol();
 </script>
 
 <style lang="less" scoped>

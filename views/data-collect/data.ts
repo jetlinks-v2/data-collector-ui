@@ -1,4 +1,4 @@
-import i18n from '@/locales'
+import i18n from '@jetlinks-web-core/locales'
 import opcImage from '@data-collector-ui/assets/DataCollect/device-opcua.png'
 import modbusImage from '@data-collector-ui/assets/DataCollect/channel-modbus.png'
 import s7Image from '@data-collector-ui/assets/DataCollect/s7.png'
@@ -17,6 +17,7 @@ export const pointImgUrl = {
 
 export const COLLECTOR_TYPE = Symbol('data-collector-type')
 export const COLLECTOR_DATA = Symbol('data-collector-data')
+export const DATA_COLLECTOR_SAVE_TYPE = Symbol('plugin-form')
 
 // 通道状态
 export const ChannelState = {

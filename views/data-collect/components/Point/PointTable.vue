@@ -20,13 +20,15 @@
         @resizeColumn="onResizeColumn"
         :scroll="{ x: 1000 }"
         :rowSelection="
-                      isCheck
-                          ? {
-                                selectedRowKeys: _selectedRowKeys,
-                                onSelectNone: () => (_selectedRowKeys = []),
-                            }
-                          : false
-                  "
+            isCheck
+                ? {
+                      selectedRowKeys: _selectedRowKeys,
+                      onSelect: onSelectChange,
+                      onSelectAll: selectAll,
+                      onSelectNone: () => (_selectedRowKeys = [])
+                  }
+                : false
+        "
     >
       <template #headerCell="{ column }">
         <template v-if="['name', 'updateTime', 'interval'].includes(column.key)">
@@ -46,31 +48,53 @@
         </template>
       </template>
       <template #headerLeftRender>
-        <a-space>
-          <!-- 新增点位 -->
-          <a-button type="primary">
-            <AIcon type="PlusOutlined"/>
-            新增点位
-          </a-button>
-          <!-- 扫描点位 -->
-          <a-button type="primary">扫描点位</a-button>
-          <!-- 批量导入 -->
-          <a-button>批量导入</a-button>
-          <!-- 数据导出 -->
-          <a-button>数据导出</a-button>
-          <!-- 批量操作 -->
+        <a-space v-if="type !== 'all' && data.id">
+          <j-permission-button
+              v-if="pointActions.add"
+              type="primary"
+              @click="handleAdd"
+              :hasPermission="true"
+          >
+            <template #icon
+            >
+              <AIcon type="PlusOutlined"
+              />
+            </template>
+            {{ $t('Point.index.400149-0') }}
+          </j-permission-button>
+          <j-permission-button
+              v-if="pointActions.scan"
+              type="primary"
+              @click="handleScan"
+              :hasPermission="true"
+          >
+            <template #icon
+            >
+              <AIcon type="PlusOutlined"
+              />
+            </template>
+            {{ $t('Point.index.400149-1') }}
+          </j-permission-button>
+          <j-permission-button
+              type="primary"
+              @click="handleImport"
+              :hasPermission="true"
+          >
+            {{ $t('Point.index.400149-2') }}
+          </j-permission-button>
+          <j-permission-button
+              type="primary"
+              @click="handleExport"
+              :hasPermission="true"
+          >
+            {{ $t('Point.index.400149-3') }}
+          </j-permission-button>
           <BatchDropdown
+              ref="batchRef"
               v-model:isCheck="isCheck"
               :actions="batchActions"
               @change="onCheckChange"
           />
-          <div v-if="isCheck">
-            <a-checkbox
-                v-model:checked="checkAll"
-                @change="onCheckAllChange"
-            >{{ $t('Point.index.400149-4') }}
-            </a-checkbox>
-          </div>
         </a-space>
       </template>
       <template #headerRightRender>
@@ -87,23 +111,27 @@
         </a-space>
       </template>
       <template #name="slotProps">
-        <div style="display: flex; align-items: center;gap: 16px">
+        <div style="display: flex; align-items: center;gap: 16px; white-space: normal">
           <img style="width: 30px" :src="ImageMap.get(slotProps.provider) || ImageMap.get('protocol')"/>
-          <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
-          <j-badge-status
-              :status="slotProps?.runningState?.value"
-              :text="slotProps?.runningState?.text"
-              :statusNames="ChannelState"
-          />
+          <div class="name" @click="handleView(slotProps)">
+            <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
+          </div>
+          <div style="width: 110px">
+            <j-badge-status
+                :status="slotProps?.runningState?.value"
+                :text="slotProps?.runningState?.text"
+                :statusNames="ChannelState"
+            />
+          </div>
         </div>
       </template>
       <template #value="slotProps">
         <div class="header-cell-title">
-          <div>
-            <div>123(int8)</div>
-            <div>48390285940</div>
+          <div class="value">
+            <j-ellipsis>123(int8)</j-ellipsis>
+            <j-ellipsis>48390285940</j-ellipsis>
           </div>
-          <a-space>
+          <div class="actions">
             <a
                 v-if="getAccessModes(slotProps).includes('write')"
                 @click.stop="clickEdit(slotProps)"
@@ -116,7 +144,7 @@
             >
               <AIcon type="RedoOutlined"/>
             </a>
-          </a-space>
+          </div>
         </div>
       </template>
       <template #updateTime="slotProps">
@@ -138,7 +166,20 @@
       @save="onSaveColumnsConfig"
       @close="columnsConfig.visible = false"
   />
-  <Save />
+  <Save
+      v-if="visible.save"
+      :data="current"
+      :collector="data"
+      @close="visible.save = false"
+  />
+  <Detail
+      v-if="visible.viewPoint"
+      :data="current"
+      :collector="data"
+      @close="visible.viewPoint = false"
+  />
+  <RenderComponents :key="data.id + (data.state?.value || data.state)"
+                    v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
 
 <script setup>
@@ -148,13 +189,16 @@ import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig.vue";
 import {baseColumns} from "./columns";
 import {randomString} from "@jetlinks-web/utils";
-import {ChannelState, COLLECTOR_DATA, pointImgUrl} from "@data-collector-ui/views/data-collect/data";
+import {ChannelState, COLLECTOR_DATA, COLLECTOR_TYPE, pointImgUrl} from "@data-collector-ui/views/data-collect/data";
 import dayjs from "dayjs";
-import BatchDropdown from "@/components/BatchDropdown/index.vue";
-import {map} from "lodash-es";
+import {cloneDeep, map} from "lodash-es";
 import {wsClient} from "@jetlinks-web/core";
 import {throttle} from "lodash-es";
 import Save from "./Save/index.vue";
+import Detail from "./Detail/index.vue";
+import {devGetProtocol} from "@data-collector-ui/utils/utils";
+import {getAccessModes} from "@data-collector-ui/views/data-collect/components/Point/data";
+import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 
 const params = ref({})
 const showSearch = ref(false)
@@ -171,10 +215,10 @@ const columnsConfig = reactive({
   key: randomString()
 })
 const isCheck = ref(false);
-const checkAll = ref(false);
 const _selectedRowKeys = ref([]);
 
 const data = inject(COLLECTOR_DATA, ref({}))
+const type = inject(COLLECTOR_TYPE, ref('all'))
 
 const ImageMap = new Map();
 ImageMap.set('OPC_UA', pointImgUrl.opcImage);
@@ -186,6 +230,24 @@ ImageMap.set('protocol', pointImgUrl.protocolImage);
 
 const subRef = ref();
 const propertyValue = ref(new Map());
+
+const visible = reactive({ // 判断按钮显示
+  scan: false,
+  save: false,
+  import: false,
+  writePoint: false,
+  viewPoint: false
+});
+
+const current = ref({})
+const pointActions = reactive({
+  add: false,
+  scan: false,
+});
+const jsonData = ref();
+
+provide("point-actions", pointActions);
+
 const onResizeColumn = (w, col) => {
   // 必须替换列对象才能保持响应性
   const target = columnsConfig.data.find(c => c.key === col.key)
@@ -281,31 +343,47 @@ const getDataSource = (p) => {
       }, 100)
     }
     // cancelSelect();
-    // checkAll.value = false;
     return resp
   })
 }
 
-const getAccessModes = (item) => {
-  return item?.accessModes?.map((i) => i?.value);
+const getPointAction = async () => {
+  jsonData.value = ''
+  jsonData.value = await devGetProtocol('MODBUS_TCP', "pointActions");
 };
-
-const clickEdit = (item) => {
-
-}
-
-const clickRead = (item) => {
-
-}
 
 const onCheckChange = () => {
   _selectedRowKeys.value = [];
-  checkAll.value = false;
 };
 
-const onCheckAllChange = () => {
+const onSelectChange = (item, state) => {
+  const arr = new Set(_selectedRowKeys.value);
+  if (state) {
+    arr.add(item.id);
+  } else {
+    arr.delete(item.id);
+  }
+  _selectedRowKeys.value = [...arr.values()];
+};
 
-}
+const selectAll = (selected, selectedRows, changeRows) => {
+  if (selected) {
+    changeRows.map((i) => {
+      if (!_selectedRowKeys.value.includes(i.id)) {
+        _selectedRowKeys.value.push(i.id);
+      }
+    });
+  } else {
+    const arr = changeRows.map((item) => item.id);
+    const _ids = [];
+    _selectedRowKeys.value.map((i) => {
+      if (!arr.includes(i)) {
+        _ids.push(i);
+      }
+    });
+    _selectedRowKeys.value = _ids;
+  }
+};
 
 const handleSort = (key, value) => {
   sortValue[key] = value
@@ -324,9 +402,101 @@ const onSaveColumnsConfig = (dt) => {
   columnsConfig.data = dt
   columnsConfig.key = randomString()
   columnsConfig.visible = false
-
-  console.log(columnsConfig.data)
 }
+
+const handleAdd = () => {
+  if (data.value?.provider === 'COLLECTOR_GATEWAY') {
+    current.value = {
+      collectorId: data.value?.id,
+      provider: data.value?.provider || 'COLLECTOR_GATEWAY',
+    };
+    visible.saveModBus = true;
+  } else {
+    if (data.value?.provider === 'snap7') {
+      current.value = {
+        collectorId: data.value?.id,
+        provider: data.value?.provider,
+        deviceType: data.value?.configuration.type,
+      };
+    } else if (data.value?.provider === 'iec104') {
+      current.value = {
+        collectorId: data.value?.id,
+        provider: data.value?.provider,
+      };
+    } else {
+      current.value = {
+        collectorId: data.value?.id,
+        provider: data.value?.provider || 'MODBUS_TCP',
+      };
+    }
+    visible.save = true;
+  }
+};
+
+const handleScan = () => {
+  if (data.value?.provider === 'OPC_UA') {
+    visible.scan = true;
+  } else if (data.value?.provider === 'BACNetIp') {
+    visible.scanBacnet = true;
+  }
+  current.value = cloneDeep(data.value);
+};
+const handleImport = () => {
+  visible.import = true;
+  current.value = cloneDeep(data.value);
+};
+const handleExport = async () => {
+  // const params =
+  //     data.value?.provider === 'COLLECTOR_GATEWAY'
+  //         ? data.value?.configuration?.collectorProvider
+  //         :data.value?.provider;
+  // const res: any = await exportPoint(data.value.collectorId, params);
+  // if (res) {
+  //   const blob = new Blob([res], {type: 'xlsx'});
+  //   const url = URL.createObjectURL(blob);
+  //   downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.channelName]), 'xlsx');
+  // }
+};
+
+const handleView = (data) => {
+  visible.viewPoint = true;
+  current.value = cloneDeep(data);
+};
+const clickEdit = async (data) => {
+  visible.writePoint = true;
+  current.value = cloneDeep(data);
+};
+
+// ReadIdMap
+const clickRead = async (data) => {
+  // const res: any = await readPoint(data?.collectorId, [data?.id]);
+  // if (res.status === 200) {
+  //   const readData: any = res.result[0];
+  //   const _data = ReadIdMap.get(data?.id);
+  //   ReadIdMap.set(data?.id, {..._data, ...readData});
+  //   cancelSelect();
+  //   tableRef.value?.reload();
+  //   onlyMessage($t('Point.index.400149-14'), 'success');
+  // }
+};
+
+watch(
+    () => data.value,
+    (value) => {
+      if (value.id && !!value.provider) {
+        // COLLECTOR_GATEWAY写死
+        if (value.provider === 'COLLECTOR_GATEWAY') {
+          pointActions.add = true
+          pointActions.scan = false
+        } else {
+          pointActions.add = false
+          pointActions.scan = false
+          getPointAction()
+        }
+      }
+    },
+    {immediate: true, deep: true},
+);
 
 onUnmounted(() => {
   subRef.value?.unsubscribe();
@@ -340,6 +510,32 @@ onUnmounted(() => {
   gap: 4px;
   justify-content: space-between;
   white-space: normal;
+
+  .value {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  &:hover {
+    .actions {
+      display: flex;
+      cursor: pointer;
+      gap: 8px;
+      width: 40px;
+    }
+  }
+}
+
+.name {
+  cursor: pointer;
+
+  &:hover {
+    color: @primary-color;
+  }
 }
 
 .sort-item {
