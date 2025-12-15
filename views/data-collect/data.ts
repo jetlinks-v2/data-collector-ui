@@ -18,6 +18,7 @@ export const pointImgUrl = {
 export const COLLECTOR_TYPE = Symbol('data-collector-type')
 export const COLLECTOR_DATA = Symbol('data-collector-data')
 export const DATA_COLLECTOR_SAVE_TYPE = Symbol('plugin-form')
+export const FOLD_TREE = Symbol('fold-tree')
 
 // 通道状态
 export const ChannelState = {

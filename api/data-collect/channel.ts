@@ -13,6 +13,9 @@ export const update = (id: string, data: any) =>
 
 export const getProviders = () => request.get(`/data-collect/channel/providers`);
 
+export const queryNoPaging = (data: any) =>
+  request.post(`/data-collect/channel/_query/no-paging`, data);
+
 export const queryOptionsList = (type: string) =>
     request.get(`/data-collect/opc/${type}`);
 
