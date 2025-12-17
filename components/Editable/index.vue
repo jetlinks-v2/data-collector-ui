@@ -8,7 +8,7 @@
  -->
 
 <template>
-  <div v-if="isEdit">
+  <div v-if="isEdit" ref="inputRef">
     <component
         :is="componentObj[type]"
         v-model:value="_value"
@@ -56,6 +56,7 @@ const componentObj = {
 
 const isEdit = ref(false)
 const _value = ref(props.value)
+const inputRef = ref()
 
 const onBlur = () => {
   isEdit.value = false

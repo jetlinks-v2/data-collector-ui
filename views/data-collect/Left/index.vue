@@ -130,14 +130,14 @@ import {
   remove as removeChannel,
   update as updateChannel,
 } from "@data-collector-ui/api/data-collect/channel";
-import { 
+import {
   queryCollectorTree,
   update as updateCollector,
   remove as removeCollector,
  } from "@data-collector-ui/api/data-collect/collector";
 import { protocolIcon, colorMap, updateStatus } from "./type";
 import SaveChannel from "./SaveChannel/index.vue";
-// import SaveCollector from "./SaveCollector/index.vue";
+import SaveCollector from "./SaveCollector/index.vue";
 import FilterModal from "./components/FilterModal.vue";
 import NodeItem from "./components/NodeItem.vue";
 import ActionButtons from "./components/ActionButtons.vue";
@@ -687,7 +687,7 @@ defineExpose({
 
 <style scoped lang="less">
 .channel-collector {
-  padding: 10px;
+  padding: 0 10px 10px 10px;
   width: 200px;
   height: 100%;
   transition: all 0.3s;
@@ -699,7 +699,7 @@ defineExpose({
     flex-direction: column;
     align-items: flex-start;
     height: calc(100% - 30px);
-    padding-top: 16px;
+    //padding-top: 16px;
   }
 
   .channel-collector-path {

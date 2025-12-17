@@ -7,7 +7,7 @@
   >
     <div v-for="item in filterColumn" style="margin-bottom: 20px;" :key="item.key">
       <JTitle :data="item.title">{{item.title}}</JTitle>
-      <CardSelect multiple v-model:value="filterData[item.key]" :showImage="false" :options="item.options"></CardSelect>
+      <JCardSelect multiple v-model:value="filterData[item.key]" :showImage="false" :options="item.options"></JCardSelect>
     </div>
     <template #footer>
       <div class="footer">
@@ -22,7 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import CardSelect from "@/components/CardSelect/CardSelect.vue";
 import { useProvider } from "../../hook/useProvider";
 import { getProviders } from '@data-collector-ui/api/data-collect/channel';
 import { cloneDeep } from "lodash-es";

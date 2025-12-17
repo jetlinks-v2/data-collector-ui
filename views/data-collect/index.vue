@@ -2,8 +2,7 @@
   <j-page-container>
     <FullPage>
       <div class="collect-warp">
-        <!--        <Left @change="onChange"/>-->
-        <Tree @change="onChange"/>
+        <Left @change="onChange"/>
         <div class="right">
           <Right/>
         </div>
@@ -13,10 +12,9 @@
 </template>
 
 <script setup>
-// import Left from './Left.vue'
+import Left from './Left/index.vue'
 import Right from './Right.vue'
-import Tree from '../DataCollect/Collector/Tree/index.vue'
-import {COLLECTOR_DATA, COLLECTOR_TYPE} from "./data";
+import {COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const current = ref({})
 const type = ref('all')
@@ -24,14 +22,10 @@ const type = ref('all')
 provide(COLLECTOR_TYPE, type) // all/channel/collector
 provide(COLLECTOR_DATA, current)
 
-const onChange = (row) => {
-  if(row.id === '*'){
-    type.value = 'all'
-    current.value = {}
-  } else {
-    type.value = 'collector'
-    current.value = row
-  }
+const onChange = (_type, row) => {
+  type.value = _type || 'all'
+  current.value = _type === 'all' ? {} : row
+  console.log(_type, row)
 }
 </script>
 

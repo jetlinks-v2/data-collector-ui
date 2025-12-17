@@ -20,6 +20,9 @@ export const save = (data: any) => request.post(`/data-collect/collector`, data)
 export const update = (id: string, data: any) =>
     request.put(`/data-collect/collector/${id}`, data);
 
+export const detail = (id: string) =>
+    request.get(`/data-collect/collector/${id}`);
+
 export const remove = (id: string) =>
     request.remove(`/data-collect/collector/${id}`);
 

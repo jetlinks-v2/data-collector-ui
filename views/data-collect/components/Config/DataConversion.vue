@@ -1,5 +1,5 @@
 <template>
-  <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data">
+  <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data" :show-switch="showSwitch">
     <a-row :gutter="24">
       <a-col :span="12">
         <a-form-item
@@ -50,15 +50,21 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 
+const props = defineProps({
+  showSwitch: {
+    type: Boolean,
+    default: true
+  }
+})
+const data = ref(!props.showSwitch)
+
 const formData = inject('formData', reactive({}))
 
-const data = ref('template')
-
-if(!formData.configuration?.codec?.configuration) {
+if (!formData.configuration?.codec?.configuration) {
   formData.configuration = {
     ...formData.configuration,
     codec: {
-      ...formData.configuration.codec,
+      ...formData.configuration?.codec,
       configuration: {}
     }
   }

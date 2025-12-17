@@ -1,12 +1,12 @@
-import { moduleRegistry } from '@jetlinks-web-core/utils/module-registry'
+import {moduleRegistry} from '@jetlinks-web-core/utils/module-registry'
 import i18n from "@jetlinks-web-core/locales";
 import registerSetting from './register'
-import { name } from './package.json'
+import {name} from './package.json'
 
 const routerModules = import.meta.glob('./views/**/index.vue')
 
 const getAsyncRoutesMap = () => {
-    const modules:any = {}
+    const modules: any = {}
     Object.keys(routerModules).forEach(item => {
         const code = item.replace('./views/', '').replace('/index.vue', '')
         const key = `${code}`
@@ -25,6 +25,16 @@ const getExtraRoutesMap = () => {
                     url: '/detail:id',
                     name: i18n.global.t('data-collector-ui.index.237811-0'),
                     component: () => import('./views/edge/NewResource/Detail/index.vue')
+                }
+            ]
+        },
+        'data-collect': {
+            children: [
+                {
+                    code: 'BatchAdd',
+                    url: '/batch-add:id',
+                    name: '批量添加',
+                    component: () => import('./views/data-collect/components/Point/BatchSave/index.vue')
                 }
             ]
         }

@@ -31,6 +31,8 @@
       </div>
     </div>
   </div>
+  <ChannelDetail :data="data" v-if="visible.channel" @close="visible.channel = false"/>
+  <CollectorDetail :data="data" v-if="visible.collector" @close="visible.collector = false"/>
 </template>
 
 <script setup>
@@ -42,9 +44,16 @@ import {
   statusData
 } from "@data-collector-ui/views/data-collect/data";
 import {queryCount} from "@data-collector-ui/api/data-collect/dashboard";
+import ChannelDetail from './Detail/Channel/index.vue'
+import CollectorDetail from './Detail/Collector/index.vue'
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
+
+const visible = reactive({
+  channel: false,
+  collector: false,
+})
 
 const title = computed(() => {
   if (type.value === 'all') {
@@ -57,24 +66,38 @@ const title = computed(() => {
 const StatusData = ref([]);
 // 查询数量
 const handleSearch = (_type, id) => {
+  const _terms = []
   if (_type === 'all') {
     StatusData.value = statusData
   }
   if (_type === 'channel') {
     StatusData.value = statusData.filter(i => i.type !== 'channel')
+    _terms.push({
+      column: 'channelId',
+      termType: 'eq',
+      value: id,
+    })
   }
   if (_type === 'collector') {
     StatusData.value = statusData.filter(i => i.type !== 'collector')
+    _terms.push({
+      column: 'collectorId',
+      termType: 'eq',
+      value: id,
+    })
   }
   StatusData.value.forEach(async (item) => {
-    const res = await queryCount(item.type, {});
+    const res = await queryCount(item.type, {
+      terms: _terms,
+    });
     const resp = await queryCount(item.type, {
       terms: [
-        // todo: 还需要传递id
+        ..._terms,
         {
           column: 'runningState',
           termType: 'not',
           value: 'running',
+          type: 'and'
         },
       ]
     });
@@ -88,7 +111,11 @@ const onClick = () => {
 }
 
 const onDetail = () => {
-
+  if (type.value === 'channel') {
+    visible.channel = true
+  } else {
+    visible.collector = true
+  }
 }
 
 watch(() => [type.value, data.value.id], () => {

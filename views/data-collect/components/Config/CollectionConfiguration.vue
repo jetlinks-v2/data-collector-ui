@@ -1,5 +1,10 @@
 <template>
-  <Collapsible title="采集配置" tip="设置访问类型,采集频率及数据推送等设置" v-model:value="data">
+  <Collapsible
+      title="采集配置"
+      tip="设置访问类型,采集频率及数据推送等设置"
+      v-model:value="data"
+      :showSwitch="showSwitch"
+  >
     <a-row :gutter="24">
       <a-col :span="12">
         <a-form-item label="访问类型" name="accessModes" :rules="[
@@ -65,6 +70,12 @@ import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
 
+const props = defineProps({
+  showSwitch: {
+    type: Boolean,
+    default: true
+  }
+})
 const formData = inject('formData', reactive({
   configuration: {
     interval: 3000
@@ -72,7 +83,8 @@ const formData = inject('formData', reactive({
   features: []
 }))
 
-const data = ref('template')
+const data = ref(!props.showSwitch)
+
 </script>
 
 <style lang="less" scoped>

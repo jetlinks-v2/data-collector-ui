@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open title="新增点位" width="800px">
+  <a-drawer open title="新增点位" width="800px" @close="emit('close')">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -14,26 +14,27 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item label="所属采集器" name="name">
+              <a-form-item label="所属采集器" name="collectorId" :disabled="true">
                 <a-select
                     placeholder="请选择"
-                    v-model:value="formData.name"
+                    v-model:value="formData.collectorId"
                 />
               </a-form-item>
             </a-col>
           </a-row>
-          <div>
+          <div class="point-config" v-if="jsonData">
             <h3>点位配置</h3>
             <!--todo: 请求远程的动态配置-->
             <div>
-              <RenderComponents v-if="jsonData" :value="jsonData" />
+              <RenderComponents v-if="jsonData" :value="jsonData"/>
             </div>
           </div>
           <DataParsing/>
           <CollectionConfiguration/>
           <DataConversion/>
           <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
-            高级配置<AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
+            高级配置
+            <AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
           </div>
           <template v-if="configVisible">
             <AbnormalJudgment/>
@@ -43,7 +44,7 @@
           </template>
         </a-form>
       </div>
-      <div>
+      <div style="padding-top: 24px;">
         <a-space>
           <a-button type="primary">保存</a-button>
           <a-button @click="emit('close')">确认并继续</a-button>
@@ -73,12 +74,17 @@ const props = defineProps({
   data: {
     type: Object,
     default: () => ({})
+  },
+  collector: {
+    type: Object,
+    default: () => ({})
   }
 })
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'save'])
 
 const formData = reactive({
   name: '',
+  collectorId: props.collector?.collectorId,
   configuration: props.data.configuration || {
     valueType: undefined,
     terms: [],
@@ -97,13 +103,18 @@ provide('formData', formData)
 provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
 
 const getProtocol = async () => {
-  jsonData.value = await devGetProtocol('MODBUS_TCP', "point");
-
-  // console.log(jsonData.value, 'jsonData.value')
+  jsonData.value = await devGetProtocol(props.collector?.provider || 'MODBUS_TCP', "point");
 };
 getProtocol();
+
+
 </script>
 
 <style lang="less" scoped>
-
+.point-config {
+  border: 1px solid #e8e8e8;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
 </style>

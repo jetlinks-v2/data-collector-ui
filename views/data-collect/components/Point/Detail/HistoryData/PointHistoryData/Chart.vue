@@ -1,16 +1,15 @@
 <template>
-  <div>
-    <Header title="点位数据量"/>
-    <div style="height: 300px">
-      <JEcharts :option="pointDataVolumeOptions"/>
-    </div>
+  统计周期:
+  <a-select style="width: 120px" value="actual">
+    <a-select-option value="actual">实际值</a-select-option>
+  </a-select>
+  <div style="height: 300px">
+    <JEcharts :option="errorDataOptions"/>
   </div>
 </template>
 
 <script setup>
-import Header from "./Header.vue";
-
-const pointDataVolumeOptions = computed(() => {
+const errorDataOptions = computed(() => {
   return {
     grid: {
       left: '3%',
@@ -27,7 +26,7 @@ const pointDataVolumeOptions = computed(() => {
     },
     series: [
       {
-        data: [1290, 932, 901, 934, 129, 1330, 99],
+        data: [820, 932, 901, 934, 1290, 1330, 1320],
         type: 'line',
         smooth: true
       }

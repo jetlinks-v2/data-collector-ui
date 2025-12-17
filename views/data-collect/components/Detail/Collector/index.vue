@@ -31,7 +31,6 @@
         />
       </a-descriptions-item>
     </a-descriptions>
-    <ValueList :data="data"/>
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
     </a-tabs>
@@ -44,8 +43,6 @@
 <script setup>
 import {ChannelState, DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
 import InputEditable from "@data-collector-ui/components/Editable/InputEditable.vue";
-import {updatePoint} from "@data-collector-ui/api/data-collect/collector";
-import ValueList from "./ValueList.vue";
 import {tabs} from "./asyncComponent";
 
 const props = defineProps({
@@ -56,7 +53,7 @@ const props = defineProps({
 })
 const emits = defineEmits(['close'])
 
-provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
+provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
 
 const activeKey = ref('Info')
 
@@ -66,24 +63,12 @@ const tabsList = [
     tab: '详情'
   },
   {
-    key: 'AdvancedConfiguration',
-    tab: '高级配置'
+    key: 'PointTemplate',
+    tab: '点位模板'
   },
   {
-    key: 'HistoryData',
-    tab: '历史数据'
-  },
-  {
-    key: 'RelatedDevice',
-    tab: '关联设备'
-  },
-  {
-    key: 'PointLogs',
-    tab: '点位日志'
-  },
-  {
-    key: 'Alarm',
-    tab: '告警'
+    key: 'CollectorLogs',
+    tab: '采集器日志'
   }
 ]
 

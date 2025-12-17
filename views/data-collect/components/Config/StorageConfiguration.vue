@@ -1,5 +1,5 @@
 <template>
-  <Collapsible title="存储配置" tip="配置点位数据存储类型" v-model:value="data">
+  <Collapsible title="存储配置" tip="配置点位数据存储类型" v-model:value="data" :show-switch="showSwitch">
     <a-form-item>
       <j-card-select
           v-model:value="formData.h"
@@ -12,10 +12,16 @@
 
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
+const props = defineProps({
+  showSwitch: {
+    type: Boolean,
+    default: true
+  }
+})
+const data = ref(!props.showSwitch)
 
 const formData = inject('formData', reactive({}))
 
-const data = ref('template')
 const list = [
   {
     label: '存储点位数据',

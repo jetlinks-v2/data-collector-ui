@@ -9,8 +9,8 @@
         <j-ellipsis>{{ tip }}</j-ellipsis>
       </div>
       <div>
-        <slot name="extra" :onSwitch="onSwitch">
-          <CollapseRadio v-model:value="_value" @change="onChange" :show-extra="showExtra">
+        <slot v-if="showSwitch" name="extra" :onSwitch="onSwitch">
+          <CollapseRadio :value="_value" @change="onSwitch" :show-extra="showExtra">
             <template #extraTemplate>
               <slot name="extraTemplate"></slot>
             </template>
@@ -40,9 +40,9 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  initialVisible: {
+  showSwitch: {
     type: Boolean,
-    default: false
+    default: true
   },
   showExtra: {
     type: Boolean,
@@ -54,17 +54,12 @@ const emit = defineEmits(['update:value', 'change'])
 
 const _value = ref(props.value)
 
-const visible = computed(() => _value.value === true)
+const visible = computed(() => props.value === true)
 
 const onSwitch = (flag) => {
   _value.value = flag
-}
-
-const onChange = (val) => {
-  console.log(val)
-  _value.value = val
-  emit('update:value', val)
-  emit('change', val)
+  emit('update:value', flag)
+  emit('change', flag)
 }
 </script>
 

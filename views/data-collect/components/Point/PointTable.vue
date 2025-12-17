@@ -48,7 +48,7 @@
         </template>
       </template>
       <template #headerLeftRender>
-        <a-space v-if="type !== 'all' && data.id">
+        <a-space v-if="type === 'collector' && data.id">
           <j-permission-button
               v-if="pointActions.add"
               type="primary"
@@ -63,17 +63,12 @@
             {{ $t('Point.index.400149-0') }}
           </j-permission-button>
           <j-permission-button
-              v-if="pointActions.scan"
+              v-if="pointActions.batchAdd"
               type="primary"
-              @click="handleScan"
+              @click="handleBatchAdd"
               :hasPermission="true"
           >
-            <template #icon
-            >
-              <AIcon type="PlusOutlined"
-              />
-            </template>
-            {{ $t('Point.index.400149-1') }}
+            批量添加
           </j-permission-button>
           <j-permission-button
               type="primary"
@@ -199,6 +194,7 @@ import Detail from "./Detail/index.vue";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import {getAccessModes} from "@data-collector-ui/views/data-collect/components/Point/data";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
+import {useMenuStore} from "@jetlinks-web-core/store";
 
 const params = ref({})
 const showSearch = ref(false)
@@ -216,7 +212,7 @@ const columnsConfig = reactive({
 })
 const isCheck = ref(false);
 const _selectedRowKeys = ref([]);
-
+const menuStore = useMenuStore();
 const data = inject(COLLECTOR_DATA, ref({}))
 const type = inject(COLLECTOR_TYPE, ref('all'))
 
@@ -232,7 +228,7 @@ const subRef = ref();
 const propertyValue = ref(new Map());
 
 const visible = reactive({ // 判断按钮显示
-  scan: false,
+  batchAdd: true,
   save: false,
   import: false,
   writePoint: false,
@@ -242,7 +238,6 @@ const visible = reactive({ // 判断按钮显示
 const current = ref({})
 const pointActions = reactive({
   add: false,
-  scan: false,
 });
 const jsonData = ref();
 
@@ -433,13 +428,8 @@ const handleAdd = () => {
   }
 };
 
-const handleScan = () => {
-  if (data.value?.provider === 'OPC_UA') {
-    visible.scan = true;
-  } else if (data.value?.provider === 'BACNetIp') {
-    visible.scanBacnet = true;
-  }
-  current.value = cloneDeep(data.value);
+const handleBatchAdd = () => {
+  menuStore.jumpPage('data-collect/BatchAdd', {params: {id: data.value?.id}});
 };
 const handleImport = () => {
   visible.import = true;
@@ -487,10 +477,10 @@ watch(
         // COLLECTOR_GATEWAY写死
         if (value.provider === 'COLLECTOR_GATEWAY') {
           pointActions.add = true
-          pointActions.scan = false
+          pointActions.batchAdd = false
         } else {
           pointActions.add = false
-          pointActions.scan = false
+          pointActions.batchAdd = true
           getPointAction()
         }
       }

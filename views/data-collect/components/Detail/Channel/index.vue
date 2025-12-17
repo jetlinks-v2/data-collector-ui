@@ -21,8 +21,9 @@
     </template>
     <a-descriptions>
       <a-descriptions-item label="通讯协议">{{ data.provider }}</a-descriptions-item>
-      <a-descriptions-item label="所属采集器">{{ data.collectorName }}</a-descriptions-item>
-      <a-descriptions-item label="所属通道">{{ data.collectorName }}</a-descriptions-item>
+      <a-descriptions-item label="通道ID">{{ data.id }}</a-descriptions-item>
+      <a-descriptions-item label="采集器数量">{{ 0 }}</a-descriptions-item>
+      <a-descriptions-item label="点位数量">{{ 0 }}</a-descriptions-item>
       <a-descriptions-item label="说明">
         <InputEditable
             :value="data.description"
@@ -31,7 +32,7 @@
         />
       </a-descriptions-item>
     </a-descriptions>
-    <ValueList :data="data"/>
+    <!--    <ValueList :data="data"/>-->
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
     </a-tabs>
@@ -42,10 +43,8 @@
 </template>
 
 <script setup>
-import {ChannelState, DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {ChannelState} from "@data-collector-ui/views/data-collect/data";
 import InputEditable from "@data-collector-ui/components/Editable/InputEditable.vue";
-import {updatePoint} from "@data-collector-ui/api/data-collect/collector";
-import ValueList from "./ValueList.vue";
 import {tabs} from "./asyncComponent";
 
 const props = defineProps({
@@ -56,8 +55,6 @@ const props = defineProps({
 })
 const emits = defineEmits(['close'])
 
-provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
-
 const activeKey = ref('Info')
 
 const tabsList = [
@@ -66,24 +63,8 @@ const tabsList = [
     tab: '详情'
   },
   {
-    key: 'AdvancedConfiguration',
-    tab: '高级配置'
-  },
-  {
-    key: 'HistoryData',
-    tab: '历史数据'
-  },
-  {
-    key: 'RelatedDevice',
-    tab: '关联设备'
-  },
-  {
-    key: 'PointLogs',
-    tab: '点位日志'
-  },
-  {
-    key: 'Alarm',
-    tab: '告警'
+    key: 'ChannelLogs',
+    tab: '通道日志'
   }
 ]
 
