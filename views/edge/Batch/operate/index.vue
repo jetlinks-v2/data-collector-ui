@@ -71,6 +71,7 @@ const emit = defineEmits(['selected'])
 const { batchOperateOptions } = useBatchOperateOptions()
 const visible = ref(false)
 const logRef = ref()
+const route = useRoute()
 
 const disabled = computed(() => !props.deviceList.length)
 
@@ -105,6 +106,12 @@ const updateLog = () => {
 defineExpose({
   updateLog
 })
+
+watch(() => [route.query.type, props.deviceList], (newVal) => {
+  if (newVal[0] && newVal[1].length) {
+    emit('selected', { jobType: newVal[0] })
+  }
+}, { immediate: true })
 
 </script>
 

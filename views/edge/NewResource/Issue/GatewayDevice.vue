@@ -41,7 +41,7 @@
                 }"
             >
                 <template #img>
-                    <img
+                    <Image
                         :width="80"
                         :height="80"
                         :src="
