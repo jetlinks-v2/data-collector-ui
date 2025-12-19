@@ -2,7 +2,7 @@
   <div>
     <template v-if="jsonData">
       <TitleComponent data="基本参数"/>
-      <a-form :model="formData" ref="formRef" layout="vertical">
+      <a-form :model="formData" ref="formRef">
         <RenderComponents
             v-if="jsonData"
             :value="jsonData"
@@ -23,18 +23,12 @@ import AbnormalDataTrend from "../../../Detail/Echarts/AbnormalDataTrend.vue";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
-})
+const emits = defineEmits(['save'])
 
+const info = inject('collector-info', ref({}))
 const jsonData = ref();
+
 const formData = reactive({
-  channelId: undefined,
-  name: '',
-  collectorProvider: undefined,
   configuration: {
     unitId: '',
     type: undefined,
@@ -47,25 +41,30 @@ const formData = reactive({
     },
     configuration: {}
   },
-  circuitBreaker: {
-    // type: 'LowerFrequency',
-    type: 'Ignore'
-  },
-  description: '',
 });
 const formRef = ref()
 const onChange = async (node) => {
   jsonData.value = await devGetProtocol(node.provider, "collectorDetail");
 };
 
-watch(() => props.data, () => {
-  onChange(props.data)
-  Object.assign(formData, props.data)
+watch(() => info.value, () => {
+  onChange(info.value)
+  Object.assign(formData, info.value)
 }, {
   immediate: true
 })
 
-provide("plugin-form", formData);
+provide("plugin-collector-detail-form", formData);
+provide("plugin-collector-detail-events", {
+  onValueChange: async (name, value) => {
+    const res = await formRef.value?.validate()
+    // 校验表单
+    // 保存
+    if (res) {
+      emits('save', name, value)
+    }
+  }
+});
 </script>
 
 <style lang="less" scoped>

@@ -29,6 +29,9 @@ export const remove = (id: string) =>
 export const queryPoint = (data: any) =>
     request.post(`/data-collect/point/_query`, data);
 
+export const pointDetail = (id: string) =>
+    request.get(`/data-collect/point/${id}`);
+
 export const queryPointCount = (data: any) =>
     request.post(`/data-collect/point/_count`, data);
 

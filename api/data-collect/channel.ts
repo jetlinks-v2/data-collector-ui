@@ -6,6 +6,9 @@ export const query = (data: any) =>
 export const remove = (id: string) =>
     request.remove(`/data-collect/channel/${id}`);
 
+export const detail = (id: string) =>
+    request.get(`/data-collect/channel/${id}`);
+
 export const save = (data: any) => request.post(`/data-collect/channel`, data);
 
 export const update = (id: string, data: any) =>

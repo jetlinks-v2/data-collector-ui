@@ -2,31 +2,15 @@
   <div class="value-list">
     <div class="value-item">
       <div class="value-label">点位值</div>
-      <div class="value">
-        <div>1321334(int8)</div>
-        <a-space>
-          <a
-              v-if="getAccessModes(data).includes('write')"
-              @click.stop="clickEdit(data)"
-          >
-            <AIcon type="EditOutlined"/>
-          </a>
-          <a
-              v-if="getAccessModes(data).includes('read')"
-              @click.stop="clickRead(data)"
-          >
-            <AIcon type="RedoOutlined"/>
-          </a>
-        </a-space>
-      </div>
+      <ValueItem :value="value" type="detail" :data="info" @refresh="onRefresh"/>
     </div>
     <div class="value-item">
       <div class="value-label">原数据</div>
-      <div class="value">{{ data.value || '--' }}</div>
+      <div class="value">{{ value.hex || '--' }}</div>
     </div>
     <div class="value-item">
       <div class="value-label">更新时间</div>
-      <div class="value">{{ dayjs(data?.createTime).format('YYYY-MM-DD HH:mm:ss') || '--' }}</div>
+      <div class="value">{{ value.timestamp ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : '--' }}</div>
     </div>
   </div>
 </template>
@@ -34,15 +18,10 @@
 <script setup>
 import {wsClient} from "@jetlinks-web/core";
 import dayjs from "dayjs";
-import {getAccessModes} from "@data-collector-ui/views/data-collect/components/Point/data";
-import {cloneDeep} from "lodash-es";
+import ValueItem from "../components/ValueItem.vue";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
-})
+const info = inject('point-info', ref({}))
+const refreshFn = inject('point-refresh')
 const subRef = ref(null);
 const value = ref({})
 // 订阅获取值
@@ -50,29 +29,22 @@ const subscribeProperty = () => {
   if (subRef.value) {
     subRef.value?.unsubscribe?.()
   }
-  const channel = props.data?.channelId || '*'
-  const collector = props.data.collectorId || '*'
-  const id = `collector-${channel}-${collector}-data-${props.data.id}`;
+  const channel = info.value?.channelId || '*'
+  const collector = info.value.collectorId || '*'
+  const id = `collector-${channel}-${collector}-data-${info.value.id}`;
   const topic = `/collector/${channel}/${collector}/data`;
   subRef.value = wsClient.getWebSocket(id, topic, {
-    pointId: props.data.id,
-  }).subscribe((payload) => {
-    console.log(payload)
-    value.value = payload
+    pointId: info.value.id,
+  }).subscribe((res) => {
+    value.value = res.payload
   });
 };
 
-const clickEdit = async (data) => {
+const onRefresh = () => {
+  refreshFn?.refresh?.()
+}
 
-};
-
-// ReadIdMap
-const clickRead = async (data) => {
-
-};
-
-
-watch(() => props.data.id, (newValue) => {
+watch(() => info.value.id, (newValue) => {
   if (newValue) {
     subscribeProperty()
   }

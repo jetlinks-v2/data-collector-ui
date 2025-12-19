@@ -9,8 +9,9 @@
 
 <script setup>
 import Header from "./Header.vue";
-import {pointOptionsSeries} from "@data-collector-ui/views/DataCollect/Dashboard/tool";
+import {useI18n} from "vue-i18n";
 
+const {t: $t} = useI18n()
 const loading = ref(false);
 
 const data = reactive({
@@ -33,7 +34,7 @@ const errorDataOptions = computed(() => {
       type: 'value',
     },
     grid: {
-      left: maxY < 1000 ? 60 : maxY.toString().length * 10,
+      left: maxY < 1000 ? 60 : String(maxY).length * 10,
       right: '60px',
     },
     tooltip: {

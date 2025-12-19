@@ -99,7 +99,7 @@
             <AIcon type="SearchOutlined"/>
             {{ showSearch ? '隐藏搜索' : '显示搜索' }}
           </a-button>
-          <a-button @click="columnsConfig.visible = true">
+          <a-button @click="columnsConfig.visible = true" v-if="type === 'collector'">
             <AIcon type="SettingOutlined"/>
             列配置
           </a-button>
@@ -121,26 +121,7 @@
         </div>
       </template>
       <template #value="slotProps">
-        <div class="header-cell-title">
-          <div class="value">
-            <j-ellipsis>123(int8)</j-ellipsis>
-            <j-ellipsis>48390285940</j-ellipsis>
-          </div>
-          <div class="actions">
-            <a
-                v-if="getAccessModes(slotProps).includes('write')"
-                @click.stop="clickEdit(slotProps)"
-            >
-              <AIcon type="EditOutlined"/>
-            </a>
-            <a
-                v-if="getAccessModes(slotProps).includes('read')"
-                @click.stop="clickRead(slotProps)"
-            >
-              <AIcon type="RedoOutlined"/>
-            </a>
-          </div>
-        </div>
+        <ValueItem :value="propertyValue.get(slotProps.id)" :data="slotProps"/>
       </template>
       <template #updateTime="slotProps">
         {{
@@ -157,6 +138,7 @@
   </div>
   <ColumnsConfig
       :data="columnsConfig.data"
+      :collector="data"
       v-if="columnsConfig.visible"
       @save="onSaveColumnsConfig"
       @close="columnsConfig.visible = false"
@@ -172,9 +154,9 @@
       :data="current"
       :collector="data"
       @close="visible.viewPoint = false"
+      @refresh="onRefresh"
   />
-  <RenderComponents :key="data.id + (data.state?.value || data.state)"
-                    v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
+  <RenderComponents v-if="jsonData" :value="jsonData"/>
 </template>
 
 <script setup>
@@ -192,18 +174,34 @@ import {throttle} from "lodash-es";
 import Save from "./Save/index.vue";
 import Detail from "./Detail/index.vue";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
-import {getAccessModes} from "@data-collector-ui/views/data-collect/components/Point/data";
+import ValueItem from './components/ValueItem.vue'
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 import {useMenuStore} from "@jetlinks-web-core/store";
 
-const params = ref({})
-const showSearch = ref(false)
 const {t: $t} = useI18n();
 const sortValue = reactive({
   name: 'asc',
   updateTime: 'asc',
   interval: 'asc',
 })
+const params = ref({
+  "sorts": [
+    {
+      "name": "name",
+      "order": "asc"
+    },
+    {
+      "name": "updateTime",
+      "order": "asc"
+    },
+    {
+      "name": "interval",
+      "order": "asc"
+    }
+  ]
+})
+const showSearch = ref(false)
+const tableRef = ref()
 
 const columnsConfig = reactive({
   visible: false,
@@ -231,7 +229,6 @@ const visible = reactive({ // 判断按钮显示
   batchAdd: true,
   save: false,
   import: false,
-  writePoint: false,
   viewPoint: false
 });
 
@@ -307,6 +304,12 @@ const batchActions = [
 const handleSubscribeValue = throttle((payload) => {
   propertyValue.value.set(payload.pointId, payload);
 });
+
+const onRefresh = () => {
+  tableRef.value?.reload()
+  visible.viewPoint = false
+}
+
 const subscribeProperty = (value) => {
   const list = map(value, 'id');
   const channel = data?.value?.channelId || '*'
@@ -315,9 +318,9 @@ const subscribeProperty = (value) => {
   const topic = `/collector/${channel}/${collector}/data`;
   subRef.value = wsClient.getWebSocket(id, topic, {
     pointId: list.join(','),
-  })?.pipe(map((res) => res.payload)).subscribe((payload) => {
+  }).subscribe((res) => {
     //防止刷新过快
-    handleSubscribeValue(payload);
+    handleSubscribeValue(res.payload);
   });
 };
 
@@ -328,13 +331,13 @@ const getDataSource = (p) => {
       setTimeout(() => {
         const _array = resp.result.data
         subscribeProperty(_array);
-        // _array.forEach((item) => {
-        //   item.accessModes?.forEach((i) => {
-        //     if (i?.value === 'read') {
-        //       ReadIdMap.set(item.id, item);
-        //     }
-        //   });
-        // })
+        _array.forEach((item) => {
+          item.accessModes?.forEach((i) => {
+            if (i?.value === 'read') {
+              console.log(item.id, item, '123');
+            }
+          });
+        })
       }, 100)
     }
     // cancelSelect();
@@ -344,7 +347,7 @@ const getDataSource = (p) => {
 
 const getPointAction = async () => {
   jsonData.value = ''
-  jsonData.value = await devGetProtocol('MODBUS_TCP', "pointActions");
+  jsonData.value = await devGetProtocol(data.value.provider, "pointActions");
 };
 
 const onCheckChange = () => {
@@ -386,11 +389,14 @@ const handleSort = (key, value) => {
     name: key,
     order: sortValue[key]
   }))
-  console.log(sorts, 'sortValue')
+  params.value = {
+    ...params.value,
+    sorts,
+  }
 }
 
-const handleSearch = (params) => {
-  console.log(params)
+const handleSearch = (_params) => {
+  console.log(_params)
 }
 
 const onSaveColumnsConfig = (dt) => {
@@ -452,23 +458,6 @@ const handleView = (data) => {
   visible.viewPoint = true;
   current.value = cloneDeep(data);
 };
-const clickEdit = async (data) => {
-  visible.writePoint = true;
-  current.value = cloneDeep(data);
-};
-
-// ReadIdMap
-const clickRead = async (data) => {
-  // const res: any = await readPoint(data?.collectorId, [data?.id]);
-  // if (res.status === 200) {
-  //   const readData: any = res.result[0];
-  //   const _data = ReadIdMap.get(data?.id);
-  //   ReadIdMap.set(data?.id, {..._data, ...readData});
-  //   cancelSelect();
-  //   tableRef.value?.reload();
-  //   onlyMessage($t('Point.index.400149-14'), 'success');
-  // }
-};
 
 watch(
     () => data.value,
@@ -504,19 +493,6 @@ onUnmounted(() => {
   .value {
     flex: 1;
     min-width: 0;
-  }
-
-  .actions {
-    display: none;
-  }
-
-  &:hover {
-    .actions {
-      display: flex;
-      cursor: pointer;
-      gap: 8px;
-      width: 40px;
-    }
   }
 }
 

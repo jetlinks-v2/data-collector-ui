@@ -22,7 +22,7 @@ const getExtraRoutesMap = () => {
             children: [
                 {
                     code: 'Detail',
-                    url: '/detail:id',
+                    url: '/detail/:id',
                     name: i18n.global.t('data-collector-ui.index.237811-0'),
                     component: () => import('./views/edge/NewResource/Detail/index.vue')
                 }
@@ -32,7 +32,7 @@ const getExtraRoutesMap = () => {
             children: [
                 {
                     code: 'BatchAdd',
-                    url: '/batch-add:id',
+                    url: '/batch-add/:id',
                     name: '批量添加',
                     component: () => import('./views/data-collect/components/Point/BatchSave/index.vue')
                 }

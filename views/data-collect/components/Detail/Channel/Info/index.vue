@@ -2,7 +2,7 @@
   <div>
     <template v-if="jsonData">
       <TitleComponent data="基本参数"/>
-      <a-form :model="formData" ref="formRef" layout="vertical">
+      <a-form :model="formData" ref="formRef">
         <RenderComponents
             v-if="jsonData"
             :value="jsonData"
@@ -21,37 +21,35 @@ import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import PointDataVolume from '../../Echarts/PointDataVolume.vue'
 import AbnormalDataTrend from '../../Echarts/AbnormalDataTrend.vue'
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
-})
-
+const emits = defineEmits(['save'])
+const info = inject('channel-info', ref({}))
 const jsonData = ref();
 const formData = reactive({
-  id: undefined,
-  type: "device",
-  name: undefined,
-  description: undefined,
   configuration: {},
-  circuitBreaker: {
-    type: "Ignore",
-  },
 });
 const formRef = ref()
-const onChange = async (node) => {
-  jsonData.value = await devGetProtocol(node.provider, "channelDetail");
+const onChange = async () => {
+  jsonData.value = await devGetProtocol(info.value.provider, "channelDetail");
 };
 
-watch(() => props.data, () => {
-  onChange(props.data)
-  Object.assign(formData, props.data)
+watch(() => info.value, () => {
+  onChange(info.value)
+  Object.assign(formData, info.value)
 }, {
   immediate: true
 })
 
-provide("plugin-form", formData);
+provide("plugin-channel-detail-form", formData);
+provide("plugin-channel-detail-events", {
+  onValueChange: async (name, value) => {
+    const res = await formRef.value?.validate()
+    // 校验表单
+    // 保存
+    if (res) {
+      emits('save', name, value)
+    }
+  }
+});
 </script>
 
 <style lang="less" scoped>

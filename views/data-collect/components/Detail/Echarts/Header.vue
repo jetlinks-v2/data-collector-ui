@@ -1,15 +1,15 @@
 <template>
   <div class="header">
-    <div>{{title}}</div>
+    <div>{{ title }}</div>
     <div>
       <JDashboardTimeSelect
           key="flow-static"
           :quickBtnList="[
-              { label: $t('DashBoard.index.954313-6'), value: 'day' },
-              { label: $t('DashBoard.index.954313-7'), value: 'week' },
-              { label: '近一年', value: 'year' }
+              { label: $t('components.Card.772454-1'), value: 'hour' },
+              { label: $t('components.Card.772454-2'), value: 'today' },
+              { label: $t('components.Card.772454-3'), value: 'week' }
           ]"
-          :type="'day'"
+          type="hour"
           @change="onChange"
       />
     </div>

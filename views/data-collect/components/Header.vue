@@ -23,7 +23,7 @@
       </a-space>
     </div>
     <div class="header-right">
-      <div class="header-right-item" v-for="item in StatusData" :key="item.type">
+      <div class="header-right-item" v-for="item in countList" :key="item.type">
         <span class="header-right-item-label">{{ item.title }}</span>
         <span class="header-right-item-value">
           <span class="error" @click="onClick">{{ item.value }}</span> / {{ item.total }}
@@ -41,11 +41,10 @@ import {
   COLLECTOR_DATA,
   COLLECTOR_TYPE,
   getState,
-  statusData
 } from "@data-collector-ui/views/data-collect/data";
-import {queryCount} from "@data-collector-ui/api/data-collect/dashboard";
 import ChannelDetail from './Detail/Channel/index.vue'
 import CollectorDetail from './Detail/Collector/index.vue'
+import {getCountList} from "@data-collector-ui/views/data-collect/utils";
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
@@ -63,48 +62,7 @@ const title = computed(() => {
   }
 })
 
-const StatusData = ref([]);
-// 查询数量
-const handleSearch = (_type, id) => {
-  const _terms = []
-  if (_type === 'all') {
-    StatusData.value = statusData
-  }
-  if (_type === 'channel') {
-    StatusData.value = statusData.filter(i => i.type !== 'channel')
-    _terms.push({
-      column: 'channelId',
-      termType: 'eq',
-      value: id,
-    })
-  }
-  if (_type === 'collector') {
-    StatusData.value = statusData.filter(i => i.type !== 'collector')
-    _terms.push({
-      column: 'collectorId',
-      termType: 'eq',
-      value: id,
-    })
-  }
-  StatusData.value.forEach(async (item) => {
-    const res = await queryCount(item.type, {
-      terms: _terms,
-    });
-    const resp = await queryCount(item.type, {
-      terms: [
-        ..._terms,
-        {
-          column: 'runningState',
-          termType: 'not',
-          value: 'running',
-          type: 'and'
-        },
-      ]
-    });
-    item.total = res?.result;
-    item.value = resp?.result;
-  });
-}
+const countList = ref([]);
 
 const onClick = () => {
 
@@ -113,13 +71,15 @@ const onClick = () => {
 const onDetail = () => {
   if (type.value === 'channel') {
     visible.channel = true
-  } else {
+  } else if (type.value === 'collector') {
     visible.collector = true
   }
 }
 
 watch(() => [type.value, data.value.id], () => {
-  handleSearch(type.value || 'all', data.value.id || '')
+  getCountList(type.value || 'all', data.value.id || '', true).then(resp => {
+    countList.value = resp
+  })
 }, {
   immediate: true
 })

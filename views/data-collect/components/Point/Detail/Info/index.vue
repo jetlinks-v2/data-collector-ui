@@ -1,11 +1,10 @@
 <template>
   <div>
-    <a-form :model="formData" ref="formRef" layout="vertical">
-      <TitleComponent data="点位信息"/>
-      <!-- todo: 点位信息:动态加载每个provider的点位信息-->
+    <a-form :model="formData" ref="formRef">
+      <TitleComponent data="点位配置"/>
       <RenderComponents
-          :key="data.id + (data.state?.value || data.state)"
-          v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"
+          v-if="jsonData"
+          :value="jsonData"
       />
       <DataParsing/>
       <CollectionConfiguration/>
@@ -22,15 +21,11 @@ import DataConversion from "@data-collector-ui/views/data-collect/components/Con
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
-})
+const info = inject('point-info', ref({}))
+
 const formData = reactive({
   name: '',
-  configuration: props.data.configuration || {
+  configuration: {
     valueType: undefined,
     terms: [],
     pointAddress: "",
@@ -38,17 +33,32 @@ const formData = reactive({
   },
   accessModes: [],
   features: [],
-  description: props.data.description || "",
+  description: "",
 });
 const formRef = ref(null)
 const jsonData = ref();
-provide('formData', formData)
-
-const getProtocol = async () => {
-  jsonData.value = await devGetProtocol(props.data?.provider || 'MODBUS_TCP', "pointDetail");
+const onChange = async (node) => {
+  jsonData.value = await devGetProtocol(node.provider, "pointDetail");
 };
 
-getProtocol();
+watch(() => info.value, () => {
+  onChange(info.value)
+  Object.assign(formData, info.value)
+}, {
+  immediate: true
+})
+
+provide("plugin-point-detail-form", formData);
+provide("plugin-point-detail-events", {
+  onValueChange: async (name, value) => {
+    const res = await formRef.value?.validate()
+    // 校验表单
+    // 保存
+    if (res) {
+      emits('save', name, value)
+    }
+  }
+});
 </script>
 
 <style lang="less" scoped>

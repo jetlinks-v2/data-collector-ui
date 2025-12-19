@@ -44,24 +44,3 @@ export const getState = (record: Partial<Record<string, any>>) => {
         return {};
     }
 };
-
-export const statusData = [
-    {
-        type: 'channel',
-        title: i18n.global.t('Dashboard.tool.772451-0'),
-        value: 0,
-        total: 0,
-    },
-    {
-        type: 'collector',
-        title: i18n.global.t('Dashboard.tool.772451-2'),
-        value: 0,
-        total: 0,
-    },
-    {
-        type: 'point',
-        title: i18n.global.t('Dashboard.tool.772451-4'),
-        value: 0,
-        total: 0,
-    }
-];

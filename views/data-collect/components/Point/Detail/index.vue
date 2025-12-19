@@ -3,50 +3,70 @@
     <template #title>
       <div class="header">
         <InputEditable
-            :value="data.name"
+            :value="info.name"
             @change="(val) => onSave('name', val)"
             :maxLength="64"
         />
         <j-badge-status
-            :status="data?.runningState?.value"
-            :text="data?.runningState?.text"
+            :status="info?.runningState?.value"
+            :text="info?.runningState?.text"
             :statusNames="ChannelState"
         />
       </div>
     </template>
     <template #extra>
-      <a-button type="link" danger>
-        <AIcon type="DeleteOutlined"/>
-      </a-button>
+      <a-space>
+        <template v-for="item in getActions()" :key="item.key">
+          <j-permission-button
+              type="text"
+              :popConfirm="item.popConfirm"
+              :disabled="item.disabled"
+              :tooltip="item.tooltip"
+              :hasPermission="true"
+              :danger="item.key === 'delete'"
+              @click="item.onClick"
+          >
+            <AIcon :type="item.icon"></AIcon>
+          </j-permission-button>
+        </template>
+      </a-space>
     </template>
-    <a-descriptions>
-      <a-descriptions-item label="通讯协议">{{ data.provider }}</a-descriptions-item>
-      <a-descriptions-item label="所属采集器">{{ data.collectorName }}</a-descriptions-item>
-      <a-descriptions-item label="所属通道">{{ data.collectorName }}</a-descriptions-item>
-      <a-descriptions-item label="说明">
-        <InputEditable
-            :value="data.description"
-            @change="(val) => onSave('description', val)"
-            :maxLength="200"
-        />
-      </a-descriptions-item>
-    </a-descriptions>
-    <ValueList :data="data"/>
-    <a-tabs v-model:activeKey="activeKey">
-      <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
-    </a-tabs>
-    <full-page>
-      <component :is="tabs[activeKey]" :data="data"/>
-    </full-page>
+    <a-spin :spinning="loading">
+      <a-descriptions>
+        <a-descriptions-item label="通讯协议">{{ info.provider }}</a-descriptions-item>
+        <a-descriptions-item label="所属采集器">{{
+            info.collectorName || info.collectorId || '--'
+          }}
+        </a-descriptions-item>
+        <a-descriptions-item label="所属通道">{{ info.channelName || '--' }}</a-descriptions-item>
+        <a-descriptions-item label="说明">
+          <InputEditable
+              :value="info.description"
+              @change="(val) => onSave('description', val)"
+              :maxLength="200"
+          />
+        </a-descriptions-item>
+      </a-descriptions>
+      <ValueList />
+      <a-tabs v-model:activeKey="activeKey">
+        <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
+      </a-tabs>
+      <full-page>
+        <component :is="tabs[activeKey]" @save="onSave"/>
+      </full-page>
+    </a-spin>
   </a-drawer>
 </template>
 
 <script setup>
 import {ChannelState, DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
-import InputEditable from "@data-collector-ui/components/Editable/InputEditable.vue";
-import {updatePoint} from "@data-collector-ui/api/data-collect/collector";
 import ValueList from "./ValueList.vue";
 import {tabs} from "./asyncComponent";
+import {pointDetail} from "@data-collector-ui/api/data-collect/collector";
+import {
+  getPointActions,
+  onPointSave
+} from "@data-collector-ui/views/data-collect/utils";
 
 const props = defineProps({
   data: {
@@ -55,9 +75,8 @@ const props = defineProps({
   },
 })
 const emits = defineEmits(['close'])
-
-provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
-
+const info = ref(props.data)
+const loading = ref(false)
 const activeKey = ref('Info')
 
 const tabsList = [
@@ -87,22 +106,52 @@ const tabsList = [
   }
 ]
 
-// 修改点位信息
-const onSave = (key, value) => {
-  console.log(key, value)
-  // const params = {
-  //   ...props.data,
-  //   [key]: value
-  // }
-  //
-  // // 调用修改点位信息接口
-  // updatePoint(props.data.id, params).then(res => {
-  //   if (res.success) {
-  //     // 刷新当前点位信息
-  //     // props.data = res.data
-  //   }
-  // })
+const getActions = () => {
+  return getPointActions(info.value, onActions)
 }
+const queryInfo = async (id) => {
+  loading.value = true
+  const resp = await pointDetail(id).finally(() => {
+    loading.value = false
+  })
+  if (resp.success) {
+    info.value = resp.result
+  }
+}
+
+const onActions = () => {
+  emits('refresh')
+}
+
+const handleSearch = (id) => {
+  queryInfo(id)
+}
+
+const onSave = (key, value) => {
+  const params = {
+    name: info.value.name,
+    [key]: value
+  }
+  onPointSave(info.value.id, params, () => {
+    handleSearch(info.value.id)
+  })
+}
+
+watch(() => props.data.id, (val) => {
+  if (val) {
+    handleSearch(val)
+  }
+}, {
+  immediate: true
+})
+
+provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
+provide('point-info', info)
+provide('point-refresh', {
+  refresh: () => {
+    handleSearch(info.value.id)
+  }
+})
 </script>
 
 <style lang="less" scoped>
@@ -110,5 +159,11 @@ const onSave = (key, value) => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+:deep(.ant-descriptions) {
+  .ant-descriptions-item-container {
+    align-items: center;
+  }
 }
 </style>

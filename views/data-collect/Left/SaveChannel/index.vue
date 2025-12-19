@@ -43,7 +43,7 @@ const props = defineProps({
     default: () => {},
   },
 });
-const emits = defineEmits(['close', 'saveSuccess']);0
+const emits = defineEmits(['close', 'saveSuccess']);
 
 const { data: options } = useProvider();
 const step = ref(0);
