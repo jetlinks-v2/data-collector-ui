@@ -88,7 +88,7 @@
 </template>
 
 <script setup name="BatchDeviceSelect">
-import { query, queryNoPagingPost, queryTree } from '../../../../api/others';
+import { query, queryNoPagingPost, queryTree, detail } from '../../../../api/others';
 import { getContext } from '../util';
 import { omit } from 'lodash-es';
 import dayjs from 'dayjs';
@@ -98,6 +98,7 @@ import { device } from '@device-manager-ui/assets'
 
 const { t: $t } = useI18n();
 
+const route = useRoute();
 const params = ref();
 const deviceRowKeys = ref([]);
 const deviceSelected = ref([]);
@@ -306,6 +307,17 @@ const onSelectNone = () => {
     deviceSelected.value = [];
     context.addGateWay([]);
 };
+
+watch(() => route.query.gatewayId, async (newVal) => {
+    if (newVal) {
+        deviceRowKeys.value = [newVal];
+        const resp = await detail(newVal);
+        deviceSelected.value = [resp.result];
+        changeContextSelected();
+    } else {
+        deviceRowKeys.value = [];
+    }
+}, { immediate: true });
 </script>
 
 <style scoped lang="less">

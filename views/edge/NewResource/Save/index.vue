@@ -115,7 +115,7 @@ import FileSelect from "./FileSelect.vue";
 import {save} from '../../../../api/edge/newResource';
 import {onlyMessage} from "@/utils/comm";
 import {randomString} from "@jetlinks-web/utils";
-import {ServiceIdEnum, TargetTypeOptions} from "../utils";
+import {ServiceIdOriginEnum, TargetTypeOriginOptions} from "../utils";
 import {cloneDeep} from "lodash-es";
 import {useI18n} from 'vue-i18n';
 import {Rule} from "ant-design-vue/es/form";
@@ -131,6 +131,9 @@ const props = defineProps({
     default: () => ({}),
   }
 })
+
+const ServiceIdEnum = inject('ServiceIdEnum', ServiceIdOriginEnum);
+const TargetTypeOptions = inject('TargetTypeOptions', TargetTypeOriginOptions);
 
 const initAiModelMetadata = {
   name: '',
@@ -169,16 +172,25 @@ const initCollectorTemplateMetadata = {
 }
 const loading = ref(false);
 const formRef = ref();
+const initMetadata = (targetType: string) => {
+  if (targetType === 'AiModel') {
+    return cloneDeep(initAiModelMetadata)
+  } else if (targetType === 'PluginDriver') {
+    return cloneDeep(initPluginDriverMetadata)
+  } else if (targetType === 'entityTemplate:Collector') {
+    return cloneDeep(initCollectorTemplateMetadata)
+  }
+}
 const formData = ref<Record<string, any>>({
   id: props.data.id || undefined,
   name: props.data.name || undefined,
-  targetType: props.data?.targetType || 'AiModel',
+  targetType: props.data?.targetType || TargetTypeOptions[0].value,
   targetId: props.data?.targetId || undefined,
   serviceId: "aiService:modelManager",
   properties: props.data?.properties || {
     fileName: ""
   },
-  metadata: props.data.metadata ? JSON.parse(props.data.metadata) : cloneDeep(initAiModelMetadata)
+  metadata: props.data.metadata ? JSON.parse(props.data.metadata) : cloneDeep(initMetadata(TargetTypeOptions[0].value)),
 })
 
 const rules = {
