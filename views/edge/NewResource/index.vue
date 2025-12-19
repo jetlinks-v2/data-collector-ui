@@ -166,7 +166,7 @@ import Save from './Save/index.vue';
 import Issue from './Issue/index.vue';
 import {queryPage, remove, update} from '../../../api/edge/newResource'
 import {onlyMessage} from "@jetlinks-web/utils";
-import { useMenuStore } from "@/store/menu";
+import { useMenuStore } from "@jetlinks-web-core/store/menu";
 import { TargetTypeOriginOptions, ServiceIdOriginEnum, JobTypeOriginEnum } from './utils';
 import DeviceGatewayImg from '../../../assets/device-gateway.png';
 import { useI18n } from 'vue-i18n';

@@ -298,7 +298,7 @@ import {
     queryTask
 } from '../../../../api/edge/batch';
 import dayjs from 'dayjs';
-import { onlyMessage } from '@/utils/comm';
+import { onlyMessage } from '@jetlinks-web-core/utils/comm';
 import Icon from '../components/Icon.vue';
 import { useI18n } from 'vue-i18n';
 import { taskDetailColumnMap } from '../util';

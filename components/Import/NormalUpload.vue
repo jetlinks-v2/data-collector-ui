@@ -51,8 +51,8 @@ import { deviceImport ,templateDownload} from '../../api/others';
 import {onlyMessage,downloadFileByUrl} from "@jetlinks-web/utils";
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { useI18n } from 'vue-i18n';
-import {FileStaticPath} from "@/api/comm";
-import {getUploadHeaders} from "@/utils";
+import {FileStaticPath} from "@jetlinks-web-core/api/comm";
+import {getUploadHeaders} from "@jetlinks-web-core/utils";
 
 const { t: $t } = useI18n();
 

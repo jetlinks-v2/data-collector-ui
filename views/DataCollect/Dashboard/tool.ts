@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import channelImg from '../../../assets/DataCollect/dashboard/channel.png';
 import collectorImg from '../../../assets/DataCollect/dashboard/collector.png';
 import pointImg from '../../../assets/DataCollect/dashboard/point.png';
-import i18n from '@/locales';
+import i18n from '@jetlinks-web-core/locales';
 
 const getParams = (dt: any) => {
     switch (dt.type) {

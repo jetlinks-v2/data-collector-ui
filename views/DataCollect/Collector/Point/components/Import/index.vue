@@ -45,13 +45,13 @@
 </template>
 
 <script lang="ts" setup>
-import { FileStaticPath } from '@/api/comm';
+import { FileStaticPath } from '@jetlinks-web-core/api/comm';
 import { onlyMessage,downloadFileByUrl,getToken } from '@jetlinks-web/utils'
 import {
     exportTemplate
 } from '../../../../../../api/data-collect/collector';
 import { useI18n } from 'vue-i18n';
-import {getBaseApi, getUploadHeaders} from "@/utils";
+import {getBaseApi, getUploadHeaders} from "@jetlinks-web-core/utils";
 import {TOKEN_KEY_URL} from "@jetlinks-web/constants";
 
 const { t: $t } = useI18n();

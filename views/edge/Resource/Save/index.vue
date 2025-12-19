@@ -10,9 +10,7 @@
 </template>
 
 <script setup lang="ts">
-// import MonacoEditor from '@/components/MonacoEditor/index.vue';
 import { modify } from '../../../../api/edge/resource';
-// import { onlyMessage } from '@/utils/comm';
 import { onlyMessage } from '@jetlinks-web/utils'
 
 const props = defineProps({

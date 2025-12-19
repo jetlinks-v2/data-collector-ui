@@ -113,7 +113,7 @@
 import UploadFile from './UploadFile.vue';
 import FileSelect from "./FileSelect.vue";
 import {save} from '../../../../api/edge/newResource';
-import {onlyMessage} from "@/utils/comm";
+import {onlyMessage} from "@jetlinks-web-core/utils/comm";
 import {randomString} from "@jetlinks-web/utils";
 import {ServiceIdOriginEnum, TargetTypeOriginOptions} from "../utils";
 import {cloneDeep} from "lodash-es";

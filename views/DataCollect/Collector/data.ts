@@ -1,10 +1,10 @@
-import { testIpv4_6 } from '@/utils/validate';
+import { testIpv4_6 } from '@jetlinks-web-core/utils/validate';
 import opcImage from '../../../assets/DataCollect/device-opcua.png'
 import modbusImage from '../../../assets/DataCollect/channel-modbus.png'
 import s7Image from '../../../assets/DataCollect/s7.png'
 import gatewayImage from '../../../assets/DataCollect/gateway.png'
 import iecImage from '../../../assets/DataCollect/IEC104.png'
-import i18n from '@/locales';
+import i18n from '@jetlinks-web-core/locales';
 import protocolImage from "../../../assets/DataCollect/protocol.png";
 
 export const imgUrl = {

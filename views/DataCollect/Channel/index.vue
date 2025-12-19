@@ -136,7 +136,7 @@ import {
 } from '../../../api/data-collect/channel';
 import { onlyMessage } from '@jetlinks-web/utils'
 import { StatusColorEnum, updateStatus ,protocolList,ImageMap} from './data';
-import { useMenuStore } from '@/store/menu';
+import { useMenuStore } from '@jetlinks-web-core/store/menu';
 import Save from './Save/index.vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
