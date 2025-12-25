@@ -8,12 +8,13 @@
       </div>
       <a-space>
         <!--运行状态-->
-        <j-badge-status
-            v-if="type === 'channel'"
-            :status="getState(data).value"
-            :text="getState(data).text"
-            :statusNames="ChannelState"
-        />
+        <!--        <j-badge-status-->
+        <!--            v-if="type === 'channel'"-->
+        <!--            :status="getState(data).value"-->
+        <!--            :text="getState(data).text"-->
+        <!--            :statusNames="ChannelState"-->
+        <!--        />-->
+        <a-tag v-if="type === 'channel'" :color="ChannelState[getState(data).value]">{{ getState(data).text }}</a-tag>
         <!--通讯协议类型-->
         <a-tag v-if="type !== 'all'">{{ data.provider }}</a-tag>
         <!--通道/采集器ID-->
@@ -24,9 +25,13 @@
     </div>
     <div class="header-right">
       <div class="header-right-item" v-for="item in countList" :key="item.type">
-        <span class="header-right-item-label">{{ item.title }}</span>
+        <span class="header-right-item-label">
+          <j-ellipsis>{{ item.title }}</j-ellipsis>
+        </span>
         <span class="header-right-item-value">
-          <span class="error" @click="onClick">{{ item.value }}</span> / {{ item.total }}
+          <span class="error" @click="onClick(item)" :class="{'active': getActive(item.type)}">{{
+              item.value
+            }}</span> / {{ item.total }}
         </span>
       </div>
     </div>
@@ -48,6 +53,7 @@ import {getCountList} from "@data-collector-ui/views/data-collect/utils";
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
+const filterValue = inject('filter-value', reactive({}))
 
 const visible = reactive({
   channel: false,
@@ -63,9 +69,29 @@ const title = computed(() => {
 })
 
 const countList = ref([]);
+const getActive = (itemType) => {
+  if (itemType === 'point') {
+    return filterValue.pointState.includes('error')
+  }
+  if (itemType === 'channel') {
+    return filterValue.runningState.includes('stopped')
+  }
+  if (itemType === 'collector') {
+    return filterValue.collectorState.includes('stopped')
+  }
+  return false
+}
 
-const onClick = () => {
-
+const onClick = (item) => {
+  if (item.type === 'point') {
+    filterValue.pointState = filterValue.pointState.includes('error') ? [] : ['error']
+  }
+  if (item.type === 'channel') {
+    filterValue.runningState = filterValue.runningState.includes('stopped') ? [] : ['stopped']
+  }
+  if (item.type === 'collector') {
+    filterValue.collectorState = filterValue.collectorState.includes('stopped') ? [] : ['stopped']
+  }
 }
 
 const onDetail = () => {
@@ -90,8 +116,11 @@ watch(() => [type.value, data.value.id], () => {
   display: flex;
   gap: 24px;
   align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, .1);
+  padding: 12px 24px;
+  height: 48px;
+  border-radius: 6px;
+  background: #F8FAFB;
+  border: 1px solid #E7E9EF;
 
   .header-left {
     display: flex;
@@ -99,8 +128,8 @@ watch(() => [type.value, data.value.id], () => {
     gap: 8px;
 
     .title {
-      font-size: 20px;
-      font-weight: bold;
+      font-size: 18px;
+      font-weight: 500;
       cursor: pointer;
     }
   }
@@ -116,15 +145,23 @@ watch(() => [type.value, data.value.id], () => {
       gap: 8px;
 
       &-label {
-        color: #8c8c8c;
+        color: #1A1A1A;
       }
 
       &-value {
         color: #262626;
+        font-size: 16px;
+        font-weight: bold;
+        min-width: 50px;
 
         .error {
           color: @error-color;
           cursor: pointer;
+          text-decoration: underline;
+
+          &.active {
+            color: @primary-color;
+          }
         }
       }
     }

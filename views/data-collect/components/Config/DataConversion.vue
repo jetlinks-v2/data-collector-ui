@@ -1,13 +1,27 @@
 <template>
   <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data" :show-switch="showSwitch">
+    <template #extraTemplate>
+      <a-descriptions :column="1">
+        <a-descriptions-item label="缩放因子">
+          <j-ellipsis>
+            {{ collector?.managedConfiguration?.converter?.configuration?.factor || '-' }}
+          </j-ellipsis>
+        </a-descriptions-item>
+        <a-descriptions-item label="小数位保留数">
+          <j-ellipsis>
+            {{ collector?.managedConfiguration?.converter?.configuration?.scale || '-' }}
+          </j-ellipsis>
+        </a-descriptions-item>
+      </a-descriptions>
+    </template>
     <a-row :gutter="24">
       <a-col :span="12">
         <a-form-item
             :name="[
+              'managedConfiguration',
+              'converter',
               'configuration',
-              'codec',
-              'configuration',
-              'scaleFactor',
+              'factor',
             ]"
             label="缩放因子"
             :rules="[
@@ -18,7 +32,7 @@
             ]"
         >
           <a-input-number
-              v-model:value="formData.configuration.codec.configuration.scaleFactor"
+              v-model:value="formData.managedConfiguration.converter.configuration.factor"
               :controls="false"
               :max="65535"
               placeholder="请输入"
@@ -29,11 +43,11 @@
       </a-col>
       <a-col :span="12">
         <a-form-item
-            :name="['configuration', 'codec', 'configuration', 'scale']"
+            :name="['managedConfiguration', 'converter', 'configuration', 'scale']"
             label="小数位保留数"
         >
           <a-input-number
-              v-model:value="formData.configuration.codec.configuration.scale"
+              v-model:value="formData.managedConfiguration.converter.configuration.scale"
               :controls="false"
               :max="65535"
               :min="0"
@@ -58,15 +72,42 @@ const props = defineProps({
 })
 const data = ref(!props.showSwitch)
 
-const formData = inject('formData', reactive({}))
+const formData = inject('plugin-form', reactive({}))
+const collector = inject('point-form-collector', {})
 
-if (!formData.configuration?.codec?.configuration) {
-  formData.configuration = {
-    ...formData.configuration,
-    codec: {
-      ...formData.configuration?.codec,
-      configuration: {}
-    }
+if (!('managedConfiguration' in formData)) {
+  formData.managedConfiguration = {
+    byteLayout: undefined,
+    codec: undefined,
+    converter: {
+      enabled: false,
+      provider: undefined,
+      configuration: {
+        factor: 1,
+        scale: 3
+      },
+    },
+    outlier: {},
+    deadband: {},
+    handler: {},
+  }
+}
+
+if (!('converter' in formData.managedConfiguration)) {
+  formData.managedConfiguration.converter = {
+    enabled: false,
+    provider: undefined,
+    configuration: {
+      factor: 1,
+      scale: 3
+    },
+  }
+}
+
+if (!('configuration' in formData.managedConfiguration.converter)) {
+  formData.managedConfiguration.converter.configuration = {
+    factor: 1,
+    scale: 3
   }
 }
 </script>

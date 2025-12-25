@@ -1,5 +1,8 @@
 <template>
   <Collapsible title="存储配置" tip="配置点位数据存储类型" v-model:value="data" :show-switch="showSwitch">
+    <template #extraTemplate>
+      木有写
+    </template>
     <a-form-item>
       <j-card-select
           v-model:value="formData.h"
@@ -20,7 +23,7 @@ const props = defineProps({
 })
 const data = ref(!props.showSwitch)
 
-const formData = inject('formData', reactive({}))
+const formData = inject('plugin-form', reactive({}))
 
 const list = [
   {

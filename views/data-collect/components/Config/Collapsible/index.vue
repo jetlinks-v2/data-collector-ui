@@ -12,7 +12,9 @@
         <slot v-if="showSwitch" name="extra" :onSwitch="onSwitch">
           <CollapseRadio :value="_value" @change="onSwitch" :show-extra="showExtra">
             <template #extraTemplate>
-              <slot name="extraTemplate"></slot>
+              <div style="width: 200px">
+                <slot name="extraTemplate"></slot>
+              </div>
             </template>
           </CollapseRadio>
         </slot>

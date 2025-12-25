@@ -18,6 +18,6 @@ import PointTable from "./components/Point/PointTable.vue";
   display: flex;
   height: 100%;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
 }
 </style>

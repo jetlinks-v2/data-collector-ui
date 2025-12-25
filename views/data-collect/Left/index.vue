@@ -1,14 +1,15 @@
 <template>
-  <div class="channel-collector" :style="{width: treeWidth, padding: foldTree ? '10px 0' : '0px'}">
+  <div class="channel-collector" :style="{width: treeWidth, padding: foldTree ? '16px 0' : '0px'}">
     <div class="channel-collector-content">
       <a-flex style="width: 100%; padding: 0 8px 8px;" justify="space-between"
               :style="{borderBottom: viewType !== 'compact' ? '1px solid #e8e8e8' : 'none'}">
-        <j-permission-button :hasPermission="true" :tooltip="{title: '收起'}" type="text" @click="foldTree = !foldTree">
-          <AIcon style="font-size: 20px" type="InboxOutlined"></AIcon>
+        <j-permission-button style="padding: 0" :hasPermission="true" :tooltip="{title: '收起'}" type="text"
+                             @click="foldTree = !foldTree">
+          <AIcon style="font-size: 18px" type="InboxOutlined"></AIcon>
         </j-permission-button>
         <a-space>
-          <a-button type="text">
-            <AIcon style="font-size: 20px" type="FilterOutlined" :class="{'filter-active': filterIconActive}"
+          <a-button type="text" style="padding: 0">
+            <AIcon style="font-size: 18px" type="FilterOutlined" :class="{'filter-active': filterIconActive}"
                    @click="filterModalVisible = true"></AIcon>
           </a-button>
           <a-radio-group v-model:value="viewType" size="small">
@@ -24,13 +25,16 @@
       />
       <div v-show="viewType === 'compact'" class="channel-collector-tree">
         <a-spin :spinning="loading">
-          <div class="all-node" :class="{'active': selectedKeys.includes('all')}"
-               @click="() => treeSelect(['all'], {node: {dataRef: {id: 'all'}}})">
+          <div class="all-node"
+               :class="{'active': selectedKeys.includes('all')}"
+               @click="() => treeSelect(['all'], {node: {dataRef: {id: 'all'}}})"
+          >
             <a-space>
-              <AIcon type="AppstoreOutlined"></AIcon>
+              <AIcon type="AppstoreFilled"></AIcon>
               <span>全部</span>
             </a-space>
           </div>
+          <j-empty v-if="!filterTreeData.length"></j-empty>
           <a-tree
               :tree-data="filterTreeData"
               :selected-keys="selectedKeys"
@@ -50,7 +54,6 @@
               <AIcon type="DownOutlined" :class="switcherCls"></AIcon>
             </template>
           </a-tree>
-          <j-empty v-if="!filterTreeData.length"></j-empty>
         </a-spin>
       </div>
       <div v-show="viewType === 'separate'" class="channel-collector-separate">
@@ -67,9 +70,10 @@
               <span>全部</span>
             </a-space>
           </div>
+          <j-empty v-if="!filterTreeData.length"></j-empty>
           <VirtualScroll :data="filterTreeData" :itemHeight="36">
             <template #renderItem="node">
-              <div class="node-item" :class="{active: selectedKeys.includes(node.id)}"
+              <div class="tree-node-item" :class="{active: selectedKeys.includes(node.id)}"
                    @click="treeSelect([node.id], {node: {...node, dataRef: node}})">
                 <NodeItem :node="node" :actions="() => getChannelActions(node, onChannelAction)"/>
               </div>
@@ -86,7 +90,10 @@
               <SearchInput v-model="collectorSearchValue"/>
             </div>
           </div>
-          <VirtualScroll :data="filteredCollectors" :itemHeight="60">
+          <div v-if="!filteredCollectors.length" style="margin-top: 100px">
+            <j-empty></j-empty>
+          </div>
+          <VirtualScroll :data="filteredCollectors" :itemHeight="68">
             <template #renderItem="node">
               <div class="node-item" :class="{active: selectedKeys.includes(node.id)}"
                    @click="treeSelect([node.id], {node: {...node, dataRef: node}})">
@@ -212,16 +219,17 @@ const currentChannel = ref<ChannelEntity>({});
 const currentCollector = ref<CollectorEntity>({});
 const searchValue = ref('');
 const collectorSearchValue = ref(''); // 采集器搜索值
-const filterValue = ref<any>({})
 const foldTree = inject(FOLD_TREE, false);
 const nodeType = inject(COLLECTOR_TYPE);
 const currentNode = inject(COLLECTOR_DATA);
 const importType = ref<'channel' | 'collector'>('channel');
 
+const filterValue = inject('filter-value', reactive({}))
+
 const viewType = ref('compact'); //视图类型
 const treeWidth = computed(() => {
   if (!foldTree.value) {
-    return viewType.value === 'compact' ? '300px' : '600px';
+    return viewType.value === 'compact' ? '312px' : '624px';
   } else {
     return '0'
   }
@@ -229,7 +237,7 @@ const treeWidth = computed(() => {
 
 const selectedNode = ref<any>({});
 const filterIconActive = computed(() => {
-  return Object.keys(filterValue.value).some(item => filterValue.value?.[item]?.length);
+  return Object.keys(filterValue).some(item => filterValue?.[item]?.length);
 })
 
 // 分离视图中的采集器数据
@@ -244,21 +252,22 @@ const filteredCollectors = computed(() => {
     return collector.name.toLowerCase().includes(collectorSearchValue.value.toLowerCase());
   });
 });
+
 const filterTreeData = computed(() => {
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
     if (item.name.includes(searchValue.value)
-        && (filterValue.value?.provider?.includes(item.provider) || !filterValue.value?.provider?.length)
-        && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
-        && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
+        && (filterValue?.provider?.includes(item.provider) || !filterValue?.provider?.length)
+        && (filterValue?.state?.includes(item.state?.value) || !filterValue?.state?.length)
+        && (filterValue?.runningState?.includes(item.runningState?.value) || !filterValue?.runningState?.length)
     ) {
       // 如果有子节点（采集器），也需要过滤
       if (item.children && item.children.length > 0) {
         item.children = item.children.filter((child: any) => {
           return child.name.includes(searchValue.value) &&
-              (filterValue.value?.collectorState?.includes(child.runningState?.value) ||
-                  filterValue.value?.collectorState?.includes(child.state?.value) ||
-                  !filterValue.value?.collectorState?.length)
+              (filterValue?.collectorState?.includes(child.runningState?.value) ||
+                  filterValue?.collectorState?.includes(child.state?.value) ||
+                  !filterValue?.collectorState?.length)
         });
       }
       return true;
@@ -553,7 +562,7 @@ const handleDelete = (data: ChannelEntity | CollectorEntity) => {
 }
 
 //采集器更新后更新树节点
-const onSaveCollector = (type: string, val: Record<string, any>) => {
+const onSaveCollector = () => {
   saveCollectorVisible.value = false;
   loadCollectors();
 };
@@ -572,8 +581,6 @@ defineExpose({
 
 <style scoped lang="less">
 .channel-collector {
-  padding: 0 10px 10px 10px;
-  width: 200px;
   height: 100%;
   transition: all 0.3s;
   box-sizing: border-box;
@@ -584,12 +591,16 @@ defineExpose({
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    height: calc(100% - 30px);
-    //padding-top: 16px;
+    height: calc(100% - 40px);
+    padding: 16px;
+  }
+
+  .filter-active {
+    color: @primary-color;
   }
 
   .channel-collector-path {
-    height: 30px;
+    height: 40px;
     width: 100%;
     display: flex;
     align-items: center;
@@ -605,36 +616,56 @@ defineExpose({
 
   .channel-collector-tree {
     width: 100%;
-    overflow: auto;
-    margin: 0 auto;
-    padding: 0 8px;
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
-    .channel-node {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    :deep(.ant-tree-treenode) {
+      margin: 4px 0;
 
-      .menu-icon {
-        display: none;
+      &:has(.channel-node) {
+        border-radius: 4px;
+        background-color: #F5F5F5;
+        height: 32px;
+        padding-top: 4px;
+        padding-left: 4px;
+      }
+
+      &:has(.ant-tree-node-selected) {
+        background-color: #e6f4ff;
+      }
+
+      &:has(.device-node) {
+        height: 64px;
+        border-radius: 4px;
+        border: 1px solid #F5F5F5;
+        padding-top: 4px;
       }
 
       &:hover {
-        .menu-icon {
-          display: block;
-        }
+        background-color: #e6f4ff;
+      }
+
+      .ant-tree-node-content-wrapper:hover {
+        background-color: transparent;
+      }
+
+      .ant-tree-indent-unit {
+        width: 0;
       }
     }
-
   }
 
   .all-node {
-    padding: 8px;
+    padding: 8px 12px;
     cursor: pointer;
-    border-radius: 2px;
+    border-radius: 4px;
     margin-bottom: 4px;
+    background-color: #f5f5f5;
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: #e6f4ff;
     }
 
     &.active {
@@ -665,18 +696,35 @@ defineExpose({
 
     .channel-box {
       width: 49%;
-      padding: 10px;
+      padding: 10px 0;
     }
 
     .collector-box {
       width: 49%;
-      padding: 10px;
+      padding: 10px 0;
+    }
+
+    .tree-node-item {
+      background-color: #F5F5F5;
+      height: 32px;
+      padding: 6px 12px 0 12px;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #e6f4ff;
+      }
+
+      &.active {
+        background-color: #e6f4ff;
+      }
     }
 
     .node-item {
-      margin-left: 16px;
       cursor: pointer;
-      padding: 8px 0;
+      padding: 8px 16px;
+      border: 1px solid #F5F5F5;
+      border-radius: 4px;
 
       &:hover {
         background-color: #f5f5f5;

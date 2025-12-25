@@ -15,9 +15,10 @@
             </a-col>
             <a-col :span="12">
               <a-form-item label="所属采集器" name="collectorId" :disabled="true">
-                <a-select
+                <a-input
                     placeholder="请选择"
-                    v-model:value="formData.collectorId"
+                    v-model:value="formData.collectorName"
+                    disabled
                 />
               </a-form-item>
             </a-col>
@@ -46,8 +47,8 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary">保存</a-button>
-          <a-button @click="emit('close')">确认并继续</a-button>
+          <a-button type="primary" @click="onSubmit(false)">保存</a-button>
+          <a-button @click="onSubmit(true)">确认并继续</a-button>
           <a-button @click="emit('close')">取消</a-button>
         </a-space>
       </div>
@@ -83,31 +84,66 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 
 const formData = reactive({
-  name: '',
-  collectorId: props.collector?.collectorId,
-  configuration: props.data.configuration || {
-    valueType: undefined,
-    terms: [],
-    pointAddress: "",
-    interval: 3000,
+  collectorId: props.collector?.id,
+  collectorName: props.collector.name,
+  name: undefined,
+  provider: props.collector.provider,
+  "configuration": {
+    "function": undefined,
+    "parameter": {
+      "address": undefined,
+      "quantity": undefined
+    }
   },
-  accessModes: [],
-  features: [],
-  description: props.data.description || "",
+  managedConfiguration: {
+    byteLayout: undefined,
+    codec: undefined,
+    converter: {
+      enabled: false
+    },
+    outlier: {
+      enabled: false
+    },
+    deadband: {
+      enabled: false
+    },
+    handler: {
+      enabled: false
+    },
+  },
+  description: undefined,
 });
 const formRef = ref(null)
 const jsonData = ref();
 const configVisible = ref(false)
 
-provide('formData', formData)
+provide('plugin-form', formData)
+provide('point-form-collector', props.collector)
 provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
 
-const getProtocol = async () => {
-  jsonData.value = await devGetProtocol(props.collector?.provider || 'MODBUS_TCP', "point");
+console.log(props.collector, 'props.collector')
+const onChange = async (provider) => {
+  jsonData.value = await devGetProtocol(provider || 'MODBUS_TCP', "point");
 };
-getProtocol();
 
+const onSubmit = async (flag) => {
+  console.log(formData, 'formData', flag)
+  const resp = await formRef.value?.validate?.()
+  if (resp) {
+    // emit('save', formData)
+  }
+}
 
+watch(() => props.collector, () => {
+  console.log(props.collector)
+  if (props.collector.id) {
+    formData.collectorId = props.collector.id
+    formData.collectorName = props.collector.name
+    onChange(props.collector.provider)
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

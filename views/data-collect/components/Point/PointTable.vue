@@ -30,6 +30,13 @@
                 : false
         "
     >
+      <template
+          v-for="item in _columns"
+          :key="item.dataIndex"
+          v-slot:[item.dataIndex]="{ record, index }"
+      >
+<!--        todo: 6666-->
+      </template>
       <template #headerCell="{ column }">
         <template v-if="['name', 'updateTime', 'interval'].includes(column.key)">
           <div class="header-cell-title">
@@ -94,7 +101,7 @@
       </template>
       <template #headerRightRender>
         <a-space>
-          <span>已应用2个筛选</span>
+          <j-ellipsis>已应用{{ searchCount }}个筛选</j-ellipsis>
           <a-button @click="showSearch = !showSearch">
             <AIcon type="SearchOutlined"/>
             {{ showSearch ? '隐藏搜索' : '显示搜索' }}
@@ -161,11 +168,11 @@
 
 <script setup>
 import {useI18n} from "vue-i18n";
-import {queryPoint} from "@data-collector-ui/api/data-collect/collector";
+import {exportPoint, queryPoint} from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig.vue";
 import {baseColumns} from "./columns";
-import {randomString} from "@jetlinks-web/utils";
+import {downloadFileByUrl, randomString} from "@jetlinks-web/utils";
 import {ChannelState, COLLECTOR_DATA, COLLECTOR_TYPE, pointImgUrl} from "@data-collector-ui/views/data-collect/data";
 import dayjs from "dayjs";
 import {cloneDeep, map} from "lodash-es";
@@ -177,6 +184,8 @@ import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import ValueItem from './components/ValueItem.vue'
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 import {useMenuStore} from "@jetlinks-web-core/store";
+
+const searchParams = inject('search-params', reactive({}))
 
 const {t: $t} = useI18n();
 const sortValue = reactive({
@@ -239,6 +248,21 @@ const pointActions = reactive({
 const jsonData = ref();
 
 provide("point-actions", pointActions);
+
+const searchCount = computed(() => {
+  let count = 0
+  if (searchParams.point) {
+    count++
+  }
+  if (searchParams.top) {
+    count++
+  }
+  return count
+})
+
+const _columns = computed(() => {
+  return columnsConfig.data.filter(item => !map(baseColumns, 'dataIndex').includes(item.key))
+})
 
 const onResizeColumn = (w, col) => {
   // 必须替换列对象才能保持响应性
@@ -400,6 +424,7 @@ const handleSearch = (_params) => {
 }
 
 const onSaveColumnsConfig = (dt) => {
+  console.log(dt, 'dt')
   columnsConfig.data = dt
   columnsConfig.key = randomString()
   columnsConfig.visible = false
@@ -442,16 +467,16 @@ const handleImport = () => {
   current.value = cloneDeep(data.value);
 };
 const handleExport = async () => {
-  // const params =
-  //     data.value?.provider === 'COLLECTOR_GATEWAY'
-  //         ? data.value?.configuration?.collectorProvider
-  //         :data.value?.provider;
-  // const res: any = await exportPoint(data.value.collectorId, params);
-  // if (res) {
-  //   const blob = new Blob([res], {type: 'xlsx'});
-  //   const url = URL.createObjectURL(blob);
-  //   downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.channelName]), 'xlsx');
-  // }
+  const params =
+      data.value?.provider === 'COLLECTOR_GATEWAY'
+          ? data.value?.configuration?.collectorProvider
+          : data.value?.provider;
+  const res = await exportPoint(data.value.collectorId, params);
+  if (res) {
+    const blob = new Blob([res], {type: 'xlsx'});
+    const url = URL.createObjectURL(blob);
+    downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.channelName]), 'xlsx');
+  }
 };
 
 const handleView = (data) => {

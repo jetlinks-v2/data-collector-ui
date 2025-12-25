@@ -15,10 +15,10 @@ export const pointImgUrl = {
     protocolImage: protocolImage,
 }
 
-export const COLLECTOR_TYPE = Symbol('data-collector-type')
-export const COLLECTOR_DATA = Symbol('data-collector-data')
-export const DATA_COLLECTOR_SAVE_TYPE = Symbol('plugin-form')
-export const FOLD_TREE = Symbol('fold-tree')
+export const COLLECTOR_TYPE = 'data-collector-type'
+export const COLLECTOR_DATA = 'data-collector-data'
+export const DATA_COLLECTOR_SAVE_TYPE = 'collector'
+export const FOLD_TREE = 'fold-tree'
 
 // 通道状态
 export const ChannelState = {

@@ -1,6 +1,6 @@
 <template>
   <Suspense v-if="!!props.value && myComponents">
-    <component :is="myComponents" ref="componentRef"></component>
+    <component :is="myComponents" ref="componentRef" v-bind="$attrs" ></component>
   </Suspense>
 </template>
 
@@ -19,6 +19,8 @@ import * as Router from 'vue-router'
 import * as LocalUtils from '@jetlinks-web-core/utils'
 import * as LodashEs from 'lodash-es'
 import * as hooks from '@data-collector-ui/hooks'
+import PointEditTable
+  from "@data-collector-ui/views/data-collect/components/Point/BatchSave/components/PointEditTable.vue";
 
 defineOptions({name: 'RenderComponents'})
 
@@ -29,6 +31,7 @@ const props = defineProps({
 })
 
 const myComponents = ref()
+const componentRef = ref()
 
 const render = debounce(() => {
   myComponents.value = defineAsyncComponent(() => loadModule('./components/PluginRender.vue', {
@@ -43,7 +46,10 @@ const render = debounce(() => {
       'vue-router': Router,
       'local-utils': LocalUtils,
       'lodash-es': LodashEs,
-      '@hooks': hooks
+      '@hooks': hooks,
+      '@components': {
+        PointEditTable
+      }
     },
     getFile(url) {
       return Promise.resolve(props.value)
@@ -59,6 +65,20 @@ const render = debounce(() => {
 watch(() => props.value, () => {
   render()
 }, {immediate: true})
+
+// defineExpose({
+//   ...(componentRef.value || {})
+// })
+
+defineExpose({
+  onSave: async () => {
+    const result = await componentRef.value.onSave?.()
+    if (result) {
+      return result
+    }
+    return false
+  }
+})
 </script>
 
 <style scoped>

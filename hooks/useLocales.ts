@@ -9,7 +9,6 @@ export const useLocales = (protocol: string) => {
     const getLangJsonFile = async (_protocol: string, language: string) => {
         try {
             const isDevelopment = import.meta.env.MODE === 'development'
-
             if (isDevelopment) {
                 const resp = await axios.get(`/protocol/${_protocol}/lang/${language}.json`)
                 langJson.value = resp.data

@@ -2,7 +2,8 @@ import i18n from '@jetlinks-web-core/locales';
 
 export const baseColumns = [
     {
-        title: '点位名称(运行状态)',
+        title: '点位名称',
+        name: '点位名称(运行状态)',
         dataIndex: 'name',
         key: 'name',
         ellipsis: true,
@@ -41,6 +42,9 @@ export const baseColumns = [
         scopedSlots: true,
         width: 200,
         ellipsis: true,
+        search: {
+            type: 'date'
+        },
         sortsList: [
             {
                 text: '按更新时间倒序',
@@ -73,6 +77,7 @@ export const baseColumns = [
         key: 'interval',
         scopedSlots: true,
         ellipsis: true,
+        width: 100,
         sortsList: [
             {
                 text: '由高到低',
@@ -89,5 +94,9 @@ export const baseColumns = [
         dataIndex: 'description',
         key: 'description',
         ellipsis: true,
+        width: 100,
+        search: {
+            type: 'string'
+        },
     }
 ]

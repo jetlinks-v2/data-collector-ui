@@ -26,7 +26,7 @@
       <div>
         <a-checkbox-group v-model:value="_state.checkedList">
           <a-row :gutter="[24, 24]">
-            <a-col :span="6" v-for="item in extraPointColumns" :key="item.dataIndex">
+            <a-col :span="_span" v-for="item in extraPointColumns" :key="item.dataIndex">
               <a-checkbox :value="item.dataIndex">{{ item.title }}</a-checkbox>
             </a-col>
           </a-row>
@@ -61,7 +61,19 @@ const jsonData = ref();
 const extraPointColumns = ref([])
 provide('point-extra-columns', extraPointColumns)
 
-const _baseColumns = computed(() => baseColumns.map(i => ({label: i.title, value: i.key, disabled: i.key === 'name'})))
+const _baseColumns = computed(() => baseColumns.map(i => ({
+  label: i.name || i.title,
+  value: i.key,
+  disabled: i.key === 'name'
+})))
+
+const _span = computed(() => {
+  const count = 24 / (extraPointColumns.value.length || 1)
+  if(count < 6) {
+    return 6
+  }
+  return count
+})
 
 const state = reactive({
   indeterminate: true,

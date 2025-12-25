@@ -5,6 +5,25 @@
       v-model:value="data"
       :showSwitch="showSwitch"
   >
+    <template #extraTemplate>
+      <a-descriptions :column="1">
+        <a-descriptions-item label="访问类型">
+          <j-ellipsis>
+            {{ collector?.accessModes || '-' }}
+          </j-ellipsis>
+        </a-descriptions-item>
+        <a-descriptions-item :label="$t('Save.SaveModBus.4001413-30')">
+          <j-ellipsis>
+            {{ collector?.interval || '-' }}ms
+          </j-ellipsis>
+        </a-descriptions-item>
+        <a-descriptions-item :label="$t('Save.SaveModBus.4001413-32')">
+          <j-ellipsis>
+            {{ collector?.features || '-' }}
+          </j-ellipsis>
+        </a-descriptions-item>
+      </a-descriptions>
+    </template>
     <a-row :gutter="24">
       <a-col :span="12">
         <a-form-item label="访问类型" name="accessModes" :rules="[
@@ -29,7 +48,7 @@
       <a-col :span="12">
         <a-form-item
             :label="$t('Save.SaveModBus.4001413-30')"
-            :name="['configuration', 'interval']"
+            name="interval"
             :rules="[
         {
             required: true,
@@ -44,7 +63,7 @@
           <a-input-number
               style="width: 100%"
               :placeholder="$t('Save.SaveModBus.4001413-31')"
-              v-model:value="formData.configuration.interval"
+              v-model:value="formData.interval"
               addon-after="ms"
               :max="2147483648"
               :min="0"
@@ -76,12 +95,12 @@ const props = defineProps({
     default: true
   }
 })
-const formData = inject('formData', reactive({
-  configuration: {
-    interval: 3000
-  },
-  features: []
-}))
+const formData = inject('plugin-form', reactive({}))
+const collector = inject('point-form-collector', {})
+
+if (!('accessModes' in formData)) {
+  formData.accessModes = []
+}
 
 const data = ref(!props.showSwitch)
 

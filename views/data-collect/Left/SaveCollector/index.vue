@@ -33,10 +33,12 @@
           </a-row>
           <div class="point-config" v-if="jsonData">
             <TitleComponent data="基本参数"/>
-            <RenderComponents
-                v-if="jsonData"
-                :value="jsonData"
-            />
+            <div class="point-config-content">
+              <RenderComponents
+                  v-if="jsonData"
+                  :value="jsonData"
+              />
+            </div>
           </div>
           <TitleComponent data="点位模板">
             <template #extra>
@@ -63,8 +65,8 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary" @click="handleOk" :loading="loading">保存</a-button>
-          <a-button @click="onContinue">确认并继续</a-button>
+          <a-button type="primary" @click="handleOk(false)" :loading="loading">保存</a-button>
+          <a-button @click="handleOk(true)">确认并继续</a-button>
           <a-button @click="emit('close')">取消</a-button>
         </a-space>
       </div>
@@ -88,6 +90,7 @@ import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
 import {cloneDeep, omit} from "lodash-es";
 import {save, update} from "@data-collector-ui/api/data-collect/collector";
+import {onlyMessage} from "@jetlinks-web/utils";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -105,25 +108,32 @@ const emit = defineEmits(['close', 'save'])
 const formData = reactive({
   channelId: props.channel.id,
   channelName: props.channel.name,
-  name: '',
-  collectorProvider: undefined,
-  configuration: {
-    unitId: '',
-    type: undefined,
-    endian: 'BIG',
-    endianIn: 'BIG',
-    requestTimeout: 2000,
-    serializable: false,
-    inheritBreakerSpec: {
-      type: 'LowerFrequency',
+  name: undefined,
+  provider: props.channel.provider,
+  "configuration": {
+    "function": undefined,
+    "parameter": {
+      "address": undefined,
+      "quantity": undefined
+    }
+  },
+  managedConfiguration: {
+    byteLayout: undefined,
+    codec: undefined,
+    converter: {
+      enabled: false
     },
-    configuration: {}
+    outlier: {
+      enabled: false
+    },
+    deadband: {
+      enabled: false
+    },
+    handler: {
+      enabled: false
+    },
   },
-  circuitBreaker: {
-    // type: 'LowerFrequency',
-    type: 'Ignore'
-  },
-  description: '',
+  description: undefined,
 });
 const formRef = ref(null);
 const jsonData = ref();
@@ -131,6 +141,7 @@ const loading = ref(false);
 
 provide("plugin-form", formData);
 provide("plugin-form-channel", props.channel);
+provide('point-form-collector', {})
 provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
 
 const _filterList = ["COLLECTOR_GATEWAY", "virtual"]
@@ -144,13 +155,10 @@ const onChange = async (node) => {
   }
 };
 
-const handleOk = async () => {
+const handleOk = async (flag) => {
   const _data = await formRef.value?.validate();
-
   if (_data) {
-
     let _copyData = _data
-
     if (['COLLECTOR_GATEWAY'].includes(props.channel.provider)) {
       const copyData = cloneDeep(_data)
       _copyData = omit(copyData, ['configuration', 'collectorProvider'])
@@ -165,7 +173,6 @@ const handleOk = async () => {
         collectorProvider: _data.configuration?.collectorProvider
       }
     }
-
     const params = {
       ..._copyData,
       provider: props.channel.provider,
@@ -173,26 +180,28 @@ const handleOk = async () => {
         type: 'Ignore'
       }
     };
-
     loading.value = true;
-
     try {
       const response = !props.data.id
           ? await save(params)
           : await update(props.data.id, {...props.data, ...params})
       loading.value = false;
       if (response.success) {
-        emit('change', true);
+        onlyMessage('操作成功!')
+        if (flag) {
+          formData.configuration = {}
+          formData.name = undefined
+          formData.id = undefined
+          formData.description = undefined
+        } else {
+          emit('save');
+        }
       }
     } catch (e) {
       loading.value = false;
     }
   }
 };
-
-const onContinue = () => {
-  // todo: 数据默认回填:「点位模版」中数据默认填入该通讯协议下新增采集器的上一次配置数据
-}
 
 watch(() => props.channel, () => {
   if (props.channel.id) {
@@ -206,5 +215,9 @@ watch(() => props.channel, () => {
 </script>
 
 <style lang="less" scoped>
-
+.point-config-content {
+  //padding: 12px;
+  //background: #F5F5F5;
+  margin-bottom: 12px;
+}
 </style>
