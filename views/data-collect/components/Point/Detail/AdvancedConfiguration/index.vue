@@ -12,28 +12,22 @@ import DeadZone from "@data-collector-ui/views/data-collect/components/Config/De
 import ResultProcessing from "@data-collector-ui/views/data-collect/components/Config/ResultProcessing.vue";
 import StorageConfiguration from "@data-collector-ui/views/data-collect/components/Config/StorageConfiguration.vue";
 import AbnormalJudgment from "@data-collector-ui/views/data-collect/components/Config/AbnormalJudgment.vue";
+import {map} from "lodash-es";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
-})
-const formData = reactive({
-  name: '',
-  configuration: props.data.configuration || {
-    valueType: undefined,
-    terms: [],
-    pointAddress: "",
-    interval: 3000,
-  },
-  accessModes: [],
-  features: [],
-  description: props.data.description || "",
-});
+const info = inject('point-info', ref({}))
+
 const formRef = ref(null)
+const formData = reactive({});
 
-provide('formData', formData)
+watch(() => info.value, () => {
+  Object.assign(formData, info.value)
+  formData.accessModes = map(formData.accessModes, 'value')
+  formData.features = map(formData.features, 'value')
+}, {
+  immediate: true
+})
+
+provide('plugin-form', formData)
 </script>
 
 <style lang="less" scoped>

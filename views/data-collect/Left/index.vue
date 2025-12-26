@@ -146,15 +146,10 @@
 <script setup lang="ts">
 import {
   queryNoPaging,
-  remove as removeChannel,
-  update as updateChannel,
 } from "@data-collector-ui/api/data-collect/channel";
 import {
   queryCollectorTree,
-  update as updateCollector,
-  remove as removeCollector,
 } from "@data-collector-ui/api/data-collect/collector";
-import {protocolIcon, colorMap, updateStatus} from "./type";
 import SaveChannel from "./SaveChannel/index.vue";
 import SaveCollector from "./SaveCollector/index.vue";
 import FilterModal from "./components/FilterModal.vue";
@@ -162,7 +157,6 @@ import NodeItem from "./components/NodeItem.vue";
 import ActionButtons from "./components/ActionButtons.vue";
 import SearchInput from "./components/SearchInput.vue";
 import {useI18n} from "vue-i18n";
-import {onlyMessage} from "@jetlinks-web/utils";
 import type {ChannelEntity, CollectorEntity} from "./type";
 import {FOLD_TREE, COLLECTOR_TYPE, COLLECTOR_DATA} from '../data'
 import {getChannelActions, getCollectorActions} from "@data-collector-ui/views/data-collect/utils";
@@ -620,6 +614,7 @@ defineExpose({
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 
     :deep(.ant-tree-treenode) {
       margin: 4px 0;

@@ -44,7 +44,7 @@ provide(COLLECTOR_DATA, current)
 const onChange = (_type, row) => {
   type.value = _type || 'all'
   current.value = _type === 'all' ? {} : row
-  console.log(_type, row)
+  // console.log(_type, row)
 }
 </script>
 

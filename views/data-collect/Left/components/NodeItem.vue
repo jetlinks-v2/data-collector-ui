@@ -6,12 +6,9 @@
   >
     <div :class="node.isChannel ? 'channel-node' : 'device-node'">
       <div class="hover-dropdown">
-        <a-flex align="center" :gap="16">
-          <div style="display: flex; align-items: center;" v-if="node.isChannel">
-            <AIcon
-                :type="protocolIcon[node.provider]"
-                style="font-size: 20px"
-            ></AIcon>
+        <div style="height: 100%; display: flex; align-items: center; gap: 16px">
+          <div style="width: 20px; height: 20px;" v-if="node.isChannel">
+            <Image :src="`/protocol/${node.provider}/icon.png`" alt=""/>
           </div>
           <j-ellipsis>
             {{ node.name }}
@@ -40,7 +37,7 @@
                   : node?.runningState?.text
             }}
           </a-tag>
-        </a-flex>
+        </div>
         <a-dropdown trigger="click" @click.stop>
           <div class="more-button">
             <AIcon type="MoreOutlined"></AIcon>
@@ -114,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import {protocolIcon, colorMap, updateStatus} from "../type";
+import {colorMap} from "../type";
 
 const props = defineProps({
   node: {
@@ -132,6 +129,8 @@ const props = defineProps({
 .hover-dropdown {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  height: 24px;
 
   .more-button {
     display: none;

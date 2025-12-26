@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import Logs from "../../Logs/index.vue";
+import Logs from "../../LogsManage/index.vue";
 </script>
 
 <style lang="less" scoped>

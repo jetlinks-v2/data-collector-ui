@@ -4,6 +4,7 @@
       tip="将点位原始数据解析为平台可用数值或状态"
       v-model:value="data"
       :showSwitch="showSwitch"
+      @change="onSwitchChange"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
@@ -26,7 +27,8 @@
             :name="['managedConfiguration', 'codec']"
             :rules="[{required: true, message: '请选择'}]"
         >
-          <a-select v-model:value="formData.managedConfiguration.codec" placeholder="请选择" :options="dataTypeOptions"/>
+          <a-select v-model:value="formData.managedConfiguration.codec" placeholder="请选择"
+                    :options="dataTypeOptions"/>
         </a-form-item>
       </a-col>
       <a-col :span="12">
@@ -59,6 +61,7 @@ const props = defineProps({
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+let firstRender = true
 
 if (!('managedConfiguration' in formData)) {
   formData.managedConfiguration = {
@@ -124,6 +127,14 @@ const memoryOptions = [
   }
 ]
 
+const onSwitchChange = (val) => {
+  formData.managedConfiguration = {
+    ...formData.managedConfiguration,
+    codec: val === 'template' ? collector?.managedConfiguration?.codec : undefined,
+    byteLayout: val === 'template' ? collector?.managedConfiguration?.byteLayout : undefined,
+  }
+}
+
 onMounted(() => {
   queryCodecProvider().then(res => {
     if (res.success) {
@@ -133,6 +144,15 @@ onMounted(() => {
       }))
     }
   })
+})
+
+watch(() => formData.managedConfiguration.codec, () => {
+  if (firstRender) {
+    data.value = !!(formData?.managedConfiguration?.codec && formData?.managedConfiguration?.byteLayout)
+    firstRender = false
+  }
+}, {
+  immediate: true
 })
 </script>
 

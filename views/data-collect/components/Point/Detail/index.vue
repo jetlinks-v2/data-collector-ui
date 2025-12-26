@@ -145,7 +145,7 @@ watch(() => props.data.id, (val) => {
   immediate: true
 })
 
-provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
+provide(DATA_COLLECTOR_SAVE_TYPE, 'collector') // 详情的时候不用复用模版
 provide('point-info', info)
 provide('point-refresh', {
   refresh: () => {

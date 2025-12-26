@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="点位死区" tip="死区范围内的数据将被过滤（仅适用于数值类型）,减少抖动和冗余" v-model:value="data"
-               :show-switch="showSwitch">
+               :show-switch="showSwitch" @change="onSwitchChange">
     <template #extraTemplate>
       木有写
     </template>
@@ -61,6 +61,40 @@ const props = defineProps({
 const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
+const collector = inject('point-form-collector', {})
+let firstRender = true // 第一次渲染
+
+if (!('managedConfiguration' in formData)) {
+  formData.managedConfiguration = {
+    byteLayout: undefined,
+    codec: undefined,
+    converter: {
+      enabled: false
+    },
+    outlier: {
+      enabled: false
+    },
+    deadband: {
+      enabled: false
+    },
+    handler: {
+      enabled: false
+    },
+  }
+}
+
+if (!('deadband' in formData.managedConfiguration)) {
+  formData.managedConfiguration.deadband = {
+    enabled: false,
+    provider: undefined,
+    configuration: {},
+  }
+}
+
+if (!('configuration' in formData.managedConfiguration.deadband)) {
+  formData.managedConfiguration.deadband.configuration = {}
+}
+
 const type = ref('a')
 
 const columns = [
@@ -109,6 +143,19 @@ const builtinParams = [
 ]
 const builtinParamsMap = new Map(builtinParams.map(i => [i.value, i]))
 
+
+const onSwitchChange = (val) => {
+  formData.managedConfiguration.deadband.enabled = !!val
+}
+
+watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {
+  if (firstRender) {
+    data.value = !!val
+    firstRender = false
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

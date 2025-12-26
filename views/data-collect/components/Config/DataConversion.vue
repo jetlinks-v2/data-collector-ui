@@ -1,5 +1,6 @@
 <template>
-  <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data" :show-switch="showSwitch">
+  <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data" :show-switch="showSwitch"
+               @change="onSwitchChange">
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item label="缩放因子">
@@ -74,6 +75,7 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+let firstRender = true // 第一次渲染
 
 if (!('managedConfiguration' in formData)) {
   formData.managedConfiguration = {
@@ -81,22 +83,28 @@ if (!('managedConfiguration' in formData)) {
     codec: undefined,
     converter: {
       enabled: false,
-      provider: undefined,
+      provider: 'scale',
       configuration: {
         factor: 1,
         scale: 3
       },
     },
-    outlier: {},
-    deadband: {},
-    handler: {},
+    outlier: {
+      enabled: false,
+    },
+    deadband: {
+      enabled: false,
+    },
+    handler: {
+      enabled: false,
+    },
   }
 }
 
 if (!('converter' in formData.managedConfiguration)) {
   formData.managedConfiguration.converter = {
     enabled: false,
-    provider: undefined,
+    provider: 'scale',
     configuration: {
       factor: 1,
       scale: 3
@@ -110,6 +118,30 @@ if (!('configuration' in formData.managedConfiguration.converter)) {
     scale: 3
   }
 }
+
+const onSwitchChange = (val) => {
+  formData.managedConfiguration = {
+    ...formData.managedConfiguration,
+    converter: {
+      ...formData.managedConfiguration.converter,
+      enabled: !!val,
+      configuration: {
+        ...formData.managedConfiguration.converter.configuration,
+        factor: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.factor : undefined,
+        scale: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.scale : undefined
+      }
+    }
+  }
+}
+
+watch(() => formData.managedConfiguration?.converter?.enabled, (val) => {
+  if (firstRender) {
+    data.value = !!val
+    firstRender = false
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

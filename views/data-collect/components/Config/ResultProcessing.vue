@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="结果处理" tip="对数据进行告警触发、数据聚合、转发等操作" v-model:value="data"
-               :show-switch="showSwitch">
+               :show-switch="showSwitch" @change="onSwitchChange">
     <template #extraTemplate>
       木有写
     </template>
@@ -32,6 +32,8 @@ const props = defineProps({
 const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
+const collector = inject('point-form-collector', {})
+let firstRender = true // 第一次渲染
 
 const flag = computed(() => !!formData.managedConfiguration?.handler?.enabled)
 
@@ -82,6 +84,19 @@ if (!('handler' in formData.managedConfiguration)) {
     enabled: false
   }
 }
+
+const onSwitchChange = (val) => {
+  formData.managedConfiguration.handler.enabled = !!val
+}
+
+watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {
+  if (firstRender) {
+    data.value = !!val
+    firstRender = false
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

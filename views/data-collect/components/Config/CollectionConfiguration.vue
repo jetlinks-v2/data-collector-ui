@@ -4,12 +4,13 @@
       tip="设置访问类型,采集频率及数据推送等设置"
       v-model:value="data"
       :showSwitch="showSwitch"
+      @change="onSwitchChange"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item label="访问类型">
           <j-ellipsis>
-            {{ collector?.accessModes || '-' }}
+            {{ _accessModes }}
           </j-ellipsis>
         </a-descriptions-item>
         <a-descriptions-item :label="$t('Save.SaveModBus.4001413-30')">
@@ -19,7 +20,7 @@
         </a-descriptions-item>
         <a-descriptions-item :label="$t('Save.SaveModBus.4001413-32')">
           <j-ellipsis>
-            {{ collector?.features || '-' }}
+            {{ __features ? '是' : '否' }}
           </j-ellipsis>
         </a-descriptions-item>
       </a-descriptions>
@@ -37,11 +38,7 @@
           <j-check-button
               v-model:value="formData.accessModes"
               :multiple="true"
-              :options="[
-                { label: '读', value: 'read' },
-                { label: '写', value: 'write' },
-                { label: '订阅', value: 'subscribe'},
-              ]"
+              :options="options"
           />
         </a-form-item>
       </a-col>
@@ -72,8 +69,8 @@
       </a-col>
       <a-col>
         <a-form-item label="" :name="['features']">
-          <a-checkbox-group v-model:value="formData.features">
-            <a-checkbox value="changedOnly" name="type">
+          <a-checkbox-group :value="_features" @change="onChange">
+            <a-checkbox value="changedOnly">
               {{ $t('Save.SaveModBus.4001413-32') }}
             </a-checkbox>
           </a-checkbox-group>
@@ -97,13 +94,57 @@ const props = defineProps({
 })
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+let firstRender = true
 
-if (!('accessModes' in formData)) {
-  formData.accessModes = []
+if (!('features' in formData)) {
+  formData.features = []
 }
 
 const data = ref(!props.showSwitch)
 
+const options = [
+  {label: '读', value: 'read'},
+  {label: '写', value: 'write'},
+  {label: '订阅', value: 'subscribe'},
+]
+
+const _features = computed(() => {
+  return formData.features.filter(i => i === 'changedOnly')
+})
+
+const _accessModes = computed(() => {
+  return options.filter(item => (collector?.accessModes || []).includes(item.value)).map(item => item.label).join('、')
+})
+
+const __features = computed(() => {
+  return !!collector.features?.find(i => i === 'changedOnly')
+})
+
+const onSwitchChange = (val) => {
+  if (val === 'template') {
+    formData.accessModes = collector.accessModes || []
+    formData.interval = collector.interval
+    formData.features = collector.features?.includes('changedOnly') ? ['changedOnly', ...formData.features] : formData.features.filter(i => i !== 'changedOnly')
+  } else {
+    formData.accessModes = []
+    formData.interval = undefined
+    formData.features = formData.features.filter(i => i !== 'changedOnly')
+  }
+}
+
+const onChange = (val) => {
+  const arr = formData.features.filter(i => i !== 'changedOnly')
+  formData.features = [...val, ...arr]
+}
+
+watch(() => formData.accessModes, () => {
+  if (firstRender) {
+    data.value = !!formData.accessModes?.length
+    firstRender = false
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

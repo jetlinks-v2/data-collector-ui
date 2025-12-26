@@ -1,14 +1,15 @@
 <template>
   <a-input-search style="width: 50%;" :placeholder="'请输入名称'" @search="handleSearch"></a-input-search>
-  <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}" @click="handleChooseProvider(item.id)">
+  <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}"
+       @click="handleChooseProvider(item.id)">
     <div style="width: 80px;height: 80px;">
-      <Image :src="ImageMap.get(item.id)" :width="80" :height="80" alt="" />
+      <Image :src="`/protocol/${item.id}/icon.png`" :width="80" :height="80" alt=""/>
     </div>
     <div>
       <p>
-        {{item.name}}
+        {{ item.name }}
       </p>
-      <p>适用于支持{{item.name}}通讯协议的设备</p>
+      <p>适用于支持{{ item.name }}通讯协议的设备</p>
     </div>
   </div>
   <div style="margin: 40% 0">
@@ -17,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-import { ImageMap } from '../type';
 import {PropType} from "vue";
 
 const props = defineProps({
@@ -32,6 +32,7 @@ const props = defineProps({
 })
 const emits = defineEmits(['update:value', 'change']);
 const searchValue = ref('');
+const jsonData = ref()
 
 const filterOptions = computed(() => {
   return props.options?.filter(item => {
@@ -60,13 +61,16 @@ const handleSearch = (val: string) => {
   display: flex;
   align-items: center;
   gap: 10px;
+
   &.active {
     border: 1px solid #409eff;
   }
+
   img {
     width: 80px;
     height: 80px;
   }
+
   .no-image {
     width: 80px;
     height: 80px;

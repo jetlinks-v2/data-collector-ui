@@ -20,21 +20,11 @@ import CollectionConfiguration
 import DataConversion from "@data-collector-ui/views/data-collect/components/Config/DataConversion.vue";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
+import {map} from "lodash-es";
 
 const info = inject('point-info', ref({}))
 
-const formData = reactive({
-  name: '',
-  configuration: {
-    valueType: undefined,
-    terms: [],
-    pointAddress: "",
-    interval: 3000,
-  },
-  accessModes: [],
-  features: [],
-  description: "",
-});
+const formData = reactive({});
 const formRef = ref(null)
 const jsonData = ref();
 const onChange = async (node) => {
@@ -44,11 +34,13 @@ const onChange = async (node) => {
 watch(() => info.value, () => {
   onChange(info.value)
   Object.assign(formData, info.value)
+  formData.accessModes = map(formData.accessModes, 'value')
+  formData.features = map(formData.features, 'value')
 }, {
   immediate: true
 })
 
-provide("plugin-point-detail-form", formData);
+provide('plugin-form', formData)
 provide("plugin-point-detail-events", {
   onValueChange: async (name, value) => {
     const res = await formRef.value?.validate()

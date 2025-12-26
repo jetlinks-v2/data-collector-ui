@@ -67,6 +67,7 @@ export const getChannelActions = (data: Partial<Record<string, any>>, onAction: 
                         ? "请先禁用该通道，再删除。"
                         : "删除",
             },
+            danger: true,
             disabled: data?.state?.value !== "disabled",
             popConfirm: {
                 placement: "topRight",
@@ -135,6 +136,7 @@ export const getCollectorActions = (data: Partial<Record<string, any>>, onAction
                         ? "请先禁用，再删除"
                         : "删除",
             },
+            danger: true,
             disabled: state !== 'disabled',
             popConfirm: {
                 placement: "topRight",
@@ -159,6 +161,7 @@ export const getPointActions = (data: Partial<Record<string, any>>, onAction: (i
             tooltip: {
                 title: "删除",
             },
+            danger: true,
             popConfirm: {
                 placement: "topRight",
                 title: "确定删除？",

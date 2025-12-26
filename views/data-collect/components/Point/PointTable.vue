@@ -13,7 +13,7 @@
         mode="TABLE"
         :request="getDataSource"
         :defaultParams="{
-            sorts: [{ name: 'createTime', order: 'desc' }],
+          sorts: [{name: 'createTime', order: 'desc'}]
         }"
         :params="params"
         style="padding: 0; margin: 0"
@@ -30,13 +30,12 @@
                 : false
         "
     >
-      <template
-          v-for="item in _columns"
-          :key="item.dataIndex"
-          v-slot:[item.dataIndex]="{ record, index }"
-      >
-<!--        todo: 6666-->
-      </template>
+      <!--            <template-->
+      <!--                v-for="item in _columns"-->
+      <!--                :key="item.dataIndex"-->
+      <!--                v-slot:[item.dataIndex]="{ record, index }"-->
+      <!--            >-->
+      <!--            </template>-->
       <template #headerCell="{ column }">
         <template v-if="['name', 'updateTime', 'interval'].includes(column.key)">
           <div class="header-cell-title">
@@ -114,7 +113,7 @@
       </template>
       <template #name="slotProps">
         <div style="display: flex; align-items: center;gap: 16px; white-space: normal">
-          <img style="width: 30px" :src="ImageMap.get(slotProps.provider) || ImageMap.get('protocol')"/>
+          <span style="color: #1677FF;"><AIcon type="EnvironmentFilled"/></span>
           <div class="name" @click="handleView(slotProps)">
             <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
           </div>
@@ -141,6 +140,9 @@
       <template #interval="slotProps">
         {{ slotProps.interval }}ms
       </template>
+      <template #address="slotProps">
+        {{ slotProps.metadata?.address || '--' }}
+      </template>
     </j-pro-table>
   </div>
   <ColumnsConfig
@@ -154,6 +156,7 @@
       v-if="visible.save"
       :data="current"
       :collector="data"
+      @save="onRefresh"
       @close="visible.save = false"
   />
   <Detail
@@ -163,17 +166,35 @@
       @close="visible.viewPoint = false"
       @refresh="onRefresh"
   />
+  <BatchImport
+      v-if="visible.import"
+      :downloadUrlBuilder="(_type) => exportTemplate(data.provider, _type)"
+      @close="visible.import = false"
+      @save="onRefresh"
+  />
+  <BatchUpdate
+      v-if="visible.batchUpdate"
+      :data="_selectedRows"
+      :provider="data.provider"
+      @close="visible.batchUpdate = false"
+      @save="onRefresh"
+  />
   <RenderComponents v-if="jsonData" :value="jsonData"/>
 </template>
 
 <script setup>
 import {useI18n} from "vue-i18n";
-import {exportPoint, queryPoint} from "@data-collector-ui/api/data-collect/collector";
+import {
+  batchDeletePoint,
+  exportPoint,
+  exportTemplate,
+  queryPoint
+} from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig.vue";
 import {baseColumns} from "./columns";
-import {downloadFileByUrl, randomString} from "@jetlinks-web/utils";
-import {ChannelState, COLLECTOR_DATA, COLLECTOR_TYPE, pointImgUrl} from "@data-collector-ui/views/data-collect/data";
+import {downloadFileByUrl, onlyMessage, randomString} from "@jetlinks-web/utils";
+import {ChannelState, COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
 import dayjs from "dayjs";
 import {cloneDeep, map} from "lodash-es";
 import {wsClient} from "@jetlinks-web/core";
@@ -184,8 +205,7 @@ import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import ValueItem from './components/ValueItem.vue'
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 import {useMenuStore} from "@jetlinks-web-core/store";
-
-const searchParams = inject('search-params', reactive({}))
+import BatchUpdate from "./components/BatchUpdate.vue";
 
 const {t: $t} = useI18n();
 const sortValue = reactive({
@@ -193,24 +213,10 @@ const sortValue = reactive({
   updateTime: 'asc',
   interval: 'asc',
 })
-const params = ref({
-  "sorts": [
-    {
-      "name": "name",
-      "order": "asc"
-    },
-    {
-      "name": "updateTime",
-      "order": "asc"
-    },
-    {
-      "name": "interval",
-      "order": "asc"
-    }
-  ]
-})
+const params = ref({})
 const showSearch = ref(false)
 const tableRef = ref()
+let pointTypeRefresh = false
 
 const columnsConfig = reactive({
   visible: false,
@@ -219,17 +225,11 @@ const columnsConfig = reactive({
 })
 const isCheck = ref(false);
 const _selectedRowKeys = ref([]);
+const _selectedRows = ref([]);
 const menuStore = useMenuStore();
 const data = inject(COLLECTOR_DATA, ref({}))
 const type = inject(COLLECTOR_TYPE, ref('all'))
-
-const ImageMap = new Map();
-ImageMap.set('OPC_UA', pointImgUrl.opcImage);
-ImageMap.set('MODBUS_TCP', pointImgUrl.modbusImage);
-ImageMap.set('snap7', pointImgUrl.s7Image);
-ImageMap.set('iec104', pointImgUrl.iecImage);
-ImageMap.set('COLLECTOR_GATEWAY', pointImgUrl.gatewayImage);
-ImageMap.set('protocol', pointImgUrl.protocolImage);
+const pointType = inject('point-type', ref())
 
 const subRef = ref();
 const propertyValue = ref(new Map());
@@ -238,7 +238,8 @@ const visible = reactive({ // 判断按钮显示
   batchAdd: true,
   save: false,
   import: false,
-  viewPoint: false
+  viewPoint: false,
+  batchUpdate: false,
 });
 
 const current = ref({})
@@ -250,18 +251,15 @@ const jsonData = ref();
 provide("point-actions", pointActions);
 
 const searchCount = computed(() => {
+  // 怎么统计选中的搜索条件
   let count = 0
-  if (searchParams.point) {
-    count++
-  }
-  if (searchParams.top) {
-    count++
-  }
+  // if (searchParams.point) {
+  //   count++
+  // }
+  // if (searchParams.top) {
+  //   count++
+  // }
   return count
-})
-
-const _columns = computed(() => {
-  return columnsConfig.data.filter(item => !map(baseColumns, 'dataIndex').includes(item.key))
 })
 
 const onResizeColumn = (w, col) => {
@@ -278,35 +276,39 @@ const batchActions = [
     text: '批量启用点位',
     ghost: true,
     type: 'primary',
-    permission: 'device/Instance:action',
     icon: 'CheckCircleOutlined',
-    // popConfirm: {
-    //   title: $t('Instance.index.133466-33'),
-    //   onConfirm: activeAllDevice,
-    // },
+    selected: {
+      popConfirm: {
+        title: '确认启用?',
+        onConfirm: () => {
+
+        },
+      },
+    }
   },
   {
     key: 'update',
     text: '批量修改点位',
     ghost: true,
     type: 'primary',
-    permission: 'device/Instance:action',
     icon: 'EditOutlined',
-    // popConfirm: {
-    //   title: $t('Instance.index.133466-33'),
-    //   onConfirm: activeAllDevice,
-    // },
+    selected: {
+      onClick: () => {
+        visible.batchUpdate = true
+      }
+    }
   },
   {
     key: 'disable',
     text: '批量禁用点位',
     danger: true,
     icon: 'StopOutlined',
-    permission: 'device/Instance:action',
     selected: {
       popConfirm: {
-        // title: $t('Instance.index.133466-38'),
-        // onConfirm: disabledSelectedDevice,
+        title: '确认禁用?',
+        onConfirm: () => {
+
+        },
       },
     },
   },
@@ -314,12 +316,22 @@ const batchActions = [
     key: 'delete',
     text: '批量删除点位',
     danger: true,
-    permission: 'device/Instance:delete',
     icon: 'DeleteOutlined',
     selected: {
       popConfirm: {
-        // title: $t('Instance.index.133466-36'),
-        // onConfirm: delSelectedDevice,
+        title: $t('Point.index.400149-6'),
+        onConfirm: async () => {
+          if (!_selectedRowKeys.value.length) {
+            onlyMessage($t('Point.index.400149-15'), 'error');
+            return
+          }
+          const response = await batchDeletePoint(_selectedRowKeys.value)
+          if (response.success) {
+            _selectedRowKeys.value = []
+            tableRef.value?.reload();
+            onlyMessage($t('Point.index.400149-14'), 'success');
+          }
+        },
       },
     },
   },
@@ -332,6 +344,8 @@ const handleSubscribeValue = throttle((payload) => {
 const onRefresh = () => {
   tableRef.value?.reload()
   visible.viewPoint = false
+  visible.import = false
+  visible.save = false
 }
 
 const subscribeProperty = (value) => {
@@ -349,22 +363,53 @@ const subscribeProperty = (value) => {
 };
 
 const getDataSource = (p) => {
-  return queryPoint(p).then(resp => {
+  const _params = {...p}
+  const terms = []
+  // 根据左边的搜索来查询数据
+  if (type.value === 'all') {
+    // todo: 根据当前选择的采集器类型, 生成查询参数
+  } else {
+    terms.push({
+      column: type.value === 'channel' ? 'channelId' : 'collectorId',
+      type: 'and',
+      termType: 'eq',
+      value: data.value.id
+    })
+  }
+  if (['running', 'stopped'].includes(pointType.value)) {
+    terms.push({
+      column: 'runningState',
+      termType: pointType.value === 'running' ? 'eq' : 'not',
+      type: 'and',
+      value: 'running'
+    })
+  }
+  if (!_params.terms?.length) {
+    _params.terms = []
+  }
+  if (terms.length > 0) {
+    _params.terms = [..._params.terms, ...terms]
+  }
+  const sorts = Object.keys(sortValue).map(key => ({
+    name: key,
+    order: sortValue[key]
+  }))
+  _params.sorts.push(...sorts)
+  return queryPoint(_params).then(resp => {
     subRef.value?.unsubscribe();
     if (resp.success && resp.result.data.length) {
       setTimeout(() => {
         const _array = resp.result.data
         subscribeProperty(_array);
-        _array.forEach((item) => {
-          item.accessModes?.forEach((i) => {
-            if (i?.value === 'read') {
-              console.log(item.id, item, '123');
-            }
-          });
-        })
+        // _array.forEach((item) => {
+        //   item.accessModes?.forEach((i) => {
+        //     if (i?.value === 'read') {
+        //       console.log(item.id, item, '123');
+        //     }
+        //   });
+        // })
       }, 100)
     }
-    // cancelSelect();
     return resp
   })
 }
@@ -382,8 +427,10 @@ const onSelectChange = (item, state) => {
   const arr = new Set(_selectedRowKeys.value);
   if (state) {
     arr.add(item.id);
+    _selectedRows.value.push(item);
   } else {
     arr.delete(item.id);
+    _selectedRows.value = _selectedRows.value.filter(i => i.id !== item.id);
   }
   _selectedRowKeys.value = [...arr.values()];
 };
@@ -393,6 +440,7 @@ const selectAll = (selected, selectedRows, changeRows) => {
     changeRows.map((i) => {
       if (!_selectedRowKeys.value.includes(i.id)) {
         _selectedRowKeys.value.push(i.id);
+        _selectedRows.value.push(i);
       }
     });
   } else {
@@ -404,27 +452,21 @@ const selectAll = (selected, selectedRows, changeRows) => {
       }
     });
     _selectedRowKeys.value = _ids;
+    _selectedRows.value = _selectedRows.value.filter(i => !_ids.includes(i.id));
   }
 };
 
 const handleSort = (key, value) => {
   sortValue[key] = value
-  const sorts = Object.keys(sortValue).map(key => ({
-    name: key,
-    order: sortValue[key]
-  }))
-  params.value = {
-    ...params.value,
-    sorts,
-  }
+  columnsConfig.key = randomString()
+  console.log('33333333')
 }
 
 const handleSearch = (_params) => {
-  console.log(_params)
+  params.value = _params
 }
 
 const onSaveColumnsConfig = (dt) => {
-  console.log(dt, 'dt')
   columnsConfig.data = dt
   columnsConfig.key = randomString()
   columnsConfig.visible = false
@@ -485,11 +527,10 @@ const handleView = (data) => {
 };
 
 watch(
-    () => data.value,
+    () => data.value.id,
     (value) => {
-      if (value.id && !!value.provider) {
-        // COLLECTOR_GATEWAY写死
-        if (value.provider === 'COLLECTOR_GATEWAY') {
+      if (value && !!data.value.provider) {
+        if (data.value.provider === 'COLLECTOR_GATEWAY') {
           pointActions.add = true
           pointActions.batchAdd = false
         } else {
@@ -498,9 +539,27 @@ watch(
           getPointAction()
         }
       }
+      // 刷新页面, 清空查询参数
+      params.value = {}
+      // 清空高级搜索
+      columnsConfig.key = randomString()
+      console.log('11111111111')
     },
-    {immediate: true, deep: true},
+    {immediate: true},
 );
+
+watch(
+    () => pointType.value,
+    () => {
+      if (!pointTypeRefresh) { // 保证第一次只刷新上面的id变化
+        pointTypeRefresh = true
+      } else {
+        columnsConfig.key = randomString()
+        console.log('22222222222')
+      }
+    },
+    {immediate: true},
+)
 
 onUnmounted(() => {
   subRef.value?.unsubscribe();

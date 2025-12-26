@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open title="新增采集器" :width="800" @close="emit('close')">
+  <a-drawer open :title="data?.id ? '编辑采集器' : '新增采集器'" :width="800" @close="emit('close')">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -66,7 +66,7 @@
       <div style="padding-top: 24px;">
         <a-space>
           <a-button type="primary" @click="handleOk(false)" :loading="loading">保存</a-button>
-          <a-button @click="handleOk(true)">确认并继续</a-button>
+          <a-button @click="handleOk(true)" :loading="loading">确认并继续</a-button>
           <a-button @click="emit('close')">取消</a-button>
         </a-space>
       </div>
@@ -88,7 +88,7 @@ import {useI18n} from "vue-i18n";
 import i18n from "@jetlinks-web-core/locales";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
-import {cloneDeep, omit} from "lodash-es";
+import {cloneDeep, omit, pick} from "lodash-es";
 import {save, update} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
 
@@ -110,13 +110,17 @@ const formData = reactive({
   channelName: props.channel.name,
   name: undefined,
   provider: props.channel.provider,
-  "configuration": {
+  configuration: {
     "function": undefined,
     "parameter": {
       "address": undefined,
       "quantity": undefined
-    }
+    },
   },
+  description: undefined,
+  accessModes: [],
+  features: [],
+  interval: undefined,
   managedConfiguration: {
     byteLayout: undefined,
     codec: undefined,
@@ -133,11 +137,12 @@ const formData = reactive({
       enabled: false
     },
   },
-  description: undefined,
 });
 const formRef = ref(null);
 const jsonData = ref();
 const loading = ref(false);
+
+const defaultKeys = ['accessModes', 'features', 'interval', 'managedConfiguration']
 
 provide("plugin-form", formData);
 provide("plugin-form-channel", props.channel);
@@ -158,24 +163,32 @@ const onChange = async (node) => {
 const handleOk = async (flag) => {
   const _data = await formRef.value?.validate();
   if (_data) {
-    let _copyData = _data
-    if (['COLLECTOR_GATEWAY'].includes(props.channel.provider)) {
-      const copyData = cloneDeep(_data)
-      _copyData = omit(copyData, ['configuration', 'collectorProvider'])
-
-      _copyData.configuration = {
-        configuration: {
-          ...omit(_data.configuration, 'collectorProvider'),
-          inheritBreakerSpec: {
-            type: 'Ignore'
-          }
-        },
-        collectorProvider: _data.configuration?.collectorProvider
-      }
-    }
+    let _copyData = {...formData}
+    // if (['COLLECTOR_GATEWAY'].includes(props.channel.provider)) {
+    //   const copyData = cloneDeep(_data)
+    //   _copyData = omit(copyData, ['configuration', 'collectorProvider'])
+    //
+    //   _copyData.configuration = {
+    //     configuration: {
+    //       ...omit(_data.configuration, 'collectorProvider'),
+    //       inheritBreakerSpec: {
+    //         type: 'Ignore'
+    //       }
+    //     },
+    //     collectorProvider: _data.configuration?.collectorProvider
+    //   }
+    // } else {
+    //   _copyData.configuration = {
+    //     ..._data.configuration,
+    //     template: pick(_data, defaultKeys)
+    //   }
+    // }
     const params = {
-      ..._copyData,
-      provider: props.channel.provider,
+      ...omit(_copyData, defaultKeys),
+      configuration: {
+        ..._data.configuration,
+        template: pick(_copyData, defaultKeys)
+      },
       circuitBreaker: {
         type: 'Ignore'
       }
@@ -207,10 +220,30 @@ watch(() => props.channel, () => {
   if (props.channel.id) {
     formData.channelId = props.channel.id
     formData.channelName = props.channel.name
+    formData.provider = props.channel.provider
     onChange(props.channel)
+    console.log(11111111111)
   }
 }, {
-  immediate: true
+  immediate: true,
+  deep: true
+})
+
+watch(() => props.data, (val) => {
+  if (val.id) {
+    console.log(val, 'val')
+    Object.assign(formData, val)
+    const _template = val.configuration?.template || {}
+    defaultKeys.forEach(i => { // 转换模板中的数据
+      formData[i] = _template[i]
+    })
+    onChange(props.data)
+    console.log(222222)
+    console.log(formData, 'formData')
+  }
+}, {
+  immediate: true,
+  deep: true
 })
 </script>
 

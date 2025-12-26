@@ -69,7 +69,7 @@ const _baseColumns = computed(() => baseColumns.map(i => ({
 
 const _span = computed(() => {
   const count = 24 / (extraPointColumns.value.length || 1)
-  if(count < 6) {
+  if (count < 6) {
     return 6
   }
   return count
@@ -128,11 +128,24 @@ const onSave = () => {
   emits('save', [...arr, ...extraArr]);
 }
 
+const getData = (baseArr, arr) => {
+  const a = arr.length && baseArr.every(i => arr.includes(i))
+  const b = baseArr.length && baseArr.some(i => arr.includes(i))
+  return {
+    indeterminate: !a && b,
+    checkAll: a,
+    checkedList: baseArr.filter(i => arr.includes(i))
+  }
+}
+
 watch(() => props.data, (newVal) => {
   const arr = newVal.map(i => i.key)
-  state.checkedList = arr
-  state.indeterminate = arr.length > 0 && arr.length < _baseColumns.value.length
-  state.checkAll = arr.length === _baseColumns.value.length
+  const obj = getData(map(_baseColumns.value, 'value'), arr)
+  Object.assign(state, obj)
+  console.log(extraPointColumns.value)
+  const _obj = getData(map(extraPointColumns.value, 'dataIndex'), arr)
+  console.log(_obj, '_obj')
+  Object.assign(_state, _obj)
 }, {
   immediate: true,
 })

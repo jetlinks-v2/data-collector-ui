@@ -103,6 +103,7 @@ const onDetail = () => {
 }
 
 watch(() => [type.value, data.value.id], () => {
+  // todo: 根据当前选择的采集器类型, 生成查询参数
   getCountList(type.value || 'all', data.value.id || '', true).then(resp => {
     countList.value = resp
   })

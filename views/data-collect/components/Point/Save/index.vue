@@ -25,7 +25,6 @@
           </a-row>
           <div class="point-config" v-if="jsonData">
             <h3>点位配置</h3>
-            <!--todo: 请求远程的动态配置-->
             <div>
               <RenderComponents v-if="jsonData" :value="jsonData"/>
             </div>
@@ -47,8 +46,8 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary" @click="onSubmit(false)">保存</a-button>
-          <a-button @click="onSubmit(true)">确认并继续</a-button>
+          <a-button type="primary" @click="onSubmit(false)" :loading="loading">保存</a-button>
+          <a-button @click="onSubmit(true)" :loading="loading">确认并继续</a-button>
           <a-button @click="emit('close')">取消</a-button>
         </a-space>
       </div>
@@ -68,6 +67,8 @@ import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/da
 import {useI18n} from "vue-i18n";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
+import {savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
+import {onlyMessage} from "@jetlinks-web/utils";
 
 const {t: $t} = useI18n();
 
@@ -84,10 +85,12 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 
 const formData = reactive({
+  channelId: props.collector?.channelId,
+  channelName: props.collector?.channelName,
   collectorId: props.collector?.id,
   collectorName: props.collector.name,
-  name: undefined,
   provider: props.collector.provider,
+  name: undefined,
   "configuration": {
     "function": undefined,
     "parameter": {
@@ -116,29 +119,52 @@ const formData = reactive({
 const formRef = ref(null)
 const jsonData = ref();
 const configVisible = ref(false)
+const loading = ref(false)
+
+const _collector = computed(() => {
+  return {...props.collector, ...(props.collector?.configuration?.template || {})}
+})
 
 provide('plugin-form', formData)
-provide('point-form-collector', props.collector)
+provide('point-form-collector', _collector.value)
 provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
 
-console.log(props.collector, 'props.collector')
 const onChange = async (provider) => {
   jsonData.value = await devGetProtocol(provider || 'MODBUS_TCP', "point");
 };
 
 const onSubmit = async (flag) => {
-  console.log(formData, 'formData', flag)
   const resp = await formRef.value?.validate?.()
   if (resp) {
-    // emit('save', formData)
+    loading.value = true;
+    const response = !props.data?.id
+        ? await savePointBatch(formData).finally(() => {
+          loading.value = false
+        })
+        : await updatePoint(props.data?.id, {...props.data, ...formData}).finally(() => {
+          loading.value = false
+        });
+    if (response.success) {
+      onlyMessage('操作成功!')
+      if (flag) {
+        formData.configuration = {}
+        formData.name = undefined
+        formData.id = undefined
+        formData.description = undefined
+      } else {
+        emit('save');
+      }
+    }
   }
 }
 
 watch(() => props.collector, () => {
-  console.log(props.collector)
   if (props.collector.id) {
     formData.collectorId = props.collector.id
     formData.collectorName = props.collector.name
+    formData.channelId = props.collector.channelId
+    formData.channelName = props.collector.channelName
+    formData.provider = props.collector.provider
     onChange(props.collector.provider)
   }
 }, {

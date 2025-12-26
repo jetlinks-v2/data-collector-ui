@@ -1,8 +1,8 @@
 <template>
   <div class="right-warp">
-    <Header />
-    <PointTop />
-    <PointTable />
+    <Header/>
+    <PointTop/>
+    <PointTable/>
   </div>
 </template>
 
@@ -10,6 +10,10 @@
 import Header from './components/Header.vue'
 import PointTop from "./components/Point/PointTop.vue";
 import PointTable from "./components/Point/PointTable.vue";
+
+// 用于点位列表右边的点位统计的搜索
+const pointType = ref('total')
+provide('point-type', pointType)
 
 </script>
 
