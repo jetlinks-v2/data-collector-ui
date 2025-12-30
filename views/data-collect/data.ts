@@ -2,7 +2,9 @@ import i18n from '@jetlinks-web-core/locales'
 export const COLLECTOR_TYPE = 'data-collector-type'
 export const COLLECTOR_DATA = 'data-collector-data'
 export const DATA_COLLECTOR_SAVE_TYPE = 'collector'
+export const DATA_COLLECTOR_CONFIG_TYPE = 'data-collector-config-type' // 是否需要立即保存
 export const FOLD_TREE = 'fold-tree'
+
 
 // 通道状态
 export const ChannelState = {

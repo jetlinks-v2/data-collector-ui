@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="存储配置" tip="配置点位数据存储类型" v-model:value="data" :show-switch="showSwitch"
-               @change="onSwitchChange">
+               @change="onSwitchChange" @outside="onOutsize">
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item :label="item.label" v-for="item in list" :key="item.value">
@@ -23,6 +23,8 @@
 
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
+import {inject} from "vue";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const props = defineProps({
   showSwitch: {
@@ -34,6 +36,9 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true // 第一次渲染
 
 const list = [
@@ -74,6 +79,12 @@ const onSwitchChange = (val) => {
     formData.features = (collector.features || []).filter(i => _list.includes(i)) || []
   } else {
     formData.features = []
+  }
+}
+
+const onOutsize = () => {
+  if (__type) {
+    events.onValueChange('features', formData.features)
   }
 }
 

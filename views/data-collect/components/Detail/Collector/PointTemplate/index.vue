@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-
 import ResultProcessing from "@data-collector-ui/views/data-collect/components/Config/ResultProcessing.vue";
 import DataConversion from "@data-collector-ui/views/data-collect/components/Config/DataConversion.vue";
 import DeadZone from "@data-collector-ui/views/data-collect/components/Config/DeadZone.vue";
@@ -23,37 +22,26 @@ import StorageConfiguration from "@data-collector-ui/views/data-collect/componen
 import DataParsing from "@data-collector-ui/views/data-collect/components/Config/DataParsing.vue";
 import CollectionConfiguration
   from "@data-collector-ui/views/data-collect/components/Config/CollectionConfiguration.vue";
+import {map} from "lodash-es";
+import {DATA_COLLECTOR_CONFIG_TYPE, DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
 
-const props = defineProps({
-  data: {
-    type: Object,
-    default: () => ({})
-  }
+const info = inject('collector-info', ref({}))
+
+const formData = reactive({});
+const formRef = ref(null)
+
+watch(() => info.value, () => {
+  Object.assign(formData, info.value)
+  formData.accessModes = map(formData.accessModes, 'value')
+  formData.features = map(formData.features, 'value')
+  Object.assign(formData, formData.configuration?.template || {})
+}, {
+  immediate: true
 })
 
-const formData = reactive({
-  name: '',
-  collectorProvider: undefined,
-  configuration: {
-    unitId: '',
-    type: undefined,
-    endian: 'BIG',
-    endianIn: 'BIG',
-    requestTimeout: 2000,
-    serializable: false,
-    inheritBreakerSpec: {
-      type: 'LowerFrequency',
-    },
-    configuration: {}
-  },
-  circuitBreaker: {
-    // type: 'LowerFrequency',
-    type: 'Ignore'
-  },
-  description: '',
-});
-provide("plugin-form", formData);
-
+provide('plugin-form', formData)
+provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
+provide(DATA_COLLECTOR_CONFIG_TYPE, true) // 是否需要立即保存
 </script>
 
 <style lang="less" scoped>

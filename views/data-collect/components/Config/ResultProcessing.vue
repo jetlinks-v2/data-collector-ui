@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="结果处理" tip="对数据进行告警触发、数据聚合、转发等操作" v-model:value="data"
-               :show-switch="showSwitch" @change="onSwitchChange">
+               :show-switch="showSwitch" @change="onSwitchChange" @outside="onOutsize">
     <template #extraTemplate>
       木有写
     </template>
@@ -22,6 +22,8 @@
 </template>
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
+import {inject} from "vue";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const props = defineProps({
   showSwitch: {
@@ -33,6 +35,10 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
+
 let firstRender = true // 第一次渲染
 
 const flag = computed(() => !!formData.managedConfiguration?.handler?.enabled)
@@ -87,6 +93,12 @@ if (!('handler' in formData.managedConfiguration)) {
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
+}
+
+const onOutsize = () => {
+  if(__type){
+    events.onValueChange('managedConfiguration', formData.managedConfiguration)
+  }
 }
 
 watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {

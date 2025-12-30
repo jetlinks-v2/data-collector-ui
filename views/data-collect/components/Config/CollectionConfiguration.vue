@@ -5,6 +5,7 @@
       v-model:value="data"
       :showSwitch="showSwitch"
       @change="onSwitchChange"
+      @outside="onOutsize"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
@@ -83,6 +84,8 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {useI18n} from "vue-i18n";
+import {inject} from "vue";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const {t: $t} = useI18n();
 
@@ -94,6 +97,9 @@ const props = defineProps({
 })
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true
 
 if (!('features' in formData)) {
@@ -129,6 +135,12 @@ const onSwitchChange = (val) => {
     formData.accessModes = []
     formData.interval = undefined
     formData.features = formData.features.filter(i => i !== 'changedOnly')
+  }
+}
+
+const onOutsize = () => {
+  if (__type) {
+    events.onValueChange('formData', formData)
   }
 }
 

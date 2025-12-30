@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data" :show-switch="showSwitch"
-               @change="onSwitchChange">
+               @change="onSwitchChange" @outside="onOutsize">
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item label="缩放因子">
@@ -64,6 +64,8 @@
 
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
+import {inject} from "vue";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const props = defineProps({
   showSwitch: {
@@ -75,6 +77,9 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true // 第一次渲染
 
 if (!('managedConfiguration' in formData)) {
@@ -131,6 +136,12 @@ const onSwitchChange = (val) => {
         scale: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.scale : undefined
       }
     }
+  }
+}
+
+const onOutsize = () => {
+  if(__type){
+    events.onValueChange('managedConfiguration', formData.managedConfiguration)
   }
 }
 

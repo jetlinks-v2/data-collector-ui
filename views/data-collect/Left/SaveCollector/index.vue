@@ -222,7 +222,6 @@ watch(() => props.channel, () => {
     formData.channelName = props.channel.name
     formData.provider = props.channel.provider
     onChange(props.channel)
-    console.log(11111111111)
   }
 }, {
   immediate: true,
@@ -231,15 +230,12 @@ watch(() => props.channel, () => {
 
 watch(() => props.data, (val) => {
   if (val.id) {
-    console.log(val, 'val')
     Object.assign(formData, val)
     const _template = val.configuration?.template || {}
     defaultKeys.forEach(i => { // 转换模板中的数据
       formData[i] = _template[i]
     })
     onChange(props.data)
-    console.log(222222)
-    console.log(formData, 'formData')
   }
 }, {
   immediate: true,

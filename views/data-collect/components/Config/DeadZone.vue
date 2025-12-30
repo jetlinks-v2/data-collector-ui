@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="点位死区" tip="死区范围内的数据将被过滤（仅适用于数值类型）,减少抖动和冗余" v-model:value="data"
-               :show-switch="showSwitch" @change="onSwitchChange">
+               :show-switch="showSwitch" @change="onSwitchChange" @outside="onOutsize">
     <template #extraTemplate>
       木有写
     </template>
@@ -51,6 +51,8 @@
 
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
+import {inject} from "vue";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const props = defineProps({
   showSwitch: {
@@ -62,6 +64,10 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
+
 let firstRender = true // 第一次渲染
 
 if (!('managedConfiguration' in formData)) {
@@ -146,6 +152,12 @@ const builtinParamsMap = new Map(builtinParams.map(i => [i.value, i]))
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.deadband.enabled = !!val
+}
+
+const onOutsize = () => {
+  if(__type){
+    events.onValueChange('managedConfiguration', formData.managedConfiguration)
+  }
 }
 
 watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {

@@ -1,5 +1,5 @@
 <template>
-  <div class="collapsed" :class="{'visible': visible}">
+  <div class="collapsed" :class="{'visible': visible}" ref="collapsedRef">
     <div class="header">
       <div class="title">
         <AIcon type="CodeSandboxOutlined"/>
@@ -28,6 +28,7 @@
 
 <script setup>
 import CollapseRadio from "./CollapseRadio.vue";
+import {onClickOutside} from "@vueuse/core";
 
 const props = defineProps({
   value: {
@@ -52,12 +53,18 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:value', 'change'])
+const emit = defineEmits(['update:value', 'change', 'outside'])
 
 const _value = ref(props.value)
+const collapsedRef = ref(null)
 
 const visible = computed(() => props.value === true)
 
+onClickOutside(collapsedRef, () => {
+  if(visible.value){
+    emit('outside')
+  }
+})
 const onSwitch = (flag) => {
   _value.value = flag
   emit('update:value', flag)

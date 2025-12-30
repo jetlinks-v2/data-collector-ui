@@ -5,6 +5,7 @@
       v-model:value="data"
       :showSwitch="showSwitch"
       @change="onSwitchChange"
+      @outside="onOutsize"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
@@ -28,7 +29,7 @@
             :rules="[{required: true, message: '请选择'}]"
         >
           <a-select v-model:value="formData.managedConfiguration.codec" placeholder="请选择"
-                    :options="dataTypeOptions"/>
+                    :options="dataTypeOptions" allow-clear/>
         </a-form-item>
       </a-col>
       <a-col :span="12">
@@ -51,6 +52,8 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {queryCodecProvider} from "@data-collector-ui/api/data-collect/collector";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {inject} from "vue";
 
 const props = defineProps({
   showSwitch: {
@@ -61,6 +64,9 @@ const props = defineProps({
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true
 
 if (!('managedConfiguration' in formData)) {
@@ -132,6 +138,12 @@ const onSwitchChange = (val) => {
     ...formData.managedConfiguration,
     codec: val === 'template' ? collector?.managedConfiguration?.codec : undefined,
     byteLayout: val === 'template' ? collector?.managedConfiguration?.byteLayout : undefined,
+  }
+}
+
+const onOutsize = () => {
+  if(__type){
+    events.onValueChange('managedConfiguration', formData.managedConfiguration)
   }
 }
 

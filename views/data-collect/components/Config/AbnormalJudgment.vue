@@ -1,6 +1,6 @@
 <template>
   <Collapsible title="异常判断" tip="定义正常数据范围（仅适用于数值类型）,异常数据默认丢弃" v-model:value="data"
-               :show-switch="showSwitch" @change="onSwitchChange">
+               :show-switch="showSwitch" @change="onSwitchChange" @outside="onOutsize">
     <template #extraTemplate>
       木有写
     </template>
@@ -15,6 +15,8 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/hooks";
+import {inject} from "vue";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const props = defineProps({
   showSwitch: {
@@ -26,6 +28,10 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+const events = inject("plugin-point-detail-events");
+
+const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
+
 let firstRender = true // 第一次渲染
 const options = ref([
   {title: '正常点位值', key: 'current', fullName: '正常点位值', dataType: 'number', termTypes: [{name: '在...之间', id: 'btw'}]}
@@ -92,6 +98,12 @@ const onSwitchChange = (val) => {
   }
 
   console.log(formData.managedConfiguration.outlier)
+}
+
+const onOutsize = () => {
+  if(__type){
+    events.onValueChange('managedConfiguration', formData.managedConfiguration)
+  }
 }
 
 watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {

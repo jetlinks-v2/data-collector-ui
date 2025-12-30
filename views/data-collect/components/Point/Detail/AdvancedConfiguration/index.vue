@@ -13,6 +13,7 @@ import ResultProcessing from "@data-collector-ui/views/data-collect/components/C
 import StorageConfiguration from "@data-collector-ui/views/data-collect/components/Config/StorageConfiguration.vue";
 import AbnormalJudgment from "@data-collector-ui/views/data-collect/components/Config/AbnormalJudgment.vue";
 import {map} from "lodash-es";
+import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
 
 const info = inject('point-info', ref({}))
 
@@ -28,6 +29,7 @@ watch(() => info.value, () => {
 })
 
 provide('plugin-form', formData)
+provide(DATA_COLLECTOR_CONFIG_TYPE, true) // 是否需要立即保存
 </script>
 
 <style lang="less" scoped>
