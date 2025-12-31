@@ -1,9 +1,17 @@
 <template>
-  <Collapsible title="点位死区" tip="死区范围内的数据将被过滤（仅适用于数值类型）,减少抖动和冗余" v-model:value="data"
-               :show-switch="showSwitch" @change="onSwitchChange" @outside="onOutsize">
+  <Collapsible
+      title="点位死区"
+      tip="死区范围内的数据将被过滤（仅适用于数值类型）,减少抖动和冗余"
+      v-model:value="data"
+      :show-switch="showSwitch"
+      @change="onSwitchChange"
+      @outside="onOutsize"
+      :showExtra="showExtra"
+  >
     <template #extraTemplate>
       木有写
     </template>
+    <!--    todo: 需要校验值的大小和必填-->
     <div style="margin-bottom: 16px">
       <a-radio-group v-model:value="type" button-style="solid">
         <a-radio-button value="a">固定值</a-radio-button>
@@ -149,19 +157,22 @@ const builtinParams = [
 ]
 const builtinParamsMap = new Map(builtinParams.map(i => [i.value, i]))
 
+const showExtra = computed(() => {
+  return !!collector.managedConfiguration?.deadband?.enabled
+})
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.deadband.enabled = !!val
 }
 
 const onOutsize = () => {
-  if(__type){
+  if (__type) {
     events.onValueChange('managedConfiguration', formData.managedConfiguration)
   }
 }
 
 watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {
-  if (firstRender) {
+  if (firstRender && __type) {
     data.value = !!val
     firstRender = false
   }

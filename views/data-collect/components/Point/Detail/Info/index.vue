@@ -48,7 +48,7 @@ provide("plugin-point-detail-events", {
     const res = await formRef.value?.validate(name)
     // 校验表单  保存
     if (res) {
-      emits('save', name, value)
+      // emits('save', name, value)
     }
   }
 });

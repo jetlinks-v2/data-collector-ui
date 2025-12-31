@@ -1,9 +1,17 @@
 <template>
-  <Collapsible title="结果处理" tip="对数据进行告警触发、数据聚合、转发等操作" v-model:value="data"
-               :show-switch="showSwitch" @change="onSwitchChange" @outside="onOutsize">
+  <Collapsible
+      title="结果处理"
+      tip="对数据进行告警触发、数据聚合、转发等操作"
+      v-model:value="data"
+      :show-switch="showSwitch"
+      @change="onSwitchChange"
+      @outside="onOutsize"
+      :showExtra="showExtra"
+  >
     <template #extraTemplate>
       木有写
     </template>
+    <!--    todo: 需要校验值的大小和必填-->
     <a-form-item>
       <div style="display: flex; align-items: center;">
         <a-switch v-model:checked="formData.managedConfiguration.handler.enabled" style="margin-right: 12px"/>
@@ -91,18 +99,22 @@ if (!('handler' in formData.managedConfiguration)) {
   }
 }
 
+const showExtra = computed(() => {
+  return !!collector.managedConfiguration?.handler?.enabled
+})
+
 const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
 }
 
 const onOutsize = () => {
-  if(__type){
+  if (__type) {
     events.onValueChange('managedConfiguration', formData.managedConfiguration)
   }
 }
 
 watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {
-  if (firstRender) {
+  if (firstRender && __type) {
     data.value = !!val
     firstRender = false
   }

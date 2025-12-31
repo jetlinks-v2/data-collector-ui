@@ -112,7 +112,7 @@
         </a-space>
       </template>
       <template #name="slotProps">
-        <div style="display: flex; align-items: center;gap: 16px; white-space: normal">
+        <div style="display: flex; align-items: center;gap: 8px; white-space: normal">
           <span style="color: #1677FF;"><AIcon type="EnvironmentFilled"/></span>
           <div class="name" @click="handleView(slotProps)">
             <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
@@ -582,10 +582,9 @@ onUnmounted(() => {
 
 .name {
   cursor: pointer;
-
-  &:hover {
-    color: @primary-color;
-  }
+  //&:hover {
+  color: @primary-color;
+  //}
 }
 
 .sort-item {

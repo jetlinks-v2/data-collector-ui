@@ -1,14 +1,39 @@
 <template>
-  <Collapsible title="异常判断" tip="定义正常数据范围（仅适用于数值类型）,异常数据默认丢弃" v-model:value="data"
-               :show-switch="showSwitch" @change="onSwitchChange" @outside="onOutsize">
+  <Collapsible
+      title="异常判断"
+      tip="定义正常数据范围（仅适用于数值类型）,异常数据默认丢弃"
+      v-model:value="data"
+      :show-switch="showSwitch"
+      @change="onSwitchChange"
+      @outside="onOutsize"
+      :showExtra="showExtra"
+  >
     <template #extraTemplate>
-      木有写
+      <a-descriptions :column="1">
+        <a-descriptions-item label="异常值范围">
+          <j-ellipsis>
+            {{
+              `${collector?.managedConfiguration?.outlier?.configuration?.min}~${collector?.managedConfiguration?.outlier?.configuration?.max}`
+            }}
+          </j-ellipsis>
+        </a-descriptions-item>
+      </a-descriptions>
     </template>
-    <TermsCascader
-        v-model:value="terms"
-        :builtinOptions="builtinParams"
-        :showValueType="false"
-    />
+    <!--    todo: 需要校验值的大小和必填-->
+    <a-form-item
+        :name="['managedConfiguration', 'outlier', 'configuration']"
+        :rules="[
+            {
+validator: validatorValue,
+            }
+        ]"
+    >
+      <TermsCascader
+          v-model:value="terms"
+          :builtinOptions="builtinParams"
+          :showValueType="false"
+      />
+    </a-form-item>
   </Collapsible>
 </template>
 
@@ -34,7 +59,13 @@ const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 
 let firstRender = true // 第一次渲染
 const options = ref([
-  {title: '正常点位值', key: 'current', fullName: '正常点位值', dataType: 'number', termTypes: [{name: '在...之间', id: 'btw'}]}
+  {
+    title: '正常点位值',
+    key: 'current',
+    fullName: '正常点位值',
+    dataType: 'number',
+    termTypes: [{name: '在...之间', id: 'btw'}]
+  }
 ])
 const optionsMap = ref(new Map())
 optionsMap.value.set('current', options.value[0])
@@ -83,6 +114,20 @@ const builtinParams = [
   {label: '当前时间', value: 'timestamp'}
 ]
 
+const showExtra = computed(() => {
+  return !!collector.managedConfiguration?.outlier?.enabled
+})
+
+const validatorValue = (_rule, value) => new Promise(async (resolve, reject) => {
+  // todo: 校验判断
+  console.log(value)
+  // if (!value) return resolve("");
+  // if (!(regIP.test(value) || regIPv6.test(value) || regDomain.test(value))) {
+  //   return reject($lang('MODBUS_TCP.channel.20250207-6'));
+  // }
+  return resolve("");
+});
+
 const onSwitchChange = (val) => {
   formData.managedConfiguration = {
     ...formData.managedConfiguration,
@@ -101,13 +146,15 @@ const onSwitchChange = (val) => {
 }
 
 const onOutsize = () => {
-  if(__type){
+  console.log('outside')
+  if (__type) {
     events.onValueChange('managedConfiguration', formData.managedConfiguration)
+    console.log('outside')
   }
 }
 
 watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
-  if (firstRender) {
+  if (firstRender && __type) {
     data.value = !!val
     firstRender = false
   }

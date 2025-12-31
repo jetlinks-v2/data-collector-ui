@@ -6,6 +6,7 @@
       :showSwitch="showSwitch"
       @change="onSwitchChange"
       @outside="onOutsize"
+      :showExtra="showExtra"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
@@ -133,6 +134,10 @@ const memoryOptions = [
   }
 ]
 
+const showExtra = computed(() => {
+  return !!collector?.managedConfiguration?.codec && !!collector?.managedConfiguration?.byteLayout
+})
+
 const onSwitchChange = (val) => {
   formData.managedConfiguration = {
     ...formData.managedConfiguration,
@@ -142,7 +147,7 @@ const onSwitchChange = (val) => {
 }
 
 const onOutsize = () => {
-  if(__type){
+  if (__type) {
     events.onValueChange('managedConfiguration', formData.managedConfiguration)
   }
 }
@@ -159,7 +164,7 @@ onMounted(() => {
 })
 
 watch(() => formData.managedConfiguration.codec, () => {
-  if (firstRender) {
+  if (firstRender && __type) {
     data.value = !!(formData?.managedConfiguration?.codec && formData?.managedConfiguration?.byteLayout)
     firstRender = false
   }

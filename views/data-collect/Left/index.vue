@@ -141,6 +141,7 @@
       v-if="filterModalVisible"
       v-model:value="filterValue"
       @close="filterModalVisible = false"
+      @save="onFilterSave"
   />
 </template>
 <script setup lang="ts">
@@ -218,7 +219,13 @@ const nodeType = inject(COLLECTOR_TYPE);
 const currentNode = inject(COLLECTOR_DATA);
 const importType = ref<'channel' | 'collector'>('channel');
 
-const filterValue = inject('filter-value', reactive({}))
+const filterValue = ref({})
+
+const _filterValue = inject('filter-value', reactive({
+  channel: false,
+  collector: false,
+  point: false
+}))
 
 const viewType = ref('compact'); //视图类型
 const treeWidth = computed(() => {
@@ -230,8 +237,9 @@ const treeWidth = computed(() => {
 });
 
 const selectedNode = ref<any>({});
+
 const filterIconActive = computed(() => {
-  return Object.keys(filterValue).some(item => filterValue?.[item]?.length);
+  return Object.keys(filterValue.value).some(item => filterValue.value?.[item]?.length);
 })
 
 // 分离视图中的采集器数据
@@ -251,23 +259,32 @@ const filterTreeData = computed(() => {
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
     if (item.name.includes(searchValue.value)
-        && (filterValue?.provider?.includes(item.provider) || !filterValue?.provider?.length)
-        && (filterValue?.state?.includes(item.state?.value) || !filterValue?.state?.length)
-        && (filterValue?.runningState?.includes(item.runningState?.value) || !filterValue?.runningState?.length)
+        && (filterValue.value?.provider?.includes(item.provider) || !filterValue.value?.provider?.length)
+        && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
+        && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
     ) {
       // 如果有子节点（采集器），也需要过滤
       if (item.children && item.children.length > 0) {
         item.children = item.children.filter((child: any) => {
           return child.name.includes(searchValue.value) &&
-              (filterValue?.collectorState?.includes(child.runningState?.value) ||
-                  filterValue?.collectorState?.includes(child.state?.value) ||
-                  !filterValue?.collectorState?.length)
+              (filterValue.value?.collectorState?.includes(child.runningState?.value) ||
+                  filterValue.value?.collectorState?.includes(child.state?.value) ||
+                  !filterValue.value?.collectorState?.length)
         });
       }
       return true;
     }
   });
 })
+
+const onFilterSave = () => {
+  filterModalVisible.value = false
+  selectedKeys.value = ["all"];
+  selectedNode.value = {
+    id: 'all',
+    name: '全部',
+  };
+}
 
 //通道节点按钮
 const onChannelAction = (key, data) => {
@@ -566,6 +583,25 @@ const handleAdd = () => {
   saveChannelVisible.value = true;
   currentChannel.value = {};
 };
+
+watch(() => _filterValue, () => {
+  if (_filterValue.channel || _filterValue.collector) {
+    filterValue.value = {
+      ...filterValue.value,
+      runningState: _filterValue.channel ? ['stopped'] : filterValue.value.runningState,
+      state: _filterValue.channel ? ['disabled'] : filterValue.value.state,
+      collectorState: _filterValue.collector ? [
+        "disabled",
+        "stopped"
+      ] : filterValue.value.collectorState
+    }
+    handleChangeNode(['all'], {})
+  }
+}, {
+  immediate: true,
+  deep: true
+})
+
 defineExpose({
   refreshChannel: (data) => refreshChannel(data),
   refreshCollector: (data) => refreshCollector(data),

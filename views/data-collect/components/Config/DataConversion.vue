@@ -1,6 +1,13 @@
 <template>
-  <Collapsible title="数据转换" tip="对数值进行缩放,换算或映射处理" v-model:value="data" :show-switch="showSwitch"
-               @change="onSwitchChange" @outside="onOutsize">
+  <Collapsible
+      title="数据转换"
+      tip="对数值进行缩放,换算或映射处理"
+      v-model:value="data"
+      :show-switch="showSwitch"
+      @change="onSwitchChange"
+      @outside="onOutsize"
+      :showExtra="showExtra"
+  >
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item label="缩放因子">
@@ -124,6 +131,10 @@ if (!('configuration' in formData.managedConfiguration.converter)) {
   }
 }
 
+const showExtra = computed(() => {
+  return collector.managedConfiguration?.converter?.configuration?.scale !== undefined && collector.managedConfiguration?.converter?.configuration?.factor !== undefined
+})
+
 const onSwitchChange = (val) => {
   formData.managedConfiguration = {
     ...formData.managedConfiguration,
@@ -140,13 +151,13 @@ const onSwitchChange = (val) => {
 }
 
 const onOutsize = () => {
-  if(__type){
+  if (__type) {
     events.onValueChange('managedConfiguration', formData.managedConfiguration)
   }
 }
 
 watch(() => formData.managedConfiguration?.converter?.enabled, (val) => {
-  if (firstRender) {
+  if (firstRender && __type) {
     data.value = !!val
     firstRender = false
   }

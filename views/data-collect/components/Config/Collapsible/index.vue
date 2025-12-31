@@ -43,7 +43,7 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  showSwitch: {
+  showSwitch: { // 是否展示开关
     type: Boolean,
     default: true
   },

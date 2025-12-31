@@ -22,11 +22,9 @@ const current = ref({})
 const type = ref('all')
 const filterValue = reactive(
     {
-      "provider": [],
-      "runningState": [],
-      "state": [],
-      "collectorState": [],
-      "pointState": []
+      channel: false,
+      collector: false,
+      point: false
     }
 )
 

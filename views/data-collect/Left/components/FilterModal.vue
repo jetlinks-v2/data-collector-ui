@@ -35,7 +35,7 @@ const props = defineProps({
   }
 })
 
-const emits = defineEmits(['update:value', 'close'])
+const emits = defineEmits(['update:value', 'close', 'save'])
 const { data } = useProvider();
 
 const filterData = reactive(cloneDeep(props.value) || {
@@ -111,7 +111,7 @@ const handleOk = () => {
     filterData[key] = filterData[key].filter((item: string) => !!item)
   })
   emits('update:value', cloneDeep(filterData));
-  emits('close');
+  emits('save');
 }
 
 const handleRest = () => {

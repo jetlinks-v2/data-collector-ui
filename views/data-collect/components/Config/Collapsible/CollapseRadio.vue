@@ -1,25 +1,30 @@
 <template>
-  <template v-if="type === 'point'">
-    <div class="radio">
-      <div
-          v-for="item in list"
-          :key="item.value"
-          @click="onChange(item.value)"
-          :class="{'active': item.value === _value}"
-      >
-        <j-ellipsis>{{ item.label }}</j-ellipsis>
-        <a-popover v-if="showExtra && item.value === 'template'" trigger="hover">
-          <template #content>
-            <slot name="extraTemplate"></slot>
-          </template>
-          <AIcon type="QuestionCircleOutlined"/>
-        </a-popover>
-      </div>
+  <!--  <template v-if="type === 'point'">-->
+  <div
+      class="radio"
+      :style="{
+        'grid-template-columns': `repeat(${list.length}, 1fr)`
+      }"
+  >
+    <div
+        v-for="item in list"
+        :key="item.value"
+        @click="onChange(item.value)"
+        :class="{'active': item.value === _value}"
+    >
+      <j-ellipsis>{{ item.label }}</j-ellipsis>
+      <a-popover v-if="showExtra && item.value === 'template'" trigger="hover">
+        <template #content>
+          <slot name="extraTemplate"></slot>
+        </template>
+        <AIcon type="QuestionCircleOutlined"/>
+      </a-popover>
     </div>
-  </template>
-  <template v-if="type === 'collector'">
-    <a-switch v-model:checked="_value" @change="onChange"/>
-  </template>
+  </div>
+  <!--  </template>-->
+  <!--  <template v-if="type === 'collector'">-->
+  <!--    <a-switch v-model:checked="_value" @change="onChange"/>-->
+  <!--  </template>-->
 </template>
 
 <script setup>
@@ -37,20 +42,25 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:value', 'change'])
 const type = inject(DATA_COLLECTOR_SAVE_TYPE)
-const list = [
-  {
-    label: '开',
-    value: true,
-  },
-  {
-    label: '关',
-    value: false,
-  },
-  {
-    label: '复用模板',
-    value: 'template'
-  },
-]
+const list = computed(() => {
+  const arr = [
+    {
+      label: '开',
+      value: true,
+    },
+    {
+      label: '关',
+      value: false,
+    }
+  ]
+  if (props.showExtra) {
+    arr.push({
+      label: '复用模板',
+      value: 'template'
+    })
+  }
+  return arr
+})
 
 const _value = ref('false')
 
@@ -71,7 +81,6 @@ const onChange = (e) => {
 <style lang="less" scoped>
 .radio {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   border: 1px solid #d9d9d9;
   min-width: 240px;
 

@@ -6,6 +6,7 @@
       :showSwitch="showSwitch"
       @change="onSwitchChange"
       @outside="onOutsize"
+      :showExtra="showExtra"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
@@ -114,6 +115,10 @@ const options = [
   {label: '订阅', value: 'subscribe'},
 ]
 
+const showExtra = computed(() => {
+  return !!collector?.accessModes?.length && !!collector?.interval
+})
+
 const _features = computed(() => {
   return formData.features.filter(i => i === 'changedOnly')
 })
@@ -150,7 +155,7 @@ const onChange = (val) => {
 }
 
 watch(() => formData.accessModes, () => {
-  if (firstRender) {
+  if (firstRender && __type) {
     data.value = !!formData.accessModes?.length
     firstRender = false
   }

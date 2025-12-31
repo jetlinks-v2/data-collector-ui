@@ -1,6 +1,13 @@
 <template>
-  <Collapsible title="存储配置" tip="配置点位数据存储类型" v-model:value="data" :show-switch="showSwitch"
-               @change="onSwitchChange" @outside="onOutsize">
+  <Collapsible
+      title="存储配置"
+      tip="配置点位数据存储类型"
+      v-model:value="data"
+      :show-switch="showSwitch"
+      @change="onSwitchChange"
+      @outside="onOutsize"
+      :show-extra="showExtra"
+  >
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item :label="item.label" v-for="item in list" :key="item.value">
@@ -69,6 +76,10 @@ const _accessModes = computed(() => {
   return formData.features.filter(i => i !== 'changedOnly')
 })
 
+const showExtra = computed(() => {
+  return !!collector?.features?.find(i => _list.includes(i))
+})
+
 const onChange = (val) => {
   const arr = formData.features.filter(i => i === 'changedOnly')
   formData.features = [...val, ...arr]
@@ -89,7 +100,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.features, (val) => {
-  if (firstRender) {
+  if (firstRender && __type) {
     const flag = val.find(i => {
       return _list.includes(i)
     })

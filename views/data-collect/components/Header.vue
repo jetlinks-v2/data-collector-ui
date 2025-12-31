@@ -53,7 +53,11 @@ import {getCountList} from "@data-collector-ui/views/data-collect/utils";
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
-const filterValue = inject('filter-value', reactive({}))
+const filterValue = inject('filter-value', reactive({
+  channel: false,
+  collector: false,
+  point: false
+}))
 
 const visible = reactive({
   channel: false,
@@ -70,28 +74,11 @@ const title = computed(() => {
 
 const countList = ref([]);
 const getActive = (itemType) => {
-  if (itemType === 'point') {
-    return filterValue.pointState.includes('error')
-  }
-  if (itemType === 'channel') {
-    return filterValue.runningState.includes('stopped')
-  }
-  if (itemType === 'collector') {
-    return filterValue.collectorState.includes('stopped')
-  }
-  return false
+  return !!filterValue[itemType]
 }
 
 const onClick = (item) => {
-  if (item.type === 'point') {
-    filterValue.pointState = filterValue.pointState.includes('error') ? [] : ['error']
-  }
-  if (item.type === 'channel') {
-    filterValue.runningState = filterValue.runningState.includes('stopped') ? [] : ['stopped']
-  }
-  if (item.type === 'collector') {
-    filterValue.collectorState = filterValue.collectorState.includes('stopped') ? [] : ['stopped']
-  }
+  filterValue[item.type] = !filterValue[item.type]
 }
 
 const onDetail = () => {
