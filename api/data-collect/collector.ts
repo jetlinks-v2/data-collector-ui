@@ -118,4 +118,5 @@ export const queryIEC104 = () => request.get("/collect/iec104/types");
 export const getFunction = () => request.get('/dictionary/streaming-agg-type/items')
 
 export const getOperator = () => request.get('/property-calculate-rule/description')
+export const getCollectorError = () => request.get('/data-collect/collector/error/types')
 

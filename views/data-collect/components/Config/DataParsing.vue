@@ -148,7 +148,17 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    events.onValueChange('managedConfiguration', formData.managedConfiguration)
+    const arr = [
+      {
+        name: ['codec'],
+        value: formData.managedConfiguration.codec
+      },
+      {
+        name: ['byteLayout'],
+        value: formData.managedConfiguration.byteLayout
+      },
+    ]
+    events.onValueChange(arr)
   }
 }
 

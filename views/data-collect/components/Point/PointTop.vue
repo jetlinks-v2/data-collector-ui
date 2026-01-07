@@ -38,12 +38,6 @@ const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
 const pointType = inject('point-type', ref('total'))
 
-const _filterValue = inject('filter-value', reactive({
-  channel: false,
-  collector: false,
-  point: false
-}))
-
 const num = reactive({
   total: 0,
   running: 0,

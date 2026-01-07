@@ -152,7 +152,13 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    events.onValueChange('managedConfiguration', formData.managedConfiguration)
+    const arr = [
+      {
+        name: ['managedConfiguration', 'converter'],
+        value: formData.managedConfiguration.converter
+      },
+    ]
+    events.onValueChange(arr)
   }
 }
 

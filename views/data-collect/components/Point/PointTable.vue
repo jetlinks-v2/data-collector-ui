@@ -188,7 +188,7 @@ import {
   batchDeletePoint,
   exportPoint,
   exportTemplate,
-  queryPoint
+  queryPoint, savePointBatch
 } from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig.vue";
@@ -230,6 +230,11 @@ const menuStore = useMenuStore();
 const data = inject(COLLECTOR_DATA, ref({}))
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const pointType = inject('point-type', ref())
+const filterValue = inject('filter-value', reactive({
+  channel: false,
+  collector: false,
+  point: false
+}))
 
 const subRef = ref();
 const propertyValue = ref(new Map());
@@ -251,14 +256,17 @@ const jsonData = ref();
 provide("point-actions", pointActions);
 
 const searchCount = computed(() => {
-  // 怎么统计选中的搜索条件
-  let count = 0
-  // if (searchParams.point) {
-  //   count++
-  // }
-  // if (searchParams.top) {
-  //   count++
-  // }
+  // 统计filterValue
+  const _filterValue = Object.keys(filterValue).filter(i => filterValue[i])
+  let count = _filterValue.length || 0;
+  if (pointType.value !== 'total') {
+    count++
+  }
+  const _terms = params.value.terms || [];
+  _terms.map(i => {
+    const __terms = i.terms || [];
+    count += __terms.length
+  })
   return count
 })
 
@@ -268,6 +276,12 @@ const onResizeColumn = (w, col) => {
   if (target) {
     target.width = w
   }
+}
+
+const onRefreshData = () => {
+  isCheck.value = false
+  _selectedRowKeys.value = []
+  tableRef.value?.reload();
 }
 
 const batchActions = [
@@ -280,8 +294,22 @@ const batchActions = [
     selected: {
       popConfirm: {
         title: '确认启用?',
-        onConfirm: () => {
-
+        onConfirm: async () => {
+          if (!_selectedRowKeys.value.length) {
+            onlyMessage($t('Point.index.400149-15'), 'error');
+            return
+          }
+          const arr = _selectedRows.value.map(i => {
+            return {
+              ...i,
+              state: 'enabled'
+            }
+          })
+          const response = await savePointBatch(arr)
+          if (response.success) {
+            onRefreshData()
+            onlyMessage($t('Point.index.400149-14'), 'success');
+          }
         },
       },
     }
@@ -306,8 +334,18 @@ const batchActions = [
     selected: {
       popConfirm: {
         title: '确认禁用?',
-        onConfirm: () => {
-
+        onConfirm: async () => {
+          const arr = _selectedRows.value.map(i => {
+            return {
+              ...i,
+              state: 'disabled'
+            }
+          })
+          const response = await savePointBatch(arr)
+          if (response.success) {
+            onRefreshData()
+            onlyMessage($t('Point.index.400149-14'), 'success');
+          }
         },
       },
     },
@@ -327,8 +365,7 @@ const batchActions = [
           }
           const response = await batchDeletePoint(_selectedRowKeys.value)
           if (response.success) {
-            _selectedRowKeys.value = []
-            tableRef.value?.reload();
+            onRefreshData()
             onlyMessage($t('Point.index.400149-14'), 'success');
           }
         },
@@ -368,6 +405,49 @@ const getDataSource = (p) => {
   // 根据左边的搜索来查询数据
   if (type.value === 'all') {
     // todo: 根据当前选择的采集器类型, 生成查询参数
+    console.log(filterValue)
+    if (filterValue.point) {
+      terms.push({
+        column: 'runningState',
+        termType: 'not',
+        type: 'and',
+        value: 'running'
+      })
+    }
+    if (filterValue.channel) {
+      terms.push({
+        column: 'channelId',
+        termType: 'data-collector-channel',
+        type: 'and',
+        value: [
+          {
+            "column": "runningState",
+            "value": 'stopped'
+          },
+          {
+            "column": "state",
+            "value": 'disabled'
+          }
+        ]
+      })
+    }
+    if (filterValue.collector) {
+      terms.push({
+        column: 'collectorId',
+        termType: 'termType data-collector',
+        type: 'and',
+        value: [
+          {
+            "column": "state",
+            termType: 'in',
+            "value": [
+              "disabled",
+              "stopped"
+            ]
+          }
+        ]
+      })
+    }
   } else {
     terms.push({
       column: type.value === 'channel' ? 'channelId' : 'collectorId',
@@ -459,7 +539,7 @@ const selectAll = (selected, selectedRows, changeRows) => {
 const handleSort = (key, value) => {
   sortValue[key] = value
   columnsConfig.key = randomString()
-  console.log('33333333')
+  console.log('排序变化')
 }
 
 const handleSearch = (_params) => {
@@ -543,7 +623,7 @@ watch(
       params.value = {}
       // 清空高级搜索
       columnsConfig.key = randomString()
-      console.log('11111111111')
+      console.log('data.value.id变化')
     },
     {immediate: true},
 );
@@ -555,10 +635,19 @@ watch(
         pointTypeRefresh = true
       } else {
         columnsConfig.key = randomString()
-        console.log('22222222222')
+        console.log('pointType变化')
       }
     },
     {immediate: true},
+)
+
+watch(
+    () => filterValue,
+    () => {
+      columnsConfig.key = randomString()
+      console.log('filterValue变化')
+    },
+    {immediate: true, deep: true},
 )
 
 onUnmounted(() => {

@@ -1,10 +1,10 @@
 <template>
-  <a-drawer open width="900px" @close="emits('close')">
+  <a-drawer open width="900px" @close="emits('close')" destroy-on-close :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
             :value="info.name"
-            @change="(val) => onSave('name', val)"
+            @change="(val) => onSave([{name: 'name', value: val}])"
             :maxLength="64"
         />
         <j-badge-status
@@ -42,12 +42,12 @@
         <a-descriptions-item label="说明">
           <InputEditable
               :value="info.description"
-              @change="(val) => onSave('description', val)"
+              @change="(val) => onSave([{name: 'description', value: val}])"
               :maxLength="200"
           />
         </a-descriptions-item>
       </a-descriptions>
-      <ValueList />
+      <ValueList/>
       <a-tabs v-model:activeKey="activeKey">
         <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
       </a-tabs>
@@ -67,6 +67,7 @@ import {
   getPointActions,
   onPointSave
 } from "@data-collector-ui/views/data-collect/utils";
+import {omit, set} from "lodash-es";
 
 const props = defineProps({
   data: {
@@ -127,14 +128,17 @@ const handleSearch = (id) => {
   queryInfo(id)
 }
 
-const onSave = (key, value) => {
+const onSave = (arr) => {
   const params = {
-    name: info.value.name,
-    [key]: value
+    ...omit(info.value, ['runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime']),
   }
-  onPointSave(info.value.id, params, () => {
-    handleSearch(info.value.id)
+  arr.map(i => {
+    set(params, i.name, i.value)
   })
+  console.log(params)
+  // onPointSave(info.value.id, params, () => {
+  //   handleSearch(info.value.id)
+  // })
 }
 
 watch(() => props.data.id, (val) => {
