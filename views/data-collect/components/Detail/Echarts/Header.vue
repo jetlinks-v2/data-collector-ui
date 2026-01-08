@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <div>{{ title }}</div>
-    <div>
+    <div v-if="showTimeSelect">
       <JDashboardTimeSelect
           key="flow-static"
           :quickBtnList="[
@@ -26,6 +26,10 @@ const props = defineProps({
     type: String,
     default: '点位历史数据'
   },
+  showTimeSelect: {
+    type: Boolean,
+    default: true
+  }
 })
 const emit = defineEmits(['change'])
 const onChange = (val) => {

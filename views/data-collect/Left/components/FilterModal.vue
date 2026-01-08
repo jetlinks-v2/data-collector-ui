@@ -28,22 +28,19 @@ import { cloneDeep } from "lodash-es";
 import { useI18n } from "vue-i18n";
 
 const { t: $t } = useI18n()
-const props = defineProps({
-  value: {
-    type: Object,
-    default: () => ({})
-  }
-})
 
 const emits = defineEmits(['update:value', 'close', 'save'])
 const { data } = useProvider();
 
-const filterData = reactive(cloneDeep(props.value) || {
+const filterValue = inject('filter-value')
+
+const filterData = reactive(cloneDeep(filterValue) || {
   provider: [],
   runningState: [],
   state: [],
   collectorState: [],
 })
+
 
 const filterColumn = computed(() => {
   return [
@@ -110,7 +107,8 @@ const handleOk = () => {
   Object.keys(filterData).forEach((key) => {
     filterData[key] = filterData[key].filter((item: string) => !!item)
   })
-  emits('update:value', cloneDeep(filterData));
+  // emits('update:value', cloneDeep(filterData));
+  Object.assign(filterValue, filterData)
   emits('save');
 }
 

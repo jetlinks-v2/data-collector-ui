@@ -120,3 +120,12 @@ export const getFunction = () => request.get('/dictionary/streaming-agg-type/ite
 export const getOperator = () => request.get('/property-calculate-rule/description')
 export const getCollectorError = () => request.get('/data-collect/collector/error/types')
 
+/**
+ * 查询点位历史数据
+ */
+export const queryPointHistory = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_query`, data);
+
+/**
+ * 点位历史数据聚合
+ */
+export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);

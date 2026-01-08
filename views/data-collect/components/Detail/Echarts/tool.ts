@@ -57,20 +57,42 @@ const getParams = (dt: any) => {
     }
 };
 
-export const pointParams = (data: any) => {
+export const pointParams = (data: any, type: 'channel' | 'collector', id: string) => {
     const obj = getParams(data)
     return [
         {
-            dashboard: 'collector',
-            object: 'pointData',
-            measurement: 'quantity',
+            dashboard: "pointResult",
+            object: "pointResult",
+            measurement: "result",
+            dimension: "agg",
+            params: {
+                limit: obj.limit,
+                from: Number(data.start),
+                to: Number(data.end),
+                interval: obj.interval,
+                format: obj.format,
+                ...(type === 'channel' ? {channelId: id} : {collectorId: id})
+            },
+        },
+    ];
+};
+
+export const abnormalParams = (data: any, type: 'channel' | 'collector' | 'point', id: string) => {
+    const obj = getParams(data)
+    return [
+        {
+            dashboard: 'pointResult',
+            object: 'pointResult',
+            measurement: 'result',
             dimension: 'agg',
             params: {
                 limit: obj.limit,
                 from: Number(data.start),
                 to: Number(data.end),
                 interval: obj.interval,
-                format: obj.format
+                format: obj.format,
+                ...(type === 'channel' ? {channelId: id} : type === 'collector' ? {collectorId: id} : {pointId: id}),
+                reason: ['outlier'],
             },
         },
     ];

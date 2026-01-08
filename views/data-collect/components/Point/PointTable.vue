@@ -18,7 +18,7 @@
         :params="params"
         style="padding: 0; margin: 0"
         @resizeColumn="onResizeColumn"
-        :scroll="{ x: 1000 }"
+        :scroll="{ x: 'max-content' }"
         :rowSelection="
             isCheck
                 ? {

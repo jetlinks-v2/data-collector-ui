@@ -11,28 +11,48 @@
         ref="tableRef"
         :columns="columns"
         mode="TABLE"
-        :request="queryPoint"
+        :request="(e) => queryPointHistory(info?.collectorId, {...e, terms: [...e.terms, {column: 'timestamp', value: [time.start, time.end], termType: 'btw'}, {column: 'pointId', value: info?.id}]})"
         :defaultParams="{
-            sorts: [{ name: 'createTime', order: 'desc' }],
+            sorts: [{ name: 'timestamp', order: 'desc' }],
         }"
         :params="params"
         style="padding: 0; margin: 0"
     >
+      <template #timestamp="slotProps">
+        {{ dayjs(slotProps.timestamp).format('YYYY-MM-DD HH:mm:ss') }}
+      </template>
+      <template #numberValue="slotProps">
+        {{ !isNil(slotProps.numberValue) ? slotProps.numberValue : '--' }}
+      </template>
+      <template #action="slotProps">
+        <a-button type="link">
+          <AIcon type="SearchOutlined"/>
+        </a-button>
+      </template>
     </j-pro-table>
   </div>
 </template>
 
 <script setup>
-import {queryPoint} from "@data-collector-ui/api/data-collect/collector";
+import {queryPointHistory} from "@data-collector-ui/api/data-collect/collector";
+import dayjs from "dayjs";
+import { isNil } from "lodash-es";
 
+const props = defineProps({
+  time: {
+    type: Array,
+    default: () => []
+  }
+})
 const columns = [
   {
     title: '时间',
-    dataIndex: 'createTime',
+    dataIndex: 'timestamp',
     width: 200,
     search: {
       type: 'date',
-    }
+    },
+    scopedSlots: true,
   },
   {
     title: '点位值',
@@ -41,27 +61,30 @@ const columns = [
   },
   {
     title: '原始值',
-    dataIndex: 'originValue',
-    ellipsis: true
-  },
-  {
-    title: '类型',
-    dataIndex: 'type',
-    ellipsis: true
+    dataIndex: 'numberValue',
+    ellipsis: true,
+    scopedSlots: true
   },
   {
     title: '操作',
     dataIndex: 'action',
     width: 100,
+    scopedSlots: true,
   },
 ]
+const tableRef = ref()
 
+const info = inject('point-info')
 
 const params = ref({})
 
 const handleSearch = (e) => {
   params.value = e
 }
+
+watch(() => props.time, (newVal) => {
+  tableRef.value?.reload()
+})
 </script>
 
 <style lang="less" scoped>

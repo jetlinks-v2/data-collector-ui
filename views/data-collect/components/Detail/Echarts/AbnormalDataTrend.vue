@@ -1,6 +1,6 @@
 <template>
   <a-spin :spinning="loading">
-    <Header title="异常数据趋势"/>
+    <Header title="异常数据趋势" @change="onChange"/>
     <div style="height: 300px">
       <JEcharts :option="errorDataOptions"/>
     </div>
@@ -10,8 +10,18 @@
 <script setup>
 import Header from "./Header.vue";
 import {useI18n} from "vue-i18n";
+import { dashboard } from "@data-collector-ui/api/others";
+import {abnormalParams} from "./tool";
 
 const {t: $t} = useI18n()
+const props = defineProps({
+  type: {
+    type: String,
+    default: '' //channel | collector
+  }
+})
+
+const info = inject('collector-info', ref({}))
 const loading = ref(false);
 
 const data = reactive({
@@ -72,6 +82,21 @@ const errorDataOptions = computed(() => {
     ]
   }
 })
+
+const onChange = async (val) => {
+  loading.value = true;
+  const resp = await dashboard(abnormalParams(val, props.type, info.value.id)).finally(() => {
+    loading.value = false;
+  });
+  if (resp.success && resp?.result?.length) {
+    const x = resp.result
+        .map((item) => item.data.timeString)
+        .reverse();
+    const y = resp.result.map((item) => item.data.value).reverse();
+    data.xAxis = x
+    data.y = y
+  }
+}
 </script>
 
 <style lang="less" scoped>

@@ -10,9 +10,9 @@
       </a-form>
     </template>
     <TitleComponent data="数据图表"/>
-    <PointDataVolume/>
-    <PointStatusStatistics/>
-    <AbnormalDataTrend/>
+    <PointDataVolume type="collector" :id="info.id" />
+    <PointStatusStatistics />
+    <AbnormalDataTrend type="collector" :id="info.id" />
   </div>
 </template>
 

@@ -28,11 +28,33 @@
       <j-permission-button type="text" shape="circle" @click="handleAdd">
         <AIcon type="PlusOutlined"></AIcon>
       </j-permission-button>
-      <j-permission-button type="text" shape="circle">
-        <AIcon type="MoreOutlined"></AIcon>
-      </j-permission-button>
+      <a-dropdown>
+        <template #overlay>
+          <a-menu v-model:active-key="activeKey" @click="handleMenuClick">
+            <a-menu-item key="importChannel">
+              <a-space>
+                <AIcon type="ImportOutlined"/>
+                批量导入通道
+              </a-space>
+            </a-menu-item>
+            <a-menu-item key="importCollector">
+              <a-space>
+                <AIcon type="ImportOutlined"/>
+                批量导入采集器
+              </a-space>
+            </a-menu-item>
+          </a-menu>
+        </template>
+        <j-permission-button type="text" shape="circle">
+          <AIcon type="MoreOutlined"></AIcon>
+        </j-permission-button>
+      </a-dropdown>
     </a-space>
   </a-flex>
+  <BatchImport
+    v-if="importVisible"
+    @close="importVisible = false"
+  ></BatchImport>
 </template>
 
 <script setup lang="ts">
@@ -50,8 +72,10 @@ interface Emits {
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
 
+const activeKey = ref('')
+const importVisible = ref(false)
 const searchValue = ref(props.modelValue || '');
-const isSearchMode = ref(false);
+const isSearchMode = ref(props.modelValue ? true : false);
 const searchInputRef = ref();
 
 // 监听外部 modelValue 变化
@@ -90,6 +114,10 @@ const handleSearchEnter = () => {
 //新增按钮点击
 const handleAdd = () => {
   emit('add');
+}
+
+const handleMenuClick = () => {
+  importVisible.value = true;
 }
 </script>
 

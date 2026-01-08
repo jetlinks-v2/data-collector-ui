@@ -35,6 +35,7 @@ export type ChannelEntity = {
   runningState?: state;
   state?: state;
   description?: string;
+  children?: CollectorEntity[];
 }
 
 export type CollectorEntity = {
