@@ -4,7 +4,7 @@
       <div class="header">
         <InputEditable
             :value="info.name"
-            @change="(val) => onSave('name', val)"
+            @change="(val) => onSave([{name: 'name', value: val}])"
             :maxLength="64"
         />
         <j-badge-status
@@ -44,7 +44,7 @@
         <a-descriptions-item label="说明">
           <InputEditable
               :value="info.description"
-              @change="(val) => onSave('description', val)"
+              @change="(val) => onSave([{name: 'description', value: val}])"
               :maxLength="200"
           />
         </a-descriptions-item>
@@ -62,8 +62,14 @@
 <script setup>
 import {ChannelState, getState} from "@data-collector-ui/views/data-collect/data";
 import {tabs} from "./asyncComponent";
-import {getChannelActions, getCountList, onChannelSave} from "@data-collector-ui/views/data-collect/utils";
+import {
+  getChannelActions,
+  getCountList,
+  onChannelSave,
+  onCollectorSave
+} from "@data-collector-ui/views/data-collect/utils";
 import {detail} from "@data-collector-ui/api/data-collect/channel";
+import {omit, set} from "lodash-es";
 
 const props = defineProps({
   data: {
@@ -122,11 +128,13 @@ const onActions = (key) => {
 }
 
 // 修改点位信息
-const onSave = (key, value) => {
+const onSave = (arr) => {
   const params = {
-    name: info.value.name,
-    [key]: value
+    ...omit(info.value, ['runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime']),
   }
+  arr.map(i => {
+    set(params, i.name, i.value)
+  })
   onChannelSave(info.value.id, params, () => {
     handleSearch(info.value.id)
   })

@@ -90,10 +90,7 @@ const onSearch = (params) => {
 
 watch(() => [type.value, data.value.id], () => {
   const terms = []
-  if (type.value === 'all') {
-    // _filterValue
-    // todo: 根据当前选择的采集器类型, 生成查询参数
-  } else {
+  if (type.value !== 'all') {
     terms.push({
       column: type.value === 'channel' ? 'channelId' : 'collectorId',
       type: 'and',

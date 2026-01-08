@@ -72,7 +72,8 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
-import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
+import {isEqual} from "./data";
 
 const props = defineProps({
   showSwitch: {
@@ -84,10 +85,13 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
-const events = inject("plugin-point-detail-events");
+const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true // 第一次渲染
+
+// 记录初始值快照，用于检测变化
+const initialSnapshot = ref(null)
 
 if (!('managedConfiguration' in formData)) {
   formData.managedConfiguration = {
@@ -152,13 +156,23 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    const arr = [
-      {
-        name: ['managedConfiguration', 'converter'],
-        value: formData.managedConfiguration.converter
-      },
-    ]
-    events.onValueChange(arr)
+    // 检查值是否真正发生变化
+    const currentValue = {
+      converter: formData.managedConfiguration.converter
+    }
+
+    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
+      const arr = [
+        {
+          name: ['managedConfiguration', 'converter'],
+          value: formData.managedConfiguration.converter
+        },
+      ]
+      events?.onValueChange?.(arr)
+      // 更新快照
+      initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
+    }
   }
 }
 
@@ -169,6 +183,18 @@ watch(() => formData.managedConfiguration?.converter?.enabled, (val) => {
   }
 }, {
   immediate: true
+})
+
+// 监听折叠板打开状态，打开时记录初始快照
+watch(() => data.value, (newVal) => {
+  if (newVal === true) {
+    // 折叠板打开时，记录当前值的快照
+    initialSnapshot.value = JSON.parse(JSON.stringify({
+      converter: formData.managedConfiguration.converter
+    }))
+  }
+}, {
+  immediate: true  // 确保初始打开时也记录快照
 })
 </script>
 

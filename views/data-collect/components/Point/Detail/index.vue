@@ -135,10 +135,9 @@ const onSave = (arr) => {
   arr.map(i => {
     set(params, i.name, i.value)
   })
-  console.log(params)
-  // onPointSave(info.value.id, params, () => {
-  //   handleSearch(info.value.id)
-  // })
+  onPointSave(info.value.id, params, () => {
+    handleSearch(info.value.id)
+  })
 }
 
 watch(() => props.data.id, (val) => {

@@ -9,7 +9,17 @@
       :showExtra="showExtra"
   >
     <template #extraTemplate>
-      木有写
+      <a-descriptions :column="1">
+        <a-descriptions-item label="是否开启">
+          {{ collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled ? '是' : '否' }}
+        </a-descriptions-item>
+      </a-descriptions>
+      <template v-if="collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled">
+        <p v-if="_handler?.reason && _handler.time && _handler?.threshold">
+          <b>{{_handler?.reason}}</b>
+          {{ `异常时,${_handler.time}秒内最多触发${_handler?.threshold}次同一类型告警` }}
+        </p>
+      </template>
     </template>
     <a-form-item :name="['managedConfiguration', 'handler']"
                  :rules="[
@@ -42,7 +52,7 @@
           秒内最多触发
           <a-input-number placeholder="请输入" style="margin: 0 10px" :min="1" :precision="0"
                           v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.threshold"/>
-          次同一类型 告警
+          次同一类型告警
         </template>
       </div>
     </a-form-item>
@@ -51,8 +61,9 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
-import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {getCollectorError} from "@data-collector-ui/api/data-collect/collector";
+import {isEqual} from "./data";
 
 const props = defineProps({
   showSwitch: {
@@ -64,11 +75,14 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
-const events = inject("plugin-point-detail-events");
+const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 const errorList = ref([])
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 
 let firstRender = true // 第一次渲染
+
+// 记录初始值快照，用于检测变化
+const initialSnapshot = ref(null)
 
 const flag = computed(() => !!formData.managedConfiguration?.handler?.enabled)
 const type = ref()
@@ -160,15 +174,33 @@ const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
 }
 
+const _handler = computed(() => {
+  const _configuration = collector?.managedConfiguration?.handler?.configuration || {};
+  const _reason = _configuration.reason || _configuration.code
+  return {
+    ..._configuration.shakeLimit,
+    reason: options.value.find(i => i.value === _reason).label || _reason
+  }
+})
 const onOutsize = () => {
   if (__type) {
-    const arr = [
-      {
-        name: ['handler'],
-        value: formData.managedConfiguration.handler
-      },
-    ]
-    events.onValueChange(arr)
+    // 检查值是否真正发生变化
+    const currentValue = {
+      handler: formData.managedConfiguration.handler
+    }
+
+    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
+      const arr = [
+        {
+          name: ['managedConfiguration', 'handler'],
+          value: formData.managedConfiguration.handler
+        },
+      ]
+      events?.onValueChange?.(arr)
+      // 更新快照
+      initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
+    }
   }
 }
 
@@ -202,6 +234,18 @@ watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {
   }
 }, {
   immediate: true
+})
+
+// 监听折叠板打开状态，打开时记录初始快照
+watch(() => data.value, (newVal) => {
+  if (newVal === true) {
+    // 折叠板打开时，记录当前值的快照
+    initialSnapshot.value = JSON.parse(JSON.stringify({
+      handler: formData.managedConfiguration.handler
+    }))
+  }
+}, {
+  immediate: true  // 确保初始打开时也记录快照
 })
 
 onMounted(() => {

@@ -129,3 +129,7 @@ export const queryPointHistory = (collectorId: string, data: any) => request.pos
  * 点位历史数据聚合
  */
 export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);
+
+
+export const getSupportAccessModes = (provider) => request.post(`/data-collect/${provider}/command/GetSupportAccessModes`)
+

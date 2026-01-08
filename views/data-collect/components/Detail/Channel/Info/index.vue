@@ -41,12 +41,11 @@ watch(() => info.value, () => {
 
 provide("plugin-channel-detail-form", formData);
 provide("plugin-channel-detail-events", {
-  onValueChange: async (name, value) => {
-    const res = await formRef.value?.validate()
-    // 校验表单
-    // 保存
+  onValueChange: async (arr) => {
+    const res = await formRef.value?.validate(arr.map(i => i.name))
+    // 校验表单  保存
     if (res) {
-      emits('save', name, value)
+      emits('save', arr)
     }
   }
 });

@@ -404,8 +404,6 @@ const getDataSource = (p) => {
   const terms = []
   // 根据左边的搜索来查询数据
   if (type.value === 'all') {
-    // todo: 根据当前选择的采集器类型, 生成查询参数
-    console.log(filterValue)
     if (filterValue.point) {
       terms.push({
         column: 'runningState',
