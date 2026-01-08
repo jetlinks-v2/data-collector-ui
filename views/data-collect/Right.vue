@@ -1,8 +1,8 @@
 <template>
   <div class="right-warp">
-    <Header/>
-    <PointTop/>
-    <PointTable/>
+    <Header ref="pointHeader"/>
+    <PointTop ref="pointTopRef"/>
+    <PointTable ref="pointTableRef"/>
   </div>
 </template>
 
@@ -15,7 +15,24 @@ import PointTable from "./components/Point/PointTable.vue";
 const pointType = ref('total')
 provide('point-type', pointType)
 
-// todo: 需要刷新所有数据的方法
+const pointHeader = ref()
+const pointTopRef = ref()
+const pointTableRef = ref()
+
+
+// 统一的刷新方法
+const refresh = async () => {
+  await pointHeader.value?.loadData?.()
+  // 刷新点位统计
+  await pointTopRef.value?.loadData?.()
+  // 刷新点位表格
+  await pointTableRef.value?.loadData?.()
+}
+
+// 暴露刷新方法
+defineExpose({
+  refresh
+})
 </script>
 
 <style lang="less" scoped>

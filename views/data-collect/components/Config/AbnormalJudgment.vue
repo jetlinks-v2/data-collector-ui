@@ -41,7 +41,8 @@
 import Collapsible from "./Collapsible/index.vue";
 import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/hooks";
 import {inject} from "vue";
-import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
+import {isEqual} from "./data";
 
 const props = defineProps({
   showSwitch: {
@@ -53,11 +54,13 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
-const events = inject("plugin-point-detail-events");
+const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 
 let firstRender = true // 第一次渲染
+// 记录初始值快照，用于检测变化
+const initialSnapshot = ref(null)
 const options = ref([
   {
     title: '正常点位值',
@@ -151,23 +154,51 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    const arr = [
-      {
-        name: ['managedConfiguration', 'outlier'],
-        value: formData.managedConfiguration.outlier
-      },
-    ]
-    events.onValueChange(arr)
+    // 检查值是否真正发生变化
+    const currentValue = {
+      outlier: formData.managedConfiguration.outlier
+    }
+
+    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
+      const arr = [
+        {
+          name: ['managedConfiguration', 'outlier'],
+          value: formData.managedConfiguration.outlier
+        },
+      ]
+      events?.onValueChange?.(arr)
+      // 更新快照
+      initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
+    }
   }
 }
 
 watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
   if (firstRender && __type) {
     data.value = !!val
+    const _configuration = formData.managedConfiguration?.outlier?.configuration || {min: undefined, max: undefined}
+    terms.value = {
+      column: 'current',
+      termType: 'btw',
+      value: _configuration ? [_configuration.min, _configuration.max] : []
+    }
     firstRender = false
   }
 }, {
   immediate: true
+})
+
+// 监听折叠板打开状态，打开时记录初始快照
+watch(() => data.value, (newVal) => {
+  if (newVal === true) {
+    // 折叠板打开时，记录当前值的快照
+    initialSnapshot.value = JSON.parse(JSON.stringify({
+      outlier: formData.managedConfiguration.outlier
+    }))
+  }
+}, {
+  immediate: true  // 确保初始打开时也记录快照
 })
 </script>
 

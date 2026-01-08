@@ -4,7 +4,7 @@
       <div class="header">
         <InputEditable
             :value="info.name"
-            @change="(val) => onSave('name', val)"
+            @change="(val) => onSave([{name: 'name', value: val}])"
             :maxLength="64"
         />
         <j-badge-status
@@ -51,7 +51,7 @@
         <a-descriptions-item label="说明">
           <InputEditable
               :value="info.description"
-              @change="(val) => onSave('description', val)"
+              @change="(val) => onSave([{name: 'description', value: val}])"
               :maxLength="200"
           />
         </a-descriptions-item>
@@ -72,9 +72,10 @@ import {tabs} from "./asyncComponent";
 import {
   getCollectorActions,
   getCountList,
-  onCollectorSave
+  onCollectorSave, onPointSave
 } from "@data-collector-ui/views/data-collect/utils";
 import {detail} from "@data-collector-ui/api/data-collect/collector";
+import {omit, pick, set} from "lodash-es";
 
 const props = defineProps({
   data: {
@@ -90,6 +91,7 @@ const activeKey = ref('Info', 'refresh')
 const countList = ref([])
 const info = ref({})
 const loading = ref(false)
+const defaultKeys = ['accessModes', 'features', 'interval', 'managedConfiguration']
 
 provide('collector-info', info)
 
@@ -139,12 +141,31 @@ const onActions = (key) => {
 }
 
 // 修改点位信息
-const onSave = (key, value) => {
+const onSave = (arr) => {
   const params = {
-    name: info.value.name,
-    [key]: value
+    ...omit(info.value, ['runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime']),
   }
-  onCollectorSave(info.value.id, params, () => {
+  arr.map(i => {
+    set(params, i.name, i.value)
+  })
+  const _params = {
+    ...omit(params, defaultKeys),
+    configuration: {
+      ...params.configuration,
+      template: {
+        ...(params.configuration.template || {}),
+        ...pick(params, defaultKeys),
+        managedConfiguration: {
+          ...(params.configuration?.template?.managedConfiguration || {}),
+          ...params.managedConfiguration
+        }
+      }
+    },
+    circuitBreaker: {
+      type: 'Ignore'
+    }
+  };
+  onCollectorSave(info.value.id, _params, () => {
     handleSearch(info.value.id)
   })
 }

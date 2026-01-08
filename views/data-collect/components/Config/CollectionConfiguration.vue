@@ -36,7 +36,6 @@
             }
           ]"
         >
-          <!-- todo: 根据provider访问类型?-->
           <j-check-button
               v-model:value="formData.accessModes"
               :multiple="true"
@@ -86,7 +85,9 @@
 import Collapsible from "./Collapsible/index.vue";
 import {useI18n} from "vue-i18n";
 import {inject} from "vue";
-import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
+import {isEqual} from "./data";
+import {getSupportAccessModes} from "@data-collector-ui/api/data-collect/collector";
 
 const {t: $t} = useI18n();
 
@@ -96,9 +97,11 @@ const props = defineProps({
     default: true
   }
 })
-const formData = inject('plugin-form', reactive({}))
+const formData = inject('plugin-form', reactive({
+  provider: 'modbus_tcp'
+}))
 const collector = inject('point-form-collector', {})
-const events = inject("plugin-point-detail-events");
+const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true
@@ -109,11 +112,10 @@ if (!('features' in formData)) {
 
 const data = ref(!props.showSwitch)
 
-const options = [
-  {label: '读', value: 'read'},
-  {label: '写', value: 'write'},
-  {label: '订阅', value: 'subscribe'},
-]
+// 记录初始值快照，用于检测变化
+const initialSnapshot = ref(null)
+
+const options = ref([])
 
 const showExtra = computed(() => {
   return !!collector?.accessModes?.length && !!collector?.interval
@@ -145,21 +147,33 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    const arr = [
-      {
-        name: 'accessModes',
-        value: formData.accessModes
-      },
-      {
-        name: 'interval',
-        value: formData.interval
-      },
-      {
-        name: 'features',
-        value: formData.features
-      }
-    ]
-    events.onValueChange(arr)
+    // 检查值是否真正发生变化
+    const currentValue = {
+      accessModes: formData.accessModes,
+      interval: formData.interval,
+      features: formData.features
+    }
+
+    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
+      const arr = [
+        {
+          name: 'accessModes',
+          value: formData.accessModes.filter(i => i)
+        },
+        {
+          name: 'interval',
+          value: formData.interval
+        },
+        {
+          name: 'features',
+          value: formData.features.filter(i => i)
+        }
+      ]
+      events?.onValueChange?.(arr)
+      // 更新快照
+      initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
+    }
   }
 }
 
@@ -176,6 +190,31 @@ watch(() => formData.accessModes, () => {
 }, {
   immediate: true
 })
+
+// 监听折叠板打开状态，打开时记录初始快照
+watch(() => data.value, (newVal) => {
+  if (newVal === true) {
+    // 折叠板打开时，记录当前值的快照
+    initialSnapshot.value = JSON.parse(JSON.stringify({
+      accessModes: formData.accessModes,
+      interval: formData.interval,
+      features: formData.features
+    }))
+  }
+}, {
+  immediate: true  // 确保初始打开时也记录快照
+})
+
+const querySupportAccessModes = async () => {
+  const resp = await getSupportAccessModes(formData.provider)
+  if (resp.success) {
+    options.value = resp.result.map(i => {
+      return {...i, label: i.text}
+    })
+  }
+}
+
+querySupportAccessModes()
 </script>
 
 <style lang="less" scoped>

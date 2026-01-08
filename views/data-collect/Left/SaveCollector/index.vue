@@ -202,7 +202,7 @@ const handleOk = async (flag) => {
       if (response.success) {
         onlyMessage('操作成功!')
         if (flag) {
-          formData.configuration = {}
+          // formData.configuration = {}
           formData.name = undefined
           formData.id = undefined
           formData.description = undefined

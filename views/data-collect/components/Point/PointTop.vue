@@ -88,12 +88,9 @@ const onSearch = (params) => {
   }, 'stopped')
 }
 
-watch(() => [type.value, data.value.id], () => {
+const loadData = () => {
   const terms = []
-  if (type.value === 'all') {
-    // _filterValue
-    // todo: 根据当前选择的采集器类型, 生成查询参数
-  } else {
+  if (type.value !== 'all') {
     terms.push({
       column: type.value === 'channel' ? 'channelId' : 'collectorId',
       type: 'and',
@@ -102,8 +99,16 @@ watch(() => [type.value, data.value.id], () => {
     })
   }
   onSearch({terms})
+}
+
+watch(() => [type.value, data.value.id], () => {
+  loadData()
 }, {
   immediate: true
+})
+
+defineExpose({
+  loadData
 })
 </script>
 

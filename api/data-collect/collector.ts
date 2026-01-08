@@ -133,3 +133,5 @@ export const commandRequest = {
   pointConfigMetadata: (type: string) => request.post(`/data-collect/${type}/command/GetPointConfigMetadata`)
 }
 
+export const getSupportAccessModes = (provider) => request.post(`/data-collect/${provider}/command/GetSupportAccessModes`)
+

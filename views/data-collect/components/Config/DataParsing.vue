@@ -53,8 +53,9 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {queryCodecProvider} from "@data-collector-ui/api/data-collect/collector";
-import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {inject} from "vue";
+import {isEqual} from "./data";
 
 const props = defineProps({
   showSwitch: {
@@ -65,10 +66,13 @@ const props = defineProps({
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
-const events = inject("plugin-point-detail-events");
+const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true
+
+// 记录初始值快照，用于检测变化
+const initialSnapshot = ref(null)
 
 if (!('managedConfiguration' in formData)) {
   formData.managedConfiguration = {
@@ -148,17 +152,28 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    const arr = [
-      {
-        name: ['codec'],
-        value: formData.managedConfiguration.codec
-      },
-      {
-        name: ['byteLayout'],
-        value: formData.managedConfiguration.byteLayout
-      },
-    ]
-    events.onValueChange(arr)
+    // 检查值是否真正发生变化
+    const currentValue = {
+      codec: formData.managedConfiguration.codec,
+      byteLayout: formData.managedConfiguration.byteLayout
+    }
+
+    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
+      const arr = [
+        {
+          name: ['managedConfiguration', 'codec'],
+          value: formData.managedConfiguration.codec
+        },
+        {
+          name: ['managedConfiguration', 'byteLayout'],
+          value: formData.managedConfiguration.byteLayout
+        },
+      ]
+      events?.onValueChange?.(arr)
+      // 更新快照
+      initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
+    }
   }
 }
 
@@ -173,13 +188,26 @@ onMounted(() => {
   })
 })
 
-watch(() => formData.managedConfiguration.codec, () => {
+watch(() => formData.managedConfiguration?.codec, () => {
   if (firstRender && __type) {
     data.value = !!(formData?.managedConfiguration?.codec && formData?.managedConfiguration?.byteLayout)
     firstRender = false
   }
 }, {
   immediate: true
+})
+
+// 监听折叠板打开状态，打开时记录初始快照
+watch(() => data.value, (newVal) => {
+  if (newVal === true) {
+    // 折叠板打开时，记录当前值的快照
+    initialSnapshot.value = JSON.parse(JSON.stringify({
+      codec: formData.managedConfiguration.codec,
+      byteLayout: formData.managedConfiguration.byteLayout
+    }))
+  }
+}, {
+  immediate: true  // 确保初始打开时也记录快照
 })
 </script>
 

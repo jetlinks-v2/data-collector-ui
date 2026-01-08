@@ -13,7 +13,7 @@ import ResultProcessing from "@data-collector-ui/views/data-collect/components/C
 import StorageConfiguration from "@data-collector-ui/views/data-collect/components/Config/StorageConfiguration.vue";
 import AbnormalJudgment from "@data-collector-ui/views/data-collect/components/Config/AbnormalJudgment.vue";
 import {map} from "lodash-es";
-import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 
 const emits = defineEmits(['save'])
 
@@ -31,7 +31,7 @@ watch(() => info.value, () => {
 })
 
 provide('plugin-form', formData)
-provide("plugin-point-detail-events", {
+provide(PLUGIN_DETAIL_SAVE_EVENTS, {
   onValueChange: async (arr) => {
     const res = await formRef.value?.validate(arr.map(i => i.name))
     // 校验表单  保存

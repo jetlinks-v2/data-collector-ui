@@ -194,7 +194,12 @@ import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig.vue";
 import {baseColumns} from "./columns";
 import {downloadFileByUrl, onlyMessage, randomString} from "@jetlinks-web/utils";
-import {ChannelState, COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {
+  ChannelState,
+  COLLECTOR_DATA,
+  COLLECTOR_TYPE,
+  REFRESH_HANDLER
+} from "@data-collector-ui/views/data-collect/data";
 import dayjs from "dayjs";
 import {cloneDeep, map} from "lodash-es";
 import {wsClient} from "@jetlinks-web/core";
@@ -235,7 +240,7 @@ const filterValue = inject('filter-value', reactive({
   collector: false,
   point: false
 }))
-
+const refreshHandler = inject(REFRESH_HANDLER)
 const subRef = ref();
 const propertyValue = ref(new Map());
 
@@ -278,12 +283,6 @@ const onResizeColumn = (w, col) => {
   }
 }
 
-const onRefreshData = () => {
-  isCheck.value = false
-  _selectedRowKeys.value = []
-  tableRef.value?.reload();
-}
-
 const batchActions = [
   {
     key: 'enabled',
@@ -307,7 +306,7 @@ const batchActions = [
           })
           const response = await savePointBatch(arr)
           if (response.success) {
-            onRefreshData()
+            onRefresh(true)
             onlyMessage($t('Point.index.400149-14'), 'success');
           }
         },
@@ -343,7 +342,7 @@ const batchActions = [
           })
           const response = await savePointBatch(arr)
           if (response.success) {
-            onRefreshData()
+            onRefresh(true)
             onlyMessage($t('Point.index.400149-14'), 'success');
           }
         },
@@ -365,7 +364,7 @@ const batchActions = [
           }
           const response = await batchDeletePoint(_selectedRowKeys.value)
           if (response.success) {
-            onRefreshData()
+            onRefresh(true)
             onlyMessage($t('Point.index.400149-14'), 'success');
           }
         },
@@ -378,11 +377,15 @@ const handleSubscribeValue = throttle((payload) => {
   propertyValue.value.set(payload.pointId, payload);
 });
 
-const onRefresh = () => {
-  tableRef.value?.reload()
+const onRefresh = (flag = false) => {
   visible.viewPoint = false
   visible.import = false
   visible.save = false
+  if (flag) {
+    isCheck.value = false
+    _selectedRowKeys.value = []
+  }
+  refreshHandler?.refreshAll?.()
 }
 
 const subscribeProperty = (value) => {
@@ -404,8 +407,6 @@ const getDataSource = (p) => {
   const terms = []
   // 根据左边的搜索来查询数据
   if (type.value === 'all') {
-    // todo: 根据当前选择的采集器类型, 生成查询参数
-    console.log(filterValue)
     if (filterValue.point) {
       terms.push({
         column: 'runningState',
@@ -481,13 +482,6 @@ const getDataSource = (p) => {
       setTimeout(() => {
         const _array = resp.result.data
         subscribeProperty(_array);
-        // _array.forEach((item) => {
-        //   item.accessModes?.forEach((i) => {
-        //     if (i?.value === 'read') {
-        //       console.log(item.id, item, '123');
-        //     }
-        //   });
-        // })
       }, 100)
     }
     return resp
@@ -653,6 +647,12 @@ watch(
 onUnmounted(() => {
   subRef.value?.unsubscribe();
 });
+
+defineExpose({
+  loadData: () => {
+    tableRef.value?.reload()
+  }
+})
 </script>
 
 <style lang="less" scoped>
