@@ -88,7 +88,7 @@ const onSearch = (params) => {
   }, 'stopped')
 }
 
-watch(() => [type.value, data.value.id], () => {
+const loadData = () => {
   const terms = []
   if (type.value !== 'all') {
     terms.push({
@@ -99,8 +99,16 @@ watch(() => [type.value, data.value.id], () => {
     })
   }
   onSearch({terms})
+}
+
+watch(() => [type.value, data.value.id], () => {
+  loadData()
 }, {
   immediate: true
+})
+
+defineExpose({
+  loadData
 })
 </script>
 

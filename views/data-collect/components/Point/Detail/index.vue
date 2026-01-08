@@ -79,7 +79,6 @@ const emits = defineEmits(['close'])
 const info = ref(props.data)
 const loading = ref(false)
 const activeKey = ref('Info')
-
 const tabsList = [
   {
     key: 'Info',

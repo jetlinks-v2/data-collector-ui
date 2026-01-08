@@ -3,10 +3,10 @@
     <full-page>
       <div class="collect-warp">
         <div class="left">
-          <Left @change="onChange"/>
+          <Left @change="onChange" ref="leftRef"/>
         </div>
         <div class="right">
-          <Right/>
+          <Right ref="rightRef"/>
         </div>
       </div>
     </full-page>
@@ -16,8 +16,10 @@
 <script setup>
 import Left from './Left/index.vue'
 import Right from './Right.vue'
-import {COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {COLLECTOR_DATA, COLLECTOR_TYPE, REFRESH_HANDLER} from "@data-collector-ui/views/data-collect/data";
 
+const leftRef = ref()
+const rightRef = ref()
 const current = ref({})
 const type = ref('all')
 const filterValue = reactive(
@@ -32,17 +34,32 @@ provide('filter-value', filterValue)
 provide(COLLECTOR_TYPE, type) // all/channel/collector
 provide(COLLECTOR_DATA, current)
 
-// 刷新页面
-// 修改通道后刷新页面(新增通道, 编辑, 启用/禁用, 删除, 新增采集器, 导入, 详情页面操作后)
-// 修改采集器后刷新页面(编辑, 启用/禁用, 删除, 导入, 详情页面操作后)
+// 🔥 核心：提供统一的刷新方法
+const refreshHandler = {
+  // 刷新所有
+  refreshAll: async () => {
+    // await leftRef.value?.loadAllData?.()
+    await rightRef.value?.refresh?.()
+  },
 
-// 查询采集器和点位的数量(通过通道查询,通过采集器查询)
-// 编辑通道,采集器,点位的信息后保存的方法
+  // 只刷新左侧
+  refreshLeft: async () => {
+    // await leftRef.value?.loadAllData?.()
+  },
+
+  // 只刷新右侧
+  refreshRight: async () => {
+    await rightRef.value?.refresh?.()
+  },
+}
+
+// 通过 provide 向下传递刷新方法
+provide(REFRESH_HANDLER, refreshHandler)
+
 
 const onChange = (_type, row) => {
   type.value = _type || 'all'
   current.value = _type === 'all' ? {} : row
-  // console.log(_type, row)
 }
 </script>
 

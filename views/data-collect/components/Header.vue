@@ -91,12 +91,20 @@ const onDetail = () => {
   }
 }
 
-watch(() => [type.value, data.value.id], () => {
+const loadData = () => {
   getCountList(type.value || 'all', data.value.id || '', true).then(resp => {
     countList.value = resp
   })
+}
+
+watch(() => [type.value, data.value.id], () => {
+  loadData()
 }, {
   immediate: true
+})
+
+defineExpose({
+  loadData
 })
 </script>
 
