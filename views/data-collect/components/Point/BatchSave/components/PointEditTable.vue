@@ -5,7 +5,6 @@
       :serial="false"
       :columns="_columns"
       :height="500"
-      rowKey="_key"
   >
     <template
         v-for="item in columns"
@@ -14,14 +13,17 @@
     >
       <j-edit-table-form-item :name="[index, item.form?.name || item.dataIndex]">
         <div class="scan-ditto-box">
-          <component
-              v-bind="item.template?.props || {}"
-              :is="item.template?.components"
-              :value="getFieldValue(record, item)"
-              :disabled="record.sames[item.dataIndex]"
-              @update:value="(value) => onFieldChange(value, item, index)"
-              style="min-width: 0; flex: 1"
-          />
+          <div style="min-width: 0;flex: 1">
+            <component
+                v-bind="item.template?.props || {}"
+                :is="item.template?.components"
+                :value="getFieldValue(record, item)"
+                :checked="getFieldValue(record, item)"
+                :disabled="record.sames[item.dataIndex] && item.template?.check !== false"
+                :style=" item.template?.components !== 'a-switch' ? { width: '100%' } : {}"
+                @change="(value) => onFieldChange(value, item, record)"
+            />
+          </div>
           <a-checkbox
               v-if="index !== 0 && item.template?.check !== false"
               class="ditto-checkbox"
@@ -65,7 +67,7 @@
 import {useI18n} from "vue-i18n";
 import {uniqueByKey} from "../data";
 import OtherSetting from "./OtherSetting.vue";
-import {get, set} from "lodash-es";
+import { cloneDeep, get, set } from 'lodash-es'
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -77,6 +79,14 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  fieldPathMap: {
+    type: Object,
+    default: () => ({})
+  },
+  sameFieldKey: {
+    type: String,
+    default: 'sames'
+  }
 })
 const emit = defineEmits(['update:dataSource', 'change', 'checkChange', 'fieldChange'])
 
@@ -96,7 +106,7 @@ const _columns = computed(() => {
       dataIndex: 'otherConfig',
       ellipsis: true,
       fixed: 'right',
-      width: 120
+      width: 100
     },
     {
       key: 'actions',
@@ -113,66 +123,54 @@ const _columns = computed(() => {
 const getFieldValue = (record, item) => {
   return get(record, item.form?.name || item.dataIndex)
 }
+
 const onSave = (arr) => {
   emit('update:dataSource', arr)
   emit('change', arr)
 }
 
-const handleData = (arr) => {
-  return arr.map((item, rowIndex) => {
-    if (rowIndex === 0 || item.sames) {
-      return item
-    }
-    const newCheckStatus = {}
-    item = {...item}
-    props.columns.forEach(col => {
-      if (col.template?.check !== false) {
-        newCheckStatus[col.dataIndex] = true
-      }
-    })
-    item.sames = newCheckStatus
-    return item
-  })
+const setByPath = (obj, path, value) => {
+  let cur = obj;
+  set(cur, path, value);
+  return cur;
 }
 
-const handleName = (item) => {
-  let _dt = item.form?.name || item.dataIndex || []
-  if (!Array.isArray(_dt)) {
-    _dt = [_dt]
+const sameValue = (index, fieldPath, samePath, value) => {
+  for (let i = index + 1; i < _dataSource.value.length; i++) {
+    const row = _dataSource.value[i];
+    const same = row[props.sameFieldKey][samePath];
+    if (!same) break;
+    _dataSource.value.splice(index + 1, 1, cloneDeep(setByPath(row, fieldPath, value)))
   }
-  return _dt
 }
 
 // checkbox变化事件
 const onCheckChange = (e, item, record) => {
   const checked = e.target.checked
-  debugger
+
   record.sames[item.dataIndex] = checked
-  // 同步更新下一行的字段值
-  if (checked) {
-    // 同步更新所有其他的值
-    let _dt = handleName(item)
-    let subValue = get(record, _dt)
-    set(record, _dt, subValue)
+
+  if (checked && record.__dataIndex !== 0) {
+    const formName = item.form?.name || [item.dataIndex]
+    const dataIndex = item.dataIndex
+    const prevValue = get(_dataSource.value[record.__dataIndex - 1], formName)
+    sameValue(record.__dataIndex - 1,  formName, dataIndex, prevValue)
   }
+
   onSave(_dataSource.value)
   emit('checkChange', checked, item, record)
 }
 
 // 字段值变化时，如果下一行勾选了同上，需要同步更新
-const onFieldChange = (value, item, rowIndex) => {
-  let _dt = handleName(item)
-  // 同步更新下一行的勾选状态
-  for (let i = rowIndex; i < _dataSource.value.length; i++) {
-    if (i === rowIndex || _dataSource.value[i].sames[item.dataIndex]) {
-      set(_dataSource.value[i], _dt, value)
-    } else {
-      // 如果遇到未勾选"同上"的行,停止同步
-      break;
-    }
-  }
+const onFieldChange = (value, item, record) => {
+  const _value = value.target ? value.target.value : value
+  const formName = item.form?.name || [item.dataIndex]
+  const dataIndex = item.dataIndex
+
+  _dataSource.value.splice(record.__dataIndex, 1, cloneDeep(setByPath(record, formName, _value)))
+  sameValue(record.__dataIndex, formName, dataIndex, _value) // 将下面的同上数据进行同步
   onSave(_dataSource.value)
-  emit('fieldChange', value, item, rowIndex)
+  emit('fieldChange', value, item, record)
 }
 
 // actions和其他配置项
@@ -190,11 +188,10 @@ const removeItem = (dt, index) => {
   onSave(_dataSource.value)
 }
 
-watch(() => props.dataSource, (newVal) => {
-  _dataSource.value = handleData(newVal)
+watch(() => props.dataSource.length, (newVal) => {
+  _dataSource.value = props.dataSource
 }, {
   immediate: true,
-  deep: true
 })
 
 defineExpose({

@@ -23,9 +23,10 @@ export const devGetProtocol = async (protocol: string, module: string) => {
     }
 }
 
-export const handlePointConfigMetadata = (data: Array<Record<string, any>>) => {
+export const handlePointConfigMetadata = (data: Array<Record<string, any>>, parentId: string) => {
     const columns: Array<any> = []
     const values: Record<string, any> = {}
+    const fieldPathMap: Record<string, Array<string>> = {}
 
     function handleType(type: string, record: Record<string, any>) {
         const valueType = record.valueType
@@ -64,34 +65,44 @@ export const handlePointConfigMetadata = (data: Array<Record<string, any>>) => {
         }
     }
 
-    function handleObject(properties: Array<Record<string, any>>, _columns: Record<string, any> ) {
+    function handleObject(properties: Array<Record<string, any>>, _columns: Record<string, any> , paths: Array<string>) {
         return properties.reduce((prev: any, next: Record<string, any>) => {
+            const _paths = [...paths, next.id]
             prev[next.id] = undefined
             _columns.push({
                 title: next.i18nName,
                 dataIndex: next.id,
                 template: handleType(next.valueType?.type, next),
-                width: 220
+                width: 220,
+                form: {
+                    name: _paths
+                }
             })
+            fieldPathMap[next.id] = _paths
             return prev
         }, {})
     }
 
     data.forEach(item => {
+        const _path = [parentId, item.id]
         const column = {
             title: item.i18nName,
             dataIndex: item.id,
             template: {
                 components: 'a-input',
             },
-            width: 220
+            width: 220,
+            form: {
+                name: _path
+            }
         }
 
         values[item.id] = undefined
+        fieldPathMap[item.id] = _path
 
         const type = item.valueType.type
         if (type === 'object') {
-            values[item.id] = handleObject(item.valueType.properties, columns)
+            values[item.id] = handleObject(item.valueType.properties, columns, _path)
         } else if (type === 'enum') {
             column.template = handleType(item.valueType.type, item)
             columns.push(column)
@@ -102,6 +113,7 @@ export const handlePointConfigMetadata = (data: Array<Record<string, any>>) => {
 
     return {
         values,
-        columns
+        columns,
+        fieldPathMap
     }
 }
