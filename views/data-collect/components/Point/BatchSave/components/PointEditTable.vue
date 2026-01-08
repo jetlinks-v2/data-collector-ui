@@ -5,6 +5,7 @@
       :serial="false"
       :columns="_columns"
       :height="500"
+      rowKey="_key"
   >
     <template
         v-for="item in columns"
@@ -17,14 +18,15 @@
               v-bind="item.template?.props || {}"
               :is="item.template?.components"
               :value="getFieldValue(record, item)"
+              :disabled="record.sames[item.dataIndex]"
               @update:value="(value) => onFieldChange(value, item, index)"
               style="min-width: 0; flex: 1"
           />
           <a-checkbox
               v-if="index !== 0 && item.template?.check !== false"
               class="ditto-checkbox"
-              :checked="record._checkStatus[item.dataIndex]"
-              @change="(e) => onCheckChange(e, item, index)"
+              :checked="record.sames[item.dataIndex]"
+              @change="(e) => onCheckChange(e, item, record)"
           >
             同上
           </a-checkbox>
@@ -93,13 +95,16 @@ const _columns = computed(() => {
       key: 'otherConfig',
       dataIndex: 'otherConfig',
       ellipsis: true,
-      width: 80
+      fixed: 'right',
+      width: 120
     },
     {
       key: 'actions',
       title: $t('Collector.data.400141-40'),
       dataIndex: 'actions',
+      fixed: 'right',
       width: 80
+
     }
   ]
   return uniqueByKey(arr, 'dataIndex')
@@ -115,7 +120,7 @@ const onSave = (arr) => {
 
 const handleData = (arr) => {
   return arr.map((item, rowIndex) => {
-    if (rowIndex === 0 || item._checkStatus) {
+    if (rowIndex === 0 || item.sames) {
       return item
     }
     const newCheckStatus = {}
@@ -125,7 +130,7 @@ const handleData = (arr) => {
         newCheckStatus[col.dataIndex] = true
       }
     })
-    item._checkStatus = newCheckStatus
+    item.sames = newCheckStatus
     return item
   })
 }
@@ -139,18 +144,19 @@ const handleName = (item) => {
 }
 
 // checkbox变化事件
-const onCheckChange = (e, item, rowIndex) => {
+const onCheckChange = (e, item, record) => {
   const checked = e.target.checked
-  _dataSource.value[rowIndex]._checkStatus[item.dataIndex] = checked
+  debugger
+  record.sames[item.dataIndex] = checked
   // 同步更新下一行的字段值
   if (checked) {
     // 同步更新所有其他的值
     let _dt = handleName(item)
-    let subValue = get(_dataSource.value[rowIndex - 1], _dt)
-    set(_dataSource.value[rowIndex], _dt, subValue)
+    let subValue = get(record, _dt)
+    set(record, _dt, subValue)
   }
   onSave(_dataSource.value)
-  emit('checkChange', checked, item, rowIndex)
+  emit('checkChange', checked, item, record)
 }
 
 // 字段值变化时，如果下一行勾选了同上，需要同步更新
@@ -158,7 +164,7 @@ const onFieldChange = (value, item, rowIndex) => {
   let _dt = handleName(item)
   // 同步更新下一行的勾选状态
   for (let i = rowIndex; i < _dataSource.value.length; i++) {
-    if (i === rowIndex || _dataSource.value[i]._checkStatus[item.dataIndex]) {
+    if (i === rowIndex || _dataSource.value[i].sames[item.dataIndex]) {
       set(_dataSource.value[i], _dt, value)
     } else {
       // 如果遇到未勾选"同上"的行,停止同步

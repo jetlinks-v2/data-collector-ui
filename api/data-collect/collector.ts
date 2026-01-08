@@ -119,3 +119,7 @@ export const getFunction = () => request.get('/dictionary/streaming-agg-type/ite
 
 export const getOperator = () => request.get('/property-calculate-rule/description')
 
+export const commandRequest = {
+  pointConfigMetadata: (type: string) => request.post(`/data-collect/${type}/command/GetPointConfigMetadata`)
+}
+
