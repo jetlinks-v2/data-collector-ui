@@ -9,6 +9,14 @@
 </template>
 
 <script setup>
+import { queryPointAggregation } from '@data-collector-ui/api/data-collect/collector'
+import { useRequest } from '@jetlinks-web/hooks';
+
+const { data: aggregationData, run: runAggregation } = useRequest(queryPointAggregation, {
+  
+})
+
+const info = inject('point-info', ref({}))
 const errorDataOptions = computed(() => {
   return {
     grid: {
@@ -32,6 +40,10 @@ const errorDataOptions = computed(() => {
       }
     ]
   }
+})
+
+onMounted(() => {
+  runAggregation(info.value.id, {})
 })
 </script>
 

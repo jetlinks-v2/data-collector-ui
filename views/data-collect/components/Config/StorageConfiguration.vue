@@ -95,7 +95,13 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    events.onValueChange('features', formData.features)
+    const arr = [
+      {
+        name: ['features'],
+        value: formData.features
+      },
+    ]
+    events.onValueChange(arr)
   }
 }
 

@@ -1,11 +1,16 @@
 <template>
   <div>
-    <Logs/>
+    <Logs :id="`channel-log-${currentChannel.id}`" :topic="`/channel/${currentChannel.id}/*`">
+    </Logs>
   </div>
 </template>
 
 <script setup>
 import Logs from "../../LogsManage/index.vue";
+import {COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
+
+const currentChannel = inject(COLLECTOR_DATA)
+
 </script>
 
 <style lang="less" scoped>

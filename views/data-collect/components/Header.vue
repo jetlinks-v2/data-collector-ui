@@ -78,7 +78,9 @@ const getActive = (itemType) => {
 }
 
 const onClick = (item) => {
-  filterValue[item.type] = !filterValue[item.type]
+  Object.keys(filterValue).forEach(i => {
+    filterValue[i] = item.type === i ? !filterValue[item.type] : false
+  })
 }
 
 const onDetail = () => {
@@ -90,7 +92,6 @@ const onDetail = () => {
 }
 
 watch(() => [type.value, data.value.id], () => {
-  // todo: 根据当前选择的采集器类型, 生成查询参数
   getCountList(type.value || 'all', data.value.id || '', true).then(resp => {
     countList.value = resp
   })
@@ -143,12 +144,12 @@ watch(() => [type.value, data.value.id], () => {
         min-width: 50px;
 
         .error {
-          color: @error-color;
+          color: @primary-color;
           cursor: pointer;
           text-decoration: underline;
 
           &.active {
-            color: @primary-color;
+            color: @error-color;
           }
         }
       }

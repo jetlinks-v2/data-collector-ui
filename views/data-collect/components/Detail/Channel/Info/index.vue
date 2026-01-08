@@ -10,8 +10,8 @@
       </a-form>
     </template>
     <TitleComponent data="数据图表"/>
-    <PointDataVolume/>
-    <AbnormalDataTrend/>
+    <PointDataVolume type="channel" :id="info.id" />
+    <AbnormalDataTrend type="channel" :id="info.id" />
   </div>
 </template>
 

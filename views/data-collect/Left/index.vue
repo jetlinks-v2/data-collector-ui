@@ -19,7 +19,7 @@
         </a-space>
       </a-flex>
       <ActionButtons
-          v-show="viewType === 'compact'"
+          v-if="viewType === 'compact'"
           v-model="searchValue"
           @add="handleAdd"
       />
@@ -59,7 +59,7 @@
       <div v-show="viewType === 'separate'" class="channel-collector-separate">
         <div class="channel-box">
           <ActionButtons
-              v-show="viewType === 'separate'"
+              v-if="viewType === 'separate'"
               v-model="searchValue"
               @add="handleAdd"
           />
@@ -139,7 +139,6 @@
   />
   <FilterModal
       v-if="filterModalVisible"
-      v-model:value="filterValue"
       @close="filterModalVisible = false"
       @save="onFilterSave"
   />
@@ -247,10 +246,18 @@ const separateViewCollectors = ref<any[]>([]);
 
 // 过滤后的采集器列表（用于搜索）
 const filteredCollectors = computed(() => {
+  const arr: any[] = []
+  filterTreeData.value.forEach(item => {
+    if(nodeType.value === 'all') {
+      arr.push(...item.children)
+    } else if(currentNode.value?.id === item.id || (nodeType.value === 'collector' && currentNode.value?.channelId === item.id)) {
+      arr.push(...item.children)
+    }
+  })
   if (!collectorSearchValue.value.trim()) {
-    return separateViewCollectors.value;
+    return arr
   }
-  return separateViewCollectors.value.filter(collector => {
+  return arr.filter(collector => {
     return collector.name.toLowerCase().includes(collectorSearchValue.value.toLowerCase());
   });
 });
@@ -263,9 +270,14 @@ const filterTreeData = computed(() => {
         && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
         && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
     ) {
+      const arr: any[] = separateViewCollectors.value.filter((collector: any) => collector.channelId === item.id)
+      console.log(arr)
       // 如果有子节点（采集器），也需要过滤
-      if (item.children && item.children.length > 0) {
-        item.children = item.children.filter((child: any) => {
+      if (arr.length) {
+        item.children = arr.filter((child: any) => {
+          console.log(filterValue.collectorState)
+          console.log(child.runningState?.value)
+          console.log(child.state?.value)
           return child.name.includes(searchValue.value) &&
               (filterValue.value?.collectorState?.includes(child.runningState?.value) ||
                   filterValue.value?.collectorState?.includes(child.state?.value) ||

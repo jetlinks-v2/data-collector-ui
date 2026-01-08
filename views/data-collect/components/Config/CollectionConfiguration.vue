@@ -145,7 +145,21 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    events.onValueChange('formData', formData)
+    const arr = [
+      {
+        name: 'accessModes',
+        value: formData.accessModes
+      },
+      {
+        name: 'interval',
+        value: formData.interval
+      },
+      {
+        name: 'features',
+        value: formData.features
+      }
+    ]
+    events.onValueChange(arr)
   }
 }
 

@@ -15,6 +15,7 @@ import PointTable from "./components/Point/PointTable.vue";
 const pointType = ref('total')
 provide('point-type', pointType)
 
+// todo: 需要刷新所有数据的方法
 </script>
 
 <style lang="less" scoped>

@@ -11,17 +11,37 @@
     <template #extraTemplate>
       木有写
     </template>
-    <!--    todo: 需要校验值的大小和必填-->
-    <a-form-item>
+    <a-form-item :name="['managedConfiguration', 'handler']"
+                 :rules="[
+            {
+              validator: validatorValue,
+              trigger: ['change', 'blur']
+            }
+        ]">
       <div style="display: flex; align-items: center;">
-        <a-switch v-model:checked="formData.managedConfiguration.handler.enabled" style="margin-right: 12px"/>
-        <template v-if="!flag">当点位发生异常时，触发告警</template>
+        <a-switch
+            v-model:checked="formData.managedConfiguration.handler.configuration.shakeLimit.enabled"
+            style="margin-right: 12px"
+        />
+        <template v-if="!formData.managedConfiguration.handler.configuration.shakeLimit.enabled">
+          当点位发生异常时，触发告警
+        </template>
         <template v-else>
-          <a-select style="width: 100px;" :options="options"/>
+          <a-select
+              show-search
+              placeholder="请选择"
+              style="width: 150px;
+              margin: 0 10px"
+              :options="options"
+              v-model:value="type"
+              @change="onTypeChange"
+          />
           异常时，
-          <a-input-number/>
+          <a-input-number placeholder="请输入" style="margin: 0 10px" :min="0" :precision="0"
+                          v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.time"/>
           秒内最多触发
-          <a-input-number/>
+          <a-input-number placeholder="请输入" style="margin: 0 10px" :min="1" :precision="0"
+                          v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.threshold"/>
           次同一类型 告警
         </template>
       </div>
@@ -32,6 +52,7 @@
 import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {getCollectorError} from "@data-collector-ui/api/data-collect/collector";
 
 const props = defineProps({
   showSwitch: {
@@ -44,35 +65,33 @@ const data = ref(!props.showSwitch)
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
 const events = inject("plugin-point-detail-events");
-
+const errorList = ref([])
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 
 let firstRender = true // 第一次渲染
 
 const flag = computed(() => !!formData.managedConfiguration?.handler?.enabled)
-
-const options = [
-  {
-    label: '通讯异常',
-    value: '1'
-  },
-  {
-    label: '请求超时',
-    value: '2'
-  },
-  {
-    label: '数据异常',
-    value: '3'
-  },
-  {
-    label: '解析失败',
-    value: '4'
-  },
-  {
-    label: '点位死区',
-    value: '5'
-  }
-]
+const type = ref()
+const options = computed(() => {
+  const arr = errorList.value.map(i => {
+    return {
+      ...i,
+      label: i.name || i.description,
+      value: i.code
+    }
+  })
+  return [
+    {
+      label: '数据异常',
+      value: 'outlier'
+    },
+    {
+      label: '点位死区',
+      value: 'deadband'
+    },
+    ...arr
+  ]
+})
 
 if (!('managedConfiguration' in formData)) {
   formData.managedConfiguration = {
@@ -88,14 +107,48 @@ if (!('managedConfiguration' in formData)) {
       enabled: false
     },
     handler: {
-      enabled: false
+      enabled: false,
+      provider: 'alarm',
+      configuration: {
+        shakeLimit: {
+          enabled: false,
+          "alarmFirst": true,
+          "outputFirst": false,
+          "continuous": false,
+          "rolling": false
+        }
+      }
     },
   }
 }
 
 if (!('handler' in formData.managedConfiguration)) {
   formData.managedConfiguration.handler = {
-    enabled: false
+    enabled: false,
+    provider: 'alarm',
+    configuration: {
+      "reason": "deadband",
+      shakeLimit: {
+        enabled: false,
+        "alarmFirst": true,
+        "outputFirst": false,
+        "continuous": false,
+        "rolling": false
+      }
+    }
+  }
+}
+
+if (!('configuration' in formData.managedConfiguration.handler)) {
+  formData.managedConfiguration.handler.configuration = {
+    "reason": "deadband",
+    shakeLimit: {
+      enabled: false,
+      "alarmFirst": true,
+      "outputFirst": false,
+      "continuous": false,
+      "rolling": false
+    }
   }
 }
 
@@ -109,17 +162,54 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    events.onValueChange('managedConfiguration', formData.managedConfiguration)
+    const arr = [
+      {
+        name: ['handler'],
+        value: formData.managedConfiguration.handler
+      },
+    ]
+    events.onValueChange(arr)
+  }
+}
+
+const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) => {
+  if (_value.enabled) {
+    if (_value.configuration.shakeLimit.enabled) {
+      if (!((_value.configuration.reason || _value.configuration.code) && _value.configuration.shakeLimit.time != null && _value.configuration.shakeLimit.threshold != null)) {
+        return reject('请输入值');
+      }
+    }
+  }
+  return resolve("");
+});
+
+const onTypeChange = (e, option) => {
+  if (option.code) {
+    formData.managedConfiguration.handler.configuration.reason = undefined
+    formData.managedConfiguration.handler.configuration.code = option.code
+  } else {
+    formData.managedConfiguration.handler.configuration.reason = e
+    formData.managedConfiguration.handler.configuration.code = undefined
   }
 }
 
 watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {
   if (firstRender && __type) {
     data.value = !!val
+    const _configuration = formData.managedConfiguration?.handler?.configuration || {}
+    type.value = _configuration.reason || _configuration.code
     firstRender = false
   }
 }, {
   immediate: true
+})
+
+onMounted(() => {
+  getCollectorError().then(resp => {
+    if (resp.success) {
+      errorList.value = resp.result
+    }
+  })
 })
 </script>
 

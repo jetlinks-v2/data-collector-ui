@@ -19,19 +19,19 @@
         </a-descriptions-item>
       </a-descriptions>
     </template>
-    <!--    todo: 需要校验值的大小和必填-->
     <a-form-item
-        :name="['managedConfiguration', 'outlier', 'configuration']"
+        :name="['managedConfiguration', 'outlier']"
         :rules="[
             {
-validator: validatorValue,
+              validator: validatorValue,
+              trigger: ['change', 'blur']
             }
         ]"
     >
       <TermsCascader
-          v-model:value="terms"
-          :builtinOptions="builtinParams"
+          :value="terms"
           :showValueType="false"
+          @change="onChange"
       />
     </a-form-item>
   </Collapsible>
@@ -63,7 +63,7 @@ const options = ref([
     title: '正常点位值',
     key: 'current',
     fullName: '正常点位值',
-    dataType: 'number',
+    dataType: 'int',
     termTypes: [{name: '在...之间', id: 'btw'}]
   }
 ])
@@ -109,22 +109,28 @@ const terms = ref({
   value: []
 })
 
-const builtinParams = [
-  {label: '当前用户', value: 'userId'},
-  {label: '当前时间', value: 'timestamp'}
-]
-
 const showExtra = computed(() => {
   return !!collector.managedConfiguration?.outlier?.enabled
 })
 
-const validatorValue = (_rule, value) => new Promise(async (resolve, reject) => {
-  // todo: 校验判断
-  console.log(value)
-  // if (!value) return resolve("");
-  // if (!(regIP.test(value) || regIPv6.test(value) || regDomain.test(value))) {
-  //   return reject($lang('MODBUS_TCP.channel.20250207-6'));
-  // }
+const onChange = () => {
+  formData.managedConfiguration.outlier.configuration.min = terms.value.value?.[0]
+  formData.managedConfiguration.outlier.configuration.max = terms.value.value?.[1]
+}
+
+const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) => {
+  if (_value.enabled) {
+    const value = _value.configuration || {}
+    if (value.min != null && value.max != null) {
+      if (value.min <= value.max) {
+        return resolve("");
+      } else {
+        return reject('最大值不能小于最小值');
+      }
+    } else {
+      return reject('请输入参数值');
+    }
+  }
   return resolve("");
 });
 
@@ -141,15 +147,17 @@ const onSwitchChange = (val) => {
       }
     }
   }
-
-  console.log(formData.managedConfiguration.outlier)
 }
 
 const onOutsize = () => {
-  console.log('outside')
   if (__type) {
-    events.onValueChange('managedConfiguration', formData.managedConfiguration)
-    console.log('outside')
+    const arr = [
+      {
+        name: ['managedConfiguration', 'outlier'],
+        value: formData.managedConfiguration.outlier
+      },
+    ]
+    events.onValueChange(arr)
   }
 }
 

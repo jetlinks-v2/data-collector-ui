@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open width="900px" @close="emits('close')">
+  <a-drawer open width="900px" @close="emits('close')" destroy-on-close :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable

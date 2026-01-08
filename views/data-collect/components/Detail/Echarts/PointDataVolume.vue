@@ -17,6 +17,10 @@ const props = defineProps({
   id: { // todo: 传入的各种id
     type: String,
     default: ''
+  },
+  type: {
+    type: String,
+    default: '' //channel | collector
   }
 })
 
@@ -84,7 +88,7 @@ const dataOptions = computed(() => {
 
 const onChange = async (val) => {
   loading.value = true;
-  const resp = await dashboard(pointParams(val));
+  const resp = await dashboard(pointParams(val, props.type, props.id));
   if (resp.success && resp?.result?.length) {
     const x = resp.result
         .map((item) => item.data.timeString)
