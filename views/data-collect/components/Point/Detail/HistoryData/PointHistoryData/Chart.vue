@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { queryPointAggregation } from '@data-collector-ui/api/data-collect/collector'
+import { queryPointAggregation, queryPointHistory } from '@data-collector-ui/api/data-collect/collector'
 import { useRequest } from '@jetlinks-web/hooks';
 import { getParams } from '@data-collector-ui/views/data-collect/components/Detail/Echarts/tool';
 import dayjs from 'dayjs';
@@ -30,6 +30,18 @@ const props = defineProps({
   time: {
     type: Object,
     default: () => { }
+  }
+})
+
+const { data: historyData, run: runHistoryData } = useRequest(queryPointHistory, {
+  immediate: false,
+  onSuccess: (res) => {
+    return res.result.data.map(item => {
+      return {
+        time: dayjs(item.timestamp).format('YYYY-MM-DD HH:mm:ss'),
+        value: item.numberValue
+      }
+    })
   }
 })
 const { data: aggregationData, run: runAggregation } = useRequest(queryPointAggregation, {
@@ -49,7 +61,7 @@ const errorDataOptions = computed(() => {
     },
     xAxis: {
       type: 'category',
-      data: aggregationData.value?.map(item => item.time).reverse()
+      data: cycleType.value === '*' ? historyData.value?.map(item => item.time).reverse() : aggregationData.value?.map(item => item.time).reverse()
     },
     yAxis: {
       type: 'value'
@@ -77,7 +89,7 @@ const errorDataOptions = computed(() => {
     },
     series: [
       {
-        data: aggregationData.value?.map((i) => {
+        data: cycleType.value === '*' ? historyData.value?.map(item => item.value).reverse() : aggregationData.value?.map((i) => {
           return typeof i.value === 'number' && !isNaN(i.value) ? Number(i.value).toFixed(2) : i.value
         }).reverse(), //如果是数字保留两位小数
         type: 'line',
@@ -89,7 +101,7 @@ const errorDataOptions = computed(() => {
 
 const cycleOptions = computed(() => {
   const diffInSeconds = dayjs(props.time.end).diff(dayjs(props.time.start), 'minute');
-  console.log(diffInSeconds)
+  
   if(diffInSeconds < 60) {
     return [
       {
@@ -121,6 +133,7 @@ const cycleOptions = computed(() => {
       }
     ]
   } else if (diffInSeconds < 60 * 60 * 24) {
+    cycleType.value = '1m'
     return [
       {
           label: '按分钟统计',
@@ -132,6 +145,7 @@ const cycleOptions = computed(() => {
       }
     ]
   } else if (diffInSeconds < 60 * 60 * 24 * 7) {
+    cycleType.value = '1h'
     return [
       {
           label: '按小时统计',
@@ -143,6 +157,7 @@ const cycleOptions = computed(() => {
       }
     ]
   } else if (diffInSeconds < 60 * 60 * 24 * 30) {
+    cycleType.value = '1d'
     return [
       {
           label: '按天统计',
@@ -158,6 +173,17 @@ const cycleOptions = computed(() => {
 
 watchEffect(() => {
   const obj = getParams(props.time)
+  if (cycleType.value === '*') {
+    runHistoryData(info.value.collectorId, {
+      pageSize: 200,
+      pageIndex: 0,
+      terms: [
+        { column: 'pointId', value: info.value.id },
+        { column: 'timestamp', value: [props.time.start, props.time.end], termType: 'btw' }
+      ]
+    })
+    return
+  }
   runAggregation(info.value.collectorId, {
     columns: [
       {
