@@ -19,7 +19,7 @@
     </template>
     <a-form-item>
       <j-card-select
-          :value="_accessModes"
+          :value="_features"
           :multiple="true"
           :options="list"
           @change="onChange"
@@ -76,7 +76,7 @@ if (!('features' in formData)) {
   formData.features = []
 }
 
-const _accessModes = computed(() => {
+const _features = computed(() => {
   return formData.features.filter(i => i !== 'changedOnly')
 })
 
@@ -93,7 +93,7 @@ const onSwitchChange = (val) => {
   if (val === 'template') {
     formData.features = (collector.features || []).filter(i => _list.includes(i)) || []
   } else {
-    formData.features = []
+    formData.features = formData.features.filter(i => i === 'changedOnly')
   }
 }
 

@@ -29,7 +29,9 @@
               <RenderComponents v-if="jsonData" :value="jsonData"/>
             </div>
           </div>
-          <DataParsing/>
+          <template v-if="configuration?.autoCodec === false">
+            <DataParsing/>
+          </template>
           <CollectionConfiguration/>
           <DataConversion/>
           <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
@@ -67,8 +69,9 @@ import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/da
 import {useI18n} from "vue-i18n";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
-import {savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
+import {queryPointMetadata, savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
+import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 
 const {t: $t} = useI18n();
 
@@ -120,6 +123,7 @@ const formRef = ref(null)
 const jsonData = ref();
 const configVisible = ref(false)
 const loading = ref(false)
+const configuration = ref({})
 
 const _collector = computed(() => {
   return {...props.collector, ...(props.collector?.configuration?.template || {})}
@@ -128,6 +132,18 @@ const _collector = computed(() => {
 provide('plugin-form', formData)
 provide('point-form-collector', _collector.value)
 provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
+provide('metadata-configuration', configuration)
+provide('point-metadata-events', {
+  pointMetadataEvents: async (provider, _configuration) => {
+    if(_configuration){
+      getPointMetadata(provider, _configuration).then((res) => {
+        configuration.value = res
+      })
+    } else {
+      configuration.value = {}
+    }
+  }
+})
 
 const onChange = async (provider) => {
   jsonData.value = await devGetProtocol(provider || 'MODBUS_TCP', "point");

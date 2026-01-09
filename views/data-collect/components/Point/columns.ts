@@ -61,7 +61,6 @@ export const baseColumns = [
         dataIndex: 'address',
         key: 'address',
         scopedSlots: true,
-        width: 100,
         ellipsis: true,
     },
     {

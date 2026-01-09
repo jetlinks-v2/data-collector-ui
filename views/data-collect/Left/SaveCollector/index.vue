@@ -45,7 +45,7 @@
               <div style="color: #999;font-size: 12px">下述配置仅作用于点位，其下属点位默认值自动继承此规则</div>
             </template>
           </TitleComponent>
-          <DataParsing :showSwitch="false"/>
+          <!--          <DataParsing :showSwitch="false"/>-->
           <CollectionConfiguration :showSwitch="false"/>
           <DataConversion/>
           <AbnormalJudgment/>
@@ -91,6 +91,7 @@ import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/da
 import {cloneDeep, omit, pick} from "lodash-es";
 import {save, update} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
+import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -141,6 +142,7 @@ const formData = reactive({
 const formRef = ref(null);
 const jsonData = ref();
 const loading = ref(false);
+const configuration = ref({})
 
 const defaultKeys = ['accessModes', 'features', 'interval', 'managedConfiguration']
 
@@ -148,6 +150,7 @@ provide("plugin-form", formData);
 provide("plugin-form-channel", props.channel);
 provide('point-form-collector', {})
 provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
+provide('metadata-configuration', configuration)
 
 const _filterList = ["COLLECTOR_GATEWAY", "virtual"]
 const onChange = async (node) => {
@@ -241,12 +244,20 @@ watch(() => props.data, (val) => {
   immediate: true,
   deep: true
 })
+
+watch(() => formData.provider, (val) => {
+  if (val) {
+    getPointMetadata(val, {}).then((res) => {
+      configuration.value = res
+    })
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>
 .point-config-content {
-  //padding: 12px;
-  //background: #F5F5F5;
   margin-bottom: 12px;
 }
 </style>
