@@ -115,7 +115,20 @@ const data = ref(!props.showSwitch)
 // 记录初始值快照，用于检测变化
 const initialSnapshot = ref(null)
 
-const options = ref([])
+const options = ref([
+  {
+    label: $t('Point.index.400149-7'),
+    value: 'read',
+  },
+  {
+    label: $t('Point.index.400149-8'),
+    value: 'write',
+  },
+  {
+    label: $t('Point.index.400149-21'),
+    value: 'subscribe',
+  }
+])
 
 const showExtra = computed(() => {
   return !!collector?.accessModes?.length && !!collector?.interval

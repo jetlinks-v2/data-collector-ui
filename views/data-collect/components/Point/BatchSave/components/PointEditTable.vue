@@ -16,12 +16,13 @@
           <div style="min-width: 0;flex: 1">
             <component
                 v-bind="item.template?.props || {}"
-                :is="item.template?.components"
+                :is="componentMap[item.template?.components] || item.template?.components"
                 :value="getFieldValue(record, item)"
                 :checked="getFieldValue(record, item)"
-                :disabled="record.sames[item.dataIndex] && item.template?.check !== false"
-                :style=" item.template?.components !== 'a-switch' ? { width: '100%' } : {}"
+                :disabled="index !== 0 && record.sames[item.dataIndex] && item.template?.check !== false"
+                :style="item.template?.components !== 'a-switch' ? { width: '100%' } : {}"
                 @change="(value) => onFieldChange(value, item, record)"
+                @focus="() => onfocus(item, record)"
             />
           </div>
           <a-checkbox
@@ -68,7 +69,12 @@ import {useI18n} from "vue-i18n";
 import {uniqueByKey} from "../data";
 import OtherSetting from "./OtherSetting.vue";
 import { cloneDeep, get, set } from 'lodash-es'
+import AccessModes from "./AccessModes.vue";
+import { EventEmitter } from '@jetlinks-web/utils'
 
+const componentMap = {
+  AccessModes
+}
 const {t: $t} = useI18n();
 const props = defineProps({
   columns: {
@@ -94,7 +100,7 @@ const otherConfig = reactive({
   visible: false,
   data: {},
 })
-const _dataSource = ref(props.dataSource)
+const _dataSource = shallowRef(props.dataSource)
 const tableRef = ref();
 const _columns = computed(() => {
   // 有些有同上,有些没有
@@ -121,7 +127,11 @@ const _columns = computed(() => {
 })
 
 const getFieldValue = (record, item) => {
-  return get(record, item.form?.name || item.dataIndex)
+  const value = get(record, item.form?.name || [item.dataIndex])
+  if (item.template.getValue) {
+    return item.template.getValue(value)
+  }
+  return value
 }
 
 const onSave = (arr) => {
@@ -130,9 +140,8 @@ const onSave = (arr) => {
 }
 
 const setByPath = (obj, path, value) => {
-  let cur = obj;
-  set(cur, path, value);
-  return cur;
+  set(obj, path, value);
+  return obj;
 }
 
 const sameValue = (index, fieldPath, samePath, value) => {
@@ -140,7 +149,8 @@ const sameValue = (index, fieldPath, samePath, value) => {
     const row = _dataSource.value[i];
     const same = row[props.sameFieldKey][samePath];
     if (!same) break;
-    _dataSource.value.splice(index + 1, 1, cloneDeep(setByPath(row, fieldPath, value)))
+    set(row, fieldPath, value)
+    // _dataSource.value.splice(i, 1, cloneDeep(setByPath(row, fieldPath, value)))
   }
 }
 
@@ -163,11 +173,13 @@ const onCheckChange = (e, item, record) => {
 
 // 字段值变化时，如果下一行勾选了同上，需要同步更新
 const onFieldChange = (value, item, record) => {
-  const _value = value.target ? value.target.value : value
+  let _value = value.target ? value.target.value : value
   const formName = item.form?.name || [item.dataIndex]
   const dataIndex = item.dataIndex
-
-  _dataSource.value.splice(record.__dataIndex, 1, cloneDeep(setByPath(record, formName, _value)))
+  if (item.template.handleChange) {
+    _value = item.template.handleChange(value, record.__dataIndex)
+  }
+  set(_dataSource.value[record.__dataIndex], formName, _value)
   sameValue(record.__dataIndex, formName, dataIndex, _value) // 将下面的同上数据进行同步
   onSave(_dataSource.value)
   emit('fieldChange', value, item, record)
@@ -179,13 +191,43 @@ const showOtherConfig = (record, index) => {
   otherConfig.data = record || {}
 }
 
-const onSaveOtherConfig = (data) => {
-  // todo: 保存其他配置
+const onSaveOtherConfig = (config) => {
+  otherConfig.data.managedConfiguration = config.managedConfiguration
+  otherConfig.data.features = config.features
+  otherConfig.visible = false
 }
 
-const removeItem = (dt, index) => {
+const removeItem = (record, index) => {
+  // 遍历当前是否没有同上
+  const sames = record.sames
+
+  if (index !== 0) {
+    const prevRecord = _dataSource.value[index - 1]
+
+    Object.keys(sames).forEach(key => {
+      if (!sames[key]) {
+        const column = _columns.value.find(item => item.dataIndex === key)
+        const formName = column.form?.name || key
+        sameValue(record.__dataIndex, formName, key, get(prevRecord, formName))
+      }
+    })
+  }
+
   _dataSource.value.splice(index, 1)
   onSave(_dataSource.value)
+}
+
+/**
+ * 失去焦点触发
+ * @param column
+ * @param record
+ */
+const onfocus = (column, record) => {
+  if (column.template.handleOptions) {
+    column.template.handleOptions(record, (fn) => {
+      EventEmitter.emit(record.id, fn())
+    })
+  }
 }
 
 watch(() => props.dataSource.length, (newVal) => {
@@ -197,6 +239,7 @@ watch(() => props.dataSource.length, (newVal) => {
 defineExpose({
   onSave: async () => {
     const result = await tableRef.value.validate()
+    console.log(result)
     if (result) {
       return _dataSource.value
     }

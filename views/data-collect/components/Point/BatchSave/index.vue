@@ -25,10 +25,12 @@
 </template>
 
 <script setup>
-import {detail} from "@data-collector-ui/api/data-collect/collector";
+import { detail, savePointBatch } from '@data-collector-ui/api/data-collect/collector'
 import {useI18n} from "vue-i18n";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
+import { onlyMessage } from '@jetlinks-web/utils'
+import { omit } from 'lodash-es'
 
 const {t: $t} = useI18n();
 const route = useRoute();
@@ -44,6 +46,14 @@ const getPointBatch = async (val) => {
 const handleSave = async () => {
   // 保存数据
   const resp = await pointBatchRef.value?.onSave?.()
+  if (resp) {
+    savePointBatch(resp.map(item => omit(item, ['__dataIndex', '__serial', 'sames', 'id']))).then((r) => {
+      if (r.success) {
+        onlyMessage('操作成功')
+
+      }
+    })
+  }
   console.log(pointBatchRef.value, resp, 'resp')
 }
 
