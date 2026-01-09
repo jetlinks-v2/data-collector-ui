@@ -77,7 +77,7 @@ const configVisible = ref(true)
 const save = async () => {
   const resp =  await formRef.value.validate()
   if (resp) {
-    emit('save', resp)
+    emit('save',  toRaw(formData))
   }
 }
 

@@ -198,7 +198,7 @@ const showOtherConfig = (record, index) => {
 
 const onSaveOtherConfig = (config) => {
   otherConfig.data.managedConfiguration = config.managedConfiguration
-  otherConfig.data.features = config.features
+  otherConfig.data.features = config.features || []
   otherConfig.visible = false
 }
 
