@@ -76,9 +76,9 @@ const _span = computed(() => {
 })
 
 const state = reactive({
-  indeterminate: true,
+  indeterminate: false,
   checkAll: false,
-  checkedList: ['name'],
+  checkedList: [],
 });
 
 const _state = reactive({
@@ -96,7 +96,7 @@ const getPointColumns = async (provider) => {
 const onCheckAllChange = (e) => {
   Object.assign(state, {
     checkedList: e.target.checked ? map(_baseColumns.value, 'value') : ['name'],
-    indeterminate: true,
+    indeterminate: !e.target.checked,
   });
 };
 
@@ -111,14 +111,14 @@ watch(
     () => state.checkedList,
     val => {
       state.indeterminate = !!val.length && val.length < _baseColumns.value.length;
-      state.checkAll = val.length === _baseColumns.value.length;
+      state.checkAll = !!val.length && val.length === _baseColumns.value.length;
     },
 );
 watch(
     () => _state.checkedList,
-    val => {
+    (val) => {
       _state.indeterminate = !!val.length && val.length < extraPointColumns.value.length;
-      _state.checkAll = val.length === extraPointColumns.value.length;
+      _state.checkAll = !!val.length && val.length === extraPointColumns.value.length;
     },
 );
 
@@ -129,8 +129,8 @@ const onSave = () => {
 }
 
 const getData = (baseArr, arr) => {
-  const a = arr.length && baseArr.every(i => arr.includes(i))
-  const b = baseArr.length && baseArr.some(i => arr.includes(i))
+  const a = !!arr.length && !!baseArr.length &&  baseArr.every(i => arr.includes(i))
+  const b = !!baseArr.length && baseArr.some(i => arr.includes(i))
   return {
     indeterminate: !a && b,
     checkAll: a,
@@ -138,16 +138,32 @@ const getData = (baseArr, arr) => {
   }
 }
 
-watch(() => props.data, (newVal) => {
-  const arr = newVal.map(i => i.key)
+// 初始化基本信息的选中状态
+const initBaseColumns = () => {
+  if (!props.data?.length) return
+  const arr = props.data.map(i => i.key || i.dataIndex)
   const obj = getData(map(_baseColumns.value, 'value'), arr)
   Object.assign(state, obj)
-  console.log(extraPointColumns.value)
+}
+
+// 初始化额外字段的选中状态
+const initExtraColumns = () => {
+  if (!props.data?.length || !extraPointColumns.value?.length) return
+  const arr = props.data.map(i => i.key || i.dataIndex)
   const _obj = getData(map(extraPointColumns.value, 'dataIndex'), arr)
-  console.log(_obj, '_obj')
   Object.assign(_state, _obj)
+}
+
+watch(() => props.data, () => {
+  initBaseColumns()
+  initExtraColumns()
 }, {
   immediate: true,
+})
+
+// 当 extraPointColumns 变化时，重新初始化额外字段的选中状态
+watch(() => extraPointColumns.value, () => {
+  initExtraColumns()
 })
 
 watch(() => props.collector?.provider, (newVal) => {

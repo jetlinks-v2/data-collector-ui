@@ -48,11 +48,11 @@
         </a-descriptions-item>
       </a-descriptions>
       <ValueList/>
-      <a-tabs v-model:activeKey="activeKey">
+      <a-tabs :activeKey="activeKey" @change="onTabChange">
         <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
       </a-tabs>
       <full-page>
-        <component :is="tabs[activeKey]" @save="onSave"/>
+        <component :is="tabs[activeKey]" @save="onSaveData"/>
       </full-page>
     </a-spin>
   </a-drawer>
@@ -79,6 +79,7 @@ const emits = defineEmits(['close'])
 const info = ref(props.data)
 const loading = ref(false)
 const activeKey = ref('Info')
+const errorList = ref([])
 const tabsList = [
   {
     key: 'Info',
@@ -92,10 +93,10 @@ const tabsList = [
     key: 'HistoryData',
     tab: '历史数据'
   },
-  {
-    key: 'RelatedDevice',
-    tab: '关联设备'
-  },
+  // {
+  //   key: 'RelatedDevice',
+  //   tab: '关联设备'
+  // },
   {
     key: 'PointLogs',
     tab: '点位日志'
@@ -127,6 +128,10 @@ const handleSearch = (id) => {
   queryInfo(id)
 }
 
+const onTabChange = (e) => {
+  activeKey.value = e
+}
+
 const onSave = (arr) => {
   const params = {
     ...omit(info.value, ['runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime']),
@@ -134,6 +139,16 @@ const onSave = (arr) => {
   arr.map(i => {
     set(params, i.name, i.value)
   })
+  onPointSave(info.value.id, params, () => {
+    handleSearch(info.value.id)
+  })
+}
+
+const onSaveData = (data) => {
+  const params = {
+    ...omit(info.value, ['runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime']),
+    ...data,
+  }
   onPointSave(info.value.id, params, () => {
     handleSearch(info.value.id)
   })
@@ -149,6 +164,7 @@ watch(() => props.data.id, (val) => {
 
 provide(DATA_COLLECTOR_SAVE_TYPE, 'collector') // 详情的时候不用复用模版
 provide('point-info', info)
+provide('point-info-error-list', errorList)
 provide('point-refresh', {
   refresh: () => {
     handleSearch(info.value.id)

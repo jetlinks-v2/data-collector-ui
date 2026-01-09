@@ -11,43 +11,63 @@
         ref="tableRef"
         mode="TABLE"
         :columns="columns"
-        :request="query"
+        :request="(e) => queryAlarmLogList(info.id, e)"
         :params="params"
         :defaultParams="{
-              sorts: [{ name: 'createTime', order: 'desc' }]
+              sorts: [{ name: 'alarmTime', order: 'desc' }]
           }"
         style="padding: 0"
     >
-      <template #action>
-        <a-button type="link">
+      <template #alarmTime="slotProps">
+        {{
+          dayjs(
+              slotProps?.lastAlarmTime || slotProps?.alarmTime
+          ).format("YYYY-MM-DD HH:mm:ss")
+        }}
+      </template>
+      <template #action="slotProps">
+        <a-button type="link" @click="showDetail(slotProps)">
           查看详情
         </a-button>
       </template>
     </j-pro-table>
   </div>
+  <Detail v-if="data.visible" :data="data.current" @close="data.visible = false"/>
 </template>
 
 <script setup>
-import {query} from "@data-collector-ui/api/data-collect/channel";
+import {queryAlarmLogList} from "@data-collector-ui/api/data-collect/collector";
+import dayjs from "dayjs";
+import Detail from './Detail.vue'
 
+const info = inject('point-info', ref({}))
 const columns = [
   {
     title: '告警时间',
     dataIndex: 'alarmTime',
     key: 'alarmTime',
+    ellipsis: true,
+    scopedSlots: true,
     search: {
-      type: 'string'
+      type: 'date'
     }
   },
   {
     title: '触发条件',
     dataIndex: 'triggerDesc',
     key: 'triggerDesc',
+    ellipsis: true,
+    scopedSlots: true,
   },
   {
     title: '告警原因',
     dataIndex: 'actualDesc',
     key: 'actualDesc',
+    ellipsis: true,
+    scopedSlots: true,
+    search: {
+      type: 'string',
+    },
   },
   {
     title: '操作',
@@ -59,9 +79,18 @@ const columns = [
 ]
 
 const params = ref({})
+const data = reactive({
+  visible: false,
+  current: {}
+})
 
-const handleSearch = () => {
+const showDetail = (_data) => {
+  data.visible = true;
+  data.current = _data;
+};
 
+const handleSearch = (e) => {
+  params.value = e
 }
 </script>
 

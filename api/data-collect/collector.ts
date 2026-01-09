@@ -1,4 +1,4 @@
-import { request } from '@jetlinks-web/core'
+import {request} from '@jetlinks-web/core'
 
 export const queryCollector = (data: any) =>
     request.post(`/data-collect/collector/_query/no-paging?paging=false`, data);
@@ -6,13 +6,13 @@ export const queryCollector = (data: any) =>
 export const queryCollectorTree = (data: any) =>
     request.post(`/data-collect/collector/_detail/no-paging?paging=false`, data);
 
-export const queryCollectorDevice = (data:any) =>
-    request.post(`/data-collect/collector/_query`,data)
+export const queryCollectorDevice = (data: any) =>
+    request.post(`/data-collect/collector/_query`, data)
 
 export const queryChannelNoPaging = () =>
     request.post(`/data-collect/channel/_query/no-paging`, {
         paging: false,
-        sorts: [{ name: 'createTime', order: 'desc' }],
+        sorts: [{name: 'createTime', order: 'desc'}],
     });
 
 export const save = (data: any) => request.post(`/data-collect/collector`, data);
@@ -71,7 +71,7 @@ export const queryPointNoPaging = (data: any) =>
 //         }`,
 //     );
 
-export const scanOpcUAList = (id:string, command: string, data:any)=> request.post(`/data-collect/channel:${id}/command/${command}`,data);
+export const scanOpcUAList = (id: string, command: string, data: any) => request.post(`/data-collect/channel:${id}/command/${command}`, data);
 
 
 export const queryTypeList = () => request.get(`/data-collect/opc/data-types`);
@@ -84,7 +84,7 @@ export const getSnapTypes = () => request.get('/s7/client/s7codecs/list')
 
 export const getArea = () => request.get('/s7/client/s7area/list')
 
-export const exportTemplate = (provider: string, format: string) =>request.get(`/data-collect/point/${provider}/template.${format}`, {}, {responseType: 'blob'})
+export const exportTemplate = (provider: string, format: string) => request.get(`/data-collect/point/${provider}/template.${format}`, {}, {responseType: 'blob'})
 
 /**
  * BACNet协议扫描对象
@@ -110,7 +110,8 @@ export const getBacnetValueType = () => request.post(`/data-collect/BACNetIp/com
 /**
  * 导出点位数据
  */
-export const exportPoint = (collectorId:string,provider:string) => request.get(`/data-collect/point/${collectorId}/${provider}/export.xlsx`, {}, {responseType: 'blob'})
+export const exportPoint = (collectorId: string, provider: string) => request.get(`/data-collect/point/${collectorId}/${provider}/export.xlsx`, {}, {responseType: 'blob'})
+export const importPoint = (collectorId: string, provider: string, data: any) => request.post(`/data-collect/point/${collectorId}/${provider}/import`, data, {headers: { 'Content-Type': 'multipart/form-data' } })
 
 //获取iec104
 export const queryIEC104 = () => request.get("/collect/iec104/types");
@@ -129,7 +130,5 @@ export const queryPointHistory = (collectorId: string, data: any) => request.pos
  * 点位历史数据聚合
  */
 export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);
-
-
-export const getSupportAccessModes = (provider) => request.post(`/data-collect/${provider}/command/GetSupportAccessModes`)
-
+export const queryAlarmLogList = (id:any,data:any) => request.post(`/alarm/history/${id}/_query`,data)
+export const queryPointMetadata = (provider:any, data: any) => request.post(`/data-collect/point/${provider}/_metadata`, data)

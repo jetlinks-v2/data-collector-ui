@@ -79,6 +79,7 @@ const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
+
 const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)

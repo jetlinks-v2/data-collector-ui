@@ -2,7 +2,7 @@
   <div>
     <p>下述配置仅作用于点位，其下属点位默认值自动继承此规则</p>
     <a-form :model="formData" ref="formRef" layout="vertical">
-      <DataParsing :showSwitch="false" :value="true"/>
+      <!--      <DataParsing :showSwitch="false" :value="true"/>-->
       <CollectionConfiguration :showSwitch="false" :value="true"/>
       <DataConversion/>
       <AbnormalJudgment/>
@@ -28,12 +28,14 @@ import {
   DATA_COLLECTOR_SAVE_TYPE,
   PLUGIN_DETAIL_SAVE_EVENTS
 } from "@data-collector-ui/views/data-collect/data";
+import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 
 const emits = defineEmits(['save'])
 const info = inject('collector-info', ref({}))
 
 const formData = reactive({});
 const formRef = ref(null)
+const configuration = ref({})
 
 watch(() => info.value, () => {
   Object.assign(formData, info.value)
@@ -72,7 +74,18 @@ provide(PLUGIN_DETAIL_SAVE_EVENTS, {
     }
   }
 });
+provide('metadata-configuration', configuration)
 provide(DATA_COLLECTOR_CONFIG_TYPE, true) // 是否需要立即保存
+
+watch(() => formData?.provider, (val) => {
+  if (val) {
+    getPointMetadata(val, {}).then((res) => {
+      configuration.value = res
+    })
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

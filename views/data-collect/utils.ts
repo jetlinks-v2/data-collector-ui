@@ -2,7 +2,9 @@ import {remove as removeChannel, update as updateChannel} from "@data-collector-
 import {updateStatus} from "@data-collector-ui/views/data-collect/Left/type";
 import {onlyMessage} from "@jetlinks-web/utils";
 import {
-    remove as removeCollector, removePoint,
+    queryPointMetadata,
+    remove as removeCollector,
+    removePoint,
     update as updateCollector,
     updatePoint
 } from "@data-collector-ui/api/data-collect/collector";
@@ -273,5 +275,18 @@ export const onPointSave = async (id: string, data: any, onRefresh) => {
         onlyMessage("操作成功");
         onRefresh?.()
     }
+}
+
+// 获取指定采集协议的点位配置属性信息
+export const getPointMetadata = (provider: string, configuration: any = {}) => {
+    return new Promise((resolve) => {
+        queryPointMetadata(provider, configuration).then(resp => {
+            if (resp.success) {
+                resolve(resp.result)
+            } else {
+                resolve({})
+            }
+        })
+    })
 }
 

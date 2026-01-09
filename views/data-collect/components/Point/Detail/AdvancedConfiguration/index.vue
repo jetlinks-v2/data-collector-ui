@@ -18,6 +18,7 @@ import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-colle
 const emits = defineEmits(['save'])
 
 const info = inject('point-info', ref({}))
+const errorList = inject('point-info-error-list', ref([]))
 
 const formRef = ref(null)
 const formData = reactive({});
@@ -32,11 +33,13 @@ watch(() => info.value, () => {
 
 provide('plugin-form', formData)
 provide(PLUGIN_DETAIL_SAVE_EVENTS, {
-  onValueChange: async (arr) => {
-    const res = await formRef.value?.validate(arr.map(i => i.name))
+  onValueChange: async () => {
+    const res = await formRef.value?.validate().catch((err) => {
+      errorList.value = err
+    })
     // 校验表单  保存
     if (res) {
-      emits('save', arr)
+      emits('save', formData)
     }
   }
 });

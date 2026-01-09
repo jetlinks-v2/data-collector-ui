@@ -30,7 +30,7 @@
             :rules="[{required: true, message: '请选择'}]"
         >
           <a-select v-model:value="formData.managedConfiguration.codec" placeholder="请选择"
-                    :options="dataTypeOptions" allow-clear/>
+                    :options="_dataTypeOptions" allow-clear/>
         </a-form-item>
       </a-col>
       <a-col :span="12">
@@ -67,6 +67,7 @@ const props = defineProps({
 const formData = inject('plugin-form', reactive({}))
 const collector = inject('point-form-collector', {})
 const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
+const __configuration = inject('metadata-configuration', ref({}))
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true
@@ -140,6 +141,11 @@ const memoryOptions = [
 
 const showExtra = computed(() => {
   return !!collector?.managedConfiguration?.codec && !!collector?.managedConfiguration?.byteLayout
+})
+
+const _dataTypeOptions = computed(() => {
+  const supportCodecs = __configuration.value?.supportCodecs || []
+  return dataTypeOptions.value.filter(i => supportCodecs.includes(i.value))
 })
 
 const onSwitchChange = (val) => {

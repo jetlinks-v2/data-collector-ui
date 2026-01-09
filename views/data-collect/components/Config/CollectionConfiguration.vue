@@ -87,7 +87,7 @@ import {useI18n} from "vue-i18n";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {isEqual} from "./data";
-import {getSupportAccessModes} from "@data-collector-ui/api/data-collect/collector";
+import {map} from "lodash-es";
 
 const {t: $t} = useI18n();
 
@@ -102,6 +102,7 @@ const formData = inject('plugin-form', reactive({
 }))
 const collector = inject('point-form-collector', {})
 const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
+const __configuration = inject('metadata-configuration', ref({}))
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true
@@ -115,7 +116,30 @@ const data = ref(!props.showSwitch)
 // 记录初始值快照，用于检测变化
 const initialSnapshot = ref(null)
 
-const options = ref([])
+const _options = [
+  {
+    label: $t('Point.index.400149-7'),
+    value: 'read',
+  },
+  {
+    label: $t('Point.index.400149-8'),
+    value: 'write',
+  },
+  {
+    label: $t('Point.index.400149-21'),
+    value: 'subscribe',
+  }
+]
+
+const options = computed(() => {
+  const _dt = map(__configuration.value?.accessModes || [], 'value')
+  return _options.map(i => {
+    return {
+      ...i,
+      disabled: !_dt.includes(i.value)
+    }
+  })
+})
 
 const showExtra = computed(() => {
   return !!collector?.accessModes?.length && !!collector?.interval
@@ -159,7 +183,7 @@ const onOutsize = () => {
       const arr = [
         {
           name: 'accessModes',
-          value: formData.accessModes.filter(i => i)
+          value: formData.accessModes?.filter?.(i => i)
         },
         {
           name: 'interval',
@@ -204,17 +228,6 @@ watch(() => data.value, (newVal) => {
 }, {
   immediate: true  // 确保初始打开时也记录快照
 })
-
-const querySupportAccessModes = async () => {
-  const resp = await getSupportAccessModes(formData.provider)
-  if (resp.success) {
-    options.value = resp.result.map(i => {
-      return {...i, label: i.text}
-    })
-  }
-}
-
-querySupportAccessModes()
 </script>
 
 <style lang="less" scoped>
