@@ -1,4 +1,4 @@
-const getParams = (dt: any) => {
+export const getParams = (dt: any) => {
     switch (dt.type) {
         case 'today':
             return {

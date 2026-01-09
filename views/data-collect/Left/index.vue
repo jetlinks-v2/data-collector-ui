@@ -21,6 +21,7 @@
       <ActionButtons
           v-if="viewType === 'compact'"
           v-model="searchValue"
+          :channelList="channelList"
           @add="handleAdd"
       />
       <div v-show="viewType === 'compact'" class="channel-collector-tree">
@@ -271,7 +272,6 @@ const filterTreeData = computed(() => {
         && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
     ) {
       const arr: any[] = separateViewCollectors.value.filter((collector: any) => collector.channelId === item.id)
-      console.log(arr)
       // 如果有子节点（采集器），也需要过滤
       if (arr.length) {
         item.children = arr.filter((child: any) => {
@@ -476,41 +476,6 @@ const deleteNode = (id: string) => {
   find(treeData.value);
 };
 
-//插入节点
-const addNode = (_data: any) => {
-  if (!_data.channelId) {
-    // 新增通道
-    treeData.value.splice(1, 0, {
-      ..._data,
-      isLeaf: false,
-      isChannel: true,
-      children: [],
-    });
-  } else {
-    // 新增采集器
-    const find = (data: any[]) => {
-      for (let i = 0; i < data.length; i++) {
-        if (data[i].id === _data.channelId) {
-          data[i].isLeaf = false;
-          if (!data[i].children) {
-            data[i].children = [];
-          }
-          data[i].children.unshift({
-            ..._data,
-            isLeaf: true,
-            isChannel: false,
-          });
-          return;
-        }
-        if (data[i].children) {
-          find(data[i].children);
-        }
-      }
-    }
-    find(treeData.value);
-  }
-}
-
 //通道新增或编辑成功后执行
 const onSaveChannelSuccess = async (val: Record<string, any>) => {
   saveChannelVisible.value = false;
@@ -618,6 +583,7 @@ defineExpose({
   refreshChannel: (data) => refreshChannel(data),
   refreshCollector: (data) => refreshCollector(data),
   deleteNode: (id: string) => handleDelete({id: id}),
+  loadAllData: () => loadAllData(),
 })
 </script>
 

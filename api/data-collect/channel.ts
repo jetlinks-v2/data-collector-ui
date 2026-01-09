@@ -1,3 +1,4 @@
+import { getBaseApi } from '@jetlinks-web-core/utils';
 import { request } from '@jetlinks-web/core'
 
 export const query = (data: any) =>
@@ -35,3 +36,12 @@ export const queryCertificateList = () =>
 export const getResourceFile = (provider: string, module: string) => request.get(`/data-collect/${provider}/resource/_/script/${module}.vue`, {}, { hiddenError: true });
 export const getResourceLangFile = (provider: string, language: string) => request.get(`/data-collect/${provider}/resource/_/script/lang/${language}.json`, {}, { hiddenError: true });
 
+/**
+ * 通道导入模板下载
+ */
+export const channelDownloadImportTemplate = (provider: string, format: string) => request.get(`/data-collect/channel/${provider}/template.${format}`, {}, {responseType: 'blob'})
+
+/**
+ * 通道导入
+ */
+export const channelImport = (provider: string) => `${getBaseApi()}/data-collect/channel/${provider}/import`

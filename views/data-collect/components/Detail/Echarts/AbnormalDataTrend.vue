@@ -53,7 +53,7 @@ const errorDataOptions = computed(() => {
     color: ['#979AFF'],
     series: [
       {
-        name: $t('components.Card.772454-4'),
+        name: '异常数据量',
         data: data.y,
         type: 'line',
         smooth: true,

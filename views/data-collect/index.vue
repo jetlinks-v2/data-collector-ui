@@ -38,13 +38,13 @@ provide(COLLECTOR_DATA, current)
 const refreshHandler = {
   // 刷新所有
   refreshAll: async () => {
-    // await leftRef.value?.loadAllData?.()
+    await leftRef.value?.loadAllData?.()
     await rightRef.value?.refresh?.()
   },
 
   // 只刷新左侧
   refreshLeft: async () => {
-    // await leftRef.value?.loadAllData?.()
+    await leftRef.value?.loadAllData?.()
   },
 
   // 只刷新右侧

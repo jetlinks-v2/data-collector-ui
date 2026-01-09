@@ -1,4 +1,5 @@
 import {request} from '@jetlinks-web/core'
+import { getBaseApi } from '@jetlinks-web-core/utils';
 
 export const queryCollector = (data: any) =>
     request.post(`/data-collect/collector/_query/no-paging?paging=false`, data);
@@ -132,3 +133,18 @@ export const queryPointHistory = (collectorId: string, data: any) => request.pos
 export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);
 export const queryAlarmLogList = (id:any,data:any) => request.post(`/alarm/history/${id}/_query`,data)
 export const queryPointMetadata = (provider:any, data: any) => request.post(`/data-collect/point/${provider}/_metadata`, data)
+
+/**
+ * 采集器导入模板下载
+ */
+export const collectorDownloadImportTemplate = (provider: string, format: string) => request.get(`/data-collect/collector/${provider}/template.${format}`, {}, {responseType: 'blob'})
+
+/**
+ * 采集器导入
+ */
+export const collectorImport = (channelId: string, provider: string) => `${getBaseApi()}/data-collect/collector/${channelId}/${provider}/import`
+
+/**
+ * 点位导入
+ */
+export const pointImport = (collectorId: string, provider: string) => `${getBaseApi()}/data-collect/point/${collectorId}/${provider}/import`

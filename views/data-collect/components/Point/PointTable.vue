@@ -166,9 +166,10 @@
       @close="visible.viewPoint = false"
       @refresh="onRefresh"
   />
-  <BatchImport
+  <Import
       v-if="visible.import"
       :downloadUrlBuilder="(_type) => exportTemplate(data.provider, _type)"
+      :request="() => pointImport(data.id, data.provider)"
       @close="visible.import = false"
       @save="onRefresh"
   />
@@ -211,6 +212,7 @@ import ValueItem from './components/ValueItem.vue'
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 import {useMenuStore} from "@jetlinks-web-core/store";
 import BatchUpdate from "./components/BatchUpdate.vue";
+import Import from "@data-collector-ui/views/data-collect/components/Import/index.vue"
 
 const {t: $t} = useI18n();
 const sortValue = reactive({

@@ -15,6 +15,7 @@
         :defaultParams="{
             sorts: [{ name: 'timestamp', order: 'desc' }],
         }"
+        :scroll="{y: 300}"
         :params="params"
         style="padding: 0; margin: 0"
     >
@@ -40,8 +41,8 @@ import { isNil } from "lodash-es";
 
 const props = defineProps({
   time: {
-    type: Array,
-    default: () => []
+    type: Object,
+    default: () => {}
   }
 })
 const columns = [

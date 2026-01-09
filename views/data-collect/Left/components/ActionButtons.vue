@@ -30,7 +30,7 @@
       </j-permission-button>
       <a-dropdown>
         <template #overlay>
-          <a-menu v-model:active-key="activeKey" @click="handleMenuClick">
+          <a-menu @click="handleMenuClick">
             <a-menu-item key="importChannel">
               <a-space>
                 <AIcon type="ImportOutlined"/>
@@ -51,17 +51,37 @@
       </a-dropdown>
     </a-space>
   </a-flex>
-  <BatchImport
+  <Import 
     v-if="importVisible"
+    :title="activeKey === 'importChannel' ? '批量导入通道' : '批量导入采集器'"
+    :download-url-builder="activeKey === 'importChannel' ? (format) => channelDownloadImportTemplate(form.provider, format) : (format) => collectorDownloadImportTemplate(form.provider, format)"
+    :show-upload="showUpload"
+    :request="activeKey === 'importChannel' ? () => channelImport(form.provider) : () => collectorImport(form.channelId, form.provider)"
     @close="importVisible = false"
-  ></BatchImport>
+    @save="handleImportSuccess"
+  >
+    <template #content>
+      <a-form :model="form" layout="vertical" ref="formRef">
+        <a-form-item label="通讯协议" name="provider" required>
+          <a-select v-model:value="form.provider" :options="providers" :field-names="{label: 'name', value: 'id'}" placeholder="请选择通讯协议"></a-select>
+        </a-form-item>
+        <a-form-item v-if="activeKey === 'importCollector'" label="通道" name="channelId" required>
+          <a-select v-model:value="form.channelId" :options="providerChannelList" :field-names="{label: 'name', value: 'id'}" placeholder="请选择通道"></a-select>
+        </a-form-item>
+      </a-form>
+    </template>
+  </Import>
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
-
+import { collectorImport, collectorDownloadImportTemplate } from "@data-collector-ui/api/data-collect/collector";
+import { channelImport, channelDownloadImportTemplate } from "@data-collector-ui/api/data-collect/channel";
+import Import from '../../components/Import/index.vue';
+import { useCollectorProvider } from "@data-collector-ui/hooks";
+import { REFRESH_HANDLER } from "../../data";
 interface Props {
   modelValue?: string;
+  channelList?: any[];
 }
 
 interface Emits {
@@ -71,12 +91,31 @@ interface Emits {
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+const { providers } = useCollectorProvider('data-collect/channel');
 
-const activeKey = ref('')
+const refreshHandler = inject(REFRESH_HANDLER);
+const formRef = ref()
+const form = reactive({
+  provider: undefined,
+  channelId: undefined
+})
+const activeKey = ref<'importChannel' | 'importCollector' | undefined>()
 const importVisible = ref(false)
 const searchValue = ref(props.modelValue || '');
 const isSearchMode = ref(props.modelValue ? true : false);
 const searchInputRef = ref();
+
+const providerChannelList = computed(() => {
+  return props.channelList?.filter(item => item.provider === form.provider) || []
+})
+
+const showUpload = computed(() => {
+  if(activeKey.value === 'importCollector') {
+    return !!form.channelId && !!form.provider
+  } else {
+    return !!form.provider
+  }
+})
 
 // 监听外部 modelValue 变化
 watch(() => props.modelValue, (newValue) => {
@@ -116,9 +155,20 @@ const handleAdd = () => {
   emit('add');
 }
 
-const handleMenuClick = () => {
+const handleMenuClick = (e: any) => {
+  activeKey.value = e.key;
   importVisible.value = true;
 }
+
+const handleImportSuccess = async () => {
+  await refreshHandler?.refreshAll?.()
+}
+
+watch(() => importVisible.value, (newValue) => {
+  if(!newValue) {
+    formRef.value?.resetFields()
+  }
+})
 </script>
 
 <style scoped lang="less">
