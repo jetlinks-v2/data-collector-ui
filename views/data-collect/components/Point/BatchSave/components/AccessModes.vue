@@ -4,8 +4,12 @@ import { EventEmitter } from '@jetlinks-web/utils'
 
 const props = defineProps({
   ...selectProps(),
-  id: {
+  subscribeId: {
     type: String
+  },
+  parseKey: {
+    type: String,
+    default: 'accessModes'
   }
 })
 
@@ -14,8 +18,8 @@ const options = ref([])
 /**
  * 建立订阅
  */
-EventEmitter.subscribe(props.id, (_options) => {
-  options.value = _options
+EventEmitter.subscribe([props.subscribeId], (result) => {
+  options.value = result[props.parseKey]
 })
 
 </script>
@@ -23,6 +27,7 @@ EventEmitter.subscribe(props.id, (_options) => {
 <template>
 <a-select
   v-bind="props"
+  :options="options"
 >
 </a-select>
 </template>

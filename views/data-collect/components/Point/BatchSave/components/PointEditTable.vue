@@ -16,13 +16,13 @@
           <div style="min-width: 0;flex: 1">
             <component
                 v-bind="item.template?.props || {}"
+                :subscribeId="record.id"
                 :is="componentMap[item.template?.components] || item.template?.components"
                 :value="getFieldValue(record, item)"
                 :checked="getFieldValue(record, item)"
                 :disabled="index !== 0 && record.sames[item.dataIndex] && item.template?.check !== false"
                 :style="item.template?.components !== 'a-switch' ? { width: '100%' } : {}"
                 @change="(value) => onFieldChange(value, item, record)"
-                @focus="() => onfocus(item, record)"
             />
           </div>
           <a-checkbox
@@ -68,9 +68,8 @@
 import {useI18n} from "vue-i18n";
 import {uniqueByKey} from "../data";
 import OtherSetting from "./OtherSetting.vue";
-import { cloneDeep, get, set } from 'lodash-es'
+import { debounce, get, set } from 'lodash-es'
 import AccessModes from "./AccessModes.vue";
-import { EventEmitter } from '@jetlinks-web/utils'
 
 const componentMap = {
   AccessModes
@@ -165,6 +164,10 @@ const onCheckChange = (e, item, record) => {
     const dataIndex = item.dataIndex
     const prevValue = get(_dataSource.value[record.__dataIndex - 1], formName)
     sameValue(record.__dataIndex - 1,  formName, dataIndex, prevValue)
+  } else if (!checked) {
+    if (item.template.getOptions) {
+      item.template.getOptions(record, _dataSource.value[record.__dataIndex - 1])
+    }
   }
 
   onSave(_dataSource.value)
@@ -183,6 +186,8 @@ const onFieldChange = (value, item, record) => {
   sameValue(record.__dataIndex, formName, dataIndex, _value) // 将下面的同上数据进行同步
   onSave(_dataSource.value)
   emit('fieldChange', value, item, record)
+
+  onfocus(item, _dataSource.value[record.__dataIndex])
 }
 
 // actions和其他配置项
@@ -222,13 +227,11 @@ const removeItem = (record, index) => {
  * @param column
  * @param record
  */
-const onfocus = (column, record) => {
-  if (column.template.handleOptions) {
-    column.template.handleOptions(record, (fn) => {
-      EventEmitter.emit(record.id, fn())
-    })
+const onfocus = debounce((column, record) => {
+  if (column.template.handleOptions && record[props.sameFieldKey]?.[column.dataIndex]) {
+    column.template.handleOptions(record)
   }
-}
+}, 1500)
 
 watch(() => props.dataSource.length, (newVal) => {
   _dataSource.value = props.dataSource

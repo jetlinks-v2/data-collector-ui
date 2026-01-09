@@ -21,7 +21,7 @@ import * as LodashEs from 'lodash-es'
 import * as hooks from '@data-collector-ui/hooks'
 import PointEditTable
   from "@data-collector-ui/views/data-collect/components/Point/BatchSave/components/PointEditTable.vue";
-import { commandRequest, queryCodecProvider } from '@data-collector-ui/api/data-collect/collector'
+import { commandRequest, queryCodecProvider, queryPointMetadata } from '@data-collector-ui/api/data-collect/collector'
 import { handlePointConfigMetadata } from '@data-collector-ui/utils/utils'
 
 defineOptions({name: 'RenderComponents'})
@@ -54,7 +54,8 @@ const render = debounce(() => {
       },
       request: {
         commandRequest,
-        queryCodecProvider
+        queryCodecProvider,
+        queryPointMetadata
       }
     },
     getFile(url) {
