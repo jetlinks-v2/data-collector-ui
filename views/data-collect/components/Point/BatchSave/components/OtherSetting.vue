@@ -20,7 +20,7 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary">保存</a-button>
+          <a-button type="primary" @click="save">保存</a-button>
           <a-button @click="emit('close')">取消</a-button>
         </a-space>
       </div>
@@ -36,6 +36,8 @@ import StorageConfiguration from "../../../Config/StorageConfiguration.vue";
 import ResultProcessing from "../../../Config/ResultProcessing.vue";
 import {useI18n} from "vue-i18n";
 import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
+import { randomString } from '@jetlinks-web/utils'
+import { cloneDeep } from 'lodash-es'
 
 const {t: $t} = useI18n();
 
@@ -52,21 +54,43 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 
 const formData = reactive({
-  name: '',
-  collectorId: props.collector?.collectorId,
-  configuration: props.data.configuration || {
-    valueType: undefined,
-    terms: [],
-    pointAddress: "",
-    interval: 3000,
-  },
-  accessModes: [],
+  name: undefined,
+  provider: undefined,
+  collectorId: undefined,
+  collectorName: undefined,
+  channelId: undefined,
+  channelName: undefined,
+  description: undefined,
+  interval: 3000,
+  inheritBreaker: false, // 是否继承熔断
+  circuitBreaker: undefined, // 错误处理方式
+  priority: undefined, // 优先级
   features: [],
-  description: props.data.description || "",
+  pointKey: undefined,
+  accessModes: [], // 可选值： read , write ,subscribe
+  managedConfiguration: {}, // 点位管理配置
+  configuration: {},
 });
 const formRef = ref(null)
 const configVisible = ref(true)
 
+const save = async () => {
+  const resp =  await formRef.value.validate()
+  if (resp) {
+    emit('save', resp)
+  }
+}
+
+const init = () => {
+  Object.keys(formData).forEach((key) => {
+    formData[key] = props.data[key]
+  })
+}
+
+init()
+
+provide('plugin-form', formData)
+provide('point-form-collector', props.collector)
 provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
 
 </script>

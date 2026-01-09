@@ -15,7 +15,7 @@
           <RenderComponents v-if="jsonData" :value="jsonData" ref="pointBatchRef"/>
         </div>
         <div>
-          <a-button type="primary" @click="handleSave">
+          <a-button type="primary" :loading="saveLoading" @click="handleSave">
             保存
           </a-button>
         </div>
@@ -25,16 +25,22 @@
 </template>
 
 <script setup>
-import {detail} from "@data-collector-ui/api/data-collect/collector";
+import { detail, savePointBatch } from '@data-collector-ui/api/data-collect/collector'
 import {useI18n} from "vue-i18n";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
+import { onlyMessage } from '@jetlinks-web/utils'
+import { useMenuStore } from '@jetlinks-web-core/store'
+import { omit } from 'lodash-es'
 
 const {t: $t} = useI18n();
 const route = useRoute();
 const collector = ref({})
 const jsonData = ref()
 const pointBatchRef = ref()
+const saveLoading = ref(false)
+
+const menuStore = useMenuStore()
 
 provide('point-batch-collector-data', collector)
 const getPointBatch = async (val) => {
@@ -44,7 +50,17 @@ const getPointBatch = async (val) => {
 const handleSave = async () => {
   // 保存数据
   const resp = await pointBatchRef.value?.onSave?.()
-  console.log(pointBatchRef.value, resp, 'resp')
+  if (resp) {
+    saveLoading.value = true
+    savePointBatch(resp.map(item => omit(item, ['__dataIndex', '__serial', 'sames', 'id']))).then((r) => {
+      if (r.success) {
+        onlyMessage('操作成功')
+        menuStore.jumpPage('data-collect')
+      }
+    }).finally(() => {
+      saveLoading.value = false
+    })
+  }
 }
 
 const getDetail = async (id) => {

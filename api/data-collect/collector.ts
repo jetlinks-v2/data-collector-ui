@@ -133,6 +133,12 @@ export const queryPointHistory = (collectorId: string, data: any) => request.pos
 export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);
 export const queryAlarmLogList = (id:any,data:any) => request.post(`/alarm/history/${id}/_query`,data)
 export const queryPointMetadata = (provider:any, data: any) => request.post(`/data-collect/point/${provider}/_metadata`, data)
+export const commandRequest = {
+  pointConfigMetadata: (type: string) => request.post(`/data-collect/${type}/command/GetPointConfigMetadata`)
+}
+
+export const getSupportAccessModes = (provider) => request.post(`/data-collect/${provider}/command/GetSupportAccessModes`)
+
 
 /**
  * 采集器导入模板下载

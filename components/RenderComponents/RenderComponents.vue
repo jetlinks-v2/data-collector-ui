@@ -21,6 +21,8 @@ import * as LodashEs from 'lodash-es'
 import * as hooks from '@data-collector-ui/hooks'
 import PointEditTable
   from "@data-collector-ui/views/data-collect/components/Point/BatchSave/components/PointEditTable.vue";
+import { commandRequest, queryCodecProvider, queryPointMetadata } from '@data-collector-ui/api/data-collect/collector'
+import { handlePointConfigMetadata } from '@data-collector-ui/utils/utils'
 
 defineOptions({name: 'RenderComponents'})
 
@@ -44,11 +46,16 @@ const render = debounce(() => {
       '@jetlinks-web/hooks': JetlinksHooks,
       pinia: pinia,
       'vue-router': Router,
-      'local-utils': LocalUtils,
+      'local-utils': { ...LocalUtils, handlePointConfigMetadata },
       'lodash-es': LodashEs,
       '@hooks': hooks,
       '@components': {
         PointEditTable
+      },
+      request: {
+        commandRequest,
+        queryCodecProvider,
+        queryPointMetadata
       }
     },
     getFile(url) {
