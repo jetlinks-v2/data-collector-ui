@@ -189,7 +189,8 @@ import {
   batchDeletePoint,
   exportPoint,
   exportTemplate,
-  queryPoint, savePointBatch
+  queryPoint, savePointBatch,
+  pointImport
 } from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig.vue";
