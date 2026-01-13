@@ -16,7 +16,7 @@
           allow-clear
           v-model:value="searchValue"
           class="search-input"
-          placeholder="请输入搜索内容"
+          :placeholder="$t('DataCollect.index.400150-10')"
           @blur="handleSearchBlur"
           @keyup.enter="handleSearchEnter"
         >
@@ -34,13 +34,13 @@
             <a-menu-item key="importChannel">
               <a-space>
                 <AIcon type="ImportOutlined"/>
-                批量导入通道
+                {{ $t('DataCollect.index.400150-11') }}
               </a-space>
             </a-menu-item>
             <a-menu-item key="importCollector">
               <a-space>
                 <AIcon type="ImportOutlined"/>
-                批量导入采集器
+                {{ $t('DataCollect.index.400150-12') }}
               </a-space>
             </a-menu-item>
           </a-menu>
@@ -51,9 +51,9 @@
       </a-dropdown>
     </a-space>
   </a-flex>
-  <Import 
+  <Import
     v-if="importVisible"
-    :title="activeKey === 'importChannel' ? '批量导入通道' : '批量导入采集器'"
+    :title="activeKey === 'importChannel' ? $t('DataCollect.index.400150-11') : $t('DataCollect.index.400150-12')"
     :download-url-builder="activeKey === 'importChannel' ? (format) => channelDownloadImportTemplate(form.provider, format) : (format) => collectorDownloadImportTemplate(form.provider, format)"
     :show-upload="showUpload"
     :request="activeKey === 'importChannel' ? () => channelImport(form.provider) : () => collectorImport(form.channelId, form.provider)"
@@ -62,11 +62,11 @@
   >
     <template #content>
       <a-form :model="form" layout="vertical" ref="formRef">
-        <a-form-item label="通讯协议" name="provider" required>
-          <a-select v-model:value="form.provider" :options="providers" :field-names="{label: 'name', value: 'id'}" placeholder="请选择通讯协议"></a-select>
+        <a-form-item :label="$t('DataCollect.index.400150-13')" name="provider" required>
+          <a-select v-model:value="form.provider" :options="providers" :field-names="{label: 'name', value: 'id'}" :placeholder="$t('DataCollect.index.400150-14')"></a-select>
         </a-form-item>
-        <a-form-item v-if="activeKey === 'importCollector'" label="通道" name="channelId" required>
-          <a-select v-model:value="form.channelId" :options="providerChannelList" :field-names="{label: 'name', value: 'id'}" placeholder="请选择通道"></a-select>
+        <a-form-item v-if="activeKey === 'importCollector'" :label="$t('DataCollect.index.400150-15')" name="channelId" required>
+          <a-select v-model:value="form.channelId" :options="providerChannelList" :field-names="{label: 'name', value: 'id'}" :placeholder="$t('DataCollect.index.400150-16')"></a-select>
         </a-form-item>
       </a-form>
     </template>
@@ -79,6 +79,9 @@ import { channelImport, channelDownloadImportTemplate } from "@data-collector-ui
 import Import from '../../components/Import/index.vue';
 import { useCollectorProvider } from "@data-collector-ui/hooks";
 import { REFRESH_HANDLER } from "../../data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 interface Props {
   modelValue?: string;
   channelList?: any[];

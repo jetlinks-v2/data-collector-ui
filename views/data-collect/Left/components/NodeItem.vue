@@ -72,14 +72,14 @@
         <div class="collector-point-state-count">
           <j-badge-status status="success"/>
           <a-space>
-            <span style="color: #777777;">运行中</span>
+            <span style="color: #777777;">{{ $t('DataCollect.index.400150-8') }}</span>
             <span>{{ node.pointStateCount?.running || 0 }}</span>
           </a-space>
         </div>
         <div class="collector-point-state-count">
           <j-badge-status status="error"/>
           <a-space>
-            <span style="color: #777777;">已停止</span>
+            <span style="color: #777777;">{{ $t('DataCollect.index.400150-9') }}</span>
             <span>{{ node.pointStateCount?.stopped || 0 }}</span>
           </a-space>
         </div>
@@ -112,6 +112,9 @@
 
 <script setup lang="ts">
 import {colorMap} from "../type";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   node: {

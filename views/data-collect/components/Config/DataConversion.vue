@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="数据转换"
-      tip="对数值进行缩放,换算或映射处理"
+      :title="$t('DataCollect.index.400154-10')"
+      :tip="$t('DataCollect.index.400154-11')"
       v-model:value="data"
       :show-switch="showSwitch"
       @change="onSwitchChange"
@@ -10,12 +10,12 @@
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
-        <a-descriptions-item label="缩放因子">
+        <a-descriptions-item :label="$t('DataCollect.index.400154-12')">
           <j-ellipsis>
             {{ collector?.managedConfiguration?.converter?.configuration?.factor || '-' }}
           </j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item label="小数位保留数">
+        <a-descriptions-item :label="$t('DataCollect.index.400154-13')">
           <j-ellipsis>
             {{ collector?.managedConfiguration?.converter?.configuration?.scale || '-' }}
           </j-ellipsis>
@@ -31,11 +31,11 @@
               'configuration',
               'factor',
             ]"
-            label="缩放因子"
+            :label="$t('DataCollect.index.400154-12')"
             :rules="[
               {
                 required: true,
-                message: '请输入'
+                message: $t('DataCollect.index.400154-14')
               }
             ]"
         >
@@ -43,7 +43,7 @@
               v-model:value="formData.managedConfiguration.converter.configuration.factor"
               :controls="false"
               :max="65535"
-              placeholder="请输入"
+              :placeholder="$t('DataCollect.index.400154-14')"
               style="width: 100%"
               type="number"
           />
@@ -52,7 +52,7 @@
       <a-col :span="12">
         <a-form-item
             :name="['managedConfiguration', 'converter', 'configuration', 'scale']"
-            label="小数位保留数"
+            :label="$t('DataCollect.index.400154-13')"
         >
           <a-input-number
               v-model:value="formData.managedConfiguration.converter.configuration.scale"
@@ -60,7 +60,7 @@
               :max="65535"
               :min="0"
               :precision="0"
-              placeholder="请输入"
+              :placeholder="$t('DataCollect.index.400154-14')"
               style="width: 100%"
           />
         </a-form-item>
@@ -74,6 +74,9 @@ import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {isEqual} from "./data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   showSwitch: {

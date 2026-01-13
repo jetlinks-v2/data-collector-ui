@@ -1,11 +1,11 @@
 <template>
   <div class="point-top-warp">
-    <div class="title">点位列表</div>
+    <div class="title">{{ $t('DataCollect.index.400150-7') }}</div>
     <div class="status-warp">
       <div class="status-warp-item">
         <div>
           <span style="color: #1677FF;"><AIcon type="EnvironmentFilled"/></span>
-          全部点位
+          {{ $t('DataCollect.index.400150-6') }}
         </div>
         <div class="status-warp-item-value" :class="{'active': pointType === 'total'}"
              @click="onClick('total')">{{ num.total }}
@@ -13,14 +13,14 @@
       </div>
       <a-divider type="vertical"/>
       <div class="status-warp-item">
-        <a-badge status="success" text="运行中"/>
+        <a-badge status="success" :text="$t('DataCollect.index.400150-8')"/>
         <div class="status-warp-item-value" :class="{'active': pointType === 'running'}"
              @click="onClick('running')">{{ num.running }}
         </div>
       </div>
       <a-divider type="vertical"/>
       <div class="status-warp-item">
-        <a-badge status="error" text="已停止"/>
+        <a-badge status="error" :text="$t('DataCollect.index.400150-9')"/>
         <div class="status-warp-item-value" :class="{'active': pointType === 'stopped'}"
              @click="onClick('stopped')">{{ num.stopped }}
         </div>
@@ -33,6 +33,9 @@
 import {COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
 import {queryPointCount} from "@data-collector-ui/api/data-collect/collector";
 import {getCountList} from "@data-collector-ui/views/data-collect/utils";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))

@@ -3,7 +3,7 @@
     <div class="channel-collector-content">
       <a-flex style="width: 100%; padding: 0 8px 8px;" justify="space-between"
               :style="{borderBottom: viewType !== 'compact' ? '1px solid #e8e8e8' : 'none'}">
-        <j-permission-button style="padding: 0" :hasPermission="true" :tooltip="{title: '收起'}" type="text"
+        <j-permission-button style="padding: 0" :hasPermission="true" :tooltip="{title: $t('DataCollect.index.400150-0')}" type="text"
                              @click="foldTree = !foldTree">
           <AIcon style="font-size: 18px" type="InboxOutlined"></AIcon>
         </j-permission-button>
@@ -13,8 +13,8 @@
                    @click="filterModalVisible = true"></AIcon>
           </a-button>
           <a-radio-group v-model:value="viewType" size="small">
-            <a-radio-button value="compact">紧凑视图</a-radio-button>
-            <a-radio-button value="separate">分离视图</a-radio-button>
+            <a-radio-button value="compact">{{ $t('DataCollect.index.400150-1') }}</a-radio-button>
+            <a-radio-button value="separate">{{ $t('DataCollect.index.400150-2') }}</a-radio-button>
           </a-radio-group>
         </a-space>
       </a-flex>
@@ -32,7 +32,7 @@
           >
             <a-space>
               <AIcon type="AppstoreFilled"></AIcon>
-              <span>全部</span>
+              <span>{{ $t('DataCollect.index.400150-3') }}</span>
             </a-space>
           </div>
           <j-empty v-if="!filterTreeData.length"></j-empty>
@@ -68,7 +68,7 @@
                @click="() => treeSelect(['all'], {node: {dataRef: {id: 'all'}}})">
             <a-space>
               <AIcon type="AppstoreOutlined"></AIcon>
-              <span>全部</span>
+              <span>{{ $t('DataCollect.index.400150-3') }}</span>
             </a-space>
           </div>
           <j-empty v-if="!filterTreeData.length"></j-empty>
@@ -85,7 +85,7 @@
         <div class="collector-box">
           <div style="display: flex; align-items: center">
             <div style="height: 32px;line-height: 32px;margin-bottom: 8px;">
-              共{{ filteredCollectors.length }}个采集器
+              {{ $t('DataCollect.index.400150-4', [filteredCollectors.length]) }}
             </div>
             <div style="flex: 1; min-width: 0">
               <SearchInput v-model="collectorSearchValue"/>
@@ -107,7 +107,7 @@
     </div>
     <div class="channel-collector-path">
       <a-space>
-        <span class="switch-node" @click="switchNode('all')">全部</span>
+        <span class="switch-node" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</span>
         <span v-if="(selectedNode?.id !== 'all' && selectedNode?.isChannel) || selectedNode?.channelId">
           <a-space>
             <span>></span>
@@ -294,7 +294,7 @@ const onFilterSave = () => {
   selectedKeys.value = ["all"];
   selectedNode.value = {
     id: 'all',
-    name: '全部',
+    name: $t('DataCollect.index.400150-3'),
   };
 }
 
@@ -332,10 +332,10 @@ const loadAllData = async () => {
     selectedKeys.value = ["all"];
     selectedNode.value = {
       id: 'all',
-      name: '全部',
+      name: $t('DataCollect.index.400150-3'),
     };
   } catch (error) {
-    console.error('加载数据失败:', error);
+    console.error($t('DataCollect.index.400150-5'), error);
   }
 };
 
@@ -390,7 +390,7 @@ const switchNode = (id: string) => {
   if (id === 'all') {
     selectedNode.value = {
       id: 'all',
-      name: '全部',
+      name: $t('DataCollect.index.400150-3'),
     };
     nodeType.value = 'all';
   } else {

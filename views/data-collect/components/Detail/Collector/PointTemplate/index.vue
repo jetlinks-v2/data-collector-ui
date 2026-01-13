@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>下述配置仅作用于点位，其下属点位默认值自动继承此规则</p>
+    <p>{{ $t('DataCollect.index.400156-2') }}</p>
     <a-form :model="formData" ref="formRef" layout="vertical">
       <!--      <DataParsing :showSwitch="false" :value="true"/>-->
       <CollectionConfiguration :showSwitch="false" :value="true"/>
@@ -29,6 +29,9 @@ import {
   PLUGIN_DETAIL_SAVE_EVENTS
 } from "@data-collector-ui/views/data-collect/data";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const emits = defineEmits(['save'])
 const info = inject('collector-info', ref({}))

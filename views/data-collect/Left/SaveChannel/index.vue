@@ -1,7 +1,7 @@
 <template>
   <a-drawer
     visible
-    :title="data.id ? '编辑通道' : '新增通道'"
+    :title="data.id ? $t('DataCollect.index.400150-26') : $t('DataCollect.index.400150-27')"
     :maskClosable="false"
     width="40%"
     @close="emits('close')"
@@ -19,9 +19,9 @@
     <template #footer>
       <a-space v-if="provider">
         <j-permission-button :loading="loading" type="primary" @click="handleOk">
-          确定
+          {{ $t('DataCollect.index.400150-20') }}
         </j-permission-button>
-        <a-button @click="emits('close')">取消</a-button>
+        <a-button @click="emits('close')">{{ $t('DataCollect.index.400150-19') }}</a-button>
       </a-space>
     </template>
   </a-drawer>
@@ -58,7 +58,7 @@ const handleOk = () => {
 //保存成功
 const saveChange = (val: boolean | Record<string, any>) => {
   if(val) {
-    onlyMessage("操作成功");
+    onlyMessage($t('DataCollect.index.400150-28'));
     emits('saveSuccess', val);
   }
 };

@@ -83,7 +83,7 @@ const clickRead = async () => {
   if (res.success) {
     historyData.value = res.result?.[0] || {};
     emits('refresh')
-    onlyMessage('操作成功!');
+    onlyMessage($t('DataCollect.index.400155-24'));
   }
 };
 

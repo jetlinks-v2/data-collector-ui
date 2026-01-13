@@ -74,7 +74,7 @@
               @click="handleBatchAdd"
               :hasPermission="true"
           >
-            批量添加
+            {{ $t('DataCollect.index.400151-12') }}
           </j-permission-button>
           <j-permission-button
               type="primary"
@@ -100,14 +100,14 @@
       </template>
       <template #headerRightRender>
         <a-space>
-          <j-ellipsis>已应用{{ searchCount }}个筛选</j-ellipsis>
+          <j-ellipsis>{{ $t('DataCollect.index.400151-13', [searchCount]) }}</j-ellipsis>
           <a-button @click="showSearch = !showSearch">
             <AIcon type="SearchOutlined"/>
-            {{ showSearch ? '隐藏搜索' : '显示搜索' }}
+            {{ showSearch ? $t('DataCollect.index.400151-14') : $t('DataCollect.index.400151-15') }}
           </a-button>
           <a-button @click="columnsConfig.visible = true" v-if="type === 'collector'">
             <AIcon type="SettingOutlined"/>
-            列配置
+            {{ $t('DataCollect.index.400151-16') }}
           </a-button>
         </a-space>
       </template>
@@ -289,13 +289,13 @@ const onResizeColumn = (w, col) => {
 const batchActions = [
   {
     key: 'enabled',
-    text: '批量启用点位',
+    text: $t('DataCollect.index.400151-17'),
     ghost: true,
     type: 'primary',
     icon: 'CheckCircleOutlined',
     selected: {
       popConfirm: {
-        title: '确认启用?',
+        title: $t('DataCollect.index.400151-18'),
         onConfirm: async () => {
           if (!_selectedRowKeys.value.length) {
             onlyMessage($t('Point.index.400149-15'), 'error');
@@ -318,7 +318,7 @@ const batchActions = [
   },
   {
     key: 'update',
-    text: '批量修改点位',
+    text: $t('DataCollect.index.400151-19'),
     ghost: true,
     type: 'primary',
     icon: 'EditOutlined',
@@ -330,12 +330,12 @@ const batchActions = [
   },
   {
     key: 'disable',
-    text: '批量禁用点位',
+    text: $t('DataCollect.index.400151-20'),
     danger: true,
     icon: 'StopOutlined',
     selected: {
       popConfirm: {
-        title: '确认禁用?',
+        title: $t('DataCollect.index.400151-21'),
         onConfirm: async () => {
           const arr = _selectedRows.value.map(i => {
             return {
@@ -354,7 +354,7 @@ const batchActions = [
   },
   {
     key: 'delete',
-    text: '批量删除点位',
+    text: $t('DataCollect.index.400151-22'),
     danger: true,
     icon: 'DeleteOutlined',
     selected: {
@@ -536,7 +536,7 @@ const selectAll = (selected, selectedRows, changeRows) => {
 const handleSort = (key, value) => {
   sortValue[key] = value
   columnsConfig.key = randomString()
-  console.log('排序变化')
+  // Sort change
 }
 
 const handleSearch = (_params) => {

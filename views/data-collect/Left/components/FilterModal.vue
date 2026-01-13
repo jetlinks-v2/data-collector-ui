@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="筛选"
+    :title="$t('DataCollect.index.400150-17')"
     open
     width="50%"
     @cancel="emits('close')"
@@ -11,10 +11,10 @@
     </div>
     <template #footer>
       <div class="footer">
-        <a-button @click="handleRest">重置</a-button>
+        <a-button @click="handleRest">{{ $t('DataCollect.index.400150-18') }}</a-button>
         <a-space>
-          <a-button @click="emits('close')">取消</a-button>
-          <a-button type="primary" @click="handleOk">确定</a-button>
+          <a-button @click="emits('close')">{{ $t('DataCollect.index.400150-19') }}</a-button>
+          <a-button type="primary" @click="handleOk">{{ $t('DataCollect.index.400150-20') }}</a-button>
         </a-space>
       </div>
     </template>
@@ -45,7 +45,7 @@ const filterData = reactive(cloneDeep(filterValue) || {
 const filterColumn = computed(() => {
   return [
     {
-      title: '通讯协议',
+      title: $t('DataCollect.index.400150-13'),
       key: 'provider',
       options: data.value?.map((item: any) => {
         return {
@@ -55,47 +55,47 @@ const filterColumn = computed(() => {
       }),
     },
     {
-      title: '通道运行状态',
+      title: $t('DataCollect.index.400150-21'),
       key: 'runningState',
       options: [
         {
-          label: '运行中',
+          label: $t('DataCollect.index.400150-8'),
           value: 'running',
         },
         {
-          label: '已停止',
+          label: $t('DataCollect.index.400150-9'),
           value: 'stopped',
         }
       ]
     },
     {
-      title: '通道状态',
+      title: $t('DataCollect.index.400150-22'),
       key: 'state',
       options: [
         {
-          label: '正常',
+          label: $t('DataCollect.index.400150-24'),
           value: 'enabled',
         },
         {
-          label: '禁用',
+          label: $t('DataCollect.index.400150-25'),
           value:'disabled',
         }
       ]
     },
     {
-      title: '采集器状态',
+      title: $t('DataCollect.index.400150-23'),
       key:'collectorState',
       options: [
         {
-          label: '运行中',
+          label: $t('DataCollect.index.400150-8'),
           value: 'running',
         },
         {
-          label: '禁用',
+          label: $t('DataCollect.index.400150-25'),
           value:'disabled',
         },
         {
-          label: '已停止',
+          label: $t('DataCollect.index.400150-9'),
           value:'stopped',
         }
       ]

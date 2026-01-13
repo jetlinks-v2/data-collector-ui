@@ -1,7 +1,7 @@
 <template>
   <div>
     <a-form :model="formData" ref="formRef">
-      <TitleComponent data="点位配置"/>
+      <TitleComponent :data="$t('DataCollect.index.400151-40')"/>
       <RenderComponents
           v-if="jsonData"
           :value="jsonData"
@@ -25,6 +25,9 @@ import RenderComponents from "@data-collector-ui/components/RenderComponents/Ren
 import {map} from "lodash-es";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const emits = defineEmits(['save'])
 

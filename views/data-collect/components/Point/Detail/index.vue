@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open width="900px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -33,13 +33,15 @@
     </template>
     <a-spin :spinning="loading">
       <a-descriptions>
-        <a-descriptions-item label="通讯协议">{{ info.provider }}</a-descriptions-item>
-        <a-descriptions-item label="所属采集器">{{
+        <a-descriptions-item :label="$t('DataCollect.index.400151-36')">
+          <j-ellipsis>{{ info.provider }}</j-ellipsis>
+        </a-descriptions-item>
+        <a-descriptions-item :label="$t('DataCollect.index.400151-37')">{{
             info.collectorName || info.collectorId || '--'
           }}
         </a-descriptions-item>
-        <a-descriptions-item label="所属通道">{{ info.channelName || '--' }}</a-descriptions-item>
-        <a-descriptions-item label="说明">
+        <a-descriptions-item :label="$t('DataCollect.index.400151-38')">{{ info.channelName || '--' }}</a-descriptions-item>
+        <a-descriptions-item :label="$t('DataCollect.index.400151-39')">
           <InputEditable
               :value="info.description"
               @change="(val) => onSave([{name: 'description', value: val}])"
@@ -68,7 +70,9 @@ import {
   onPointSave
 } from "@data-collector-ui/views/data-collect/utils";
 import {omit, set} from "lodash-es";
+import { useI18n } from 'vue-i18n';
 
+const {t: $t} = useI18n();
 const props = defineProps({
   data: {
     type: Object,
@@ -83,27 +87,27 @@ const errorList = ref([])
 const tabsList = [
   {
     key: 'Info',
-    tab: '详情'
+    tab: $t('DataCollect.index.400151-31')
   },
   {
     key: 'AdvancedConfiguration',
-    tab: '高级配置'
+    tab: $t('DataCollect.index.400151-32')
   },
   {
     key: 'HistoryData',
-    tab: '历史数据'
+    tab: $t('DataCollect.index.400151-33')
   },
   // {
   //   key: 'RelatedDevice',
-  //   tab: '关联设备'
+  //   tab: $t('DataCollect.index.400152-0')
   // },
   {
     key: 'PointLogs',
-    tab: '点位日志'
+    tab: $t('DataCollect.index.400151-34')
   },
   {
     key: 'Alarm',
-    tab: '告警'
+    tab: $t('DataCollect.index.400151-35')
   }
 ]
 

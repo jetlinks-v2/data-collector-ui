@@ -1,17 +1,17 @@
 <template>
   <a-space>
     <a-space>
-      <span>统计周期:</span>
+      <span>{{ $t('DataCollect.index.400151-41') }}</span>
       <a-select v-model:value="cycleType" style="width: 120px" :options="cycleOptions">
       </a-select>
     </a-space>
     <a-space v-if="cycleType !== '*'">
-      <span>统计规则:</span>
+      <span>{{ $t('DataCollect.index.400151-42') }}</span>
       <a-select v-model:value="ruleType" style="width: 120px">
-        <a-select-option value="avg">平均值</a-select-option>
-        <a-select-option value="max">最大值</a-select-option>
-        <a-select-option value="min">最小值</a-select-option>
-        <a-select-option value="count">总数</a-select-option>
+        <a-select-option value="avg">{{ $t('DataCollect.index.400151-43') }}</a-select-option>
+        <a-select-option value="max">{{ $t('DataCollect.index.400151-44') }}</a-select-option>
+        <a-select-option value="min">{{ $t('DataCollect.index.400151-45') }}</a-select-option>
+        <a-select-option value="count">{{ $t('DataCollect.index.400151-46') }}</a-select-option>
       </a-select>
     </a-space>
   </a-space>
@@ -25,6 +25,9 @@ import { queryPointAggregation, queryPointHistory } from '@data-collector-ui/api
 import { useRequest } from '@jetlinks-web/hooks';
 import { getParams } from '@data-collector-ui/views/data-collect/components/Detail/Echarts/tool';
 import dayjs from 'dayjs';
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   time: {
@@ -101,34 +104,34 @@ const errorDataOptions = computed(() => {
 
 const cycleOptions = computed(() => {
   const diffInSeconds = dayjs(props.time.end).diff(dayjs(props.time.start), 'minute');
-  
+
   if(diffInSeconds < 60) {
     return [
       {
-          label: '实际值',
+          label: $t('DataCollect.index.400151-47'),
           value: '*',
       },
       {
-          label: '按分钟统计',
+          label: $t('DataCollect.index.400151-48'),
           value: '1m',
       },
       {
-          label: '按小时统计',
+          label: $t('DataCollect.index.400151-49'),
           value: '1h',
       }
     ]
   } else if (diffInSeconds < 60 * 60) {
     return [
       {
-          label: '实际值',
+          label: $t('DataCollect.index.400151-47'),
           value: '*',
       },
       {
-          label: '按分钟统计',
+          label: $t('DataCollect.index.400151-48'),
           value: '1m',
       },
       {
-          label: '按小时统计',
+          label: $t('DataCollect.index.400151-49'),
           value: '1h',
       }
     ]
@@ -136,11 +139,11 @@ const cycleOptions = computed(() => {
     cycleType.value = '1m'
     return [
       {
-          label: '按分钟统计',
+          label: $t('DataCollect.index.400151-48'),
           value: '1m',
       },
       {
-          label: '按小时统计',
+          label: $t('DataCollect.index.400151-49'),
           value: '1h',
       }
     ]
@@ -148,11 +151,11 @@ const cycleOptions = computed(() => {
     cycleType.value = '1h'
     return [
       {
-          label: '按小时统计',
+          label: $t('DataCollect.index.400151-49'),
           value: '1h',
       },
       {
-          label: '按天统计',
+          label: $t('DataCollect.index.400151-50'),
           value: '1d',
       }
     ]
@@ -160,11 +163,11 @@ const cycleOptions = computed(() => {
     cycleType.value = '1d'
     return [
       {
-          label: '按天统计',
+          label: $t('DataCollect.index.400151-50'),
           value: '1d',
       },
       {
-          label: '按周统计',
+          label: $t('DataCollect.index.400151-51'),
           value: '1w',
       }
     ]

@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open :title="data?.id ? '编辑采集器' : '新增采集器'" :width="800" @close="emit('close')">
+  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="800" @close="emit('close')">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -21,7 +21,7 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item label="所属通道" name="channelId" :rules="[
+              <a-form-item :label="$t('DataCollect.index.400151-4')" name="channelId" :rules="[
                   { required: true, message: i18n.global.t('Collector.data.400141-26') }
               ]">
                 <a-input
@@ -32,7 +32,7 @@
             </a-col>
           </a-row>
           <div class="point-config" v-if="jsonData">
-            <TitleComponent data="基本参数"/>
+            <TitleComponent :data="$t('DataCollect.index.400151-5')"/>
             <div class="point-config-content">
               <RenderComponents
                   v-if="jsonData"
@@ -40,9 +40,9 @@
               />
             </div>
           </div>
-          <TitleComponent data="点位模板">
+          <TitleComponent :data="$t('DataCollect.index.400151-6')">
             <template #extra>
-              <div style="color: #999;font-size: 12px">下述配置仅作用于点位，其下属点位默认值自动继承此规则</div>
+              <div style="color: #999;font-size: 12px">{{ $t('DataCollect.index.400151-7') }}</div>
             </template>
           </TitleComponent>
           <!--          <DataParsing :showSwitch="false"/>-->
@@ -65,9 +65,9 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary" @click="handleOk(false)" :loading="loading">保存</a-button>
-          <a-button @click="handleOk(true)" :loading="loading">确认并继续</a-button>
-          <a-button @click="emit('close')">取消</a-button>
+          <a-button type="primary" @click="handleOk(false)" :loading="loading">{{ $t('DataCollect.index.400151-8') }}</a-button>
+          <a-button @click="handleOk(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
+          <a-button @click="emit('close')">{{ $t('DataCollect.index.400151-10') }}</a-button>
         </a-space>
       </div>
     </div>
@@ -203,7 +203,7 @@ const handleOk = async (flag) => {
           : await update(props.data.id, {...props.data, ...params})
       loading.value = false;
       if (response.success) {
-        onlyMessage('操作成功!')
+        onlyMessage($t('DataCollect.index.400151-11'))
         if (flag) {
           // formData.configuration = {}
           formData.name = undefined

@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="结果处理"
-      tip="对数据进行告警触发、数据聚合、转发等操作"
+      :title="$t('DataCollect.index.400155-11')"
+      :tip="$t('DataCollect.index.400155-12')"
       v-model:value="data"
       :show-switch="showSwitch"
       @change="onSwitchChange"
@@ -10,8 +10,8 @@
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
-        <a-descriptions-item label="是否开启">
-          {{ collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled ? '是' : '否' }}
+        <a-descriptions-item :label="$t('DataCollect.index.400155-13')">
+          {{ collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled ? $t('DataCollect.index.400155-14') : $t('DataCollect.index.400155-15') }}
         </a-descriptions-item>
       </a-descriptions>
       <template v-if="collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled">
@@ -34,25 +34,25 @@
             style="margin-right: 12px"
         />
         <template v-if="!formData.managedConfiguration.handler.configuration.shakeLimit.enabled">
-          当点位发生异常时，触发告警
+          {{ $t('DataCollect.index.400155-16') }}
         </template>
         <template v-else>
           <a-select
               show-search
-              placeholder="请选择"
+              :placeholder="$t('DataCollect.index.400155-17')"
               style="width: 150px;
               margin: 0 10px"
               :options="options"
               v-model:value="type"
               @change="onTypeChange"
           />
-          异常时，
-          <a-input-number placeholder="请输入" style="margin: 0 10px" :min="0" :precision="0"
+          {{ $t('DataCollect.index.400155-18') }}
+          <a-input-number :placeholder="$t('DataCollect.index.400155-19')" style="margin: 0 10px" :min="0" :precision="0"
                           v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.time"/>
-          秒内最多触发
-          <a-input-number placeholder="请输入" style="margin: 0 10px" :min="1" :precision="0"
+          {{ $t('DataCollect.index.400155-20') }}
+          <a-input-number :placeholder="$t('DataCollect.index.400155-19')" style="margin: 0 10px" :min="1" :precision="0"
                           v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.threshold"/>
-          次同一类型告警
+          {{ $t('DataCollect.index.400155-21') }}
         </template>
       </div>
     </a-form-item>
@@ -96,11 +96,11 @@ const options = computed(() => {
   })
   return [
     {
-      label: '数据异常',
+      label: $t('DataCollect.index.400155-22'),
       value: 'outlier'
     },
     {
-      label: '点位死区',
+      label: $t('DataCollect.index.400155-23'),
       value: 'deadband'
     },
     ...arr
@@ -208,7 +208,7 @@ const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) =>
   if (_value.enabled) {
     if (_value.configuration.shakeLimit.enabled) {
       if (!((_value.configuration.reason || _value.configuration.code) && _value.configuration.shakeLimit.time != null && _value.configuration.shakeLimit.threshold != null)) {
-        return reject('请输入值');
+        return reject($t('DataCollect.index.400155-19'));
       }
     }
   }

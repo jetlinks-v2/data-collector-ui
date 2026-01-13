@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="数据解析"
-      tip="将点位原始数据解析为平台可用数值或状态"
+      :title="$t('DataCollect.index.400154-34')"
+      :tip="$t('DataCollect.index.400154-35')"
       v-model:value="data"
       :showSwitch="showSwitch"
       @change="onSwitchChange"
@@ -10,12 +10,12 @@
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
-        <a-descriptions-item label="数据类型">
+        <a-descriptions-item :label="$t('DataCollect.index.400154-25')">
           <j-ellipsis>
             {{ collector?.managedConfiguration?.codec || '-' }}
           </j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item label="内存布局">
+        <a-descriptions-item :label="$t('DataCollect.index.400154-26')">
           <j-ellipsis>
             {{ collector?.managedConfiguration?.byteLayout || '-' }}
           </j-ellipsis>
@@ -25,23 +25,23 @@
     <a-row :gutter="24">
       <a-col :span="12">
         <a-form-item
-            label="数据类型"
+            :label="$t('DataCollect.index.400154-25')"
             :name="['managedConfiguration', 'codec']"
-            :rules="[{required: true, message: '请选择'}]"
+            :rules="[{required: true, message: $t('DataCollect.index.400154-22')}]"
         >
-          <a-select v-model:value="formData.managedConfiguration.codec" placeholder="请选择"
+          <a-select v-model:value="formData.managedConfiguration.codec" :placeholder="$t('DataCollect.index.400154-22')"
                     :options="_dataTypeOptions" allow-clear/>
         </a-form-item>
       </a-col>
       <a-col :span="12">
         <a-form-item
-            label="内存布局"
+            :label="$t('DataCollect.index.400154-26')"
             :name="['managedConfiguration', 'byteLayout']"
-            :rules="[{required: true, message: '请选择'}]"
+            :rules="[{required: true, message: $t('DataCollect.index.400154-22')}]"
         >
           <a-select
               v-model:value="formData.managedConfiguration.byteLayout"
-              placeholder="请选择"
+              :placeholder="$t('DataCollect.index.400154-22')"
               :options="memoryOptions"
           />
         </a-form-item>
@@ -56,6 +56,9 @@ import {queryCodecProvider} from "@data-collector-ui/api/data-collect/collector"
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {inject} from "vue";
 import {isEqual} from "./data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   showSwitch: {

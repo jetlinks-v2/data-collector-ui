@@ -1,6 +1,6 @@
 <template>
   <a-spin :spinning="loading">
-    <Header title="异常数据趋势" @change="onChange"/>
+    <Header :title="$t('DataCollect.index.400155-43')" @change="onChange"/>
     <div style="height: 300px">
       <JEcharts :option="errorDataOptions"/>
     </div>
@@ -53,7 +53,7 @@ const errorDataOptions = computed(() => {
     color: ['#979AFF'],
     series: [
       {
-        name: '异常数据量',
+        name: $t('DataCollect.index.400155-43'),
         data: data.y,
         type: 'line',
         smooth: true,
@@ -68,14 +68,14 @@ const errorDataOptions = computed(() => {
             colorStops: [
               {
                 offset: 0,
-                color: '#60DFC7', // 100% 处的颜色
+                color: '#60DFC7', // Color at 100%
               },
               {
                 offset: 1,
-                color: '#FFFFFF', //   0% 处的颜色
+                color: '#FFFFFF', //   Color at 0%
               },
             ],
-            global: false, // 缺省为 false
+            global: false, // Default is false
           },
         }
       },

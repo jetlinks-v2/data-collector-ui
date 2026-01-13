@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="异常判断"
-      tip="定义正常数据范围（仅适用于数值类型）,异常数据默认丢弃"
+      :title="$t('DataCollect.index.400155-5')"
+      :tip="$t('DataCollect.index.400155-6')"
       v-model:value="data"
       :show-switch="showSwitch"
       @change="onSwitchChange"
@@ -10,7 +10,7 @@
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
-        <a-descriptions-item label="异常值范围">
+        <a-descriptions-item :label="$t('DataCollect.index.400155-7')">
           <j-ellipsis>
             {{
               `${collector?.managedConfiguration?.outlier?.configuration?.min}~${collector?.managedConfiguration?.outlier?.configuration?.max}`
@@ -43,6 +43,9 @@ import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {isEqual} from "./data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   showSwitch: {
@@ -58,16 +61,16 @@ const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 
-let firstRender = true // 第一次渲染
-// 记录初始值快照，用于检测变化
+let firstRender = true // {$t('DataCollect.index.400156-4')}
+// {$t('DataCollect.index.400156-5')}
 const initialSnapshot = ref(null)
 const options = ref([
   {
-    title: '正常点位值',
+    title: $t('DataCollect.index.400155-8'),
     key: 'current',
-    fullName: '正常点位值',
+    fullName: $t('DataCollect.index.400155-8'),
     dataType: 'int',
-    termTypes: [{name: '在...之间', id: 'btw'}]
+    termTypes: [{name: $t('DataCollect.index.400156-3'), id: 'btw'}]
   }
 ])
 const optionsMap = ref(new Map())
@@ -128,10 +131,10 @@ const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) =>
       if (value.min <= value.max) {
         return resolve("");
       } else {
-        return reject('最大值不能小于最小值');
+        return reject($t('DataCollect.index.400155-9'));
       }
     } else {
-      return reject('请输入参数值');
+      return reject($t('DataCollect.index.400155-10'));
     }
   }
   return resolve("");
@@ -154,12 +157,12 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    // 检查值是否真正发生变化
+    // {$t('DataCollect.index.400156-6')}
     const currentValue = {
       outlier: formData.managedConfiguration.outlier
     }
 
-    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    // {$t('DataCollect.index.400156-7')}
     if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
       const arr = [
         {
@@ -189,10 +192,10 @@ watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
   immediate: true
 })
 
-// 监听折叠板打开状态，打开时记录初始快照
+// {$t('DataCollect.index.400156-9')}
 watch(() => data.value, (newVal) => {
   if (newVal === true) {
-    // 折叠板打开时，记录当前值的快照
+    // {$t('DataCollect.index.400156-10')}
     initialSnapshot.value = JSON.parse(JSON.stringify({
       outlier: formData.managedConfiguration.outlier
     }))

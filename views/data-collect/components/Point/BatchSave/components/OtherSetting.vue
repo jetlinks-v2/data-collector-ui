@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open title="其余配置" width="800px" @close="emit('close')">
+  <a-drawer open :title="$t('DataCollect.index.400153-1')" width="800px" @close="emit('close')">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -7,7 +7,7 @@
           <!--          <CollectionConfiguration/>-->
           <DataConversion/>
           <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
-            高级配置
+            {{ $t('DataCollect.index.400153-2') }}
             <AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
           </div>
           <template v-if="configVisible">
@@ -20,8 +20,8 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary" @click="save">保存</a-button>
-          <a-button @click="emit('close')">取消</a-button>
+          <a-button type="primary" @click="save">{{ $t('DataCollect.index.400153-3') }}</a-button>
+          <a-button @click="emit('close')">{{ $t('DataCollect.index.400153-4') }}</a-button>
         </a-space>
       </div>
     </div>

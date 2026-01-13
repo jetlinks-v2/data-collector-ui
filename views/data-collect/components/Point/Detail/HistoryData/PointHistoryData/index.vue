@@ -1,10 +1,10 @@
 <template>
   <div>
-    <Header title="点位历史数据" @change="onChange"/>
+    <Header :title="$t('DataCollect.index.400155-25')" @change="onChange"/>
     <div>
       <a-tabs v-model:activeKey="activeKey">
-        <a-tab-pane key="list" tab="列表"></a-tab-pane>
-        <a-tab-pane key="chart" tab="图表"></a-tab-pane>
+        <a-tab-pane key="list" :tab="$t('DataCollect.index.400155-26')"></a-tab-pane>
+        <a-tab-pane key="chart" :tab="$t('DataCollect.index.400155-27')"></a-tab-pane>
       </a-tabs>
       <div>
         <component :is="components[activeKey]" :time="time" />

@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-if="jsonData">
-      <TitleComponent data="基本参数"/>
+      <TitleComponent :data="$t('DataCollect.index.400156-0')"/>
       <a-form :model="formData" ref="formRef">
         <RenderComponents
             v-if="jsonData"
@@ -9,7 +9,7 @@
         />
       </a-form>
     </template>
-    <TitleComponent data="数据图表"/>
+    <TitleComponent :data="$t('DataCollect.index.400156-1')"/>
     <PointDataVolume type="channel" :id="info.id" />
     <AbnormalDataTrend type="channel" :id="info.id" />
   </div>
@@ -20,6 +20,9 @@ import RenderComponents from "@data-collector-ui/components/RenderComponents";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import PointDataVolume from '../../Echarts/PointDataVolume.vue'
 import AbnormalDataTrend from '../../Echarts/AbnormalDataTrend.vue'
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const emits = defineEmits(['save'])
 const info = inject('channel-info', ref({}))

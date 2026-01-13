@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open width="900px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -33,15 +33,17 @@
     </template>
     <a-spin :spinning="loading">
       <a-descriptions :column="4">
-        <a-descriptions-item label="通讯协议">{{ info.provider }}</a-descriptions-item>
-        <a-descriptions-item label="通道ID">
+        <a-descriptions-item :label="$t('DataCollect.index.400155-33')">
+          <j-ellipsis>{{ info.provider }}</j-ellipsis>
+        </a-descriptions-item>
+        <a-descriptions-item :label="$t('DataCollect.index.400155-40')">
           <j-ellipsis>{{ info.id }}</j-ellipsis>
         </a-descriptions-item>
         <a-descriptions-item :label="item.text" v-for="item in countList" :key="item.type">{{
             item.total
           }}
         </a-descriptions-item>
-        <a-descriptions-item label="说明">
+        <a-descriptions-item :label="$t('DataCollect.index.400155-36')">
           <InputEditable
               :value="info.description"
               @change="(val) => onSave([{name: 'description', value: val}])"
@@ -70,7 +72,9 @@ import {
 } from "@data-collector-ui/views/data-collect/utils";
 import {detail} from "@data-collector-ui/api/data-collect/channel";
 import {omit, set} from "lodash-es";
+import {useI18n} from "vue-i18n";
 
+const {t: $t} = useI18n();
 const props = defineProps({
   data: {
     type: Object,
@@ -89,11 +93,11 @@ provide('channel-info', info)
 const tabsList = [
   {
     key: 'Info',
-    tab: '详情'
+    tab: $t('DataCollect.index.400155-37')
   },
   {
     key: 'ChannelLogs',
-    tab: '通道日志'
+    tab: $t('DataCollect.index.400155-44')
   }
 ]
 

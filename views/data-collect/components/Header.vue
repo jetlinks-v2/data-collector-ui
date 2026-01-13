@@ -50,6 +50,9 @@ import {
 import ChannelDetail from './Detail/Channel/index.vue'
 import CollectorDetail from './Detail/Collector/index.vue'
 import {getCountList} from "@data-collector-ui/views/data-collect/utils";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
@@ -66,7 +69,7 @@ const visible = reactive({
 
 const title = computed(() => {
   if (type.value === 'all') {
-    return '全部点位'
+    return $t('DataCollect.index.400150-6')
   } else {
     return data.value?.name || "--"
   }

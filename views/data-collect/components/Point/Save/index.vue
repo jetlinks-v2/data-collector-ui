@@ -1,12 +1,12 @@
 <template>
-  <a-drawer open title="新增点位" width="800px" @close="emit('close')">
+  <a-drawer open :title="$t('DataCollect.index.400151-26')" width="800px" @close="emit('close')">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
           <a-row :gutter="[24, 24]">
             <a-col :span="12">
               <a-form-item :label="$t('Save.SaveModBus.4001413-2')" name="name"
-                           :rules="[{required: true, message: '请输入名称', trigger: ['blur']}]">
+                           :rules="[{required: true, message: $t('DataCollect.index.400156-22'), trigger: ['blur']}]">
                 <a-input
                     :placeholder="$t('Save.SaveModBus.4001413-3')"
                     v-model:value="formData.name"
@@ -14,9 +14,9 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item label="所属采集器" name="collectorId" :disabled="true">
+              <a-form-item :label="$t('DataCollect.index.400151-27')" name="collectorId" :disabled="true">
                 <a-input
-                    placeholder="请选择"
+                    :placeholder="$t('DataCollect.index.400151-28')"
                     v-model:value="formData.collectorName"
                     disabled
                 />
@@ -24,7 +24,7 @@
             </a-col>
           </a-row>
           <div class="point-config" v-if="jsonData">
-            <h3>点位配置</h3>
+            <h3>{{ $t('DataCollect.index.400151-29') }}</h3>
             <div>
               <RenderComponents v-if="jsonData" :value="jsonData"/>
             </div>
@@ -35,7 +35,7 @@
           <CollectionConfiguration/>
           <DataConversion/>
           <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
-            高级配置
+            {{ $t('DataCollect.index.400151-30') }}
             <AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
           </div>
           <template v-if="configVisible">
@@ -48,9 +48,9 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary" @click="onSubmit(false)" :loading="loading">保存</a-button>
-          <a-button @click="onSubmit(true)" :loading="loading">确认并继续</a-button>
-          <a-button @click="emit('close')">取消</a-button>
+          <a-button type="primary" @click="onSubmit(false)" :loading="loading">{{ $t('DataCollect.index.400151-8') }}</a-button>
+          <a-button @click="onSubmit(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
+          <a-button @click="emit('close')">{{ $t('DataCollect.index.400151-10') }}</a-button>
         </a-space>
       </div>
     </div>
@@ -161,7 +161,7 @@ const onSubmit = async (flag) => {
           loading.value = false
         });
     if (response.success) {
-      onlyMessage('操作成功!')
+      onlyMessage($t('DataCollect.index.400151-11'))
       if (flag) {
         // formData.configuration = {}
         formData.name = undefined

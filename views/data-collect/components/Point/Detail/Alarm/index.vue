@@ -27,7 +27,7 @@
       </template>
       <template #action="slotProps">
         <a-button type="link" @click="showDetail(slotProps)">
-          查看详情
+          {{ $t('DataCollect.index.400155-28') }}
         </a-button>
       </template>
     </j-pro-table>
@@ -39,11 +39,13 @@
 import {queryAlarmLogList} from "@data-collector-ui/api/data-collect/collector";
 import dayjs from "dayjs";
 import Detail from './Detail.vue'
+import { useI18n } from 'vue-i18n';
 
+const {t: $t} = useI18n();
 const info = inject('point-info', ref({}))
 const columns = [
   {
-    title: '告警时间',
+    title: $t('DataCollect.index.400155-29'),
     dataIndex: 'alarmTime',
     key: 'alarmTime',
     ellipsis: true,
@@ -53,14 +55,14 @@ const columns = [
     }
   },
   {
-    title: '触发条件',
+    title: $t('DataCollect.index.400155-30'),
     dataIndex: 'triggerDesc',
     key: 'triggerDesc',
     ellipsis: true,
     scopedSlots: true,
   },
   {
-    title: '告警原因',
+    title: $t('DataCollect.index.400155-31'),
     dataIndex: 'actualDesc',
     key: 'actualDesc',
     ellipsis: true,
@@ -70,7 +72,7 @@ const columns = [
     },
   },
   {
-    title: '操作',
+    title: $t('DataCollect.index.400155-32'),
     dataIndex: 'action',
     key: 'action',
     width: 120,

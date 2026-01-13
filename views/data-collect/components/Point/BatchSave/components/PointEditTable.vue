@@ -31,7 +31,7 @@
               :checked="record.sames[item.dataIndex]"
               @change="(e) => onCheckChange(e, item, record)"
           >
-            同上
+            {{ $t('DataCollect.index.400153-0') }}
           </a-checkbox>
         </div>
       </j-edit-table-form-item>
@@ -102,11 +102,11 @@ const otherConfig = reactive({
 const _dataSource = shallowRef(props.dataSource)
 const tableRef = ref();
 const _columns = computed(() => {
-  // 有些有同上,有些没有
+  // Some have "same as above", some don't
   const arr = [
     ...props.columns,
     {
-      title: '其余配置',
+      title: $t('DataCollect.index.400153-1'),
       key: 'otherConfig',
       dataIndex: 'otherConfig',
       ellipsis: true,

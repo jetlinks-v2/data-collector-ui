@@ -1,15 +1,15 @@
 <template>
   <div class="value-list">
     <div class="value-item">
-      <div class="value-label">点位值</div>
+      <div class="value-label">{{ $t('DataCollect.index.400152-10') }}</div>
       <ValueItem :value="value" type="detail" :data="info" @refresh="onRefresh"/>
     </div>
     <div class="value-item">
-      <div class="value-label">原数据</div>
+      <div class="value-label">{{ $t('DataCollect.index.400152-11') }}</div>
       <div class="value">{{ value.hex || '--' }}</div>
     </div>
     <div class="value-item">
-      <div class="value-label">更新时间</div>
+      <div class="value-label">{{ $t('DataCollect.index.400152-12') }}</div>
       <div class="value">{{ value.timestamp ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : '--' }}</div>
     </div>
   </div>
@@ -19,6 +19,9 @@
 import {wsClient} from "@jetlinks-web/core";
 import dayjs from "dayjs";
 import ValueItem from "../components/ValueItem.vue";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const info = inject('point-info', ref({}))
 const refreshFn = inject('point-refresh')

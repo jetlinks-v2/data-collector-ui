@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open width="900px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -33,13 +33,15 @@
     </template>
     <a-spin :spinning="loading">
       <a-descriptions :column="4">
-        <a-descriptions-item label="通讯协议">{{ info.provider }}</a-descriptions-item>
-        <a-descriptions-item label="采集器ID">
+        <a-descriptions-item :label="$t('DataCollect.index.400155-33')">
+          <j-ellipsis>{{ info.provider }}</j-ellipsis>
+        </a-descriptions-item>
+        <a-descriptions-item :label="$t('DataCollect.index.400155-34')">
           <j-ellipsis>
             {{ info.id }}
           </j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item label="所属通道">
+        <a-descriptions-item :label="$t('DataCollect.index.400155-35')">
           <j-ellipsis>
             {{ info.channelName || '--' }}
           </j-ellipsis>
@@ -48,7 +50,7 @@
             item.total
           }}
         </a-descriptions-item>
-        <a-descriptions-item label="说明">
+        <a-descriptions-item :label="$t('DataCollect.index.400155-36')">
           <InputEditable
               :value="info.description"
               @change="(val) => onSave([{name: 'description', value: val}])"
@@ -76,7 +78,9 @@ import {
 } from "@data-collector-ui/views/data-collect/utils";
 import {detail} from "@data-collector-ui/api/data-collect/collector";
 import {omit, pick, set} from "lodash-es";
+import {useI18n} from "vue-i18n";
 
+const {t: $t} = useI18n();
 const props = defineProps({
   data: {
     type: Object,
@@ -98,15 +102,15 @@ provide('collector-info', info)
 const tabsList = [
   {
     key: 'Info',
-    tab: '详情'
+    tab: $t('DataCollect.index.400155-37')
   },
   {
     key: 'PointTemplate',
-    tab: '点位模板'
+    tab: $t('DataCollect.index.400155-38')
   },
   {
     key: 'CollectorLogs',
-    tab: '采集器日志'
+    tab: $t('DataCollect.index.400155-39')
   }
 ]
 

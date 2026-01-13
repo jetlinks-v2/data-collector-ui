@@ -1,5 +1,5 @@
 <template>
-  <Header title="死区数据统计" @change="onChange"/>
+  <Header :title="$t('DataCollect.index.400151-56')" @change="onChange"/>
   <div style="height: 300px;">
     <JEcharts v-if="deathAreaData?.length" :option="deathAreaOptions" />
     <j-empty v-else />
@@ -12,6 +12,9 @@ import { dashboard } from '@data-collector-ui/api/data-collect/dashboard'
 import { useRequest } from "@jetlinks-web/hooks";
 import { getParams } from '@data-collector-ui/views/data-collect/components/Detail/Echarts/tool';
 import { isNil } from 'lodash-es';
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const info = inject('point-info')
 
@@ -46,7 +49,7 @@ const deathAreaOptions = computed(() => {
     },
     series: [
       {
-        name: '数量',
+        name: $t('DataCollect.index.400151-57'),
         data: deathAreaData.value?.map(item => item.data?.value) || [],
         type: 'line',
         smooth: true

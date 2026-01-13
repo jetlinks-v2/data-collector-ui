@@ -38,6 +38,9 @@
 import {queryPointHistory} from "@data-collector-ui/api/data-collect/collector";
 import dayjs from "dayjs";
 import { isNil } from "lodash-es";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   time: {
@@ -47,7 +50,7 @@ const props = defineProps({
 })
 const columns = [
   {
-    title: '时间',
+    title: $t('DataCollect.index.400151-52'),
     dataIndex: 'timestamp',
     width: 200,
     search: {
@@ -56,18 +59,18 @@ const columns = [
     scopedSlots: true,
   },
   {
-    title: '点位值',
+    title: $t('DataCollect.index.400151-53'),
     dataIndex: 'value',
     ellipsis: true
   },
   {
-    title: '原始值',
+    title: $t('DataCollect.index.400151-54'),
     dataIndex: 'numberValue',
     ellipsis: true,
     scopedSlots: true
   },
   {
-    title: '操作',
+    title: $t('DataCollect.index.400151-55'),
     dataIndex: 'action',
     width: 100,
     scopedSlots: true,

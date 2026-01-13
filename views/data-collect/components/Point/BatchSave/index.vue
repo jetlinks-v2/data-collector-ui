@@ -16,7 +16,7 @@
         </div>
         <div>
           <a-button type="primary" :loading="saveLoading" @click="handleSave">
-            保存
+            {{ $t('DataCollect.index.400152-3') }}
           </a-button>
         </div>
       </div>
@@ -54,7 +54,7 @@ const handleSave = async () => {
     saveLoading.value = true
     savePointBatch(resp.map(item => omit(item, ['__dataIndex', '__serial', 'sames', 'id']))).then((r) => {
       if (r.success) {
-        onlyMessage('操作成功')
+        onlyMessage($t('DataCollect.index.400152-14'))
         menuStore.jumpPage('data-collect')
       }
     }).finally(() => {

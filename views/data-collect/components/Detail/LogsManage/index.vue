@@ -4,7 +4,7 @@
       <a-flex justify="space-between">
         <div class="console-controls">
           <a-select v-model:value="logLevel" @change="filterLogs" style="width: 100px;">
-            <a-select-option value="all">全部</a-select-option>
+            <a-select-option value="all">{{ $t('DataCollect.index.400155-45') }}</a-select-option>
             <a-select-option value="INFO">INFO</a-select-option>
             <a-select-option value="WARN">WARN</a-select-option>
             <a-select-option value="ERROR">ERROR</a-select-option>
@@ -12,7 +12,7 @@
           </a-select>
           <div class="search-container">
             <a-input-search
-              placeholder="搜索日志内容..."
+              :placeholder="$t('DataCollect.index.400155-41')"
               class="search-input"
               allowClear
               @search="handleSearch"
@@ -37,20 +37,20 @@
           <slot name="extra"></slot>
           <a-space>
             <j-permission-button :disabled="!logs.length" danger :popConfirm="{
-              title: '确认重置？',
+              title: $t('DataCollect.index.400156-27'),
               onConfirm: () => resetLogs()
             }">
               <AIcon type="ReloadOutlined"/>
-              重置
+              {{ $t('DataCollect.index.400156-28') }}
             </j-permission-button>
             <a-button type="primary" @click="pause">
               <template v-if="!isPaused">
                 <AIcon type="PauseCircleOutlined"/>
-                暂停
+                {{ $t('DataCollect.index.400156-29') }}
               </template>
               <template v-else>
                 <AIcon type="PlayCircleOutlined"/>
-                开始
+                {{ $t('DataCollect.index.400156-30') }}
               </template>
             </a-button>
           </a-space>
@@ -100,6 +100,9 @@
 <script setup>
 import dayjs from "dayjs";
 import { wsClient } from "@jetlinks-web/core";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const emit = defineEmits(["clear-logs"]);
 

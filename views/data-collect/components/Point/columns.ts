@@ -2,8 +2,8 @@ import i18n from '@jetlinks-web-core/locales';
 
 export const baseColumns = [
     {
-        title: '点位名称',
-        name: '点位名称(运行状态)',
+        title: i18n.global.t('DataCollect.columns.290651-0'),
+        name: i18n.global.t('DataCollect.columns.290651-1'),
         dataIndex: 'name',
         key: 'name',
         ellipsis: true,
@@ -15,17 +15,17 @@ export const baseColumns = [
         },
         sortsList: [
             {
-                text: '点位名称(升序)',
+                text: i18n.global.t('DataCollect.columns.290651-2'),
                 value: 'asc',
             },
             {
-                text: '点位名称(降序)',
+                text: i18n.global.t('DataCollect.columns.290651-3'),
                 value: 'desc',
             },
         ]
     },
     {
-        title: '点位值',
+        title: i18n.global.t('DataCollect.columns.290651-4'),
         dataIndex: 'value',
         key: 'value',
         ellipsis: true,
@@ -36,7 +36,7 @@ export const baseColumns = [
         maxWidth: 250,
     },
     {
-        title: '更新时间',
+        title: i18n.global.t('DataCollect.columns.290651-5'),
         dataIndex: 'updateTime',
         key: 'updateTime',
         scopedSlots: true,
@@ -47,24 +47,24 @@ export const baseColumns = [
         },
         sortsList: [
             {
-                text: '按更新时间倒序',
+                text: i18n.global.t('DataCollect.columns.290651-6'),
                 value: 'desc',
             },
             {
-                text: '按更新时间正序',
+                text: i18n.global.t('DataCollect.columns.290651-7'),
                 value: 'asc',
             },
         ]
     },
     {
-        title: '地址',
+        title: i18n.global.t('DataCollect.columns.290651-8'),
         dataIndex: 'address',
         key: 'address',
         scopedSlots: true,
         ellipsis: true,
     },
     {
-        title: '访问类型',
+        title: i18n.global.t('DataCollect.columns.290651-9'),
         dataIndex: 'accessModes',
         key: 'accessModes',
         scopedSlots: true,
@@ -72,7 +72,7 @@ export const baseColumns = [
         ellipsis: true,
     },
     {
-        title: '采集频率',
+        title: i18n.global.t('DataCollect.columns.290651-10'),
         dataIndex: 'interval',
         key: 'interval',
         scopedSlots: true,
@@ -80,11 +80,11 @@ export const baseColumns = [
         width: 100,
         sortsList: [
             {
-                text: '由高到低',
+                text: i18n.global.t('DataCollect.columns.290651-11'),
                 value: 'desc',
             },
             {
-                text: '由低到高',
+                text: i18n.global.t('DataCollect.columns.290651-12'),
                 value: 'asc',
             },
         ]

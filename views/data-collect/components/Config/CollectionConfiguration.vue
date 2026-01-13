@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="采集配置"
-      tip="设置访问类型,采集频率及数据推送等设置"
+      :title="$t('DataCollect.index.400156-15')"
+      :tip="$t('DataCollect.index.400156-16')"
       v-model:value="data"
       :showSwitch="showSwitch"
       @change="onSwitchChange"
@@ -10,7 +10,7 @@
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
-        <a-descriptions-item label="访问类型">
+        <a-descriptions-item :label="$t('DataCollect.index.400156-17')">
           <j-ellipsis>
             {{ _accessModes }}
           </j-ellipsis>
@@ -22,17 +22,17 @@
         </a-descriptions-item>
         <a-descriptions-item :label="$t('Save.SaveModBus.4001413-32')">
           <j-ellipsis>
-            {{ __features ? '是' : '否' }}
+            {{ __features ? $t('DataCollect.index.400156-18') : $t('DataCollect.index.400156-19') }}
           </j-ellipsis>
         </a-descriptions-item>
       </a-descriptions>
     </template>
     <a-row :gutter="24">
       <a-col :span="12">
-        <a-form-item label="访问类型" name="accessModes" :rules="[
+        <a-form-item :label="$t('DataCollect.index.400156-17')" name="accessModes" :rules="[
             {
               required: true,
-              message: '请选择',
+              message: $t('DataCollect.index.400156-20'),
             }
           ]"
         >
@@ -113,7 +113,7 @@ if (!('features' in formData)) {
 
 const data = ref(!props.showSwitch)
 
-// 记录初始值快照，用于检测变化
+// {$t('DataCollect.index.400156-5')}
 const initialSnapshot = ref(null)
 
 const _options = [
@@ -150,7 +150,7 @@ const _features = computed(() => {
 })
 
 const _accessModes = computed(() => {
-  return options.filter(item => (collector?.accessModes || []).includes(item.value)).map(item => item.label).join('、')
+  return options.value.filter(item => (collector?.accessModes || []).includes(item.value)).map(item => item.label).join($t('DataCollect.index.400156-21'))
 })
 
 const __features = computed(() => {
@@ -171,14 +171,14 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    // 检查值是否真正发生变化
+    // {$t('DataCollect.index.400156-6')}
     const currentValue = {
       accessModes: formData.accessModes,
       interval: formData.interval,
       features: formData.features
     }
 
-    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    // {$t('DataCollect.index.400156-7')}
     if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
       const arr = [
         {
@@ -195,7 +195,7 @@ const onOutsize = () => {
         }
       ]
       events?.onValueChange?.(arr)
-      // 更新快照
+      // {$t('DataCollect.index.400156-8')}
       initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
     }
   }
@@ -215,10 +215,10 @@ watch(() => formData.accessModes, () => {
   immediate: true
 })
 
-// 监听折叠板打开状态，打开时记录初始快照
+// {$t('DataCollect.index.400156-9')}
 watch(() => data.value, (newVal) => {
   if (newVal === true) {
-    // 折叠板打开时，记录当前值的快照
+    // {$t('DataCollect.index.400156-10')}
     initialSnapshot.value = JSON.parse(JSON.stringify({
       accessModes: formData.accessModes,
       interval: formData.interval,
@@ -226,7 +226,7 @@ watch(() => data.value, (newVal) => {
     }))
   }
 }, {
-  immediate: true  // 确保初始打开时也记录快照
+  immediate: true  // {$t('DataCollect.index.400156-13')}
 })
 </script>
 

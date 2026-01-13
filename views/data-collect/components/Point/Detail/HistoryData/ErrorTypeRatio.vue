@@ -1,5 +1,5 @@
 <template>
-  <Header title="异常类型占比" @change="onChange"/>
+  <Header :title="$t('DataCollect.index.400151-58')" @change="onChange"/>
   <div style="height: 300px;display: flex;align-items: center;justify-content: center;">
     <JEcharts v-if="errorTypeData?.length" :option="errorTypeOptions" />
     <j-empty v-else />
@@ -11,6 +11,9 @@ import Header from '../../../Detail/Echarts/Header.vue'
 import { dashboard } from '@data-collector-ui/api/data-collect/dashboard'
 import { useRequest } from "@jetlinks-web/hooks";
 import { getParams } from '@data-collector-ui/views/data-collect/components/Detail/Echarts/tool';
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const info = inject('point-info')
 
@@ -52,7 +55,7 @@ const errorTypeOptions = computed(() => {
         label: {
           show: true,
           position: 'center',
-          formatter: `{a|${errorTypeData.value?.reduce((pre, cur) => pre + cur.data.value.count, 0)}}\n{b|异常总数}`,
+          formatter: `{a|${errorTypeData.value?.reduce((pre, cur) => pre + cur.data.value.count, 0)}}\n{b|${$t('DataCollect.index.400151-59')}}`,
           rich: {
             a: {
               fontSize: 24,

@@ -1,5 +1,5 @@
 <template>
-  <a-input-search style="width: 50%;" :placeholder="'请输入名称'" @search="handleSearch"></a-input-search>
+  <a-input-search style="width: 50%;" :placeholder="$t('DataCollect.index.400151-0')" @search="handleSearch"></a-input-search>
   <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}"
        @click="handleChooseProvider(item.id)">
     <div style="width: 80px;height: 80px;">
@@ -9,7 +9,7 @@
       <p>
         {{ item.name }}
       </p>
-      <p>适用于支持{{ item.name }}通讯协议的设备</p>
+      <p>{{ $t('DataCollect.index.400151-1', [item.name]) }}</p>
     </div>
   </div>
   <div style="margin: 40% 0">
@@ -19,6 +19,9 @@
 
 <script setup lang="ts">
 import {PropType} from "vue";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   value: {

@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="点位死区"
-      tip="死区范围内的数据将被过滤（仅适用于数值类型）,减少抖动和冗余"
+      :title="$t('DataCollect.index.400154-15')"
+      :tip="$t('DataCollect.index.400154-16')"
       v-model:value="data"
       :show-switch="showSwitch"
       @change="onSwitchChange"
@@ -10,10 +10,10 @@
   >
     <template #extraTemplate v-if="_deadband.type">
       <a-descriptions :column="1">
-        <a-descriptions-item label="类型">
+        <a-descriptions-item :label="$t('DataCollect.index.400154-17')">
           <j-ellipsis>{{ _deadband?.type || '--' }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item label="值">
+        <a-descriptions-item :label="$t('DataCollect.index.400154-18')">
           <j-ellipsis>{{ _deadband?.range || '--' }}</j-ellipsis>
         </a-descriptions-item>
       </a-descriptions>
@@ -29,10 +29,10 @@
     >
       <div style="margin-bottom: 16px">
         <a-radio-group v-model:value="type" button-style="solid" @change="onRadioChange">
-          <a-radio-button value="currentValue">固定值</a-radio-button>
-          <a-radio-button value="this['currentValue'] - this['lastValue']">百分比</a-radio-button>
+          <a-radio-button value="currentValue">{{ $t('DataCollect.index.400155-0') }}</a-radio-button>
+          <a-radio-button value="this['currentValue'] - this['lastValue']">{{ $t('DataCollect.index.400155-1') }}</a-radio-button>
         </a-radio-group>
-        <a-tooltip title="最近一次采集到的值与上一次采集值比对，数值浮动在百分比以内时将被过滤">
+        <a-tooltip :title="$t('DataCollect.index.400155-2')">
           <AIcon type="QuestionCircleOutlined" style="margin-left: 12px"/>
         </a-tooltip>
       </div>
@@ -47,7 +47,7 @@
       <template v-else>
         <a-input-number
             addon-after="%"
-            placeholder="请输入值"
+            :placeholder="$t('DataCollect.index.400155-3')"
             :min="1"
             :max="65535"
             style="width: 50%"
@@ -55,7 +55,7 @@
             @change="onValueChange"
         />
 
-        <p>最近一次采集到的值与上一次采集值比对，数值浮动在百分比以内时将被过滤</p>
+        <p>{{ $t('DataCollect.index.400155-2') }}</p>
       </template>
     </a-form-item>
   </Collapsible>
@@ -68,6 +68,9 @@ import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-colle
 import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/hooks";
 import {omit, pick} from "lodash-es";
 import {isEqual} from "./data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   showSwitch: {
@@ -84,9 +87,9 @@ const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 
-let firstRender = true // 第一次渲染
+let firstRender = true // {$t('DataCollect.index.400156-4')}
 
-// 记录初始值快照，用于检测变化
+// {$t('DataCollect.index.400156-5')}
 const initialSnapshot = ref(null)
 
 if (!('managedConfiguration' in formData)) {
@@ -133,9 +136,9 @@ const _options = [
 const type = ref('currentValue')
 const options = ref([
   {
-    title: '死区点位值',
+    title: $t('DataCollect.index.400155-4'),
     key: 'currentValue',
-    fullName: '死区点位值',
+    fullName: $t('DataCollect.index.400155-4'),
     dataType: 'int',
     termTypes: _options
   }
@@ -161,15 +164,15 @@ const _deadband = computed(() => {
   if (__value?.[0]?.column === 'currentValue') {
     const _val = __value.map(i => {
       const _termType = _options.find(item => item.id === i.termType)?.name
-      return `死区点位值${_termType}${i.value}`
-    }).join('并且')
+      return `${$t('DataCollect.index.400155-4')}${_termType}${i.value}`
+    }).join($t('DataCollect.index.400156-14'))
     return {
-      type: '固定值',
+      type: $t('DataCollect.index.400155-0'),
       range: _val
     }
   }
   return {
-    type: __value?.[0]?.column === `this['currentValue'] - this['lastValue']` ? '百分比' : '',
+    type: __value?.[0]?.column === `this['currentValue'] - this['lastValue']` ? $t('DataCollect.index.400155-1') : '',
     range: `${__value?.[0]?.value}%`
   }
 })
@@ -188,7 +191,7 @@ const onSwitchChange = (val) => {
   formData.managedConfiguration.deadband.enabled = !!val
   formData.managedConfiguration.deadband.provider = "term"
   if (!val) {
-    // 初始化
+    // {$t('DataCollect.index.400156-11')}
     type.value = 'currentValue'
     percent.value = undefined
     terms.value = [
@@ -204,12 +207,12 @@ const onSwitchChange = (val) => {
 
 const onOutsize = () => {
   if (__type) {
-    // 检查值是否真正发生变化
+    // {$t('DataCollect.index.400156-6')}
     const currentValue = {
       deadband: formData.managedConfiguration.deadband
     }
 
-    // 如果没有初始快照或值发生了变化，才触发校验和传值
+    // {$t('DataCollect.index.400156-7')}
     if (!initialSnapshot.value || !isEqual(initialSnapshot.value, currentValue)) {
       const arr = [
         {
@@ -218,7 +221,7 @@ const onOutsize = () => {
         },
       ]
       events?.onValueChange?.(arr)
-      // 更新快照
+      // {$t('DataCollect.index.400156-8')}
       initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
     }
   }
@@ -229,7 +232,7 @@ const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) =>
     const value = _value.configuration || {};
     const __value = value.terms?.[0]?.terms?.[0];
     if (!(__value?.column && __value.termType && __value?.value != null)) {
-      return reject('请输入值');
+      return reject($t('DataCollect.index.400155-3'));
     }
   }
   return resolve("");
@@ -271,7 +274,7 @@ const onValueChange = () => {
 watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {
   if (firstRender && __type) {
     data.value = !!val
-    // 处理数据回显
+    // {$t('DataCollect.index.400156-12')}
     const _configuration = formData.managedConfiguration?.deadband?.configuration || {}
     const __value = _configuration.terms?.[0]?.terms?.[0];
     type.value = __value?.column || 'currentValue'
@@ -292,16 +295,16 @@ watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {
   immediate: true
 })
 
-// 监听折叠板打开状态,打开时记录初始快照
+// {$t('DataCollect.index.400156-9')}
 watch(() => data.value, (newVal) => {
   if (newVal === true) {
-    // 折叠板打开时，记录当前值的快照
+    // {$t('DataCollect.index.400156-10')}
     initialSnapshot.value = JSON.parse(JSON.stringify({
       deadband: formData.managedConfiguration.deadband
     }))
   }
 }, {
-  immediate: true  // 确保初始打开时也记录快照
+  immediate: true  // {$t('DataCollect.index.400156-13')}
 })
 </script>
 

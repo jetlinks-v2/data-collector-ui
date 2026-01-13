@@ -1,11 +1,11 @@
 <template>
   <div>
     <div class="header">
-      <TitleComponent data="关联设备"/>
+      <TitleComponent :data="$t('DataCollect.index.400152-0')"/>
       <a-space>
-        <a-button type="link" @click="addItem">新增</a-button>
-        <a-button @click="batchImportVisible = true">批量新增</a-button>
-        <a-button type="primary">保存</a-button>
+        <a-button type="link" @click="addItem">{{ $t('DataCollect.index.400152-1') }}</a-button>
+        <a-button @click="batchImportVisible = true">{{ $t('DataCollect.index.400152-2') }}</a-button>
+        <a-button type="primary">{{ $t('DataCollect.index.400152-3') }}</a-button>
       </a-space>
     </div>
     <j-edit-table
@@ -49,11 +49,11 @@
       v-if="batchImportVisible"
       @close="batchImportVisible = false"
       @save="handleBatchImport"
-      message="1. 若设备下不存在匹配的属性ID,则自动跳过该条数据 2. 若需自动创建物模型并与当前点位映射,请在上传文件前启用该选项,上传后再修改将无效"
+      :message="$t('DataCollect.index.400152-7')"
   >
     <template #content>
-      根据数采点位自动创建物模型
-      <a-tooltip title="若无对应物模型,则自动创建物模型并映射">
+      {{ $t('DataCollect.index.400152-8') }}
+      <a-tooltip :title="$t('DataCollect.index.400152-9')">
         <AIcon type="QuestionCircleOutlined"/>
       </a-tooltip>
       <a-switch style="margin-left: 12px"/>
@@ -70,17 +70,17 @@ const batchImportVisible = ref(false)
 
 const columns = [
   {
-    title: '关联设备ID',
+    title: $t('DataCollect.index.400152-4'),
     dataIndex: 'id',
     ellipsis: true,
   },
   {
-    title: '关联设备名称',
+    title: $t('DataCollect.index.400152-5'),
     dataIndex: 'name',
     ellipsis: true,
   },
   {
-    title: '关联属性',
+    title: $t('DataCollect.index.400152-6'),
     dataIndex: 'property',
     template: {
       components: 'a-input',

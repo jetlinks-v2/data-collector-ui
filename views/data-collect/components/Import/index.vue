@@ -1,5 +1,5 @@
 <template>
-  <a-modal open :title="title" :width="width" :mask-closable="false" @cancel="emits('close')">
+  <a-modal open :title="title || $t('DataCollect.index.400156-23')" :width="width" :mask-closable="false" @cancel="emits('close')">
     <slot name="alert">
       <div class="alert" v-if="message">
         <div>
@@ -10,7 +10,7 @@
     </slot>
     <slot name="content"></slot>
     <template v-if="showUpload">
-      <p>上传文件</p>
+      <p>{{ $t('DataCollect.index.400155-46') }}</p>
       <a-upload-dragger
           v-model:fileList="value"
           name="file"
@@ -23,8 +23,8 @@
       >
         <div class="draggable-box">
           <AIcon class="icon" type="PlusCircleFilled"/>
-          <span style="margin: 16px 0 8px 0">点击上传文件</span>
-          <span>格式：.xlsx, .csv</span>
+          <span style="margin: 16px 0 8px 0">{{ $t('DataCollect.index.400155-47') }}</span>
+          <span>{{ $t('DataCollect.index.400155-48') }}</span>
         </div>
       </a-upload-dragger>
       <div class="result" v-if="loading">
@@ -74,6 +74,7 @@ import {useI18n} from "vue-i18n";
 import { getUploadHeaders } from '@jetlinks-web-core/utils'
 import { Observable } from "rxjs";
 import { TOKEN_KEY } from "@jetlinks-web/constants";
+const {t: $t} = useI18n();
 
 const props = defineProps({
   beforeUpload: {
@@ -102,7 +103,7 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: '批量导入'
+    default: ''
   },
   showUpload: {
     type: Boolean,
@@ -111,7 +112,6 @@ const props = defineProps({
 })
 const emits = defineEmits(['close', 'save'])
 
-const {t: $t} = useI18n();
 const value = ref()
 const loading = ref(false)
 const result = reactive({
@@ -236,7 +236,7 @@ const beforeUpload = (_file, fileList) => {
   const isCsv = _file.type === 'text/csv';
   const isXlsx = _file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   if (!isCsv && !isXlsx) {
-    onlyMessage('请上传.xlsx或.csv格式文件', 'warning');
+    onlyMessage($t('DataCollect.index.400156-24'), 'warning');
     return
   }
   const formData = new FormData();
@@ -258,7 +258,7 @@ const downTemplate = async (type) => {
   if (resp) {
     const blob = new Blob([resp], {type: type});
     const url = URL.createObjectURL(blob);
-    downloadFileByUrl(url, props.templateName || '导入模板', type);
+    downloadFileByUrl(url, props.templateName || $t('DataCollect.index.400156-25'), type);
   }
 };
 </script>

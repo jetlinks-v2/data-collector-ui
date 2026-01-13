@@ -15,7 +15,7 @@
         allow-clear
         v-model:value="searchValue"
         class="search-input"
-        placeholder="请输入搜索内容"
+        :placeholder="$t('DataCollect.index.400150-10')"
         @blur="handleSearchBlur"
         @keyup.enter="handleSearchEnter"
       >
@@ -29,6 +29,9 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch } from 'vue';
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 interface Props {
   modelValue?: string;

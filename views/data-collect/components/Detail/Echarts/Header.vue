@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <div>{{ title }}</div>
+    <div>{{ title || $t('DataCollect.index.400156-31') }}</div>
     <div v-if="showTimeSelect">
       <JDashboardTimeSelect
           key="flow-static"
@@ -24,7 +24,7 @@ const {t: $t} = useI18n();
 const props = defineProps({
   title: {
     type: String,
-    default: '点位历史数据'
+    default: ''
   },
   showTimeSelect: {
     type: Boolean,

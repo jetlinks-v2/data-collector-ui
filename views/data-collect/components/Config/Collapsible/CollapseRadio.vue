@@ -29,6 +29,9 @@
 
 <script setup>
 import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   value: {
@@ -45,17 +48,17 @@ const type = inject(DATA_COLLECTOR_SAVE_TYPE)
 const list = computed(() => {
   const arr = [
     {
-      label: '开',
+      label: $t('DataCollect.index.400154-19'),
       value: true,
     },
     {
-      label: '关',
+      label: $t('DataCollect.index.400154-20'),
       value: false,
     }
   ]
   if (props.showExtra) {
     arr.push({
-      label: '复用模板',
+      label: $t('DataCollect.index.400154-21'),
       value: 'template'
     })
   }

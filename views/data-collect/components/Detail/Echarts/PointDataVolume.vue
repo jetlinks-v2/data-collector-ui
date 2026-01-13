@@ -1,6 +1,6 @@
 <template>
   <a-spin :spinning="loading">
-    <Header title="点位数据量" @change="onChange"/>
+    <Header :title="$t('components.Card.772454-0')" @change="onChange"/>
     <div style="height: 300px">
       <JEcharts :option="dataOptions"/>
     </div>

@@ -1,7 +1,7 @@
 <template>
-  <a-modal open title="表格列配置" width="800px" @cancel="emits('close')" @ok="onSave">
-    <p>请选择需要在表格中显示的数据列</p>
-    <TitleComponent data="基本信息">
+  <a-modal open :title="$t('DataCollect.index.400151-23')" width="800px" @cancel="emits('close')" @ok="onSave">
+    <p>{{ $t('DataCollect.index.400151-24') }}</p>
+    <TitleComponent :data="$t('DataCollect.index.400151-25')">
       <template #extra>
         <a-checkbox style="margin-left: 20px" v-model:checked="state.checkAll" :indeterminate="state.indeterminate"
                     @change="onCheckAllChange"/>
@@ -42,6 +42,9 @@ import {baseColumns} from './columns';
 import {map} from "lodash-es";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   data: {

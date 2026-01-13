@@ -1,7 +1,7 @@
 <template>
   <Collapsible
-      title="存储配置"
-      tip="配置点位数据存储类型"
+      :title="$t('DataCollect.index.400154-8')"
+      :tip="$t('DataCollect.index.400154-9')"
       v-model:value="data"
       :show-switch="showSwitch"
       @change="onSwitchChange"
@@ -12,7 +12,7 @@
       <a-descriptions :column="1">
         <a-descriptions-item :label="item.label" v-for="item in list" :key="item.value">
           <j-ellipsis>
-            {{ collector?.features?.includes(item.value) ? '是' : '否' }}
+            {{ collector?.features?.includes(item.value) ? $t('DataCollect.index.400154-0') : $t('DataCollect.index.400154-1') }}
           </j-ellipsis>
         </a-descriptions-item>
       </a-descriptions>
@@ -33,6 +33,9 @@ import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {isEqual} from "./data";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   showSwitch: {
@@ -54,19 +57,19 @@ const initialSnapshot = ref(null)
 
 const list = [
   {
-    label: '存储点位数据',
+    label: $t('DataCollect.index.400154-2'),
     value: 'storageData',
-    describe: '将采集到的点位数据保存到平台'
+    describe: $t('DataCollect.index.400154-3')
   },
   {
-    label: '存储异常数据',
+    label: $t('DataCollect.index.400154-4'),
     value: 'storageOutlier',
-    describe: '将异常数据上报平台并存储'
+    describe: $t('DataCollect.index.400154-5')
   },
   {
-    label: '存储死区数据',
+    label: $t('DataCollect.index.400154-6'),
     value: 'storageDeadband',
-    describe: '将死区数据上报平台并存储'
+    describe: $t('DataCollect.index.400154-7')
   }
 ]
 

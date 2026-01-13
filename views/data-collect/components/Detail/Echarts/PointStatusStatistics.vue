@@ -1,6 +1,6 @@
 <template>
   <a-spin :spinning="loading">
-    <Header title="点位实时状态统计" :showTimeSelect="false" />
+    <Header :title="$t('DataCollect.index.400155-42')" :showTimeSelect="false" />
     <div style="height: 300px">
       <JEcharts :option="pointStatusOptions" />
     </div>
@@ -11,6 +11,9 @@
 import Header from "./Header.vue";
 import { queryPointCount } from "@data-collector-ui/api/data-collect/collector";
 import { useRequest } from "@jetlinks-web/hooks";
+import {useI18n} from "vue-i18n";
+
+const {t: $t} = useI18n();
 
 const info = inject('collector-info', ref({}))
 const { data: runningCount, run: runRunningCount } = useRequest(queryPointCount, {
@@ -64,7 +67,7 @@ const pointStatusOptions = computed(() => {
     },
     series: [
       {
-        name: '点位状态',
+        name: $t('DataCollect.index.400156-26'),
         type: 'pie',
         radius: ['55%', '75%'],
         center: ['30%', '50%'],
@@ -79,14 +82,14 @@ const pointStatusOptions = computed(() => {
         data: [
           {
             value: runningCount.value || 0,
-            name: '运行中',
+            name: $t('DataCollect.index.400150-8'),
             itemStyle: {
               color: '#2196F3'
             }
           },
           {
             value: stoppedCount.value || 0,
-            name: '已停止',
+            name: $t('DataCollect.index.400150-9'),
             itemStyle: {
               color: '#F44336'
             }
