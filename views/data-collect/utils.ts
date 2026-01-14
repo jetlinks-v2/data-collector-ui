@@ -13,29 +13,29 @@ import {queryCount} from "@data-collector-ui/api/data-collect/dashboard";
 
 export const getChannelActions = (data: Partial<Record<string, any>>, onAction: (id: string, data: Partial<Record<string, any>>) => void): any[] => {
     const state = data.state?.value;
-    const stateText = state === "enabled" ? "禁用" : "启用";
+    const stateText = state === "enabled" ? i18n.global.t('Channel.index.290640-7') : i18n.global.t('Channel.index.290640-12');
     return [
         {
-            text: "新增采集器",
+            text: i18n.global.t('DataCollect.index.400151-3'),
             icon: "PlusCircleOutlined",
             key: "add-collector",
             disabled: state === "disabled",
             tooltip: {
                 title:
                     state === "disabled"
-                        ? "请先启用通道，再新增采集器"
-                        : "新增采集器",
+                        ? i18n.global.t('DataCollect.utils.400158-0')
+                        : i18n.global.t('DataCollect.index.400151-3'),
             },
             onClick: () => {
                 onAction('add-collector', data);
             },
         },
         {
-            text: "编辑",
+            text: i18n.global.t('Channel.index.290640-13'),
             icon: "EditOutlined",
             key: "update",
             tooltip: {
-                title: "编辑",
+                title: i18n.global.t('Channel.index.290640-13'),
             },
             onClick: () => {
                 onAction('update', data);
@@ -49,35 +49,35 @@ export const getChannelActions = (data: Partial<Record<string, any>>, onAction: 
                 title: stateText,
             },
             popConfirm: {
-                title: `确认${stateText}`,
+                title: `${i18n.global.t('Channel.index.290640-14', [stateText])}`,
                 onConfirm: async () => {
                     const res = await updateChannel(data.id, updateStatus[state]);
                     if (res.success) {
-                        onlyMessage("操作成功", "success");
+                        onlyMessage(i18n.global.t('DataCollect.index.400150-28'), "success");
                         onAction('action', data);
                     }
                 },
             },
         },
         {
-            text: "删除",
+            text: i18n.global.t('Channel.index.290640-16'),
             icon: "DeleteOutlined",
             key: "delete",
             tooltip: {
                 title:
                     state === "enabled"
-                        ? "请先禁用该通道，再删除。"
-                        : "删除",
+                        ? i18n.global.t('Channel.index.290640-17')
+                        : i18n.global.t('Channel.index.290640-16'),
             },
             danger: true,
             disabled: data?.state?.value !== "disabled",
             popConfirm: {
                 placement: "topRight",
-                title: "该操作将会删除下属采集器与点位，确定删除?",
+                title: i18n.global.t('Channel.index.290640-18'),
                 onConfirm: async () => {
                     const response = await removeChannel(data.id);
                     if (response.success) {
-                        onlyMessage("操作成功", "success");
+                        onlyMessage(i18n.global.t('DataCollect.index.400150-28'), "success");
                         onAction('delete', data);
                     }
                 },
@@ -91,11 +91,11 @@ export const getCollectorActions = (data: Partial<Record<string, any>>, onAction
     const runningState = data.runningState?.value;
     const stateText =
         state === "enabled"
-            ? "禁用"
-            : "启用";
+            ? i18n.global.t('Channel.index.290640-7')
+            : i18n.global.t('Channel.index.290640-12');
     return [
         {
-            text: "编辑",
+            text: i18n.global.t('Channel.index.290640-13'),
             icon: "EditOutlined",
             key: "update",
             onClick: () => {
@@ -115,34 +115,34 @@ export const getCollectorActions = (data: Partial<Record<string, any>>, onAction
                 title: stateText
             },
             popConfirm: {
-                title: `确认${stateText}`,
+                title: `${i18n.global.t('Channel.index.290640-14', [stateText])}`,
                 onConfirm: async () => {
                     const res = await updateCollector(data.id, {
                         state: state !== 'disabled' ? 'disabled' : 'enabled',
                         runningState: state !== 'disabled' ? 'stopped' : 'running',
                     });
                     if (res.success) {
-                        onlyMessage("操作成功", "success");
+                        onlyMessage(i18n.global.t('DataCollect.index.400150-28'), "success");
                         onAction('action', data);
                     }
                 },
             },
         },
         {
-            text: "删除",
+            text: i18n.global.t('Channel.index.290640-16'),
             icon: "DeleteOutlined",
             key: "delete",
             tooltip: {
                 title:
                     state === "enabled"
-                        ? "请先禁用，再删除"
-                        : "删除",
+                        ? i18n.global.t('Tree.index.4001410-7')
+                        : i18n.global.t('Channel.index.290640-16'),
             },
             danger: true,
             disabled: state !== 'disabled',
             popConfirm: {
                 placement: "topRight",
-                title: "该操作将会删除下属点位，确定删除？",
+                title: i18n.global.t('Tree.index.4001410-9'),
                 onConfirm: async () => {
                     const response = await removeCollector(data.id);
                     if (response.success) {
@@ -157,16 +157,16 @@ export const getCollectorActions = (data: Partial<Record<string, any>>, onAction
 export const getPointActions = (data: Partial<Record<string, any>>, onAction: (id: string, data: Partial<Record<string, any>>) => void): any[] => {
     return [
         {
-            text: "删除",
+            text: i18n.global.t('Channel.index.290640-16'),
             icon: "DeleteOutlined",
             key: "delete",
             tooltip: {
-                title: "删除",
+                title: i18n.global.t('Channel.index.290640-16'),
             },
             danger: true,
             popConfirm: {
                 placement: "topRight",
-                title: "确定删除？",
+                title: i18n.global.t('DataCollect.utils.400158-2'),
                 onConfirm: async () => {
                     const response = await removePoint(data.id);
                     if (response.success) {
@@ -183,21 +183,21 @@ export const CollectorTypeList = [
     {
         type: 'channel',
         title: i18n.global.t('Dashboard.tool.772451-0'),
-        text: '通道数量',
+        text: i18n.global.t('Dashboard.tool.772451-1'),
         value: 0,
         total: 0,
     },
     {
         type: 'collector',
         title: i18n.global.t('Dashboard.tool.772451-2'),
-        text: '采集器数量',
+        text: i18n.global.t('Dashboard.tool.772451-3'),
         value: 0,
         total: 0,
     },
     {
         type: 'point',
         title: i18n.global.t('Dashboard.tool.772451-4'),
-        text: '点位数量',
+        text: i18n.global.t('DataCollect.utils.400158-1'),
         value: 0,
         total: 0,
     }
@@ -256,7 +256,7 @@ export const getCountList = async (_type, id, flag) => {
 export const onChannelSave = async (id: string, data: any, onRefresh) => {
     const res = await updateChannel(id, {id, ...data});
     if (res.success) {
-        onlyMessage("操作成功");
+        onlyMessage(i18n.global.t('DataCollect.index.400150-28'));
         onRefresh?.()
     }
 }
@@ -264,7 +264,7 @@ export const onChannelSave = async (id: string, data: any, onRefresh) => {
 export const onCollectorSave = async (id: string, data: any, onRefresh) => {
     const res = await updateCollector(id, {id, ...data});
     if (res.success) {
-        onlyMessage("操作成功");
+        onlyMessage(i18n.global.t('DataCollect.index.400150-28'));
         onRefresh?.()
     }
 }
@@ -272,7 +272,7 @@ export const onCollectorSave = async (id: string, data: any, onRefresh) => {
 export const onPointSave = async (id: string, data: any, onRefresh) => {
     const res = await updatePoint(id, {id, ...data});
     if (res.success) {
-        onlyMessage("操作成功");
+        onlyMessage(i18n.global.t('DataCollect.index.400150-28'));
         onRefresh?.()
     }
 }

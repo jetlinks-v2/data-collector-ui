@@ -30,39 +30,39 @@
       <div class="result" v-if="loading">
         <div v-if="result.loading">
           <a-spin size="small" style="margin-right: 10px"/>
-          正在导入
+          {{ $t('Import.index.400157-0') }}
         </div>
         <div v-else>
           <AIcon style="color: #08e21e; margin-right: 10px;font-size: 16px;" type="CheckCircleOutlined"/>
-          导入完成
+          {{ $t('Import.index.400157-1') }}
         </div>
-        <div>导入成功：{{ result.success }}</div>
+        <div>{{ $t('Import.index.400157-2', [result.success]) }}</div>
         <div>
-          导入失败：<span style="color: #ff595e">{{ result.error }}</span>
+          {{ $t('Import.index.400157-3', [result.error]) }}<span style="color: #ff595e"></span>
           <a
               v-if="result.errMessage && result.error > 0"
               style="margin-left: 20px"
               @click="downError"
           >
-            下载
+            {{ $t('Import.index.400157-4') }}
           </a>
         </div>
       </div>
       <div class="file-download" v-if="downloadUrlBuilder">
-        <p>下载模板</p>
+        <p>{{ $t('Import.index.400157-5') }}</p>
         <a-space>
           <a-button :loading="templateLoading" ghost type="primary" @click="downTemplate('xlsx')">
-            模板格式.xlsx
+            {{ $t('Import.index.400157-6') }}
           </a-button>
           <a-button :loading="templateLoading" ghost type="primary" @click="downTemplate('csv')">
-            模板格式.csv
+            {{ $t('Import.index.400157-7') }}
           </a-button>
         </a-space>
       </div>
     </template>
 
     <template #footer>
-      <a-button :loading="result.loading" @click="emits('close')">关闭</a-button>
+      <a-button :loading="result.loading" @click="emits('close')">{{ $t('Import.index.400157-8') }}</a-button>
     </template>
   </a-modal>
 </template>
