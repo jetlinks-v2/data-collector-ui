@@ -1178,7 +1178,7 @@
   "DataCollect.utils.400158-1": "Point Count",
   "DataCollect.utils.400158-2": "Confirm deletion?",
   "DataCollect.columns.290651-0": "Point Name",
-  "DataCollect.columns.290651-1": "Column Name",
+  "DataCollect.columns.290651-1": "Column Name(running)",
   "DataCollect.columns.290651-2": "Ascending",
   "DataCollect.columns.290651-3": "Descending",
   "DataCollect.columns.290651-4": "Value",

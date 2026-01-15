@@ -1,5 +1,5 @@
 <template>
-  <a-input-search style="width: 50%;" :placeholder="$t('DataCollect.index.400151-0')" @search="handleSearch"></a-input-search>
+  <a-input-search style="width: 50%;" allow-clear :placeholder="$t('DataCollect.index.400151-0')" @search="handleSearch"></a-input-search>
   <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}"
        @click="handleChooseProvider(item.id)">
     <div style="width: 80px;height: 80px;">

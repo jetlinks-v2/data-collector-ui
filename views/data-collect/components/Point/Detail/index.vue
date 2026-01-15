@@ -79,7 +79,7 @@ const props = defineProps({
     default: () => ({})
   },
 })
-const emits = defineEmits(['close'])
+const emits = defineEmits(['close', 'refresh'])
 const info = ref(props.data)
 const loading = ref(false)
 const activeKey = ref('Info')
@@ -145,6 +145,7 @@ const onSave = (arr) => {
   })
   onPointSave(info.value.id, params, () => {
     handleSearch(info.value.id)
+    emits('refresh')
   })
 }
 
@@ -155,6 +156,7 @@ const onSaveData = (data) => {
   }
   onPointSave(info.value.id, params, () => {
     handleSearch(info.value.id)
+    emits('refresh')
   })
 }
 

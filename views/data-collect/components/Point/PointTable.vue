@@ -143,6 +143,9 @@
       <template #address="slotProps">
         {{ slotProps.metadata?.address || '--' }}
       </template>
+      <template #description="slotProps">
+        <j-ellipsis style="max-width: 200px;white-space: normal;">{{ slotProps.description || '--' }}</j-ellipsis>
+      </template>
     </j-pro-table>
   </div>
   <ColumnsConfig
@@ -164,7 +167,7 @@
       :data="current"
       :collector="data"
       @close="visible.viewPoint = false"
-      @refresh="onRefresh"
+      @refresh="onDetailRefresh"
   />
   <Import
       v-if="visible.import"
@@ -388,6 +391,10 @@ const onRefresh = (flag = false) => {
     isCheck.value = false
     _selectedRowKeys.value = []
   }
+  refreshHandler?.refreshAll?.()
+}
+
+const onDetailRefresh = () => {
   refreshHandler?.refreshAll?.()
 }
 

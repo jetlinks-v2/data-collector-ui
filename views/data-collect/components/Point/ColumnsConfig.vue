@@ -26,8 +26,8 @@
       <div>
         <a-checkbox-group v-model:value="_state.checkedList">
           <a-row :gutter="[24, 24]">
-            <a-col :span="_span" v-for="item in extraPointColumns" :key="item.dataIndex">
-              <a-checkbox :value="item.dataIndex">{{ item.title }}</a-checkbox>
+            <a-col :span="_span" v-for="item in extraPointColumns" :key="item.key">
+              <a-checkbox :value="item.key">{{ item.title }}</a-checkbox>
             </a-col>
           </a-row>
         </a-checkbox-group>
@@ -153,7 +153,7 @@ const initBaseColumns = () => {
 const initExtraColumns = () => {
   if (!props.data?.length || !extraPointColumns.value?.length) return
   const arr = props.data.map(i => i.key || i.dataIndex)
-  const _obj = getData(map(extraPointColumns.value, 'dataIndex'), arr)
+  const _obj = getData(map(extraPointColumns.value, 'key'), arr)
   Object.assign(_state, _obj)
 }
 

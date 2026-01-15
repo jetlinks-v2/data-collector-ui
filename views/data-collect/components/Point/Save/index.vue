@@ -146,7 +146,7 @@ provide('point-metadata-events', {
 })
 
 const onChange = async (provider) => {
-  jsonData.value = await devGetProtocol(provider || 'MODBUS_TCP', "point");
+  jsonData.value = await devGetProtocol(provider || 'modbus_tcp', "point");
 };
 
 const onSubmit = async (flag) => {
