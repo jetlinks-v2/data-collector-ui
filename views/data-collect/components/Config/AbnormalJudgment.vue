@@ -87,10 +87,12 @@ if (!('managedConfiguration' in formData)) {
       enabled: false
     },
     deadband: {
-      enabled: false
+      enabled: false,
     },
     handler: {
-      enabled: false
+      enabled: false,
+      configuration: {},
+      "provider": "range",
     },
   }
 }
@@ -98,7 +100,7 @@ if (!('managedConfiguration' in formData)) {
 if (!('outlier' in formData.managedConfiguration)) {
   formData.managedConfiguration.outlier = {
     enabled: false,
-    provider: undefined,
+    "provider": "range",
     configuration: {},
   }
 }
@@ -146,6 +148,7 @@ const onSwitchChange = (val) => {
     outlier: {
       ...formData.managedConfiguration.outlier,
       enabled: !!val,
+      "provider": "range",
       configuration: {
         ...formData.managedConfiguration.outlier.configuration,
         min: val === 'template' ? collector?.managedConfiguration?.outlier?.configuration?.min : undefined,

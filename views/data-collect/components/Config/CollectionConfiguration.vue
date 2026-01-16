@@ -132,7 +132,6 @@ const _options = [
 ]
 
 const options = computed(() => {
-  console.log(__configuration.value, '__configuration.value')
   const _dt = map(__configuration.value?.accessModes || [], 'value')
   return _options.map(i => {
     return {

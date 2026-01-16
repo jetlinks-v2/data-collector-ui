@@ -64,6 +64,7 @@ import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {getCollectorError} from "@data-collector-ui/api/data-collect/collector";
 import {isEqual} from "./data";
+import {useI18n} from "vue-i18n";
 
 const props = defineProps({
   showSwitch: {
@@ -71,6 +72,7 @@ const props = defineProps({
     default: true
   }
 })
+const {t: $t} = useI18n();
 const data = ref(!props.showSwitch)
 
 const formData = inject('plugin-form', reactive({}))

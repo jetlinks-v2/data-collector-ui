@@ -1,5 +1,6 @@
 <template>
-  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="800" @close="emit('close')">
+  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="800"
+            @close="emit('close')">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -45,7 +46,7 @@
               <div style="color: #999;font-size: 12px">{{ $t('DataCollect.index.400151-7') }}</div>
             </template>
           </TitleComponent>
-          <!--          <DataParsing :showSwitch="false"/>-->
+          <DataParsing :showSwitch="false"/>
           <CollectionConfiguration :showSwitch="false"/>
           <DataConversion/>
           <AbnormalJudgment/>
@@ -65,8 +66,14 @@
       </div>
       <div style="padding-top: 24px;">
         <a-space>
-          <a-button type="primary" @click="handleOk(false)" :loading="loading">{{ $t('DataCollect.index.400151-8') }}</a-button>
-          <a-button v-if="!data?.id" @click="handleOk(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
+          <a-button type="primary" @click="handleOk(false)" :loading="loading">{{
+              $t('DataCollect.index.400151-8')
+            }}
+          </a-button>
+          <a-button v-if="!data?.id" @click="handleOk(true)" :loading="loading">{{
+              $t('DataCollect.index.400151-9')
+            }}
+          </a-button>
           <a-button @click="emit('close')">{{ $t('DataCollect.index.400151-10') }}</a-button>
         </a-space>
       </div>
@@ -92,6 +99,10 @@ import {cloneDeep, omit, pick} from "lodash-es";
 import {save, update} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
+import {
+  getCollectorTemplate,
+  setCollectorTemplate
+} from "@data-collector-ui/views/data-collect/Left/SaveCollector/data";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -204,11 +215,14 @@ const handleOk = async (flag) => {
       loading.value = false;
       if (response.success) {
         onlyMessage($t('DataCollect.index.400151-11'))
+        if (!props.data.id && props.channel?.id && response.result.id) {
+          setCollectorTemplate(props.channel?.id, params)
+        }
         if (flag) {
           // formData.configuration = {}
           formData.name = undefined
           formData.id = undefined
-          formData.description = undefined
+          // formData.description = undefined
         } else {
           emit('save');
         }
@@ -219,22 +233,25 @@ const handleOk = async (flag) => {
   }
 };
 
-watch(() => props.channel, () => {
-  if (props.channel.id) {
-    formData.channelId = props.channel.id
-    formData.channelName = props.channel.name
-    formData.provider = props.channel.provider
-    onChange(props.channel)
-  }
-}, {
-  immediate: true,
-  deep: true
-})
-
-watch(() => props.data, (val) => {
-  if (val.id) {
-    Object.assign(formData, val)
-    const _template = val.configuration?.template || {}
+watch(() => [props.channel, props.data], ([val, val1]) => {
+  if (!val1.id) {
+    const obj = getCollectorTemplate(val?.id)
+    if (obj) {
+      Object.assign(formData, obj)
+      const _template = obj.configuration?.template || {}
+      defaultKeys.forEach(i => { // 转换模板中的数据
+        formData[i] = _template[i]
+      })
+      formData.name = undefined
+    } else {
+      formData.channelId = props.channel.id
+      formData.channelName = props.channel.name
+      formData.provider = props.channel.provider
+    }
+    onChange(val)
+  } else {
+    Object.assign(formData, val1)
+    const _template = val1.configuration?.template || {}
     defaultKeys.forEach(i => { // 转换模板中的数据
       formData[i] = _template[i]
     })

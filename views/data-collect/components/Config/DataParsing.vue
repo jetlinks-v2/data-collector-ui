@@ -79,6 +79,7 @@ let firstRender = true
 const initialSnapshot = ref(null)
 
 if (!('managedConfiguration' in formData)) {
+  debugger
   formData.managedConfiguration = {
     byteLayout: undefined,
     codec: undefined,
@@ -148,7 +149,7 @@ const showExtra = computed(() => {
 
 const _dataTypeOptions = computed(() => {
   const supportCodecs = __configuration.value?.supportCodecs || []
-  return dataTypeOptions.value.filter(i => supportCodecs.includes(i.value))
+  return dataTypeOptions.value.filter(i => supportCodecs.length === 0 || supportCodecs.includes(i.value))
 })
 
 const onSwitchChange = (val) => {
@@ -211,8 +212,8 @@ watch(() => data.value, (newVal) => {
   if (newVal === true) {
     // 折叠板打开时，记录当前值的快照
     initialSnapshot.value = JSON.parse(JSON.stringify({
-      codec: formData.managedConfiguration.codec,
-      byteLayout: formData.managedConfiguration.byteLayout
+      codec: formData?.managedConfiguration?.codec,
+      byteLayout: formData?.managedConfiguration?.byteLayout
     }))
   }
 }, {
