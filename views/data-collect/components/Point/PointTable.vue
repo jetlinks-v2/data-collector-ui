@@ -30,12 +30,6 @@
                 : false
         "
     >
-      <!--            <template-->
-      <!--                v-for="item in _columns"-->
-      <!--                :key="item.dataIndex"-->
-      <!--                v-slot:[item.dataIndex]="{ record, index }"-->
-      <!--            >-->
-      <!--            </template>-->
       <template #headerCell="{ column }">
         <template v-if="['name', 'updateTime', 'interval'].includes(column.key)">
           <div class="header-cell-title">
@@ -54,42 +48,44 @@
         </template>
       </template>
       <template #headerLeftRender>
-        <a-space v-if="type === 'collector' && data.id">
-          <j-permission-button
-              v-if="pointActions.add"
-              type="primary"
-              @click="handleAdd"
-              :hasPermission="true"
-          >
-            <template #icon
+        <a-space>
+          <template v-if="type === 'collector' && data.id">
+            <j-permission-button
+                v-if="pointActions.add"
+                type="primary"
+                @click="handleAdd"
+                :hasPermission="true"
             >
-              <AIcon type="PlusOutlined"
-              />
-            </template>
-            {{ $t('Point.index.400149-0') }}
-          </j-permission-button>
-          <j-permission-button
-              v-if="pointActions.batchAdd"
-              type="primary"
-              @click="handleBatchAdd"
-              :hasPermission="true"
-          >
-            {{ $t('DataCollect.index.400151-12') }}
-          </j-permission-button>
-          <j-permission-button
-              type="primary"
-              @click="handleImport"
-              :hasPermission="true"
-          >
-            {{ $t('Point.index.400149-2') }}
-          </j-permission-button>
-          <j-permission-button
-              type="primary"
-              @click="handleExport"
-              :hasPermission="true"
-          >
-            {{ $t('Point.index.400149-3') }}
-          </j-permission-button>
+              <template #icon
+              >
+                <AIcon type="PlusOutlined"
+                />
+              </template>
+              {{ $t('Point.index.400149-0') }}
+            </j-permission-button>
+            <j-permission-button
+                v-if="pointActions.batchAdd"
+                type="primary"
+                @click="handleBatchAdd"
+                :hasPermission="true"
+            >
+              {{ $t('DataCollect.index.400151-12') }}
+            </j-permission-button>
+            <j-permission-button
+                type="primary"
+                @click="handleImport"
+                :hasPermission="true"
+            >
+              {{ $t('Point.index.400149-2') }}
+            </j-permission-button>
+            <j-permission-button
+                type="primary"
+                @click="handleExport"
+                :hasPermission="true"
+            >
+              {{ $t('Point.index.400149-3') }}
+            </j-permission-button>
+          </template>
           <BatchDropdown
               ref="batchRef"
               v-model:isCheck="isCheck"
@@ -105,7 +101,7 @@
             <AIcon type="SearchOutlined"/>
             {{ showSearch ? $t('DataCollect.index.400151-14') : $t('DataCollect.index.400151-15') }}
           </a-button>
-          <a-button @click="columnsConfig.visible = true" v-if="type === 'collector'">
+          <a-button @click="columnsConfig.visible = true">
             <AIcon type="SettingOutlined"/>
             {{ $t('DataCollect.index.400151-16') }}
           </a-button>
@@ -117,7 +113,7 @@
           <div class="name" @click="handleView(slotProps)">
             <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
           </div>
-          <div style="width: 110px">
+          <div style="width: 80px">
             <j-badge-status
                 :status="slotProps?.runningState?.value"
                 :text="slotProps?.runningState?.text"
@@ -150,7 +146,7 @@
   </div>
   <ColumnsConfig
       :data="columnsConfig.data"
-      :collector="data"
+      :collectorData="data"
       v-if="columnsConfig.visible"
       @save="onSaveColumnsConfig"
       @close="columnsConfig.visible = false"
@@ -196,7 +192,7 @@ import {
   pointImport
 } from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
-import ColumnsConfig from "./ColumnsConfig.vue";
+import ColumnsConfig from "./ColumnsConfig/index.vue";
 import {baseColumns} from "./columns";
 import {downloadFileByUrl, onlyMessage, randomString} from "@jetlinks-web/utils";
 import {
@@ -241,6 +237,7 @@ const menuStore = useMenuStore();
 const data = inject(COLLECTOR_DATA, ref({}))
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const pointType = inject('point-type', ref())
+const batchRef = ref()
 const filterValue = inject('filter-value', reactive({
   channel: false,
   collector: false,
@@ -388,7 +385,7 @@ const onRefresh = (flag = false) => {
   visible.import = false
   visible.save = false
   if (flag) {
-    isCheck.value = false
+    batchRef.value?.reload?.()
     _selectedRowKeys.value = []
   }
   refreshHandler?.refreshAll?.()
@@ -597,11 +594,11 @@ const handleExport = async () => {
       data.value?.provider === 'COLLECTOR_GATEWAY'
           ? data.value?.configuration?.collectorProvider
           : data.value?.provider;
-  const res = await exportPoint(data.value.collectorId, params);
+  const res = await exportPoint(data.value.id, params);
   if (res) {
     const blob = new Blob([res], {type: 'xlsx'});
     const url = URL.createObjectURL(blob);
-    downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.channelName]), 'xlsx');
+    downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.name]), 'xlsx');
   }
 };
 
@@ -609,6 +606,12 @@ const handleView = (data) => {
   visible.viewPoint = true;
   current.value = cloneDeep(data);
 };
+
+const refresh = () => {
+  columnsConfig.key = randomString()
+  _selectedRowKeys.value = [];
+  batchRef.value?.reload?.()
+}
 
 watch(
     () => data.value.id,
@@ -626,7 +629,7 @@ watch(
       // 刷新页面, 清空查询参数
       params.value = {}
       // 清空高级搜索
-      columnsConfig.key = randomString()
+      refresh()
       console.log('data.value.id变化')
     },
     {immediate: true},
@@ -638,7 +641,7 @@ watch(
       if (!pointTypeRefresh) { // 保证第一次只刷新上面的id变化
         pointTypeRefresh = true
       } else {
-        columnsConfig.key = randomString()
+        refresh()
         console.log('pointType变化')
       }
     },
@@ -681,6 +684,7 @@ defineExpose({
 
 .name {
   cursor: pointer;
+  min-width: 60px;
   //&:hover {
   color: @primary-color;
   //}

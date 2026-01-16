@@ -10,9 +10,11 @@
           <div style="width: 20px; height: 20px;" v-if="node.isChannel">
             <Image :src="`/protocol/${node.provider}/icon.png`" alt=""/>
           </div>
-          <j-ellipsis>
-            {{ node.name }}
-          </j-ellipsis>
+          <div style="flex: 1; min-width: 0;">
+            <j-ellipsis>
+              {{ node.name }}
+            </j-ellipsis>
+          </div>
           <j-badge-status
               v-if="node.isChannel"
               :status="node.runningState?.value"

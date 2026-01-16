@@ -3,7 +3,8 @@
     <div class="channel-collector-content">
       <a-flex style="width: 100%; padding: 0 8px 8px;" justify="space-between"
               :style="{borderBottom: viewType !== 'compact' ? '1px solid #e8e8e8' : 'none'}">
-        <j-permission-button style="padding: 0" :hasPermission="true" :tooltip="{title: $t('DataCollect.index.400150-0')}" type="text"
+        <j-permission-button style="padding: 0" :hasPermission="true"
+                             :tooltip="{title: $t('DataCollect.index.400150-0')}" type="text"
                              @click="foldTree = !foldTree">
           <AIcon style="font-size: 18px" type="InboxOutlined"></AIcon>
         </j-permission-button>
@@ -106,23 +107,22 @@
       </div>
     </div>
     <div class="channel-collector-path">
-      <a-space>
-        <span class="switch-node" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</span>
-        <span v-if="(selectedNode?.id !== 'all' && selectedNode?.isChannel) || selectedNode?.channelId">
-          <a-space>
-            <span>></span>
-            <span class="switch-node" @click="switchNode(selectedNode?.channelId || selectedNode?.id)">{{
-                selectedNode?.channelName || selectedNode?.name
-              }}</span>
-          </a-space>
-        </span>
-        <span v-if="selectedNode?.id !== 'all' && selectedNode?.isLeaf && selectedNode?.channelId">
-          <a-space>
-            <span>></span>
-            <span class="switch-node">{{ selectedNode?.name }}</span>
-          </a-space>
-        </span>
-      </a-space>
+      <div class="switch-node" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</div>
+      <template v-if="(selectedNode?.id !== 'all' && selectedNode?.isChannel) || selectedNode?.channelId">
+        <div>></div>
+        <div class="switch-node" @click="switchNode(selectedNode?.channelId || selectedNode?.id)">
+          <j-ellipsis>{{
+              selectedNode?.channelName || selectedNode?.name
+            }}
+          </j-ellipsis>
+        </div>
+      </template>
+      <template v-if="selectedNode?.id !== 'all' && selectedNode?.isLeaf && selectedNode?.channelId">
+        <div>></div>
+        <div class="switch-node">
+          <j-ellipsis>{{ selectedNode?.name }}</j-ellipsis>
+        </div>
+      </template>
     </div>
   </div>
   <SaveChannel
@@ -140,6 +140,7 @@
   />
   <FilterModal
       v-if="filterModalVisible"
+      :value="filterValue"
       @close="filterModalVisible = false"
       @save="onFilterSave"
   />
@@ -161,6 +162,7 @@ import {useI18n} from "vue-i18n";
 import type {ChannelEntity, CollectorEntity} from "./type";
 import {FOLD_TREE, COLLECTOR_TYPE, COLLECTOR_DATA} from '../data'
 import {getChannelActions, getCollectorActions} from "@data-collector-ui/views/data-collect/utils";
+import {omit} from "lodash-es";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -249,9 +251,9 @@ const separateViewCollectors = ref<any[]>([]);
 const filteredCollectors = computed(() => {
   const arr: any[] = []
   filterTreeData.value.forEach(item => {
-    if(nodeType.value === 'all') {
+    if (nodeType.value === 'all') {
       arr.push(...item.children)
-    } else if(currentNode.value?.id === item.id || (nodeType.value === 'collector' && currentNode.value?.channelId === item.id)) {
+    } else if (currentNode.value?.id === item.id || (nodeType.value === 'collector' && currentNode.value?.channelId === item.id)) {
       arr.push(...item.children)
     }
   })
@@ -264,6 +266,7 @@ const filteredCollectors = computed(() => {
 });
 
 const filterTreeData = computed(() => {
+  console.log(filterValue.value, 'filterValue.value')
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
     if (item.name.includes(searchValue.value)
@@ -275,9 +278,6 @@ const filterTreeData = computed(() => {
       // 如果有子节点（采集器），也需要过滤
       if (arr.length) {
         item.children = arr.filter((child: any) => {
-          console.log(filterValue.collectorState)
-          console.log(child.runningState?.value)
-          console.log(child.state?.value)
           return child.name.includes(searchValue.value) &&
               (filterValue.value?.collectorState?.includes(child.runningState?.value) ||
                   filterValue.value?.collectorState?.includes(child.state?.value) ||
@@ -289,8 +289,9 @@ const filterTreeData = computed(() => {
   });
 })
 
-const onFilterSave = () => {
+const onFilterSave = (dt) => {
   filterModalVisible.value = false
+  filterValue.value = dt
   selectedKeys.value = ["all"];
   selectedNode.value = {
     id: 'all',
@@ -562,18 +563,16 @@ const handleAdd = () => {
 };
 
 watch(() => _filterValue, () => {
-  if (_filterValue.channel || _filterValue.collector) {
-    filterValue.value = {
-      ...filterValue.value,
-      runningState: _filterValue.channel ? ['stopped'] : filterValue.value.runningState,
-      state: _filterValue.channel ? ['disabled'] : filterValue.value.state,
-      collectorState: _filterValue.collector ? [
-        "disabled",
-        "stopped"
-      ] : filterValue.value.collectorState
-    }
-    handleChangeNode(['all'], {})
+  filterValue.value = {
+    provider: _filterValue.provider,
+    runningState: _filterValue.channel ? ['stopped'] : _filterValue.runningState,
+    state: _filterValue.channel ? ['disabled'] : _filterValue.state,
+    collectorState: _filterValue.collector ? [
+      "disabled",
+      "stopped"
+    ] : _filterValue.collectorState
   }
+  handleChangeNode(['all'], {})
 }, {
   immediate: true,
   deep: true
@@ -616,9 +615,15 @@ defineExpose({
     position: absolute;
     bottom: 0;
     padding-left: 10px;
+    gap: 8px;
 
     .switch-node {
       cursor: pointer;
+      max-width: 100px;
+
+      &:hover {
+        color: @primary-color;
+      }
     }
   }
 

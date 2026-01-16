@@ -66,7 +66,7 @@
       <div style="padding-top: 24px;">
         <a-space>
           <a-button type="primary" @click="handleOk(false)" :loading="loading">{{ $t('DataCollect.index.400151-8') }}</a-button>
-          <a-button @click="handleOk(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
+          <a-button v-if="!data?.id" @click="handleOk(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
           <a-button @click="emit('close')">{{ $t('DataCollect.index.400151-10') }}</a-button>
         </a-space>
       </div>

@@ -82,7 +82,9 @@ const getActive = (itemType) => {
 
 const onClick = (item) => {
   Object.keys(filterValue).forEach(i => {
-    filterValue[i] = item.type === i ? !filterValue[item.type] : false
+    if(['channel', 'collector', 'point'].includes(i)){
+      filterValue[i] = item.type === i ? !filterValue[item.type] : false
+    }
   })
 }
 
@@ -131,6 +133,7 @@ defineExpose({
       font-size: 18px;
       font-weight: 500;
       cursor: pointer;
+      color: @primary-color;
     }
   }
 

@@ -1,13 +1,14 @@
 <template>
   <a-modal
-    :title="$t('DataCollect.index.400150-17')"
-    open
-    width="50%"
-    @cancel="emits('close')"
+      :title="$t('DataCollect.index.400150-17')"
+      open
+      width="50%"
+      @cancel="emits('close')"
   >
     <div v-for="item in filterColumn" style="margin-bottom: 20px;" :key="item.key">
-      <JTitle :data="item.title">{{item.title}}</JTitle>
-      <JCardSelect multiple v-model:value="filterData[item.key]" :showImage="false" :options="item.options"></JCardSelect>
+      <JTitle :data="item.title">{{ item.title }}</JTitle>
+      <JCardSelect multiple v-model:value="filterData[item.key]" :showImage="false"
+                   :options="item.options"></JCardSelect>
     </div>
     <template #footer>
       <div class="footer">
@@ -22,25 +23,23 @@
 </template>
 
 <script setup lang="ts">
-import { useProvider } from "../../hook/useProvider";
-import { getProviders } from '@data-collector-ui/api/data-collect/channel';
-import { cloneDeep } from "lodash-es";
-import { useI18n } from "vue-i18n";
+import {useProvider} from "../../hook/useProvider";
+import {getProviders} from '@data-collector-ui/api/data-collect/channel';
+import {cloneDeep, pick} from "lodash-es";
+import {useI18n} from "vue-i18n";
 
-const { t: $t } = useI18n()
+const {t: $t} = useI18n()
 
-const emits = defineEmits(['update:value', 'close', 'save'])
-const { data } = useProvider();
-
-const filterValue = inject('filter-value')
-
-const filterData = reactive(cloneDeep(filterValue) || {
-  provider: [],
-  runningState: [],
-  state: [],
-  collectorState: [],
+const props = defineProps({
+  value: {
+    type: Object,
+    default: () => ({})
+  }
 })
+const emits = defineEmits(['update:value', 'close', 'save'])
+const {data} = useProvider();
 
+const filterData = reactive(cloneDeep(props.value))
 
 const filterColumn = computed(() => {
   return [
@@ -78,13 +77,13 @@ const filterColumn = computed(() => {
         },
         {
           label: $t('DataCollect.index.400150-25'),
-          value:'disabled',
+          value: 'disabled',
         }
       ]
     },
     {
       title: $t('DataCollect.index.400150-23'),
-      key:'collectorState',
+      key: 'collectorState',
       options: [
         {
           label: $t('DataCollect.index.400150-8'),
@@ -92,11 +91,11 @@ const filterColumn = computed(() => {
         },
         {
           label: $t('DataCollect.index.400150-25'),
-          value:'disabled',
+          value: 'disabled',
         },
         {
           label: $t('DataCollect.index.400150-9'),
-          value:'stopped',
+          value: 'stopped',
         }
       ]
     }
@@ -105,11 +104,9 @@ const filterColumn = computed(() => {
 
 const handleOk = () => {
   Object.keys(filterData).forEach((key) => {
-    filterData[key] = filterData[key].filter((item: string) => !!item)
+    filterData[key] = (filterData[key] || []).filter((item: string) => !!item)
   })
-  // emits('update:value', cloneDeep(filterData));
-  Object.assign(filterValue, filterData)
-  emits('save');
+  emits('save', filterData);
 }
 
 const handleRest = () => {
