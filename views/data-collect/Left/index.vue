@@ -107,22 +107,25 @@
       </div>
     </div>
     <div class="channel-collector-path">
-      <div class="switch-node" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</div>
-      <template v-if="(selectedNode?.id !== 'all' && selectedNode?.isChannel) || selectedNode?.channelId">
-        <div>></div>
-        <div class="switch-node" @click="switchNode(selectedNode?.channelId || selectedNode?.id)">
-          <j-ellipsis>{{
-              selectedNode?.channelName || selectedNode?.name
-            }}
-          </j-ellipsis>
-        </div>
-      </template>
-      <template v-if="selectedNode?.id !== 'all' && selectedNode?.isLeaf && selectedNode?.channelId">
-        <div>></div>
-        <div class="switch-node">
-          <j-ellipsis>{{ selectedNode?.name }}</j-ellipsis>
-        </div>
-      </template>
+      <a-space>
+        <span class="switch-node" style="white-space: nowrap;" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</span>
+        <span v-if="(selectedNode?.id !== 'all' && selectedNode?.isChannel) || selectedNode?.channelId">
+          <a-space>
+            <span>></span>
+            <j-ellipsis>
+              <span class="switch-node" @click="switchNode(selectedNode?.channelId || selectedNode?.id)">{{
+                selectedNode?.channelName || selectedNode?.name
+              }}</span>
+            </j-ellipsis>
+          </a-space>
+        </span>
+        <span v-if="selectedNode?.id !== 'all' && selectedNode?.isLeaf && selectedNode?.channelId">
+          <a-space>
+            <span>></span>
+            <j-ellipsis class="switch-node">{{ selectedNode?.name }}</j-ellipsis>
+          </a-space>
+        </span>
+      </a-space>
     </div>
   </div>
   <SaveChannel
@@ -266,7 +269,6 @@ const filteredCollectors = computed(() => {
 });
 
 const filterTreeData = computed(() => {
-  console.log(filterValue.value, 'filterValue.value')
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
     if (item.name.includes(searchValue.value)

@@ -57,6 +57,7 @@
                     :popConfirm="item.popConfirm"
                     :disabled="item.disabled"
                     :tooltip="item.tooltip"
+                    :hasPermission="`${permissionKey}:${item.key}`"
                     @click="item.onClick"
                 >
                   <AIcon :type="item.icon"></AIcon>
@@ -100,7 +101,7 @@
               :popConfirm="item.popConfirm"
               :disabled="item.disabled"
               :tooltip="item.tooltip"
-              :hasPermission="`DataCollection:${item.key}`"
+              :hasPermission="`${permissionKey}:${item.key}`"
               @click="item.onClick"
           >
             <AIcon :type="item.icon"></AIcon>
@@ -128,6 +129,8 @@ const props = defineProps({
     default: () => [],
   },
 })
+
+const permissionKey = 'data-collect'
 </script>
 
 <style lang="less" scoped>
