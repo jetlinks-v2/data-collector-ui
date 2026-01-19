@@ -174,6 +174,9 @@ const showExtra = computed(() => {
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
+  if(val !== true){
+    onOutsize()
+  }
 }
 
 const _handler = computed(() => {

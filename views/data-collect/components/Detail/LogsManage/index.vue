@@ -125,7 +125,7 @@ const wsRef = ref();
 const logs = ref([])
 const logContainer = ref(null);
 const autoScroll = ref(true);
-const logLevel = ref("all");
+const logLevel = ref("INFO");
 const isUserScrolling = ref(false);
 const searchText = ref("");
 const searchResults = ref([]);
@@ -212,7 +212,7 @@ const highlightText = (text, logIndex, fieldType) => {
   }
 
   const regex = new RegExp(`(${escapeRegExp(searchText.value)})`, "gi");
-  
+
   // 找到当前日志行在搜索结果中的信息
   const currentLogResult = searchResults.value.find(result => result.index === logIndex);
   if (!currentLogResult) {
@@ -234,7 +234,7 @@ const highlightText = (text, logIndex, fieldType) => {
   const currentLog = filteredLogs.value[logIndex];
   const fieldOrder = ['location', 'message', 'stackTrace'];
   const currentFieldIndex = fieldOrder.indexOf(fieldType);
-  
+
   for (let i = 0; i < currentFieldIndex; i++) {
     const fieldName = fieldOrder[i];
     const fieldContent = currentLog[fieldName];
@@ -251,7 +251,7 @@ const highlightText = (text, logIndex, fieldType) => {
     const globalMatchIndex = matchesBefore + matchesBeforeCurrentField + matchCounter;
     const isCurrentMatch = globalMatchIndex === currentMatchIndex.value;
     matchCounter++;
-    
+
     if (isCurrentMatch) {
       return `<mark class="search-highlight current-match">${match}</mark>`;
     } else {
@@ -278,7 +278,7 @@ const handleSearch = (val) => {
   const results = [];
   let matchCount = 0;
   const regex = new RegExp(`(${escapeRegExp(searchText.value)})`, "gi");
-  
+
   filteredLogs.value.forEach((log, index) => {
     const str = `${log.location || ''}${log.message || ''}${log.stackTrace || ''}`
     const matches = str?.match(regex);
@@ -315,7 +315,7 @@ const nextMatch = () => {
   if (totalMatches.value === 0) return;
 
   currentMatchIndex.value = (currentMatchIndex.value + 1) % totalMatches.value;
-  
+
   // 找到当前匹配项所在的行
   let accumulatedMatches = 0;
   for (let i = 0; i < searchResults.value.length; i++) {
@@ -326,10 +326,10 @@ const nextMatch = () => {
     }
     accumulatedMatches += result.matches;
   }
-  
+
   // 检查并自动展开隐藏内容
   autoExpandForMatch();
-  
+
   scrollToSearchResult(currentSearchIndex.value);
 };
 
@@ -339,7 +339,7 @@ const previousMatch = () => {
   currentMatchIndex.value = currentMatchIndex.value === 0
     ? totalMatches.value - 1
     : currentMatchIndex.value - 1;
-    
+
   // 找到当前匹配项所在的行
   let accumulatedMatches = 0;
   for (let i = 0; i < searchResults.value.length; i++) {
@@ -350,10 +350,10 @@ const previousMatch = () => {
     }
     accumulatedMatches += result.matches;
   }
-  
+
   // 检查并自动展开隐藏内容
   autoExpandForMatch();
-  
+
   scrollToSearchResult(currentSearchIndex.value);
 };
 
@@ -361,12 +361,12 @@ const previousMatch = () => {
 const autoExpandForMatch = () => {
   const currentResult = searchResults.value[currentSearchIndex.value];
   if (!currentResult) return;
-  
+
   const logIndex = currentResult.index;
   const currentLog = filteredLogs.value[logIndex];
-  
+
   if (!currentLog || !currentLog.stackTrace) return;
-  
+
   // 计算当前匹配项在该日志行中的位置
   let matchesBefore = 0;
   for (const result of searchResults.value) {
@@ -376,24 +376,24 @@ const autoExpandForMatch = () => {
       break;
     }
   }
-  
+
   const matchIndexInCurrentLog = currentMatchIndex.value - matchesBefore;
-  
+
   // 计算location和message字段的匹配数量
   const regex = new RegExp(`(${escapeRegExp(searchText.value)})`, "gi");
   let locationMatches = 0;
   let messageMatches = 0;
-  
+
   if (currentLog.location) {
     const locationMatchArray = currentLog.location.match(regex);
     locationMatches = locationMatchArray ? locationMatchArray.length : 0;
   }
-  
+
   if (currentLog.message) {
     const messageMatchArray = currentLog.message.match(regex);
     messageMatches = messageMatchArray ? messageMatchArray.length : 0;
   }
-  
+
   // 如果当前匹配项在stackTrace字段中，且该字段是折叠状态，则自动展开
   const stackTraceStartIndex = locationMatches + messageMatches;
   if (matchIndexInCurrentLog >= stackTraceStartIndex && isCollapsed(logIndex)) {
@@ -403,7 +403,7 @@ const autoExpandForMatch = () => {
 
 const scrollToSearchResult = (resultIndex) => {
   const logIndex = searchResults.value[resultIndex]?.index;
-  const logElement = logLineRefs.value[logIndex]; 
+  const logElement = logLineRefs.value[logIndex];
   if (logElement && logContainer.value) {
     logElement.scrollIntoView({
       behavior: "instant",

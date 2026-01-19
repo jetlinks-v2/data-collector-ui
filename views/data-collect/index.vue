@@ -2,7 +2,7 @@
   <j-page-container>
     <full-page>
       <div class="collect-warp">
-        <div class="left">
+        <div class="left" v-if="!foldTree">
           <Left @change="onChange" ref="leftRef"/>
         </div>
         <div class="right">
@@ -16,7 +16,7 @@
 <script setup>
 import Left from './Left/index.vue'
 import Right from './Right.vue'
-import {COLLECTOR_DATA, COLLECTOR_TYPE, REFRESH_HANDLER} from "@data-collector-ui/views/data-collect/data";
+import {COLLECTOR_DATA, COLLECTOR_TYPE, FOLD_TREE, REFRESH_HANDLER} from "@data-collector-ui/views/data-collect/data";
 
 const leftRef = ref()
 const rightRef = ref()
@@ -29,7 +29,9 @@ const filterValue = reactive(
       point: false
     }
 )
+const foldTree = ref(false)
 
+provide(FOLD_TREE, foldTree)
 provide('filter-value', filterValue)
 provide(COLLECTOR_TYPE, type) // all/channel/collector
 provide(COLLECTOR_DATA, current)

@@ -3,7 +3,7 @@
     <div class="channel-form-header">
       <a-space size="large">
         <span>{{ $t('Info.index.077901-4') }}</span>
-        <span style="font-weight: bold">{{ provider }}</span>
+        <span style="font-weight: bold">{{ name || provider }}</span>
       </a-space>
       <a-button :disabled="formData.id" type="link" @click="handleClear"
         >{{ $t('Save.GateWayFormItem.290644-1') }}</a-button
@@ -55,6 +55,10 @@ import { useI18n } from "vue-i18n";
 const { t: $t } = useI18n();
 const props = defineProps({
   provider: {
+    type: String,
+    default: "",
+  },
+  name: {
     type: String,
     default: "",
   },
@@ -114,10 +118,10 @@ const submit = async () => {
 
     const response = !props.data?.id
       ? await save(submitData).finally(() => {
-        emits('update:loading', false) 
+        emits('update:loading', false)
       })
       : await update(props.data?.id, { ...props.data, ...submitData }).finally(() => {
-        emits('update:loading', false) 
+        emits('update:loading', false)
       });
       emits('change', response.result)
   });

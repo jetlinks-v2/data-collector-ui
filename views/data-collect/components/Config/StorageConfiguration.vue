@@ -98,6 +98,9 @@ const onSwitchChange = (val) => {
   } else {
     formData.features = formData.features.filter(i => i === 'changedOnly')
   }
+  if(val !== true){
+    onOutsize()
+  }
 }
 
 const onOutsize = () => {

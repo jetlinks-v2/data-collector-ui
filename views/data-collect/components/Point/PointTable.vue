@@ -12,9 +12,6 @@
         :columns="columnsConfig.data"
         mode="TABLE"
         :request="getDataSource"
-        :defaultParams="{
-          sorts: [{name: 'createTime', order: 'desc'}]
-        }"
         :params="params"
         style="padding: 0; margin: 0"
         @resizeColumn="onResizeColumn"
@@ -216,9 +213,9 @@ import Import from "@data-collector-ui/views/data-collect/components/Import/inde
 
 const {t: $t} = useI18n();
 const sortValue = reactive({
-  name: 'asc',
-  updateTime: 'asc',
-  interval: 'asc',
+  name: undefined,
+  updateTime: undefined,
+  interval: undefined,
 })
 const params = ref({})
 const showSearch = ref(false)
@@ -478,11 +475,15 @@ const getDataSource = (p) => {
   if (terms.length > 0) {
     _params.terms = [..._params.terms, ...terms]
   }
-  const sorts = Object.keys(sortValue).map(key => ({
+  const sorts = Object.keys(sortValue).filter(i => sortValue[i]).map(key => ({
     name: key,
     order: sortValue[key]
   }))
-  _params.sorts.push(...sorts)
+  if (sorts.length) {
+    _params.sorts = sorts
+  } else {
+    _params.sorts = [{name: 'createTime', order: 'desc'}]
+  }
   return queryPoint(_params).then(resp => {
     subRef.value?.unsubscribe();
     if (resp.success && resp.result.data.length) {
@@ -538,7 +539,13 @@ const selectAll = (selected, selectedRows, changeRows) => {
 };
 
 const handleSort = (key, value) => {
-  sortValue[key] = value
+  Object.keys(sortValue).map(i => {
+    if (i === key && sortValue[i] !== value) {
+      sortValue[i] = value
+    } else {
+      sortValue[i] = undefined
+    }
+  })
   columnsConfig.key = randomString()
   // Sort change
 }

@@ -156,6 +156,16 @@ const onSwitchChange = (val) => {
       }
     }
   }
+  if (val !== true) {
+    if (val === false) {
+      terms.value = {
+        column: 'current',
+        termType: 'btw',
+        value: []
+      }
+    }
+    onOutsize()
+  }
 }
 
 const onOutsize = () => {

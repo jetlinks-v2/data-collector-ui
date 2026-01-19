@@ -6,18 +6,19 @@
     width="40%"
     @close="emits('close')"
   >
-    <Provider v-if="step === 0" :options="options" v-model:value="provider" @change="step = 1"/>
+    <Provider v-if="step === 0" :options="options" v-model:value="provider" v-model:name="providerName" @change="step = 1"/>
     <ChannelForm
       v-show="step === 1"
       ref="channelForm"
       v-model:loading="loading"
       :provider="provider"
+      :name="providerName"
       :data="data"
       @clear="step = 0"
       @change="saveChange"
     />
     <template #footer>
-      <a-space v-if="provider">
+      <a-space v-if="provider && step === 1">
         <j-permission-button :loading="loading" type="primary" @click="handleOk">
           {{ $t('DataCollect.index.400150-20') }}
         </j-permission-button>
@@ -48,6 +49,7 @@ const emits = defineEmits(['close', 'saveSuccess']);
 const { data: options } = useProvider();
 const step = ref(0);
 const provider = ref("");
+const providerName = ref("");
 const channelForm = ref();
 const loading = ref(false);
 

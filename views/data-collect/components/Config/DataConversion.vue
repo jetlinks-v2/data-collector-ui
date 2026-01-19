@@ -34,7 +34,7 @@
             :label="$t('DataCollect.index.400154-12')"
             :rules="[
               {
-                required: true,
+                required: data,
                 message: $t('DataCollect.index.400154-14')
               }
             ]"
@@ -139,6 +139,7 @@ if (!('configuration' in formData.managedConfiguration.converter)) {
 }
 
 const showExtra = computed(() => {
+  console.log(collector.managedConfiguration?.converter)
   return collector.managedConfiguration?.converter?.configuration?.scale !== undefined && collector.managedConfiguration?.converter?.configuration?.factor !== undefined
 })
 
@@ -154,6 +155,9 @@ const onSwitchChange = (val) => {
         scale: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.scale : undefined
       }
     }
+  }
+  if (val !== true) {
+    onOutsize()
   }
 }
 
@@ -172,7 +176,7 @@ const onOutsize = () => {
           value: formData.managedConfiguration.converter
         },
       ]
-      events?.onValueChange?.(arr)
+      events?.onValueChange?.(arr, true)
       // 更新快照
       initialSnapshot.value = JSON.parse(JSON.stringify(currentValue))
     }
@@ -198,6 +202,15 @@ watch(() => data.value, (newVal) => {
   }
 }, {
   immediate: true  // 确保初始打开时也记录快照
+})
+
+watch(() => collector.managedConfiguration?.converter?.enabled, (val) => {
+  if (val) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
 })
 </script>
 

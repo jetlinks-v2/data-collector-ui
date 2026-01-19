@@ -1,7 +1,7 @@
 <template>
   <a-input-search style="width: 50%;" allow-clear :placeholder="$t('DataCollect.index.400151-0')" @search="handleSearch"></a-input-search>
   <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}"
-       @click="handleChooseProvider(item.id)">
+       @click="handleChooseProvider(item.id, item.name)">
     <div style="width: 80px;height: 80px;">
       <Image :src="`/protocol/${item.id}/icon.png`" :width="80" :height="80" alt=""/>
     </div>
@@ -28,12 +28,16 @@ const props = defineProps({
     type: String,
     default: ''
   },
+  name: {
+    type: String,
+    default: ''
+  },
   options: {
     type: Array as PropType<Record<string, any>[]>,
     default: () => ([])
   }
 })
-const emits = defineEmits(['update:value', 'change']);
+const emits = defineEmits(['update:value', 'update:name', 'change']);
 const searchValue = ref('');
 const jsonData = ref()
 
@@ -43,8 +47,9 @@ const filterOptions = computed(() => {
   })
 })
 
-const handleChooseProvider = (val: string) => {
+const handleChooseProvider = (val: string, name: string) => {
   emits('update:value', val);
+  emits('update:name', name);
   emits('change')
 };
 

@@ -9,10 +9,12 @@
         />
       </a-form>
     </template>
-    <TitleComponent :data="$t('DataCollect.index.400156-1')"/>
-    <PointDataVolume type="collector" :id="info.id" />
-    <PointStatusStatistics />
-    <AbnormalDataTrend type="collector" :id="info.id" />
+    <template v-if="info.id">
+      <TitleComponent :data="$t('DataCollect.index.400156-1')"/>
+      <PointDataVolume type="collector" :id="info.id"/>
+      <PointStatusStatistics/>
+      <AbnormalDataTrend type="collector" :id="info.id"/>
+    </template>
   </div>
 </template>
 

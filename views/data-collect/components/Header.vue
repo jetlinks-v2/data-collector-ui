@@ -1,19 +1,17 @@
 <template>
   <div class="right-header-warp">
+    <a-tooltip title="展开" v-if="foldTree">
+      <a-button size="small" @click="foldTree = !foldTree">
+        <AIcon type="DoubleRightOutlined" />
+      </a-button>
+    </a-tooltip>
     <div class="header-left">
       <div style="max-width: 200px;">
         <j-ellipsis>
-          <div class="title" @click="onDetail">{{ title }}</div>
+          <div class="title" :class="{'_title': type !== 'all'}" @click="onDetail">{{ title }}</div>
         </j-ellipsis>
       </div>
       <a-space>
-        <!--运行状态-->
-        <!--        <j-badge-status-->
-        <!--            v-if="type === 'channel'"-->
-        <!--            :status="getState(data).value"-->
-        <!--            :text="getState(data).text"-->
-        <!--            :statusNames="ChannelState"-->
-        <!--        />-->
         <a-tag v-if="type === 'channel'" :color="ChannelState[getState(data).value]">{{ getState(data).text }}</a-tag>
         <!--通讯协议类型-->
         <a-tag v-if="type !== 'all'">{{ data.provider }}</a-tag>
@@ -36,16 +34,16 @@
       </div>
     </div>
   </div>
-  <ChannelDetail :data="data" v-if="visible.channel" @close="visible.channel = false"/>
-  <CollectorDetail :data="data" v-if="visible.collector" @close="visible.collector = false"/>
+  <ChannelDetail :data="data" v-if="visible.channel" @close="visible.channel = false" @refresh="onRefresh"/>
+  <CollectorDetail :data="data" v-if="visible.collector" @close="visible.collector = false" @refresh="onRefresh"/>
 </template>
 
 <script setup>
 import {
   ChannelState,
   COLLECTOR_DATA,
-  COLLECTOR_TYPE,
-  getState,
+  COLLECTOR_TYPE, FOLD_TREE,
+  getState, REFRESH_HANDLER,
 } from "@data-collector-ui/views/data-collect/data";
 import ChannelDetail from './Detail/Channel/index.vue'
 import CollectorDetail from './Detail/Collector/index.vue'
@@ -54,6 +52,7 @@ import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
 
+const refreshHandler = inject(REFRESH_HANDLER)
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject(COLLECTOR_DATA, ref({}))
 const filterValue = inject('filter-value', reactive({
@@ -66,6 +65,7 @@ const visible = reactive({
   channel: false,
   collector: false,
 })
+const foldTree = inject(FOLD_TREE, ref(false));
 
 const title = computed(() => {
   if (type.value === 'all') {
@@ -86,6 +86,10 @@ const onClick = (item) => {
       filterValue[i] = item.type === i ? !filterValue[item.type] : false
     }
   })
+}
+
+const onRefresh = () => {
+  refreshHandler?.refreshAll?.()
 }
 
 const onDetail = () => {
@@ -133,6 +137,9 @@ defineExpose({
       font-size: 18px;
       font-weight: 500;
       cursor: pointer;
+    }
+
+    ._title {
       color: @primary-color;
     }
   }

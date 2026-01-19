@@ -27,7 +27,7 @@
         <a-form-item
             :label="$t('DataCollect.index.400154-25')"
             :name="['managedConfiguration', 'codec']"
-            :rules="[{required: true, message: $t('DataCollect.index.400154-22')}]"
+            :rules="[{required: data, message: $t('DataCollect.index.400154-22')}]"
         >
           <a-select v-model:value="formData.managedConfiguration.codec" :placeholder="$t('DataCollect.index.400154-22')"
                     :options="_dataTypeOptions" allow-clear/>
@@ -37,7 +37,7 @@
         <a-form-item
             :label="$t('DataCollect.index.400154-26')"
             :name="['managedConfiguration', 'byteLayout']"
-            :rules="[{required: true, message: $t('DataCollect.index.400154-22')}]"
+            :rules="[{required: data, message: $t('DataCollect.index.400154-22')}]"
         >
           <a-select
               v-model:value="formData.managedConfiguration.byteLayout"
@@ -157,6 +157,10 @@ const onSwitchChange = (val) => {
     ...formData.managedConfiguration,
     codec: val === 'template' ? collector?.managedConfiguration?.codec : undefined,
     byteLayout: val === 'template' ? collector?.managedConfiguration?.byteLayout : undefined,
+  }
+  if(!val){
+    // 需要立即保存
+    onOutsize()
   }
 }
 

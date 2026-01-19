@@ -6,10 +6,11 @@
           v-if="jsonData"
           :value="jsonData"
       />
-      <template v-if="configuration?.autoCodec === false">
-        <DataParsing/>
-      </template>
-      <CollectionConfiguration/>
+      <!--      <template v-if="configuration?.autoCodec === false">-->
+      <!--        <DataParsing/>-->
+      <!--      </template>-->
+      <DataParsing/>
+      <CollectionConfiguration :showSwitch="false"/>
       <DataConversion/>
     </a-form>
   </div>
@@ -53,14 +54,17 @@ watch(() => info.value, () => {
 
 provide('plugin-form', formData)
 provide(PLUGIN_DETAIL_SAVE_EVENTS, {
-  onValueChange: async () => {
-    const res = await formRef.value?.validate().catch((err) => {
-      errorList.value = err
+  onValueChange: (_arr) => {
+    debugger
+    setTimeout(async () => {
+      const res = await formRef.value?.validate().catch((err) => {
+        errorList.value = err
+      })
+      // 校验表单  保存
+      if (res) {
+        emits('save', formData)
+      }
     })
-    // 校验表单  保存
-    if (res) {
-      emits('save', formData)
-    }
   }
 });
 provide(DATA_COLLECTOR_CONFIG_TYPE, true) // 是否需要立即保存

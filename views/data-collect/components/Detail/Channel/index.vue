@@ -67,8 +67,7 @@ import {tabs} from "./asyncComponent";
 import {
   getChannelActions,
   getCountList,
-  onChannelSave,
-  onCollectorSave
+  onChannelSave
 } from "@data-collector-ui/views/data-collect/utils";
 import {detail} from "@data-collector-ui/api/data-collect/channel";
 import {omit, set} from "lodash-es";
@@ -141,6 +140,7 @@ const onSave = (arr) => {
   })
   onChannelSave(info.value.id, params, () => {
     handleSearch(info.value.id)
+    emits('refresh')
   })
 }
 

@@ -167,6 +167,9 @@ const onSwitchChange = (val) => {
     formData.interval = undefined
     formData.features = formData.features.filter(i => i !== 'changedOnly')
   }
+  if (val !== true) {
+    onOutsize()
+  }
 }
 
 const onOutsize = () => {
@@ -227,6 +230,15 @@ watch(() => data.value, (newVal) => {
   }
 }, {
   immediate: true  // {$t('DataCollect.index.400156-13')}
+})
+
+watch(() => [collector.accessModes, collector.interval], () => {
+  if (collector.accessModes?.length > 0 && collector.interval) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
 })
 </script>
 

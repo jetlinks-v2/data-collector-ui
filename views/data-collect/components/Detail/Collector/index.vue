@@ -171,6 +171,7 @@ const onSave = (arr) => {
   };
   onCollectorSave(info.value.id, _params, () => {
     handleSearch(info.value.id)
+    emits('refresh')
   })
 }
 

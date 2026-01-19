@@ -87,19 +87,21 @@ const dataOptions = computed(() => {
 })
 
 const onChange = async (val) => {
-  loading.value = true;
-  const resp = await dashboard(pointParams(val, props.type, props.id));
-  if (resp.success && resp?.result?.length) {
-    const x = resp.result
-        .map((item) => item.data.timeString)
-        .reverse();
-    const y = resp.result.map((item) => item.data.value).reverse();
-    data.xAxis = x
-    data.y = y
+  if(props.id){
+    loading.value = true;
+    const resp = await dashboard(pointParams(val, props.type, props.id));
+    if (resp.success && resp?.result?.length) {
+      const x = resp.result
+          .map((item) => item.data.timeString)
+          .reverse();
+      const y = resp.result.map((item) => item.data.value).reverse();
+      data.xAxis = x
+      data.y = y
+    }
+    setTimeout(() => {
+      loading.value = false;
+    }, 300)
   }
-  setTimeout(() => {
-    loading.value = false;
-  }, 300)
 }
 </script>
 
