@@ -1,7 +1,7 @@
 <template>
   <div class="console-log">
     <div class="console-header">
-      <a-flex justify="space-between">
+<!--      <a-flex justify="space-between">-->
         <div class="console-controls">
           <a-select v-model:value="logLevel" @change="filterLogs" style="width: 100px;">
             <a-select-option value="all">{{ $t('DataCollect.index.400155-45') }}</a-select-option>
@@ -55,7 +55,7 @@
             </a-button>
           </a-space>
         </div>
-      </a-flex>
+<!--      </a-flex>-->
     </div>
     <div ref="logContainer" class="console-content" @scroll="handleScroll">
       <div
@@ -505,6 +505,9 @@ onBeforeUnmount(() => {
     padding: 8px;
     background: #fff;
     border-bottom: 1px solid #3e3e42;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     .console-controls {
       display: flex;

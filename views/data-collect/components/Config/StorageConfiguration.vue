@@ -84,7 +84,7 @@ const _features = computed(() => {
 })
 
 const showExtra = computed(() => {
-  return !!collector?.features?.find(i => _list.includes(i))
+  return !!collector.id // return !!collector?.features?.find(i => _list.includes(i))
 })
 
 const onChange = (val) => {
@@ -126,7 +126,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.features, (val) => {
-  if (firstRender && __type) {
+  if (firstRender && (__type || formData.id)) {
     const flag = val.find(i => {
       return _list.includes(i)
     })
@@ -149,6 +149,14 @@ watch(() => data.value, (newVal) => {
   immediate: true  // 确保初始打开时也记录快照
 })
 
+watch(() => collector.id, (val) => {
+  if (!!val) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
+})
 </script>
 
 <style lang="less" scoped>

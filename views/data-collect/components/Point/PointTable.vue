@@ -122,9 +122,9 @@
       <template #value="slotProps">
         <ValueItem :value="propertyValue.get(slotProps.id)" :data="slotProps"/>
       </template>
-      <template #updateTime="slotProps">
+      <template #modifyTime="slotProps">
         {{
-          dayjs(slotProps.createTime).format('YYYY-MM-DD HH:mm:ss')
+          dayjs(slotProps.modifyTime).format('YYYY-MM-DD HH:mm:ss')
         }}
       </template>
       <template #accessModes="slotProps">
@@ -156,10 +156,10 @@
       @close="visible.save = false"
   />
   <Detail
-      v-if="visible.viewPoint"
+      v-if="_visible.point"
       :data="current"
       :collector="data"
-      @close="visible.viewPoint = false"
+      @close="_visible.point = false"
       @refresh="onDetailRefresh"
   />
   <Import
@@ -248,9 +248,9 @@ const visible = reactive({ // 判断按钮显示
   batchAdd: true,
   save: false,
   import: false,
-  viewPoint: false,
   batchUpdate: false,
 });
+const _visible = inject('detail-visible')
 
 const current = ref({})
 const pointActions = reactive({
@@ -378,7 +378,7 @@ const handleSubscribeValue = throttle((payload) => {
 });
 
 const onRefresh = (flag = false) => {
-  visible.viewPoint = false
+  _visible.point = false
   visible.import = false
   visible.save = false
   if (flag) {
@@ -439,7 +439,7 @@ const getDataSource = (p) => {
     if (filterValue.collector) {
       terms.push({
         column: 'collectorId',
-        termType: 'termType data-collector',
+        termType: 'data-collector',
         type: 'and',
         value: [
           {
@@ -610,7 +610,7 @@ const handleExport = async () => {
 };
 
 const handleView = (data) => {
-  visible.viewPoint = true;
+  _visible.point = true;
   current.value = cloneDeep(data);
 };
 

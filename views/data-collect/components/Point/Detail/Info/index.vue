@@ -55,7 +55,6 @@ watch(() => info.value, () => {
 provide('plugin-form', formData)
 provide(PLUGIN_DETAIL_SAVE_EVENTS, {
   onValueChange: (_arr) => {
-    debugger
     setTimeout(async () => {
       const res = await formRef.value?.validate().catch((err) => {
         errorList.value = err

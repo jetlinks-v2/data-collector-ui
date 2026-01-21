@@ -13,7 +13,7 @@
         <a-descriptions-item :label="$t('DataCollect.index.400155-7')">
           <j-ellipsis>
             {{
-              `${collector?.managedConfiguration?.outlier?.configuration?.min}~${collector?.managedConfiguration?.outlier?.configuration?.max}`
+              `${collector?.managedConfiguration?.outlier?.configuration?.min || '--'}~${collector?.managedConfiguration?.outlier?.configuration?.max || '--'}`
             }}
           </j-ellipsis>
         </a-descriptions-item>
@@ -118,7 +118,7 @@ const terms = ref({
 })
 
 const showExtra = computed(() => {
-  return !!collector.managedConfiguration?.outlier?.enabled
+  return !!collector.id // !!collector.managedConfiguration?.outlier?.enabled
 })
 
 const onChange = () => {
@@ -191,7 +191,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
-  if (firstRender && __type) {
+  if (firstRender && (__type || formData.id)) {
     data.value = !!val
     const _configuration = formData.managedConfiguration?.outlier?.configuration || {min: undefined, max: undefined}
     terms.value = {
@@ -205,16 +205,23 @@ watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
   immediate: true
 })
 
-// {$t('DataCollect.index.400156-9')}
 watch(() => data.value, (newVal) => {
   if (newVal === true) {
-    // {$t('DataCollect.index.400156-10')}
     initialSnapshot.value = JSON.parse(JSON.stringify({
       outlier: formData.managedConfiguration.outlier
     }))
   }
 }, {
   immediate: true  // 确保初始打开时也记录快照
+})
+
+watch(() => collector.id, (val) => {
+  if (!!val) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
 })
 </script>
 

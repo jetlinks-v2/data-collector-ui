@@ -19,31 +19,27 @@
         autocomplete="off"
         ref="formRef"
     >
-      <a-form-item :label="$t('BatchUpdate.index.4001419-3')" v-if="provider === 'BACNetIp'">
-        <a-select
-            v-model:value="formData.valueType"
-            allowClear
-            :placeholder="$t('BatchUpdate.index.4001419-4')"
-        >
-          <a-select-option
-              v-for="item in bacnetValueType"
-              :key="item"
-              :value="item"
-          >{{ item }}
-          </a-select-option
-          >
-        </a-select>
-      </a-form-item>
+<!--      <a-form-item :label="$t('BatchUpdate.index.4001419-3')" v-if="provider === 'BACNetIp'">-->
+<!--        <a-select-->
+<!--            v-model:value="formData.valueType"-->
+<!--            allowClear-->
+<!--            :placeholder="$t('BatchUpdate.index.4001419-4')"-->
+<!--        >-->
+<!--          <a-select-option-->
+<!--              v-for="item in bacnetValueType"-->
+<!--              :key="item"-->
+<!--              :value="item"-->
+<!--          >{{ item }}-->
+<!--          </a-select-option-->
+<!--          >-->
+<!--        </a-select>-->
+<!--      </a-form-item>-->
       <a-form-item :label="$t('BatchUpdate.index.4001419-5')" name="accessModes">
         <j-card-select
             multiple
             :showImage="false"
             v-model:value="formData.accessModes"
-            :options="[
-                        { label: $t('BatchUpdate.index.4001419-6'), value: 'read' },
-                        { label: $t('BatchUpdate.index.4001419-7'), value: 'write' },
-                        { label: $t('BatchUpdate.index.4001419-8'), value: 'subscribe' },
-                    ]"
+            :options="options"
         />
       </a-form-item>
       <a-form-item
@@ -107,9 +103,10 @@ import {
   savePointBatch,
   getBacnetValueType,
 } from '@data-collector-ui/api/data-collect/collector';
-import {cloneDeep, isObject} from 'lodash-es';
+import {cloneDeep, isObject, map} from 'lodash-es';
 import {useI18n} from 'vue-i18n';
 import {regOnlyNumber} from "@data-collector-ui/views/DataCollect/Channel/data";
+import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 
 const {t: $t} = useI18n();
 
@@ -135,15 +132,30 @@ const formData = ref({
   valueType: undefined,
   pushControl: false,
 });
+const configuration = ref({})
 
-const bacnetValueType = ref<string[]>([]);
+// const bacnetValueType = ref<string[]>([]);
 
-const getIdAndType = async () => {
-  const resp: any = await getBacnetValueType();
-  if (resp.success) {
-    bacnetValueType.value = resp.result;
-  }
-};
+// const getIdAndType = async () => {
+//   const resp: any = await getBacnetValueType();
+//   if (resp.success) {
+//     bacnetValueType.value = resp.result;
+//   }
+// };
+
+const options = computed(() => {
+  const arr = map((configuration.value?.accessModes || []), 'value')
+  return [
+    { label: $t('BatchUpdate.index.4001419-6'), value: 'read' },
+    { label: $t('BatchUpdate.index.4001419-7'), value: 'write' },
+    { label: $t('BatchUpdate.index.4001419-8'), value: 'subscribe' },
+  ].map(i => {
+    return {
+      ...i,
+      disabled: !arr.includes(i.value)
+    }
+  })
+})
 
 const handleOk = async () => {
   const data = cloneDeep(formData.value);
@@ -207,9 +219,12 @@ const handleCancel = () => {
 watch(
     () => props.provider,
     () => {
-      if (props.provider === 'BACNetIp') {
-        getIdAndType();
-      }
+      // if (props.provider === 'BACNetIp') {
+      //   getIdAndType();
+      // }
+      getPointMetadata(props.provider, {}).then((res) => {
+        configuration.value = res
+      })
     },
     {immediate: true},
 );

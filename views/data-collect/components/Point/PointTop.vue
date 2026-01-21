@@ -46,6 +46,11 @@ const num = reactive({
   running: 0,
   stopped: 0,
 })
+const filterValue = inject('filter-value', reactive({
+  channel: false,
+  collector: false,
+  point: false
+}))
 
 //
 const handleSearch = async (params, key) => {
@@ -100,11 +105,55 @@ const loadData = () => {
       termType: 'in',
       value: [data.value.id]
     })
+  } else {
+    if (filterValue.point) {
+      terms.push({
+        column: 'runningState',
+        termType: 'not',
+        type: 'and',
+        value: 'running'
+      })
+    }
+    if (filterValue.channel) {
+      terms.push({
+        column: 'channelId',
+        termType: 'data-collector-channel',
+        type: 'and',
+        value: [
+          {
+            "column": "runningState",
+            "value": 'stopped'
+          },
+          {
+            "column": "state",
+            "value": 'disabled'
+          }
+        ]
+      })
+    }
+    if (filterValue.collector) {
+      terms.push({
+        column: 'collectorId',
+        termType: 'data-collector',
+        type: 'and',
+        value: [
+          {
+            "column": "state",
+            termType: 'in',
+            "value": [
+              "disabled",
+              "stopped"
+            ]
+          }
+        ]
+      })
+    }
   }
+  console.log(terms, 'terms')
   onSearch({terms})
 }
 
-watch(() => [type.value, data.value.id], () => {
+watch(() => [type.value, data.value.id, filterValue], () => {
   loadData()
 }, {
   immediate: true

@@ -61,10 +61,8 @@ const filterValue = inject('filter-value', reactive({
   point: false
 }))
 
-const visible = reactive({
-  channel: false,
-  collector: false,
-})
+const visible = inject('detail-visible')
+
 const foldTree = inject(FOLD_TREE, ref(false));
 
 const title = computed(() => {

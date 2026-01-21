@@ -144,7 +144,7 @@ const memoryOptions = [
 ]
 
 const showExtra = computed(() => {
-  return !!collector?.managedConfiguration?.codec && !!collector?.managedConfiguration?.byteLayout
+  return !!collector.id // return !!collector?.managedConfiguration?.codec && !!collector?.managedConfiguration?.byteLayout
 })
 
 const _dataTypeOptions = computed(() => {
@@ -222,6 +222,15 @@ watch(() => data.value, (newVal) => {
   }
 }, {
   immediate: true  // 确保初始打开时也记录快照
+})
+
+watch(() => collector.id, (val) => {
+  if (!!val) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
 })
 </script>
 

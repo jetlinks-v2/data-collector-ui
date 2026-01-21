@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open :mask="false" width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -31,7 +31,7 @@
         </template>
       </a-space>
     </template>
-    <a-spin :spinning="loading">
+    <a-spin :spinning="loading" :key="info.id">
       <a-descriptions :column="4">
         <a-descriptions-item :label="$t('DataCollect.index.400155-33')">
           <j-ellipsis>{{ info.provider }}</j-ellipsis>

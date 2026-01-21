@@ -1,5 +1,6 @@
 <template>
-  <a-drawer open :mask="false" width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="emits('close')" destroy-on-close
+            :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -31,16 +32,19 @@
         </template>
       </a-space>
     </template>
-    <a-spin :spinning="loading">
+    <a-spin :spinning="loading" :key="info.id">
       <a-descriptions>
         <a-descriptions-item :label="$t('DataCollect.index.400151-36')">
           <j-ellipsis>{{ info.provider }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('DataCollect.index.400151-37')">{{
+        <a-descriptions-item :label="$t('DataCollect.index.400151-37')"><j-ellipsis>{{
             info.collectorName || info.collectorId || '--'
-          }}
+          }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('DataCollect.index.400151-38')">{{ info.channelName || '--' }}</a-descriptions-item>
+        <a-descriptions-item :label="$t('DataCollect.index.400151-38')"><j-ellipsis>{{
+            info.channelName || '--'
+          }}</j-ellipsis>
+        </a-descriptions-item>
         <a-descriptions-item :label="$t('DataCollect.index.400151-39')">
           <InputEditable
               :value="info.description"
@@ -70,7 +74,7 @@ import {
   onPointSave
 } from "@data-collector-ui/views/data-collect/utils";
 import {omit, set} from "lodash-es";
-import { useI18n } from 'vue-i18n';
+import {useI18n} from 'vue-i18n';
 
 const {t: $t} = useI18n();
 const props = defineProps({

@@ -37,8 +37,8 @@ export const baseColumns = [
     },
     {
         title: i18n.global.t('DataCollect.columns.290651-5'),
-        dataIndex: 'updateTime',
-        key: 'updateTime',
+        dataIndex: 'modifyTime',
+        key: 'modifyTime',
         scopedSlots: true,
         width: 200,
         ellipsis: true,

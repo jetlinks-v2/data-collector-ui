@@ -139,8 +139,7 @@ if (!('configuration' in formData.managedConfiguration.converter)) {
 }
 
 const showExtra = computed(() => {
-  console.log(collector.managedConfiguration?.converter)
-  return collector.managedConfiguration?.converter?.configuration?.scale !== undefined && collector.managedConfiguration?.converter?.configuration?.factor !== undefined
+  return !!collector.id // return collector.managedConfiguration?.converter?.configuration?.scale !== undefined && collector.managedConfiguration?.converter?.configuration?.factor !== undefined
 })
 
 const onSwitchChange = (val) => {
@@ -184,7 +183,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.managedConfiguration?.converter?.enabled, (val) => {
-  if (firstRender && __type) {
+  if (firstRender && (__type || formData.id)) {
     data.value = !!val
     firstRender = false
   }
@@ -204,8 +203,8 @@ watch(() => data.value, (newVal) => {
   immediate: true  // 确保初始打开时也记录快照
 })
 
-watch(() => collector.managedConfiguration?.converter?.enabled, (val) => {
-  if (val) {
+watch(() => collector.id, (val) => {
+  if (!!val) {
     data.value = 'template'
     onSwitchChange(data.value)
   }

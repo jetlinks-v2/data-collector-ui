@@ -40,7 +40,7 @@
           <a-select
               show-search
               :placeholder="$t('DataCollect.index.400155-17')"
-              style="width: 150px;
+              style="width: 160px;
               margin: 0 10px"
               :options="options"
               v-model:value="type"
@@ -92,7 +92,7 @@ const options = computed(() => {
   const arr = errorList.value.map(i => {
     return {
       ...i,
-      label: i.name || i.description,
+      label: `${i.description}(${i.name})`,
       value: i.code
     }
   })
@@ -169,7 +169,7 @@ if (!('configuration' in formData.managedConfiguration.handler)) {
 }
 
 const showExtra = computed(() => {
-  return !!collector.managedConfiguration?.handler?.enabled
+  return !!collector.id // return !!collector.managedConfiguration?.handler?.enabled
 })
 
 const onSwitchChange = (val) => {
@@ -231,7 +231,7 @@ const onTypeChange = (e, option) => {
 }
 
 watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {
-  if (firstRender && __type) {
+  if (firstRender && (__type || formData.id)) {
     data.value = !!val
     const _configuration = formData.managedConfiguration?.handler?.configuration || {}
     type.value = _configuration.reason || _configuration.code
@@ -251,6 +251,15 @@ watch(() => data.value, (newVal) => {
   }
 }, {
   immediate: true  // 确保初始打开时也记录快照
+})
+
+watch(() => collector.id, (val) => {
+  if (!!val) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
 })
 
 onMounted(() => {

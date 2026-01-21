@@ -8,7 +8,7 @@
       @outside="onOutsize"
       :showExtra="showExtra"
   >
-    <template #extraTemplate v-if="_deadband.type">
+    <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item :label="$t('DataCollect.index.400154-17')">
           <j-ellipsis>{{ _deadband?.type || '--' }}</j-ellipsis>
@@ -173,7 +173,7 @@ const _deadband = computed(() => {
   }
   return {
     type: __value?.[0]?.column === `this['currentValue'] - this['lastValue']` ? $t('DataCollect.index.400155-1') : '',
-    range: `${__value?.[0]?.value}%`
+    range: `${__value?.[0]?.value || '--'}%`
   }
 })
 
@@ -184,7 +184,7 @@ const onRadioChange = () => {
 }
 
 const showExtra = computed(() => {
-  return !!collector.managedConfiguration?.deadband?.enabled
+  return !!collector.id // return !!collector.managedConfiguration?.deadband?.enabled
 })
 
 const onSwitchChange = (val) => {
@@ -272,7 +272,7 @@ const onValueChange = () => {
 }
 
 watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {
-  if (firstRender && __type) {
+  if (firstRender && (__type || formData.id)) {
     data.value = !!val
     // {$t('DataCollect.index.400156-12')}
     const _configuration = formData.managedConfiguration?.deadband?.configuration || {}
@@ -305,6 +305,15 @@ watch(() => data.value, (newVal) => {
   }
 }, {
   immediate: true  // {$t('DataCollect.index.400156-13')}
+})
+
+watch(() => collector.id, (val) => {
+  if (!!val) {
+    data.value = 'template'
+    onSwitchChange(data.value)
+  }
+}, {
+  immediate: true
 })
 </script>
 

@@ -43,6 +43,7 @@
               :fieldNames="{ key: 'id' }"
               blockNode
               @select="treeSelect"
+              v-model:expanded-keys="expandKeys"
           >
             <template #title="node">
               <div v-if="!node.channelId">
@@ -162,7 +163,7 @@ import {useI18n} from "vue-i18n";
 import type {ChannelEntity, CollectorEntity} from "./type";
 import {FOLD_TREE, COLLECTOR_TYPE, COLLECTOR_DATA} from '../data'
 import {getChannelActions, getCollectorActions} from "@data-collector-ui/views/data-collect/utils";
-import {omit} from "lodash-es";
+import {omit, uniqBy} from "lodash-es";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -220,7 +221,7 @@ const foldTree = inject(FOLD_TREE, ref(false));
 const nodeType = inject(COLLECTOR_TYPE);
 const currentNode = inject(COLLECTOR_DATA);
 const importType = ref<'channel' | 'collector'>('channel');
-
+const expandKeys = ref([])
 const filterValue = ref({})
 
 const _filterValue = inject('filter-value', reactive({
@@ -266,10 +267,10 @@ const filteredCollectors = computed(() => {
 });
 
 const filterTreeData = computed(() => {
-  console.log(filterValue.value, 'filterValue.value')
+  expandKeys.value = []
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
-    if (item.name.includes(searchValue.value)
+    if ((!searchValue.value || item.name.includes(searchValue.value))
         && (filterValue.value?.provider?.includes(item.provider) || !filterValue.value?.provider?.length)
         && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
         && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
@@ -278,11 +279,13 @@ const filterTreeData = computed(() => {
       // 如果有子节点（采集器），也需要过滤
       if (arr.length) {
         item.children = arr.filter((child: any) => {
-          return child.name.includes(searchValue.value) &&
-              (filterValue.value?.collectorState?.includes(child.runningState?.value) ||
-                  filterValue.value?.collectorState?.includes(child.state?.value) ||
+          return (!searchValue.value || child.name.includes(searchValue.value)) &&
+              (filterValue.value?.collectorState?.includes(child.state?.value) ||
                   !filterValue.value?.collectorState?.length)
         });
+        if (item.children.length && filterValue.value.collectorState?.length) {
+          expandKeys.value.push(item.id)
+        }
       }
       return true;
     }
@@ -330,11 +333,27 @@ const loadAllData = async () => {
     await loadChannels();
     await loadCollectors();
     // 设置默认选中全部
-    selectedKeys.value = ["all"];
-    selectedNode.value = {
-      id: 'all',
-      name: $t('DataCollect.index.400150-3'),
-    };
+    if (nodeType.value === 'collector') {
+      selectedNode.value = collectorList.value.filter(i => i.id === selectedKeys.value?.[0])?.[0]
+    }
+    if (nodeType.value === 'channel') {
+      selectedNode.value = channelList.value.filter(i => i.id === selectedKeys.value?.[0])?.[0]
+    }
+
+    if (!selectedNode.value?.id) {
+      selectedNode.value = {
+        id: 'all',
+        name: $t('DataCollect.index.400150-3'),
+      };
+      selectedKeys.value = ["all"];
+      nodeType.value = 'all'
+    }
+
+    emit(
+        "change",
+        nodeType.value,
+        selectedNode.value
+    );
   } catch (error) {
     console.error($t('DataCollect.index.400150-5'), error);
   }
@@ -344,6 +363,7 @@ const loadAllData = async () => {
 const loadChannels = async () => {
   loading.value = true;
   const res = await queryNoPaging({
+    paging: false,
     sorts: [
       {
         name: "createTime",

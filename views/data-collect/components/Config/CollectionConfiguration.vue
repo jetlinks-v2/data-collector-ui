@@ -142,7 +142,7 @@ const options = computed(() => {
 })
 
 const showExtra = computed(() => {
-  return !!collector?.accessModes?.length && !!collector?.interval
+  return !!collector.id// !!collector?.accessModes?.length && !!collector?.interval
 })
 
 const _features = computed(() => {
@@ -232,8 +232,17 @@ watch(() => data.value, (newVal) => {
   immediate: true  // {$t('DataCollect.index.400156-13')}
 })
 
-watch(() => [collector.accessModes, collector.interval], () => {
-  if (collector.accessModes?.length > 0 && collector.interval) {
+// watch(() => [collector.accessModes, collector.interval], () => {
+//   if (collector.accessModes?.length > 0 && collector.interval) {
+//     data.value = 'template'
+//     onSwitchChange(data.value)
+//   }
+// }, {
+//   immediate: true
+// })
+
+watch(() => collector.id, (val) => {
+  if (!!val) {
     data.value = 'template'
     onSwitchChange(data.value)
   }

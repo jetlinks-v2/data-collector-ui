@@ -1,6 +1,6 @@
 <template>
   <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="800"
-            @close="emit('close')">
+            @close="emit('close')" :maskClosable="false">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -257,6 +257,7 @@ watch(() => [props.channel, props.data], ([val, val1]) => {
     })
     onChange(props.data)
   }
+  console.log(formData, 'formData')
 }, {
   immediate: true,
   deep: true
