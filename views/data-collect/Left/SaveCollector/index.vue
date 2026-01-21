@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="800"
+  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="900"
             @close="emit('close')" :maskClosable="false">
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
@@ -154,6 +154,7 @@ const formRef = ref(null);
 const jsonData = ref();
 const loading = ref(false);
 const configuration = ref({})
+const oldCollector = ref({})
 
 const defaultKeys = ['accessModes', 'features', 'interval', 'managedConfiguration']
 
@@ -162,6 +163,7 @@ provide("plugin-form-channel", props.channel);
 provide('point-form-collector', {})
 provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
 provide('metadata-configuration', configuration)
+provide('old-collector', oldCollector)
 
 const _filterList = ["COLLECTOR_GATEWAY", "virtual"]
 const onChange = async (node) => {
@@ -237,6 +239,7 @@ watch(() => [props.channel, props.data], ([val, val1]) => {
   if (!val1.id) {
     const obj = getCollectorTemplate(val?.id)
     if (obj) {
+      oldCollector.value = obj
       Object.assign(formData, obj)
       const _template = obj.configuration?.template || {}
       defaultKeys.forEach(i => { // 转换模板中的数据
@@ -250,6 +253,7 @@ watch(() => [props.channel, props.data], ([val, val1]) => {
     }
     onChange(val)
   } else {
+    oldCollector.value = {}
     Object.assign(formData, val1)
     const _template = val1.configuration?.template || {}
     defaultKeys.forEach(i => { // 转换模板中的数据

@@ -60,6 +60,7 @@ const collector = inject('point-form-collector', {})
 const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
+const oldCollector = inject('old-collector', ref({}))
 
 let firstRender = true // {$t('DataCollect.index.400156-4')}
 // {$t('DataCollect.index.400156-5')}
@@ -191,7 +192,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
-  if (firstRender && (__type || formData.id)) {
+  if (firstRender && (__type || formData.id || oldCollector.value?.channelId)) {
     data.value = !!val
     const _configuration = formData.managedConfiguration?.outlier?.configuration || {min: undefined, max: undefined}
     terms.value = {

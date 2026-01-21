@@ -27,6 +27,8 @@ watch(() => info.value, () => {
   Object.assign(formData, info.value)
   formData.accessModes = map(formData.accessModes, 'value')
   formData.features = map(formData.features, 'value')
+
+  console.log(formData, 'formData')
 }, {
   immediate: true
 })

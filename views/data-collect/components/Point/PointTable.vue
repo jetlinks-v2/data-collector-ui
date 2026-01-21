@@ -28,7 +28,7 @@
         "
     >
       <template #headerCell="{ column }">
-        <template v-if="['name', 'updateTime', 'interval'].includes(column.key)">
+        <template v-if="['name', 'modifyTime', 'interval'].includes(column.key)">
           <div class="header-cell-title">
             <j-ellipsis>{{ column.title }}</j-ellipsis>
             <a-popover>
@@ -110,7 +110,7 @@
           <div class="name" @click="handleView(slotProps)">
             <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
           </div>
-          <div style="width: 80px">
+          <div style="width: 60px">
             <j-badge-status
                 :status="slotProps?.runningState?.value"
                 :text="slotProps?.runningState?.text"
@@ -214,7 +214,7 @@ import Import from "@data-collector-ui/views/data-collect/components/Import/inde
 const {t: $t} = useI18n();
 const sortValue = reactive({
   name: undefined,
-  updateTime: undefined,
+  modifyTime: undefined,
   interval: undefined,
 })
 const params = ref({})
@@ -283,95 +283,102 @@ const onResizeColumn = (w, col) => {
   }
 }
 
-const batchActions = [
-  {
-    key: 'enabled',
-    text: $t('DataCollect.index.400151-17'),
-    ghost: true,
-    type: 'primary',
-    icon: 'CheckCircleOutlined',
-    selected: {
-      popConfirm: {
-        title: $t('DataCollect.index.400151-18'),
-        onConfirm: async () => {
-          if (!_selectedRowKeys.value.length) {
-            onlyMessage($t('Point.index.400149-15'), 'error');
-            return
-          }
-          const arr = _selectedRows.value.map(i => {
-            return {
-              ...i,
-              state: 'enabled'
-            }
-          })
-          const response = await savePointBatch(arr)
-          if (response.success) {
-            onRefresh(true)
-            onlyMessage($t('Point.index.400149-14'), 'success');
-          }
-        },
-      },
-    }
-  },
-  {
-    key: 'update',
-    text: $t('DataCollect.index.400151-19'),
-    ghost: true,
-    type: 'primary',
-    icon: 'EditOutlined',
-    selected: {
-      onClick: () => {
-        visible.batchUpdate = true
+const batchActions = computed(() => {
+  const arr = []
+  const flag = type.value === 'collector' && !!data.value.id;
+  if (flag) {
+    arr.push({
+      key: 'update',
+      text: $t('DataCollect.index.400151-19'),
+      ghost: true,
+      type: 'primary',
+      icon: 'EditOutlined',
+      selected: {
+        onClick: () => {
+          visible.batchUpdate = true
+        }
       }
-    }
-  },
-  {
-    key: 'disable',
-    text: $t('DataCollect.index.400151-20'),
-    danger: true,
-    icon: 'StopOutlined',
-    selected: {
-      popConfirm: {
-        title: $t('DataCollect.index.400151-21'),
-        onConfirm: async () => {
-          const arr = _selectedRows.value.map(i => {
-            return {
-              ...i,
-              state: 'disabled'
+    },)
+  }
+  return [
+    ...arr,
+    {
+      key: 'enabled',
+      text: $t('DataCollect.index.400151-17'),
+      ghost: true,
+      type: 'primary',
+      icon: 'CheckCircleOutlined',
+      selected: {
+        popConfirm: {
+          title: $t('DataCollect.index.400151-18'),
+          onConfirm: async () => {
+            if (!_selectedRowKeys.value.length) {
+              onlyMessage($t('Point.index.400149-15'), 'error');
+              return
             }
-          })
-          const response = await savePointBatch(arr)
-          if (response.success) {
-            onRefresh(true)
-            onlyMessage($t('Point.index.400149-14'), 'success');
-          }
+            const arr = _selectedRows.value.map(i => {
+              return {
+                ...i,
+                state: 'enabled'
+              }
+            })
+            const response = await savePointBatch(arr)
+            if (response.success) {
+              onRefresh(true)
+              onlyMessage($t('Point.index.400149-14'), 'success');
+            }
+          },
+        },
+      }
+    },
+    {
+      key: 'disable',
+      text: $t('DataCollect.index.400151-20'),
+      danger: true,
+      icon: 'StopOutlined',
+      selected: {
+        popConfirm: {
+          title: $t('DataCollect.index.400151-21'),
+          onConfirm: async () => {
+            const arr = _selectedRows.value.map(i => {
+              return {
+                ...i,
+                state: 'disabled'
+              }
+            })
+            const response = await savePointBatch(arr)
+            if (response.success) {
+              onRefresh(true)
+              onlyMessage($t('Point.index.400149-14'), 'success');
+            }
+          },
         },
       },
     },
-  },
-  {
-    key: 'delete',
-    text: $t('DataCollect.index.400151-22'),
-    danger: true,
-    icon: 'DeleteOutlined',
-    selected: {
-      popConfirm: {
-        title: $t('Point.index.400149-6'),
-        onConfirm: async () => {
-          if (!_selectedRowKeys.value.length) {
-            onlyMessage($t('Point.index.400149-15'), 'error');
-            return
-          }
-          const response = await batchDeletePoint(_selectedRowKeys.value)
-          if (response.success) {
-            onRefresh(true)
-            onlyMessage($t('Point.index.400149-14'), 'success');
-          }
+    {
+      key: 'delete',
+      text: $t('DataCollect.index.400151-22'),
+      danger: true,
+      icon: 'DeleteOutlined',
+      selected: {
+        popConfirm: {
+          title: $t('Point.index.400149-6'),
+          onConfirm: async () => {
+            if (!_selectedRowKeys.value.length) {
+              onlyMessage($t('Point.index.400149-15'), 'error');
+              return
+            }
+            const response = await batchDeletePoint(_selectedRowKeys.value)
+            if (response.success) {
+              onRefresh(true)
+              onlyMessage($t('Point.index.400149-14'), 'success');
+            }
+          },
         },
       },
     },
-  },
-]
+  ]
+})
 
 const handleSubscribeValue = throttle((payload) => {
   propertyValue.value.set(payload.pointId, payload);
@@ -512,9 +519,9 @@ const onSelectChange = (item, state) => {
     _selectedRows.value.push(item);
   } else {
     arr.delete(item.id);
-    _selectedRows.value = _selectedRows.value.filter(i => i.id !== item.id);
   }
   _selectedRowKeys.value = [...arr.values()];
+  _selectedRows.value = _selectedRows.value.filter(i => _selectedRowKeys.value.includes(i.id))
 };
 
 const selectAll = (selected, selectedRows, changeRows) => {
@@ -534,8 +541,8 @@ const selectAll = (selected, selectedRows, changeRows) => {
       }
     });
     _selectedRowKeys.value = _ids;
-    _selectedRows.value = _selectedRows.value.filter(i => !_ids.includes(i.id));
   }
+  _selectedRows.value = _selectedRows.value.filter(i => _selectedRowKeys.value.includes(i.id))
 };
 
 const handleSort = (key, value) => {
@@ -611,6 +618,8 @@ const handleExport = async () => {
 
 const handleView = (data) => {
   _visible.point = true;
+  _visible.channel = false;
+  _visible.collector = false;
   current.value = cloneDeep(data);
 };
 
@@ -691,7 +700,8 @@ defineExpose({
 
 .name {
   cursor: pointer;
-  min-width: 60px;
+  flex: 1;
+  min-width: 0;
   //&:hover {
   color: @primary-color;
   //}

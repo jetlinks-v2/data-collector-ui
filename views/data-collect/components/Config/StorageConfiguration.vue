@@ -12,7 +12,9 @@
       <a-descriptions :column="1">
         <a-descriptions-item :label="item.label" v-for="item in list" :key="item.value">
           <j-ellipsis>
-            {{ collector?.features?.includes(item.value) ? $t('DataCollect.index.400154-0') : $t('DataCollect.index.400154-1') }}
+            {{
+              collector?.features?.includes(item.value) ? $t('DataCollect.index.400154-0') : $t('DataCollect.index.400154-1')
+            }}
           </j-ellipsis>
         </a-descriptions-item>
       </a-descriptions>
@@ -51,6 +53,7 @@ const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true // 第一次渲染
+const oldCollector = inject('old-collector', ref({}))
 
 // 记录初始值快照，用于检测变化
 const initialSnapshot = ref(null)
@@ -98,7 +101,7 @@ const onSwitchChange = (val) => {
   } else {
     formData.features = formData.features.filter(i => i === 'changedOnly')
   }
-  if(val !== true){
+  if (val !== true) {
     onOutsize()
   }
 }
@@ -126,7 +129,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.features, (val) => {
-  if (firstRender && (__type || formData.id)) {
+  if (firstRender && (__type || formData.id || oldCollector.value?.channelId)) {
     const flag = val.find(i => {
       return _list.includes(i)
     })

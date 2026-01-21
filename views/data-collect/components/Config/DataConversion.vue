@@ -92,6 +92,7 @@ const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true // 第一次渲染
+const oldCollector = inject('old-collector', ref({}))
 
 // 记录初始值快照，用于检测变化
 const initialSnapshot = ref(null)
@@ -183,7 +184,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.managedConfiguration?.converter?.enabled, (val) => {
-  if (firstRender && (__type || formData.id)) {
+  if (firstRender && (__type || formData.id || oldCollector.value?.channelId)) {
     data.value = !!val
     firstRender = false
   }

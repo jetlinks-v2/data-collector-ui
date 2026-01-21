@@ -91,9 +91,12 @@ const onRefresh = () => {
 }
 
 const onDetail = () => {
+  visible.point = false
   if (type.value === 'channel') {
     visible.channel = true
+    visible.collector = false
   } else if (type.value === 'collector') {
+    visible.channel = false
     visible.collector = true
   }
 }

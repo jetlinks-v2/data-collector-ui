@@ -11,12 +11,14 @@
     <template #extraTemplate>
       <a-descriptions :column="1">
         <a-descriptions-item :label="$t('DataCollect.index.400155-13')">
-          {{ collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled ? $t('DataCollect.index.400155-14') : $t('DataCollect.index.400155-15') }}
+          {{
+            collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled ? $t('DataCollect.index.400155-14') : $t('DataCollect.index.400155-15')
+          }}
         </a-descriptions-item>
       </a-descriptions>
       <template v-if="collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled">
         <p v-if="_handler?.reason && _handler.time && _handler?.threshold">
-          <b>{{_handler?.reason}}</b>
+          <b>{{ _handler?.reason }}</b>
           {{ `异常时,${_handler.time}秒内最多触发${_handler?.threshold}次同一类型告警` }}
         </p>
       </template>
@@ -40,17 +42,19 @@
           <a-select
               show-search
               :placeholder="$t('DataCollect.index.400155-17')"
-              style="width: 160px;
+              style="width: 240px;
               margin: 0 10px"
               :options="options"
               v-model:value="type"
               @change="onTypeChange"
           />
           {{ $t('DataCollect.index.400155-18') }}
-          <a-input-number :placeholder="$t('DataCollect.index.400155-19')" style="margin: 0 10px" :min="0" :precision="0"
+          <a-input-number :placeholder="$t('DataCollect.index.400155-19')" style="margin: 0 10px" :min="0"
+                          :precision="0"
                           v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.time"/>
           {{ $t('DataCollect.index.400155-20') }}
-          <a-input-number :placeholder="$t('DataCollect.index.400155-19')" style="margin: 0 10px" :min="1" :precision="0"
+          <a-input-number :placeholder="$t('DataCollect.index.400155-19')" style="margin: 0 10px" :min="1"
+                          :precision="0"
                           v-model:value="formData.managedConfiguration.handler.configuration.shakeLimit.threshold"/>
           {{ $t('DataCollect.index.400155-21') }}
         </template>
@@ -80,6 +84,7 @@ const collector = inject('point-form-collector', {})
 const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 const errorList = ref([])
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
+const oldCollector = inject('old-collector', ref({}))
 
 let firstRender = true // 第一次渲染
 
@@ -174,7 +179,7 @@ const showExtra = computed(() => {
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
-  if(val !== true){
+  if (val !== true) {
     onOutsize()
   }
 }
@@ -231,7 +236,7 @@ const onTypeChange = (e, option) => {
 }
 
 watch(() => formData.managedConfiguration?.handler?.enabled, (val) => {
-  if (firstRender && (__type || formData.id)) {
+  if (firstRender && (__type || formData.id || oldCollector.value?.channelId)) {
     data.value = !!val
     const _configuration = formData.managedConfiguration?.handler?.configuration || {}
     type.value = _configuration.reason || _configuration.code

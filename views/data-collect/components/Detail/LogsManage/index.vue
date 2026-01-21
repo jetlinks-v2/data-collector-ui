@@ -10,7 +10,7 @@
             <a-select-option value="ERROR">ERROR</a-select-option>
             <a-select-option value="DEBUG">DEBUG</a-select-option>
           </a-select>
-          <div class="search-container">
+          <div class="search-container-1">
             <a-input-search
               :placeholder="$t('DataCollect.index.400155-41')"
               class="search-input"
@@ -522,7 +522,7 @@ onBeforeUnmount(() => {
         border-radius: 2px;
       }
 
-      .search-container {
+      .search-container-1 {
         position: relative;
         display: flex;
         align-items: center;
