@@ -18,7 +18,7 @@ export const getChannelActions = (data: Partial<Record<string, any>>, onAction: 
         {
             text: i18n.global.t('DataCollect.index.400151-3'),
             icon: "PlusCircleOutlined",
-            key: "add-collector",
+            key: "add",
             disabled: state === "disabled",
             tooltip: {
                 title:
