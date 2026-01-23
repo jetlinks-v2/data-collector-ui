@@ -79,7 +79,6 @@ let firstRender = true
 const initialSnapshot = ref(null)
 
 if (!('managedConfiguration' in formData)) {
-  debugger
   formData.managedConfiguration = {
     byteLayout: undefined,
     codec: undefined,
@@ -158,7 +157,7 @@ const onSwitchChange = (val) => {
     codec: val === 'template' ? collector?.managedConfiguration?.codec : undefined,
     byteLayout: val === 'template' ? collector?.managedConfiguration?.byteLayout : undefined,
   }
-  if(!val){
+  if (!val) {
     // 需要立即保存
     onOutsize()
   }
@@ -203,8 +202,14 @@ onMounted(() => {
 })
 
 watch(() => formData.managedConfiguration?.codec, () => {
-  if (firstRender && __type) {
-    data.value = !!(formData?.managedConfiguration?.codec && formData?.managedConfiguration?.byteLayout)
+  if (firstRender) {
+    if (!props.showSwitch) {
+      data.value = true
+    } else if (__type) {
+      data.value = !!(formData?.managedConfiguration?.codec && formData?.managedConfiguration?.byteLayout)
+    } else {
+      data.value = false
+    }
     firstRender = false
   }
 }, {

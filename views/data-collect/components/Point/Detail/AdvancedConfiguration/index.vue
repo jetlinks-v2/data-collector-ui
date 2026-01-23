@@ -12,7 +12,7 @@ import DeadZone from "@data-collector-ui/views/data-collect/components/Config/De
 import ResultProcessing from "@data-collector-ui/views/data-collect/components/Config/ResultProcessing.vue";
 import StorageConfiguration from "@data-collector-ui/views/data-collect/components/Config/StorageConfiguration.vue";
 import AbnormalJudgment from "@data-collector-ui/views/data-collect/components/Config/AbnormalJudgment.vue";
-import {map} from "lodash-es";
+import {cloneDeep, map} from "lodash-es";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 
 const emits = defineEmits(['save'])
@@ -24,11 +24,9 @@ const formRef = ref(null)
 const formData = reactive({});
 
 watch(() => info.value, () => {
-  Object.assign(formData, info.value)
+  Object.assign(formData, cloneDeep(info.value))
   formData.accessModes = map(formData.accessModes, 'value')
   formData.features = map(formData.features, 'value')
-
-  console.log(formData, 'formData')
 }, {
   immediate: true
 })
@@ -37,15 +35,28 @@ provide('plugin-form', formData)
 provide(PLUGIN_DETAIL_SAVE_EVENTS, {
   onValueChange: async () => {
     const res = await formRef.value?.validate().catch((err) => {
-      errorList.value = err
+      errorList.value = err.errorFields || []
     })
     // 校验表单  保存
     if (res) {
       emits('save', formData)
+    } else {
+      errorList.value = []
     }
   }
 });
 provide(DATA_COLLECTOR_CONFIG_TYPE, true) // 是否需要立即保存
+
+defineExpose({
+  onSave: async () => {
+    const res = await formRef.value?.validate().catch((err) => {
+      errorList.value = err.errorFields || []
+    })
+    if (res) {
+      return true
+    }
+  }
+})
 </script>
 
 <style lang="less" scoped>

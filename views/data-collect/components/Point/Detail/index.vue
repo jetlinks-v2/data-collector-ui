@@ -1,6 +1,13 @@
 <template>
-  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="emits('close')" destroy-on-close
-            :maskClosable="false">
+  <a-drawer
+      open
+      :mask="loading"
+      :maskStyle="{opacity: 0}"
+      width="1000px"
+      @close="onClose"
+      destroy-on-close
+      :maskClosable="false"
+  >
     <template #title>
       <div class="header">
         <InputEditable
@@ -37,13 +44,17 @@
         <a-descriptions-item :label="$t('DataCollect.index.400151-36')">
           <j-ellipsis>{{ info.provider }}</j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('DataCollect.index.400151-37')"><j-ellipsis>{{
-            info.collectorName || info.collectorId || '--'
-          }}</j-ellipsis>
+        <a-descriptions-item :label="$t('DataCollect.index.400151-37')">
+          <j-ellipsis>{{
+              info.collectorName || info.collectorId || '--'
+            }}
+          </j-ellipsis>
         </a-descriptions-item>
-        <a-descriptions-item :label="$t('DataCollect.index.400151-38')"><j-ellipsis>{{
-            info.channelName || '--'
-          }}</j-ellipsis>
+        <a-descriptions-item :label="$t('DataCollect.index.400151-38')">
+          <j-ellipsis>{{
+              info.channelName || '--'
+            }}
+          </j-ellipsis>
         </a-descriptions-item>
         <a-descriptions-item :label="$t('DataCollect.index.400151-39')">
           <InputEditable
@@ -58,7 +69,7 @@
         <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
       </a-tabs>
       <full-page>
-        <component :is="tabs[activeKey]" @save="onSaveData"/>
+        <component :is="tabs[activeKey]" @save="onSaveData" ref="componentsRef"/>
       </full-page>
     </a-spin>
   </a-drawer>
@@ -75,6 +86,7 @@ import {
 } from "@data-collector-ui/views/data-collect/utils";
 import {omit, set} from "lodash-es";
 import {useI18n} from 'vue-i18n';
+import {Modal} from "ant-design-vue";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -88,6 +100,7 @@ const info = ref(props.data)
 const loading = ref(false)
 const activeKey = ref('Info')
 const errorList = ref([])
+const componentsRef = ref()
 const tabsList = [
   {
     key: 'Info',
@@ -128,16 +141,46 @@ const queryInfo = async (id) => {
   }
 }
 
-const onActions = () => {
+const onActions = (key) => {
   emits('refresh')
+  if (key === 'delete') {
+    emits('close')
+  }
 }
 
 const handleSearch = (id) => {
   queryInfo(id)
 }
 
-const onTabChange = (e) => {
-  activeKey.value = e
+const handleClose = (next) => {
+  if (errorList.value.length) {
+    Modal.confirm({
+      title: '还有未保存的修改,确定关闭吗?',
+      onOk() {
+        next?.()
+        errorList.value = []
+      },
+    });
+  } else {
+    next?.()
+  }
+}
+
+const onClose = () => {
+  handleClose(() => {
+    emits('close')
+  })
+}
+
+const onTabChange = async (e) => {
+  if (['AdvancedConfiguration', 'Info'].includes(activeKey.value)) {
+    await componentsRef.value?.onSave?.()
+    handleClose(() => {
+      activeKey.value = e
+    })
+  } else {
+    activeKey.value = e
+  }
 }
 
 const onSave = (arr) => {

@@ -7,6 +7,7 @@
       @change="onSwitchChange"
       @outside="onOutsize"
       :showExtra="showExtra"
+      :disabledList="disabledList"
   >
     <template #extraTemplate>
       <a-descriptions :column="1">
@@ -95,6 +96,10 @@ const props = defineProps({
   showSwitch: {
     type: Boolean,
     default: true
+  },
+  disabledList: {
+    type: Array,
+    default: []
   }
 })
 const formData = inject('plugin-form', reactive({

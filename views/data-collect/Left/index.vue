@@ -267,7 +267,7 @@ const filteredCollectors = computed(() => {
 });
 
 const filterTreeData = computed(() => {
-  expandKeys.value = []
+  // expandKeys.value = []
   //根据过滤条件和搜索数据筛选树
   return treeData.value.filter((item) => {
     if ((!searchValue.value || item.name.includes(searchValue.value))

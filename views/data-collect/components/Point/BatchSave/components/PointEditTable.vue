@@ -11,7 +11,7 @@
         :key="item.dataIndex"
         v-slot:[item.dataIndex]="{ record, index }"
     >
-      <j-edit-table-form-item :name="[index, item.form?.name || item.dataIndex]">
+      <j-edit-table-form-item :name="[index, item?.form?.name || item.dataIndex]">
         <div class="scan-ditto-box">
           <div style="min-width: 0;flex: 1">
             <component
@@ -126,7 +126,7 @@ const _columns = computed(() => {
 })
 
 const getFieldValue = (record, item) => {
-  const value = get(record, item.form?.name || [item.dataIndex])
+  const value = get(record, item?.form?.name || [item.dataIndex])
   if (item.template.getValue) {
     return item.template.getValue(value)
   }
@@ -160,7 +160,7 @@ const onCheckChange = (e, item, record) => {
   record.sames[item.dataIndex] = checked
 
   if (checked && record.__dataIndex !== 0) {
-    const formName = item.form?.name || [item.dataIndex]
+    const formName = item?.form?.name || [item.dataIndex]
     const dataIndex = item.dataIndex
     const prevValue = get(_dataSource.value[record.__dataIndex - 1], formName)
     sameValue(record.__dataIndex - 1,  formName, dataIndex, prevValue)
@@ -177,7 +177,7 @@ const onCheckChange = (e, item, record) => {
 // 字段值变化时，如果下一行勾选了同上，需要同步更新
 const onFieldChange = (value, item, record) => {
   let _value = value.target ? value.target.value : value
-  const formName = item.form?.name || [item.dataIndex]
+  const formName = item?.form?.name || [item.dataIndex]
   const dataIndex = item.dataIndex
   if (item.template.handleChange) {
     _value = item.template.handleChange(value, record.__dataIndex)
@@ -212,7 +212,7 @@ const removeItem = (record, index) => {
     Object.keys(sames).forEach(key => {
       if (!sames[key]) {
         const column = _columns.value.find(item => item.dataIndex === key)
-        const formName = column.form?.name || key
+        const formName = column?.form?.name || key
         sameValue(record.__dataIndex, formName, key, get(prevRecord, formName))
       }
     })

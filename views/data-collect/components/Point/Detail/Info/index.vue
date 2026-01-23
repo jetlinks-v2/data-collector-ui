@@ -6,9 +6,6 @@
           v-if="jsonData"
           :value="jsonData"
       />
-      <!--      <template v-if="configuration?.autoCodec === false">-->
-      <!--        <DataParsing/>-->
-      <!--      </template>-->
       <DataParsing/>
       <CollectionConfiguration :showSwitch="false"/>
       <DataConversion/>
@@ -23,7 +20,7 @@ import CollectionConfiguration
 import DataConversion from "@data-collector-ui/views/data-collect/components/Config/DataConversion.vue";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
-import {map} from "lodash-es";
+import {cloneDeep, map} from "lodash-es";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 import {useI18n} from "vue-i18n";
@@ -45,7 +42,7 @@ const onChange = async (node) => {
 
 watch(() => info.value, () => {
   onChange(info.value)
-  Object.assign(formData, info.value)
+  Object.assign(formData, cloneDeep(info.value))
   formData.accessModes = map(formData.accessModes, 'value')
   formData.features = map(formData.features, 'value')
 }, {
@@ -54,16 +51,18 @@ watch(() => info.value, () => {
 
 provide('plugin-form', formData)
 provide(PLUGIN_DETAIL_SAVE_EVENTS, {
-  onValueChange: (_arr) => {
-    setTimeout(async () => {
-      const res = await formRef.value?.validate().catch((err) => {
-        errorList.value = err
-      })
-      // 校验表单  保存
-      if (res) {
-        emits('save', formData)
-      }
+  onValueChange: async (_arr) => {
+    // setTimeout(async () => {
+    const res = await formRef.value?.validate().catch((err) => {
+      errorList.value = err.errorFields || []
     })
+    // 校验表单  保存
+    if (res) {
+      emits('save', formData)
+    } else {
+      errorList.value = []
+    }
+    // })
   }
 });
 provide(DATA_COLLECTOR_CONFIG_TYPE, true) // 是否需要立即保存
@@ -76,6 +75,17 @@ provide('point-metadata-events', {
       })
     } else {
       configuration.value = {}
+    }
+  }
+})
+
+defineExpose({
+  onSave: async () => {
+    const res = await formRef.value?.validate().catch((err) => {
+      errorList.value = err.errorFields || []
+    })
+    if (res) {
+      return true
     }
   }
 })

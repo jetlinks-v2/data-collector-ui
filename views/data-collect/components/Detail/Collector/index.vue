@@ -1,5 +1,6 @@
 <template>
-  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="onClose" destroy-on-close
+            :maskClosable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -58,11 +59,11 @@
           />
         </a-descriptions-item>
       </a-descriptions>
-      <a-tabs v-model:activeKey="activeKey">
+      <a-tabs :activeKey="activeKey" @change="onChange">
         <a-tab-pane v-for="item in tabsList" :key="item.key" :tab="item.tab"/>
       </a-tabs>
       <full-page>
-        <component :is="tabs[activeKey]" @save="onSave"/>
+        <component :is="tabs[activeKey]" ref="componentsRef" @save="onSave"/>
       </full-page>
     </a-spin>
   </a-drawer>
@@ -79,6 +80,8 @@ import {
 import {detail} from "@data-collector-ui/api/data-collect/collector";
 import {omit, pick, set} from "lodash-es";
 import {useI18n} from "vue-i18n";
+import {onlyMessage} from "@jetlinks-web/utils";
+import {Modal} from "ant-design-vue";
 
 const {t: $t} = useI18n();
 const props = defineProps({
@@ -93,10 +96,13 @@ provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
 
 const activeKey = ref('Info', 'refresh')
 const countList = ref([])
+const errorList = ref([])
 const info = ref({})
 const loading = ref(false)
 const defaultKeys = ['accessModes', 'features', 'interval', 'managedConfiguration']
+const componentsRef = ref()
 
+provide('point-template-error-list', errorList)
 provide('collector-info', info)
 
 const tabsList = [
@@ -173,6 +179,37 @@ const onSave = (arr) => {
     handleSearch(info.value.id)
     emits('refresh')
   })
+}
+
+const handleClose = (next) => {
+  if (errorList.value.length) {
+    Modal.confirm({
+      title: '还有未保存的修改,确定关闭吗?',
+      onOk() {
+        next?.()
+        errorList.value = []
+      },
+    });
+  } else {
+    next?.()
+  }
+}
+
+const onClose = () => {
+  handleClose(() => {
+    emits('close')
+  })
+}
+
+const onChange = async (e) => {
+  if (activeKey.value === 'PointTemplate') {
+    await componentsRef.value?.onSave?.()
+    handleClose(() => {
+      activeKey.value = e
+    })
+  } else {
+    activeKey.value = e
+  }
 }
 
 watch(() => props.data.id, (val) => {

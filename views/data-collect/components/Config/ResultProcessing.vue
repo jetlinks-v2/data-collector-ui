@@ -179,6 +179,16 @@ const showExtra = computed(() => {
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
+  formData.managedConfiguration.handler.configuration = {
+    "reason": "deadband",
+    shakeLimit: {
+      enabled: false,
+      "alarmFirst": true,
+      "outputFirst": false,
+      "continuous": false,
+      "rolling": false
+    }
+  }
   if (val !== true) {
     onOutsize()
   }

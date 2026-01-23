@@ -9,8 +9,8 @@
     <div
         v-for="item in list"
         :key="item.value"
-        @click="onChange(item.value)"
-        :class="{'active': item.value === _value}"
+        @click="onChange(item)"
+        :class="{'active': item.value === _value, 'disabled': item.disabled}"
     >
       <j-ellipsis>{{ item.label }}</j-ellipsis>
       <a-popover v-if="showExtra && item.value === 'template'" trigger="hover">
@@ -41,6 +41,10 @@ const props = defineProps({
   showExtra: {
     type: Boolean,
     default: true,
+  },
+  disabledList: {
+    type: Array,
+    default: []
   }
 })
 const emit = defineEmits(['update:value', 'change'])
@@ -50,16 +54,19 @@ const list = computed(() => {
     {
       label: $t('DataCollect.index.400154-19'),
       value: true,
+      disabled: props.disabledList.includes(true)
     },
     {
       label: $t('DataCollect.index.400154-20'),
       value: false,
+      disabled: props.disabledList.includes(false)
     }
   ]
   if (props.showExtra) {
     arr.push({
       label: $t('DataCollect.index.400154-21'),
-      value: 'template'
+      value: 'template',
+      disabled: props.disabledList.includes('template')
     })
   }
   return arr
@@ -74,10 +81,12 @@ watch(() => props.value, (val) => {
 })
 
 
-const onChange = (e) => {
-  const val = e
-  emit('update:value', val)
-  emit('change', val)
+const onChange = (item) => {
+  if(!item.disabled){
+    const val = item.value
+    emit('update:value', val)
+    emit('change', val)
+  }
 }
 </script>
 
@@ -107,6 +116,11 @@ const onChange = (e) => {
     &.active {
       background-color: @primary-color;
       color: #fff;
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      color: @disabled-color;
     }
   }
 }

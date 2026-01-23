@@ -144,16 +144,14 @@ const showExtra = computed(() => {
 })
 
 const onSwitchChange = (val) => {
-  formData.managedConfiguration = {
-    ...formData.managedConfiguration,
-    converter: {
-      ...formData.managedConfiguration.converter,
-      enabled: !!val,
-      configuration: {
-        ...formData.managedConfiguration.converter.configuration,
-        factor: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.factor : undefined,
-        scale: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.scale : undefined
-      }
+  formData.managedConfiguration.converter = {
+    ...formData.managedConfiguration.converter,
+    enabled: !!val,
+    provider: 'scale',
+    configuration: {
+      ...formData.managedConfiguration.converter.configuration,
+      factor: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.factor : undefined,
+      scale: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.scale : undefined
     }
   }
   if (val !== true) {

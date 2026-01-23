@@ -32,7 +32,7 @@
           <template v-if="configuration?.autoCodec === false">
             <DataParsing/>
           </template>
-          <CollectionConfiguration/>
+          <CollectionConfiguration :disabledList="[false]"/>
           <DataConversion/>
           <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
             {{ $t('DataCollect.index.400151-30') }}

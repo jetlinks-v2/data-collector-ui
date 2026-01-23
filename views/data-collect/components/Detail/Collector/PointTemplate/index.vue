@@ -22,7 +22,7 @@ import StorageConfiguration from "@data-collector-ui/views/data-collect/componen
 import DataParsing from "@data-collector-ui/views/data-collect/components/Config/DataParsing.vue";
 import CollectionConfiguration
   from "@data-collector-ui/views/data-collect/components/Config/CollectionConfiguration.vue";
-import {map} from "lodash-es";
+import {cloneDeep, map} from "lodash-es";
 import {
   DATA_COLLECTOR_CONFIG_TYPE,
   DATA_COLLECTOR_SAVE_TYPE,
@@ -35,13 +35,14 @@ const {t: $t} = useI18n();
 
 const emits = defineEmits(['save'])
 const info = inject('collector-info', ref({}))
+const errorList = inject('point-template-error-list', ref([]))
 
 const formData = reactive({});
 const formRef = ref(null)
 const configuration = ref({})
 
 watch(() => info.value, () => {
-  Object.assign(formData, info.value)
+  Object.assign(formData, cloneDeep(info.value))
   formData.accessModes = map(formData.accessModes, 'value')
   formData.features = map(formData.features, 'value')
   Object.assign(formData, formData.configuration?.template || {
@@ -63,17 +64,22 @@ watch(() => info.value, () => {
     }
   })
 }, {
-  immediate: true
+  immediate: true,
+  // deep: true
 })
 
 provide('plugin-form', formData)
 provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
 provide(PLUGIN_DETAIL_SAVE_EVENTS, {
   onValueChange: async (arr) => {
-    const res = await formRef.value?.validate(arr.map(i => i.name))
+    const res = await formRef.value?.validate().catch((err) => {
+      errorList.value = err.errorFields || []
+    })
     // 校验表单  保存
     if (res) {
       emits('save', arr)
+    } else {
+      errorList.value = []
     }
   }
 });
@@ -88,6 +94,17 @@ watch(() => formData?.provider, (val) => {
   }
 }, {
   immediate: true
+})
+
+defineExpose({
+  onSave: async () => {
+    const res = await formRef.value?.validate().catch((err) => {
+      errorList.value = err.errorFields || []
+    })
+    if (res) {
+      return true
+    }
+  }
 })
 </script>
 

@@ -10,7 +10,7 @@
       </div>
       <div>
         <slot v-if="showSwitch" name="extra" :onSwitch="onSwitch">
-          <CollapseRadio :value="_value" @change="onSwitch" :show-extra="showExtra">
+          <CollapseRadio :value="_value" @change="onSwitch" :show-extra="showExtra" :disabledList="disabledList">
             <template #extraTemplate>
               <div style="width: 200px">
                 <slot name="extraTemplate"></slot>
@@ -50,6 +50,10 @@ const props = defineProps({
   showExtra: {
     type: Boolean,
     default: true,
+  },
+  disabledList: {
+    type: Array,
+    default: []
   }
 })
 
