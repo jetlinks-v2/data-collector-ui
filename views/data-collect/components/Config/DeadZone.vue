@@ -204,7 +204,6 @@ const onSwitchChange = (val) => {
     ]
     formData.managedConfiguration.deadband.configuration = {}
   }
-
   if (val !== true) {
     onOutsize()
   }

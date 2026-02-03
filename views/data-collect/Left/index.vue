@@ -313,6 +313,11 @@ const onChannelAction = (key, data) => {
     currentChannel.value = data;
   } else {
     loadChannels();
+    //
+    if(key === 'delete'){
+      selectedKeys.value = ["all"];
+      nodeType.value = 'all'
+    }
   }
 }
 
@@ -323,6 +328,11 @@ const onCollectorAction = (key, data) => {
     currentChannel.value = {};
   } else {
     loadCollectors();
+    //
+    if(key === 'delete'){
+      selectedKeys.value = ["all"];
+      nodeType.value = 'all'
+    }
   }
 }
 

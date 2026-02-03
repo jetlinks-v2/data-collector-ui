@@ -157,6 +157,7 @@ const onSwitchChange = (val) => {
       }
     }
   }
+
   if (val !== true) {
     if (val === false) {
       terms.value = {
@@ -192,6 +193,7 @@ const onOutsize = () => {
 }
 
 watch(() => formData.managedConfiguration?.outlier?.enabled, (val) => {
+  console.log(val, 'enabled')
   if (firstRender && (__type || formData.id || oldCollector.value?.channelId)) {
     data.value = !!val
     const _configuration = formData.managedConfiguration?.outlier?.configuration || {min: undefined, max: undefined}

@@ -90,11 +90,11 @@ const props = defineProps({
     default: () => ({})
   },
 })
-const emits = defineEmits(['close'])
+const emits = defineEmits(['close', 'refresh'])
 
 provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
 
-const activeKey = ref('Info', 'refresh')
+const activeKey = ref('Info')
 const countList = ref([])
 const errorList = ref([])
 const info = ref({})
@@ -142,9 +142,10 @@ const handleSearch = (id) => {
 }
 
 const onActions = (key) => {
+  emits('refresh')
   // 刷新
   if (key === 'delete') {
-    emits('refresh')
+    emits('close')
   } else {
     handleSearch(info.value.id)
   }

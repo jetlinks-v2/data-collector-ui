@@ -122,9 +122,10 @@ const handleSearch = (id) => {
 }
 
 const onActions = (key) => {
+  emits('refresh')
   // 刷新
   if (key === 'delete') {
-    emits('refresh')
+    emits('close')
   } else {
     handleSearch(info.value.id)
   }

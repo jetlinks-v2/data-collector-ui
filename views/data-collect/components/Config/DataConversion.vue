@@ -155,7 +155,9 @@ const onSwitchChange = (val) => {
     }
   }
   if (val !== true) {
-    onOutsize()
+    setTimeout(() => { // 校验无法马上生效
+      onOutsize()
+    })
   }
 }
 

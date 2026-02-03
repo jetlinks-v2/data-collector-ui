@@ -64,8 +64,7 @@ watch(() => info.value, () => {
     }
   })
 }, {
-  immediate: true,
-  // deep: true
+  immediate: true
 })
 
 provide('plugin-form', formData)

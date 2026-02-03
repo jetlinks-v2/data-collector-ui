@@ -58,23 +58,26 @@ const oldCollector = inject('old-collector', ref({}))
 // 记录初始值快照，用于检测变化
 const initialSnapshot = ref(null)
 
-const list = [
-  {
-    label: $t('DataCollect.index.400154-2'),
-    value: 'storageData',
-    describe: $t('DataCollect.index.400154-3')
-  },
-  {
-    label: $t('DataCollect.index.400154-4'),
-    value: 'storageOutlier',
-    describe: $t('DataCollect.index.400154-5')
-  },
-  {
-    label: $t('DataCollect.index.400154-6'),
-    value: 'storageDeadband',
-    describe: $t('DataCollect.index.400154-7')
-  }
-]
+const list = computed(() => {
+  // console.log(formData.managedConfiguration.codec)
+  return [
+    {
+      label: $t('DataCollect.index.400154-2'),
+      value: 'storageData',
+      describe: $t('DataCollect.index.400154-3')
+    },
+    {
+      label: $t('DataCollect.index.400154-4'),
+      value: 'storageOutlier',
+      describe: $t('DataCollect.index.400154-5')
+    },
+    {
+      label: $t('DataCollect.index.400154-6'),
+      value: 'storageDeadband',
+      describe: $t('DataCollect.index.400154-7')
+    }
+  ]
+})
 
 const _list = ['storageData', 'storageOutlier', 'storageDeadband']
 

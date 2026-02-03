@@ -22,7 +22,7 @@
                       selectedRowKeys: _selectedRowKeys,
                       onSelect: onSelectChange,
                       onSelectAll: selectAll,
-                      onSelectNone: () => (_selectedRowKeys = [])
+                      onSelectNone: onSelectNone
                   }
                 : false
         "
@@ -401,10 +401,10 @@ const onDetailRefresh = () => {
 
 const subscribeProperty = (value) => {
   const list = map(value, 'id');
-  const channel = data?.value?.channelId || '*'
-  const collector = data?.value?.id || '*'
-  const id = `collector-${channel}-${collector}-data-${list.join('-')}`;
-  const topic = `/collector/${channel}/${collector}/data`;
+  const channel = type.value === 'all' ? ' * ' : (type.value === 'channel' ? data?.value?.id : data?.value?.channelId)
+  const collector = type.value === 'all' ? '*' : (type.value === 'collector' ? data?.value?.id : '*')
+  const id = `collector-${channel || '*'}-${collector || '*'}-data-${list.join('-')}`;
+  const topic = `/collector/${channel || '*'}/${collector || '*'}/data`;
   subRef.value = wsClient.getWebSocket(id, topic, {
     pointId: list.join(','),
   }).subscribe((res) => {
@@ -523,6 +523,11 @@ const onSelectChange = (item, state) => {
   _selectedRowKeys.value = [...arr.values()];
   _selectedRows.value = _selectedRows.value.filter(i => _selectedRowKeys.value.includes(i.id))
 };
+
+const onSelectNone = () => {
+  _selectedRowKeys.value = []
+  _selectedRows.value = []
+}
 
 const selectAll = (selected, selectedRows, changeRows) => {
   if (selected) {

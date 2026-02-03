@@ -236,7 +236,8 @@ const handleOk = async (flag) => {
 };
 
 watch(() => [props.channel, props.data], ([val, val1]) => {
-  if (!val1.id) {
+  const _val1 = cloneDeep(val1)
+  if (!_val1.id) {
     const obj = getCollectorTemplate(val?.id)
     if (obj) {
       oldCollector.value = obj
@@ -254,14 +255,13 @@ watch(() => [props.channel, props.data], ([val, val1]) => {
     onChange(val)
   } else {
     oldCollector.value = {}
-    Object.assign(formData, val1)
-    const _template = val1.configuration?.template || {}
+    Object.assign(formData, _val1)
+    const _template = _val1.configuration?.template || {}
     defaultKeys.forEach(i => { // 转换模板中的数据
       formData[i] = _template[i]
     })
     onChange(props.data)
   }
-  console.log(formData, 'formData')
 }, {
   immediate: true,
   deep: true
