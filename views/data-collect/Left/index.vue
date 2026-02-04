@@ -371,9 +371,6 @@ const loadAllData = async () => {
       selectedKeys.value = ["all"];
       nodeType.value = 'all'
     }
-debugger
-    console.log(selectedKeys.value, nodeType.value)
-
     emit(
         "change",
         nodeType.value,
