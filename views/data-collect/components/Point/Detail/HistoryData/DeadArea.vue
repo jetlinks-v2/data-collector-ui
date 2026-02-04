@@ -23,6 +23,7 @@ const { data: deathAreaData, run } = useRequest(dashboard, {
 })
 
 const deathAreaOptions = computed(() => {
+  const arr = deathAreaData.value.reverse()
   return {
     tooltip: {
       trigger: 'axis',
@@ -42,7 +43,7 @@ const deathAreaOptions = computed(() => {
     },
     xAxis: {
       type: 'category',
-      data: deathAreaData.value?.map(item => item.data?.timeString) || []
+      data: arr?.map(item => item.data?.timeString) || []
     },
     yAxis: {
       type: 'value'
@@ -50,7 +51,7 @@ const deathAreaOptions = computed(() => {
     series: [
       {
         name: $t('DataCollect.index.400151-57'),
-        data: deathAreaData.value?.map(item => item.data?.value) || [],
+        data: arr?.map(item => item.data?.value) || [],
         type: 'line',
         smooth: true
       }

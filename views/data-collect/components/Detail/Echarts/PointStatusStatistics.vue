@@ -42,7 +42,8 @@ const pointStatusOptions = computed(() => {
       formatter: (name) => {
         const data = pointStatusOptions.value.series[0].data;
         const item = data.find(d => d.name === name);
-        const percent = item ? ((item.value / data.reduce((sum, d) => sum + d.value, 0)) * 100).toFixed(2) : '0.00';
+        const dt = data.reduce((sum, d) => sum + d.value, 0)
+        const percent = item && !!dt ? ((item.value / dt) * 100).toFixed(2) : '0.00';
         return `{name|${name}}  {value|${item?.value || 0}}  {percent|${percent}%}`;
       },
       textStyle: {

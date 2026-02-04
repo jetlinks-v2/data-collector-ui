@@ -92,6 +92,7 @@ export const handlePointConfigMetadata = (data: Array<Record<string, any>>, pare
                 components: 'a-input',
             },
             width: 220,
+            ellipsis: true,
             form: {
                 name: _path
             }

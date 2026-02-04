@@ -30,10 +30,10 @@
             </div>
           </div>
           <template v-if="configuration?.autoCodec === false">
-            <DataParsing/>
+            <DataParsing :disabledList="[false]"/>
           </template>
           <CollectionConfiguration :disabledList="[false]"/>
-          <DataConversion/>
+          <DataConversion />
           <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
             {{ $t('DataCollect.index.400151-30') }}
             <AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
@@ -41,7 +41,9 @@
           <template v-if="configVisible">
             <AbnormalJudgment/>
             <DeadZone/>
-            <StorageConfiguration/>
+            <template v-if="formData.accessModes?.includes('read') ">
+              <StorageConfiguration/>
+            </template>
             <ResultProcessing/>
           </template>
         </a-form>

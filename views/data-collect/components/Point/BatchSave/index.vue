@@ -76,6 +76,15 @@ watch(() => route.params.id, (val) => {
     getDetail(val)
   }
 }, {immediate: true})
+
+onBeforeRouteLeave((to, from, next) => {
+  if(to.name === 'data-collect' && route.params.id) {
+    sessionStorage.setItem('collector-patch-add-key', route.params.id)
+  } else {
+    sessionStorage.setItem('collector-patch-add-key', '')
+  }
+  return next();
+})
 </script>
 
 <style lang="less" scoped>

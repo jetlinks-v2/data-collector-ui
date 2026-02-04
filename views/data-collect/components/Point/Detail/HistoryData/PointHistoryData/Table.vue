@@ -25,6 +25,9 @@
       <template #numberValue="slotProps">
         {{ !isNil(slotProps.numberValue) ? slotProps.numberValue : '--' }}
       </template>
+      <template #reason="slotProps">
+        {{reason[slotProps.reason] || slotProps.slotProps || "--"}}
+      </template>
       <template #action="slotProps">
         <a-button type="link">
           <AIcon type="SearchOutlined"/>
@@ -48,6 +51,12 @@ const props = defineProps({
     default: () => {}
   }
 })
+
+const reason = {
+  outlier: '异常数据',
+  deadband: '死区数据',
+  normal: '正常变化数据'
+}
 const columns = [
   {
     title: $t('DataCollect.index.400151-52'),
@@ -68,6 +77,20 @@ const columns = [
     dataIndex: 'numberValue',
     ellipsis: true,
     scopedSlots: true
+  },
+  {
+    title: '类型',
+    dataIndex: 'reason',
+    ellipsis: true,
+    search: {
+      type: 'select',
+      options: [
+        {label: '异常数据', value: 'outlier'},
+        {label: '死区数据', value: 'deadband'},
+        {label: '正常变化数据', value: 'normal'},
+      ]
+    },
+    scopedSlots: true,
   },
   {
     title: $t('DataCollect.index.400151-55'),

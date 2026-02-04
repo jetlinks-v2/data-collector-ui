@@ -223,6 +223,8 @@ const currentNode = inject(COLLECTOR_DATA);
 const importType = ref<'channel' | 'collector'>('channel');
 const expandKeys = ref([])
 const filterValue = ref({})
+const _value = sessionStorage.getItem('collector-patch-add-key')
+let firstRender = true
 
 const _filterValue = inject('filter-value', reactive({
   channel: false,
@@ -314,7 +316,7 @@ const onChannelAction = (key, data) => {
   } else {
     loadChannels();
     //
-    if(key === 'delete'){
+    if (key === 'delete') {
       selectedKeys.value = ["all"];
       nodeType.value = 'all'
     }
@@ -329,7 +331,7 @@ const onCollectorAction = (key, data) => {
   } else {
     loadCollectors();
     //
-    if(key === 'delete'){
+    if (key === 'delete') {
       selectedKeys.value = ["all"];
       nodeType.value = 'all'
     }
@@ -342,14 +344,25 @@ const loadAllData = async () => {
     // 1. 获取所有通道
     await loadChannels();
     await loadCollectors();
-    // 设置默认选中全部
-    if (nodeType.value === 'collector') {
-      selectedNode.value = collectorList.value.filter(i => i.id === selectedKeys.value?.[0])?.[0]
-    }
-    if (nodeType.value === 'channel') {
-      selectedNode.value = channelList.value.filter(i => i.id === selectedKeys.value?.[0])?.[0]
-    }
 
+    const dt = sessionStorage.getItem('collector-patch-add-key')
+    if (firstRender && !!dt) {
+      nodeType.value = 'collector'
+      selectedNode.value = collectorList.value.filter(i => i.id === dt)?.[0]
+      selectedKeys.value = [dt];
+      expandKeys.value = selectedNode.value?.channelId ? [selectedNode.value.channelId] : []
+    } else {
+      if (nodeType.value === 'collector') {
+        selectedNode.value = collectorList.value.filter(i => i.id === selectedKeys.value?.[0])?.[0]
+      }
+      if (nodeType.value === 'channel') {
+        selectedNode.value = channelList.value.filter(i => i.id === selectedKeys.value?.[0])?.[0]
+      }
+    }
+    if (firstRender) {
+      firstRender = false
+      sessionStorage.setItem('collector-patch-add-key', '')
+    }
     if (!selectedNode.value?.id) {
       selectedNode.value = {
         id: 'all',
@@ -358,6 +371,8 @@ const loadAllData = async () => {
       selectedKeys.value = ["all"];
       nodeType.value = 'all'
     }
+debugger
+    console.log(selectedKeys.value, nodeType.value)
 
     emit(
         "change",
@@ -461,6 +476,7 @@ const treeSelect = async (keys: any[], e: any) => {
 
 //传递选中节点信息
 const handleChangeNode = (keys: string[], node: any) => {
+  console.log(3333333)
   selectedNode.value = node;
   selectedKeys.value = keys;
   emit(
@@ -602,7 +618,10 @@ watch(() => _filterValue, () => {
       "stopped"
     ] : _filterValue.collectorState
   }
-  handleChangeNode(['all'], {})
+  if (!firstRender) {
+    console.log('111111')
+    handleChangeNode(['all'], {})
+  }
 }, {
   immediate: true,
   deep: true
