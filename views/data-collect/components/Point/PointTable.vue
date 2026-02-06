@@ -112,8 +112,8 @@
           </div>
           <div style="width: 60px">
             <j-badge-status
-                :status="slotProps?.runningState?.value"
-                :text="slotProps?.runningState?.text"
+                :status="slotProps?.state?.value === 'disabled' ? slotProps?.state?.value : slotProps?.runningState?.value"
+                :text="slotProps?.state?.value === 'disabled' ? slotProps?.state?.text : slotProps?.runningState?.text"
                 :statusNames="ChannelState"
             />
           </div>
@@ -416,16 +416,16 @@ const subscribeProperty = (value) => {
 const getDataSource = (p) => {
   const _params = {...p}
   const terms = []
+  if (filterValue.point) {
+    terms.push({
+      column: 'runningState',
+      termType: 'not',
+      type: 'and',
+      value: 'running'
+    })
+  }
   // 根据左边的搜索来查询数据
   if (type.value === 'all') {
-    if (filterValue.point) {
-      terms.push({
-        column: 'runningState',
-        termType: 'not',
-        type: 'and',
-        value: 'running'
-      })
-    }
     if (filterValue.channel) {
       terms.push({
         column: 'channelId',

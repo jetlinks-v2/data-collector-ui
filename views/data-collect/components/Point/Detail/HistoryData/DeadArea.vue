@@ -68,7 +68,7 @@ const onChange = (e) => {
       measurement: "result",
       dimension: "agg",
       params: {
-        limit: 24,
+        limit: obj.limit,
         from: e.start,
         to: e.end,
         interval: obj.interval,

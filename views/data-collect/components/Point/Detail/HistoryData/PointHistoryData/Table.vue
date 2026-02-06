@@ -29,12 +29,34 @@
         {{reason[slotProps.reason] || slotProps.slotProps || "--"}}
       </template>
       <template #action="slotProps">
-        <a-button type="link">
+        <a-button type="link" @click='showDetail(slotProps)'>
           <AIcon type="SearchOutlined"/>
         </a-button>
       </template>
     </j-pro-table>
   </div>
+  <a-modal
+      title="详情"
+      :open='visible'
+      @ok='visible = false'
+      @cancel='visible = false'
+  >
+<!--    <div>{{ current?.propertyName }}</div>-->
+<!--    <JsonViewer-->
+<!--        v-if="-->
+<!--                data?.valueType?.type === 'object' ||-->
+<!--                data?.valueType?.type === 'array'-->
+<!--            "-->
+<!--        :expand-depth='5'-->
+<!--        :value='current.formatValue'-->
+<!--    />-->
+<!--    <a-textarea-->
+<!--        v-else-if="data?.valueType?.type === 'file'"-->
+<!--        :value='current.formatValue'-->
+<!--        :row='3'-->
+<!--    />-->
+    <a-input disabled :value='current.formatValue' />
+  </a-modal>
 </template>
 
 <script setup>
@@ -104,7 +126,13 @@ const tableRef = ref()
 const info = inject('point-info')
 
 const params = ref({})
+const current = ref({})
+const visible = ref(false)
 
+const showDetail = (item) => {
+  visible.value = true
+  current.value = item
+}
 const handleSearch = (e) => {
   params.value = e
 }

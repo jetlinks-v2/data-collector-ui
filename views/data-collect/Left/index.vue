@@ -605,7 +605,7 @@ const handleAdd = () => {
   currentChannel.value = {};
 };
 
-watch(() => _filterValue, () => {
+watch(() => [_filterValue.channel, _filterValue.collector], () => {
   filterValue.value = {
     provider: _filterValue.provider,
     runningState: _filterValue.channel ? ['stopped'] : _filterValue.runningState,
@@ -616,7 +616,6 @@ watch(() => _filterValue, () => {
     ] : _filterValue.collectorState
   }
   if (!firstRender) {
-    console.log('111111')
     handleChangeNode(['all'], {})
   }
 }, {

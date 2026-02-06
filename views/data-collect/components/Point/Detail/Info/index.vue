@@ -6,7 +6,7 @@
           v-if="jsonData"
           :value="jsonData"
       />
-      <DataParsing/>
+      <DataParsing :showSwitch="false"/>
       <CollectionConfiguration :showSwitch="false"/>
       <DataConversion/>
     </a-form>
