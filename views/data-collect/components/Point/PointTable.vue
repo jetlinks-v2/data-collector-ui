@@ -470,10 +470,14 @@ const getDataSource = (p) => {
   }
   if (['running', 'stopped'].includes(pointType.value)) {
     terms.push({
-      column: 'runningState',
+      // column: 'runningState',
+      // termType: pointType.value === 'running' ? 'eq' : 'not',
+      // type: 'and',
+      // value: 'running'
+      column: 'state',
       termType: pointType.value === 'running' ? 'eq' : 'not',
       type: 'and',
-      value: 'running'
+      value: 'enabled'
     })
   }
   if (!_params.terms?.length) {

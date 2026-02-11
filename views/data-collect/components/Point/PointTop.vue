@@ -79,6 +79,12 @@ const onSearch = (params) => {
         termType: 'eq',
         type: 'and',
         value: 'running'
+      },
+      {
+        column: 'state',
+        termType: 'eq',
+        type: 'and',
+        value: 'enabled'
       }
     ]
   }, 'running')
@@ -87,10 +93,10 @@ const onSearch = (params) => {
     terms: [
       ...(params.terms || []),
       {
-        column: 'runningState',
+        column: 'state',
         termType: 'not',
         type: 'and',
-        value: 'running'
+        value: 'enabled'
       }
     ]
   }, 'stopped')
