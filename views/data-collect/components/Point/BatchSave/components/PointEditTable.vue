@@ -6,6 +6,15 @@
       :columns="_columns"
       :height="500"
   >
+    <template #headerCell="{ title, column }">
+      <slot name="headerCell" :title="title" :column="column">{{title}}</slot>
+      <span
+          v-if="column.form?.required"
+          class="header-cell-required"
+      >
+      *
+    </span>
+    </template>
     <template
         v-for="item in columns"
         :key="item.dataIndex"
@@ -265,5 +274,11 @@ defineExpose({
   .ditto-checkbox {
     width: 60px;
   }
+}
+.header-cell-required {
+  color: @error-color;
+  padding-left: 8px;
+  transform: translateY(3px);
+  font-weight: 500;
 }
 </style>
