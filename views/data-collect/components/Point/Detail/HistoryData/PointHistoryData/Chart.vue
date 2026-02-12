@@ -57,8 +57,8 @@ const info = inject('point-info', ref({}))
 const errorDataOptions = computed(() => {
   return {
     grid: {
-      left: '3%',
-      right: '3%',
+      left: 50,
+      right: 60,
       bottom: '20%',
       containLabel: true
     },

@@ -71,7 +71,7 @@ import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/da
 import {useI18n} from "vue-i18n";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
-import {queryPointMetadata, savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
+import {savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 

@@ -55,7 +55,7 @@
 <!--        :value='current.formatValue'-->
 <!--        :row='3'-->
 <!--    />-->
-    <a-input disabled :value='current.formatValue' />
+    <a-input disabled :value='current.value' />
   </a-modal>
 </template>
 
