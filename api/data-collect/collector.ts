@@ -28,7 +28,7 @@ export const remove = (id: string) =>
     request.remove(`/data-collect/collector/${id}`);
 
 export const queryPoint = (data: any) =>
-    request.post(`/data-collect/point/_query`, data);
+    request.post(`/data-collect/point/convert/_query`, data);
 
 export const pointDetail = (id: string) =>
     request.get(`/data-collect/point/${id}`);
