@@ -31,8 +31,7 @@
 
 <script setup>
 import {COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
-import {queryPointCount} from "@data-collector-ui/api/data-collect/collector";
-import {getCountList} from "@data-collector-ui/views/data-collect/utils";
+import {queryPointStatistics} from "@data-collector-ui/api/data-collect/collector";
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
@@ -52,11 +51,15 @@ const filterValue = inject('filter-value', reactive({
   point: false
 }))
 
-//
-const handleSearch = async (params, key) => {
-  const resp = await queryPointCount(params);
+const handleSearch = async (params) => {
+  const resp = await queryPointStatistics(params);
   if (resp.success) {
-    num[key] = resp.result || 0;
+    const point = resp.result?.point || {};
+    const total = Number(point.total) || 0;
+    const abnormal = Number(point.abnormal) || 0;
+    num.total = total;
+    num.stopped = abnormal;
+    num.running = Math.max(total - abnormal, 0);
   }
 }
 
@@ -68,98 +71,17 @@ const onClick = (item) => {
   // }
 }
 
-const onSearch = (params) => {
-  handleSearch(params, 'total')
-  handleSearch({
-    ...params,
-    terms: [
-      ...(params.terms || []),
-      {
-        column: 'runningState',
-        termType: 'eq',
-        type: 'and',
-        value: 'running'
-      },
-      {
-        column: 'state',
-        termType: 'eq',
-        type: 'and',
-        value: 'enabled'
-      }
-    ]
-  }, 'running')
-  handleSearch({
-    ...params,
-    terms: [
-      ...(params.terms || []),
-      {
-        column: 'state',
-        termType: 'not',
-        type: 'and',
-        value: 'enabled'
-      }
-    ]
-  }, 'stopped')
-}
-
-const loadData = () => {
-  const terms = []
-  if (type.value !== 'all') {
-    terms.push({
-      column: type.value === 'channel' ? 'channelId' : 'collectorId',
-      type: 'and',
-      termType: 'in',
-      value: [data.value.id]
-    })
-  } else {
-    if (filterValue.point) {
-      terms.push({
-        column: 'runningState',
-        termType: 'not',
-        type: 'and',
-        value: 'running'
-      })
-    }
-    if (filterValue.channel) {
-      terms.push({
-        column: 'channelId',
-        termType: 'data-collector-channel',
-        type: 'and',
-        value: [
-          {
-            "column": "runningState",
-            "value": 'stopped'
-          },
-          {
-            "column": "state",
-            "value": 'disabled'
-          }
-        ]
-      })
-    }
-    if (filterValue.collector) {
-      terms.push({
-        column: 'collectorId',
-        termType: 'data-collector',
-        type: 'and',
-        value: [
-          {
-            "column": "state",
-            termType: 'in',
-            "value": [
-              "disabled",
-              "stopped"
-            ]
-          }
-        ]
-      })
-    }
+const loadData = async () => {
+  const params = {}
+  if (type.value === 'channel' && data.value.id) {
+    params.channelId = data.value.id
+  } else if (type.value === 'collector' && data.value.id) {
+    params.collectorId = data.value.id
   }
-  console.log(terms, 'terms')
-  onSearch({terms})
+  await handleSearch(params)
 }
 
-watch(() => [type.value, data.value.id, filterValue], () => {
+watch(() => [type.value, data.value.id, filterValue.channel, filterValue.collector, filterValue.point], () => {
   loadData()
 }, {
   immediate: true

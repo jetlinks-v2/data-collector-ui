@@ -36,6 +36,9 @@ export const pointDetail = (id: string) =>
 export const queryPointCount = (data: any) =>
     request.post(`/data-collect/point/_count`, data);
 
+export const queryPointStatistics = (data: any) =>
+    request.post(`/data-collect/point/count/statistics`, data);
+
 export const _validateField = (id: string, data?: any) =>
     request.get(`/data-collect/point/${id}/_validate`, data);
 
