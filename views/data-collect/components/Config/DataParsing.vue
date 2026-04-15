@@ -153,7 +153,7 @@ const showExtra = computed(() => {
 
 const _dataTypeOptions = computed(() => {
   const supportCodecs = __configuration.value?.supportCodecs || []
-  return dataTypeOptions.value.filter(i => supportCodecs.length === 0 || supportCodecs.includes(i.value))
+  return dataTypeOptions.value.filter(i => supportCodecs.length === 0 || supportCodecs.findIndex((v) => v.id === i.value) > -1)
 })
 
 const onSwitchChange = (val) => {

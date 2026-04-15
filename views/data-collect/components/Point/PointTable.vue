@@ -13,19 +13,11 @@
         mode="TABLE"
         :request="getDataSource"
         :params="params"
+        :alertShow="!isAllSelected"
         style="padding: 0; margin: 0"
         @resizeColumn="onResizeColumn"
         :scroll="{ x: 'max-content' }"
-        :rowSelection="
-            isCheck
-                ? {
-                      selectedRowKeys: _selectedRowKeys,
-                      onSelect: onSelectChange,
-                      onSelectAll: selectAll,
-                      onSelectNone: onSelectNone
-                  }
-                : false
-        "
+        :rowSelection="rowSelection"
     >
       <template #headerCell="{ column }">
         <template v-if="['name', 'modifyTime', 'interval'].includes(column.key)">
@@ -88,7 +80,12 @@
               v-model:isCheck="isCheck"
               :actions="batchActions"
               @change="onCheckChange"
-          />
+          >
+          </BatchDropdown>
+          <a-button v-if="isCheck" size="small" type="link" @click="toggleSelectAll">
+            <AIcon type="PartitionOutlined"/>
+            {{ isAllSelected ? '取消全选' : '全选所有' }}
+          </a-button>
         </a-space>
       </template>
       <template #headerRightRender>
@@ -228,8 +225,10 @@ const columnsConfig = reactive({
   key: randomString()
 })
 const isCheck = ref(false);
+const isAllSelected = ref(false);
 const _selectedRowKeys = ref([]);
 const _selectedRows = ref([]);
+const currentPageRows = ref([]);
 const menuStore = useMenuStore();
 const data = inject(COLLECTOR_DATA, ref({}))
 const type = inject(COLLECTOR_TYPE, ref('all'))
@@ -283,6 +282,57 @@ const onResizeColumn = (w, col) => {
   }
 }
 
+const rowSelection = computed(() => {
+  if (!isCheck.value) {
+    return false
+  }
+  return {
+    selectedRowKeys: _selectedRowKeys.value,
+    onSelect: onSelectChange,
+    onSelectAll: selectAll,
+    onSelectNone: onSelectNone,
+    getCheckboxProps: () => ({
+      disabled: isAllSelected.value,
+    }),
+    getTitleCheckboxProps: () => ({
+      disabled: isAllSelected.value,
+    }),
+  }
+})
+
+const syncSelectAllPageSelection = () => {
+  if (!isAllSelected.value) {
+    return
+  }
+  _selectedRowKeys.value = currentPageRows.value.map(item => item.id)
+  _selectedRows.value = [...currentPageRows.value]
+}
+
+const clearSelectionState = () => {
+  isAllSelected.value = false
+  _selectedRowKeys.value = []
+  _selectedRows.value = []
+}
+
+const toggleSelectAll = () => {
+  isAllSelected.value = !isAllSelected.value
+  if (isAllSelected.value) {
+    syncSelectAllPageSelection()
+  } else {
+    _selectedRowKeys.value = []
+    _selectedRows.value = []
+  }
+}
+
+const handleBatchActionWithSelectAll = async (actionKey, handler) => {
+  if (isAllSelected.value) {
+    // TODO: 全选所有场景下需要调用单独的批量接口，按当前筛选条件处理全部点位。
+    onlyMessage(`全选所有场景下的${actionKey}操作接口待实现`, 'warning');
+    return
+  }
+  return handler()
+}
+
 const batchActions = computed(() => {
   const arr = []
   const flag = type.value === 'collector' && !!data.value.id;
@@ -294,9 +344,9 @@ const batchActions = computed(() => {
       type: 'primary',
       icon: 'EditOutlined',
       selected: {
-        onClick: () => {
+        onClick: () => handleBatchActionWithSelectAll('批量编辑', () => {
           visible.batchUpdate = true
-        }
+        })
       }
     },)
   }
@@ -311,7 +361,7 @@ const batchActions = computed(() => {
       selected: {
         popConfirm: {
           title: $t('DataCollect.index.400151-18'),
-          onConfirm: async () => {
+          onConfirm: async () => handleBatchActionWithSelectAll('启用', async () => {
             if (!_selectedRowKeys.value.length) {
               onlyMessage($t('Point.index.400149-15'), 'error');
               return
@@ -327,7 +377,7 @@ const batchActions = computed(() => {
               onRefresh(true)
               onlyMessage($t('Point.index.400149-14'), 'success');
             }
-          },
+          }),
         },
       }
     },
@@ -339,7 +389,11 @@ const batchActions = computed(() => {
       selected: {
         popConfirm: {
           title: $t('DataCollect.index.400151-21'),
-          onConfirm: async () => {
+          onConfirm: async () => handleBatchActionWithSelectAll('禁用', async () => {
+            if (!_selectedRowKeys.value.length) {
+              onlyMessage($t('Point.index.400149-15'), 'error');
+              return
+            }
             const arr = _selectedRows.value.map(i => {
               return {
                 ...i,
@@ -351,7 +405,7 @@ const batchActions = computed(() => {
               onRefresh(true)
               onlyMessage($t('Point.index.400149-14'), 'success');
             }
-          },
+          }),
         },
       },
     },
@@ -363,7 +417,7 @@ const batchActions = computed(() => {
       selected: {
         popConfirm: {
           title: $t('Point.index.400149-6'),
-          onConfirm: async () => {
+          onConfirm: async () => handleBatchActionWithSelectAll('删除', async () => {
             if (!_selectedRowKeys.value.length) {
               onlyMessage($t('Point.index.400149-15'), 'error');
               return
@@ -373,7 +427,7 @@ const batchActions = computed(() => {
               onRefresh(true)
               onlyMessage($t('Point.index.400149-14'), 'success');
             }
-          },
+          }),
         },
       },
     },
@@ -390,7 +444,7 @@ const onRefresh = (flag = false) => {
   visible.save = false
   if (flag) {
     batchRef.value?.reload?.()
-    _selectedRowKeys.value = []
+    clearSelectionState()
   }
   refreshHandler?.refreshAll?.()
 }
@@ -497,6 +551,8 @@ const getDataSource = (p) => {
   }
   return queryPoint(_params).then(resp => {
     subRef.value?.unsubscribe();
+    currentPageRows.value = resp?.result?.data || []
+    syncSelectAllPageSelection()
     if (resp.success && resp.result.data.length) {
       setTimeout(() => {
         const _array = resp.result.data
@@ -512,11 +568,19 @@ const getPointAction = async () => {
   jsonData.value = await devGetProtocol(data.value.provider, "pointActions");
 };
 
-const onCheckChange = () => {
+const onCheckChange = (checked) => {
+  if (!checked) {
+    clearSelectionState()
+    return
+  }
   _selectedRowKeys.value = [];
+  _selectedRows.value = [];
 };
 
 const onSelectChange = (item, state) => {
+  if (isAllSelected.value) {
+    return
+  }
   const arr = new Set(_selectedRowKeys.value);
   if (state) {
     arr.add(item.id);
@@ -529,11 +593,13 @@ const onSelectChange = (item, state) => {
 };
 
 const onSelectNone = () => {
-  _selectedRowKeys.value = []
-  _selectedRows.value = []
+  clearSelectionState()
 }
 
 const selectAll = (selected, selectedRows, changeRows) => {
+  if (isAllSelected.value) {
+    return
+  }
   if (selected) {
     changeRows.map((i) => {
       if (!_selectedRowKeys.value.includes(i.id)) {
@@ -634,7 +700,7 @@ const handleView = (data) => {
 
 const refresh = () => {
   columnsConfig.key = randomString()
-  _selectedRowKeys.value = [];
+  clearSelectionState();
   batchRef.value?.reload?.()
 }
 
