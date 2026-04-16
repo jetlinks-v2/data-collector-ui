@@ -447,8 +447,8 @@
   "ScanBacnet.index.400145-1": "取消",
   "ScanBacnet.index.400145-2": "确认",
   "BatchUpdate.index.4001419-0": "批量编辑",
-  "BatchUpdate.index.4001419-1": "将批量修改",
-  "BatchUpdate.index.4001419-2": "条数据的【",
+  "BatchUpdate.index.4001419-1": "将批量修改{0}条数据的【{1}】",
+  "BatchUpdate.index.4001419-2": "将批量修改所有数据的【{0}】",
   "BatchUpdate.index.4001419-3": "值类型",
   "BatchUpdate.index.4001419-4": "请选择值类型",
   "BatchUpdate.index.4001419-5": "访问类型",
@@ -1189,5 +1189,7 @@
   "DataCollect.columns.290651-9": "访问模式",
   "DataCollect.columns.290651-10": "采集间隔",
   "DataCollect.columns.290651-11": "降序",
-  "DataCollect.columns.290651-12": "升序"
+  "DataCollect.columns.290651-12": "升序",
+  "PointTable.index.40014110-0": "取消全选",
+  "PointTable.index.40014110-1": "全选所有"
 }

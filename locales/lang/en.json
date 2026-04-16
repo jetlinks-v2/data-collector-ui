@@ -447,8 +447,8 @@
   "ScanBacnet.index.400145-1": "Cancel",
   "ScanBacnet.index.400145-2": "Confirm",
   "BatchUpdate.index.4001419-0": "Batch editing",
-  "BatchUpdate.index.4001419-1": "Batch modifications will be made",
-  "BatchUpdate.index.4001419-2": "Article of data【",
+  "BatchUpdate.index.4001419-1": "The [{1}] field of {0} records will be batch modified",
+  "BatchUpdate.index.4001419-2": "The [{0}] field of all records will be batch modified",
   "BatchUpdate.index.4001419-3": "Value type",
   "BatchUpdate.index.4001419-4": "Please select value type",
   "BatchUpdate.index.4001419-5": "Access type",
@@ -1189,5 +1189,7 @@
   "DataCollect.columns.290651-9": "Access Mode",
   "DataCollect.columns.290651-10": "Collection Interval",
   "DataCollect.columns.290651-11": "Descending",
-  "DataCollect.columns.290651-12": "Ascending"
+  "DataCollect.columns.290651-12": "Ascending",
+  "PointTable.index.40014110-0": "Cancel Select All",
+  "PointTable.index.40014110-1": "Select All"
 }

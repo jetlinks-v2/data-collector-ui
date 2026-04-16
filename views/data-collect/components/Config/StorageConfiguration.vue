@@ -36,6 +36,7 @@ import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {isEqual} from "./data";
 import {useI18n} from "vue-i18n";
+import { getPointDataType } from '@data-collector-ui/api/data-collect/collector'
 
 const {t: $t} = useI18n();
 
@@ -54,13 +55,16 @@ const events = inject(PLUGIN_DETAIL_SAVE_EVENTS);
 const __type = inject(DATA_COLLECTOR_CONFIG_TYPE, false)
 let firstRender = true // 第一次渲染
 const oldCollector = inject('old-collector', ref({}))
+const isNumber = computed(() => {
+  return ['float', 'double', 'int', 'long'].includes(formData.dataType?.id)
+})
 
 // 记录初始值快照，用于检测变化
 const initialSnapshot = ref(null)
 
 const list = computed(() => {
   // console.log(formData.managedConfiguration.codec)
-  return [
+  const arr = [
     {
       label: $t('DataCollect.index.400154-2'),
       value: 'storageData',
@@ -70,13 +74,16 @@ const list = computed(() => {
       label: $t('DataCollect.index.400154-4'),
       value: 'storageOutlier',
       describe: $t('DataCollect.index.400154-5')
-    },
-    {
+    }
+  ]
+  if(isNumber.value) {
+    arr.push({
       label: $t('DataCollect.index.400154-6'),
       value: 'storageDeadband',
       describe: $t('DataCollect.index.400154-7')
-    }
-  ]
+    })
+  }
+  return arr
 })
 
 const _list = ['storageData', 'storageOutlier', 'storageDeadband']
@@ -142,6 +149,18 @@ watch(() => formData.features, (val) => {
 }, {
   immediate: true
 })
+
+watch(
+  () => formData.managedConfiguration?.codec,
+  (val) => {
+    if (val) {
+      getPointDataType(val).then(res => {
+        formData.dataType = res.result?.dataType
+      })
+    }
+  }, 
+  { deep: true, immediate: true }
+)
 
 // 监听折叠板打开状态，打开时记录初始快照
 watch(() => data.value, (newVal) => {

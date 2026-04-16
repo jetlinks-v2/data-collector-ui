@@ -157,3 +157,28 @@ export const collectorImport = (channelId: string, provider: string) => `${getBa
  * 点位导入
  */
 export const pointImport = (collectorId: string, provider: string) => `${getBaseApi()}/data-collect/point/${collectorId}/${provider}/import`
+
+/**
+ * 根据条件批量启用点位
+ */
+export const enablePoints = (data: any) => request.post(`/data-collect/point/batch/param/_enable`, data);
+
+/**
+ * 根据条件批量禁用点位
+ */
+export const disablePoints = (data: any) => request.post(`/data-collect/point/batch/param/_disable`, data);
+
+/**
+ * 根据条件批量删除点位
+ */
+export const deletePoints = (data: any) => request.remove(`/data-collect/point/batch/param/_delete`, {}, {data});
+
+/**
+ * 根据条件批量修改点位
+ */
+export const updatePoints = (data: any) => request.post(`/data-collect/point/batch/param/_update`, data);
+
+/**
+ * 获取点位数据类型
+ */
+export const getPointDataType = (id: string) => request.get(`/things/collector/codecs/${id}/_detail`);

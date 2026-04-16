@@ -8,8 +8,8 @@
       @close="emit('close')"
   >
     <div class="sizeText">
-      {{ $t('BatchUpdate.index.4001419-1') }}
-      {{ data.length }} {{ $t('BatchUpdate.index.4001419-2') }}{{ labelName.join(',') }}】
+      <span v-if="isAllSelected">{{ $t('BatchUpdate.index.4001419-2', [labelName.join(',')]) }}</span>
+      <span v-else>{{$t('BatchUpdate.index.4001419-1', [data.length, labelName.join(',')])}}</span>
     </div>
     <a-form
         class="form"
@@ -102,11 +102,13 @@
 import {
   savePointBatch,
   getBacnetValueType,
+  updatePoints
 } from '@data-collector-ui/api/data-collect/collector';
 import {cloneDeep, isObject, map} from 'lodash-es';
 import {useI18n} from 'vue-i18n';
 import {regOnlyNumber} from "@data-collector-ui/views/DataCollect/Channel/data";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
+import { onlyMessage } from '@jetlinks-web/utils';
 
 const {t: $t} = useI18n();
 
@@ -119,6 +121,15 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  isAllSelected: {
+    type: Boolean,
+    default: false,
+  },
+  getBatchParams: {
+    type: Function,
+    default: () => {
+    },
+  }
 });
 
 const emit = defineEmits(['save', 'close']);
@@ -201,10 +212,16 @@ const handleOk = async () => {
       }
     });
     loading.value = true;
-    const response = await savePointBatch(params).finally(() => {
+    debugger
+    const response = props.isAllSelected 
+    ? await updatePoints({query: props.getBatchParams(), point: {accessModes: data.accessModes, interval: data.interval, configuration: {interval: data.interval}}}).finally(() => {
+      loading.value = false;
+    })
+    : await savePointBatch(params).finally(() => {
       loading.value = false;
     });
     if (response.success) {
+      onlyMessage($t('Point.index.400149-14'));
       emit('save');
     }
   } else {

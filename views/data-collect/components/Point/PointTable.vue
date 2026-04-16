@@ -84,7 +84,7 @@
           </BatchDropdown>
           <a-button v-if="isCheck" size="small" type="link" @click="toggleSelectAll">
             <AIcon type="PartitionOutlined"/>
-            {{ isAllSelected ? '取消全选' : '全选所有' }}
+            {{ isAllSelected ? $t('PointTable.index.40014110-0') : $t('PointTable.index.40014110-1') }}
           </a-button>
         </a-space>
       </template>
@@ -170,6 +170,8 @@
       v-if="visible.batchUpdate"
       :data="_selectedRows"
       :provider="data.provider"
+      :isAllSelected="isAllSelected"
+      :getBatchParams="getBatchParams"
       @close="visible.batchUpdate = false"
       @save="onRefresh"
   />
@@ -180,10 +182,13 @@
 import {useI18n} from "vue-i18n";
 import {
   batchDeletePoint,
+  deletePoints,
+  disablePoints,
   exportPoint,
   exportTemplate,
   queryPoint, savePointBatch,
-  pointImport
+  pointImport,
+  enablePoints
 } from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig/index.vue";
@@ -327,10 +332,58 @@ const toggleSelectAll = () => {
 const handleBatchActionWithSelectAll = async (actionKey, handler) => {
   if (isAllSelected.value) {
     // TODO: 全选所有场景下需要调用单独的批量接口，按当前筛选条件处理全部点位。
-    onlyMessage(`全选所有场景下的${actionKey}操作接口待实现`, 'warning');
+    switch(actionKey) {
+      case 'enable':
+        enablePointsBatch();
+        break;
+      case 'disable':
+        disablePointsBatch();
+        break;
+      case 'delete':
+        deletePointsBatch();
+        break;
+    }
     return
   }
   return handler()
+}
+
+const getBatchParams = () => {
+  const terms = params.value?.terms || []
+  return type.value === 'collector' && data.value.id ? {
+    ...params.value,
+    terms: [
+      ...terms,
+      {
+        column: 'collectorId',
+        value: data.value?.id
+      }
+    ]
+  } : params.value
+}
+
+const enablePointsBatch = async () => {
+  const res = await enablePoints(getBatchParams())
+  if(res.success) {
+    onlyMessage($t('Point.index.400149-14'));
+    onRefresh(true);
+  }
+}
+
+const disablePointsBatch = async () => {
+  const res = await disablePoints(getBatchParams())
+  if(res.success) {
+    onlyMessage($t('Point.index.400149-14'));
+    onRefresh(true);
+  }
+}
+
+const deletePointsBatch = async () => {
+  const res = await deletePoints(getBatchParams())
+  if(res.success) {
+    onlyMessage($t('Point.index.400149-14'));
+    onRefresh(true);
+  }
 }
 
 const batchActions = computed(() => {
@@ -344,9 +397,9 @@ const batchActions = computed(() => {
       type: 'primary',
       icon: 'EditOutlined',
       selected: {
-        onClick: () => handleBatchActionWithSelectAll('批量编辑', () => {
+        onClick: () => {
           visible.batchUpdate = true
-        })
+        }
       }
     },)
   }
@@ -361,7 +414,7 @@ const batchActions = computed(() => {
       selected: {
         popConfirm: {
           title: $t('DataCollect.index.400151-18'),
-          onConfirm: async () => handleBatchActionWithSelectAll('启用', async () => {
+          onConfirm: async () => handleBatchActionWithSelectAll('enable', async () => {
             if (!_selectedRowKeys.value.length) {
               onlyMessage($t('Point.index.400149-15'), 'error');
               return
@@ -389,7 +442,7 @@ const batchActions = computed(() => {
       selected: {
         popConfirm: {
           title: $t('DataCollect.index.400151-21'),
-          onConfirm: async () => handleBatchActionWithSelectAll('禁用', async () => {
+          onConfirm: async () => handleBatchActionWithSelectAll('disable', async () => {
             if (!_selectedRowKeys.value.length) {
               onlyMessage($t('Point.index.400149-15'), 'error');
               return
@@ -417,7 +470,7 @@ const batchActions = computed(() => {
       selected: {
         popConfirm: {
           title: $t('Point.index.400149-6'),
-          onConfirm: async () => handleBatchActionWithSelectAll('删除', async () => {
+          onConfirm: async () => handleBatchActionWithSelectAll('delete', async () => {
             if (!_selectedRowKeys.value.length) {
               onlyMessage($t('Point.index.400149-15'), 'error');
               return
@@ -442,6 +495,7 @@ const onRefresh = (flag = false) => {
   _visible.point = false
   visible.import = false
   visible.save = false
+  visible.batchUpdate = false
   if (flag) {
     batchRef.value?.reload?.()
     clearSelectionState()
@@ -632,8 +686,26 @@ const handleSort = (key, value) => {
   // Sort change
 }
 
+const isEmptyTerms = (terms) => {
+  if (!Array.isArray(terms) || !terms.length) {
+    return true
+  }
+
+  return terms.every(item => {
+    if (!item || typeof item !== 'object') {
+      return true
+    }
+
+    if (Array.isArray(item.terms)) {
+      return isEmptyTerms(item.terms)
+    }
+
+    return !item.column && !item.termType && !item.type && item.value === undefined
+  })
+}
+
 const handleSearch = (_params) => {
-  params.value = _params
+  params.value = isEmptyTerms(_params?.terms) ? {} : _params
 }
 
 const onSaveColumnsConfig = (dt) => {
