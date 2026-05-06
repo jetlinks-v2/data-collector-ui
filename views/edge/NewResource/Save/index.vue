@@ -118,9 +118,6 @@ import {randomString} from "@jetlinks-web/utils";
 import {ServiceIdEnum, TargetTypeOptions} from "../utils";
 import {cloneDeep} from "lodash-es";
 import {useI18n} from 'vue-i18n';
-import {Rule} from "ant-design-vue/es/form";
-import {isInput} from "@device-manager-ui/utils/utils";
-import {queryProductId} from "@device-manager-ui/api/product";
 
 const {t: $t} = useI18n();
 

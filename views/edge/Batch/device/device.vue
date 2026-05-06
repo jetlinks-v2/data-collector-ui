@@ -94,7 +94,6 @@ import { omit } from 'lodash-es';
 import dayjs from 'dayjs';
 import DeviceCardImg from '../../../../assets/device-card.png';
 import { useI18n } from 'vue-i18n';
-import { device } from '@device-manager-ui/assets'
 
 const { t: $t } = useI18n();
 
