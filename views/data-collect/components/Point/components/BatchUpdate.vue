@@ -212,7 +212,6 @@ const handleOk = async () => {
       }
     });
     loading.value = true;
-    debugger
     const response = props.isAllSelected 
     ? await updatePoints({query: props.getBatchParams(), point: {accessModes: data.accessModes, interval: data.interval, configuration: {interval: data.interval}}}).finally(() => {
       loading.value = false;
