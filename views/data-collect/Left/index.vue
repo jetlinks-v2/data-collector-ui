@@ -473,7 +473,6 @@ const treeSelect = async (keys: any[], e: any) => {
 
 //传递选中节点信息
 const handleChangeNode = (keys: string[], node: any) => {
-  console.log(3333333)
   selectedNode.value = node;
   selectedKeys.value = keys;
   emit(

@@ -72,7 +72,7 @@ export const handlePointConfigMetadata = (data: Array<Record<string, any>>, pare
             _columns.push({
                 title: next.i18nName,
                 dataIndex: next.id,
-                template: handleType(next.valueType?.type, next),
+                template: handleType(next.valueType?.type || next.valueType?.id, next),
                 width: 220,
                 form: {
                     name: _paths
@@ -104,8 +104,8 @@ export const handlePointConfigMetadata = (data: Array<Record<string, any>>, pare
         const type = item.valueType.type
         if (type === 'object') {
             values[item.id] = handleObject(item.valueType.properties, columns, _path)
-        } else if (type === 'enum') {
-            column.template = handleType(item.valueType.type, item)
+        } else if (type === 'enum' || type === 'boolean') {
+            column.template = handleType(item.valueType.type || item.valueType.id, item)
             columns.push(column)
         } else {
             columns.push(column)

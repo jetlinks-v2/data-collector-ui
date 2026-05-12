@@ -41,7 +41,7 @@
           </a-col>
           <a-col :span="8">
             <a-form-item :label="$t('Remote.index.973615-6')" name="updateTime">
-              <a-input-number v-model:value="formDataModel[activeIndex].updateTime" placeholder="请输入升级超过时间（{{ $t('Remote.index.973615-5') }}）" style="width: 100%" >
+              <a-input-number v-model:value="formDataModel[activeIndex].updateTime" :placeholder="$t('Remote.index.973615-7')" style="width: 100%" >
                 <template #addonAfter>
                   {{ $t('Remote.index.973615-5') }}
                 </template>

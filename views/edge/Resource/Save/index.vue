@@ -1,5 +1,5 @@
 <template>
-    <a-modal open title="编辑" :width="700" @ok="onSave" @cancel="onCancel">
+    <a-modal open :title="$t('Channel.index.290640-13')" :width="700" @ok="onSave" @cancel="onCancel">
         <monaco-editor
             style="width: 100%; height: 370px"
             theme="vs"
@@ -12,6 +12,9 @@
 <script setup lang="ts">
 import { modify } from '../../../../api/edge/resource';
 import { onlyMessage } from '@jetlinks-web/utils'
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
     data: {
@@ -31,7 +34,7 @@ const onSave = async () => {
     const resp = await modify(props.data.id, { metadata: unref(monacoValue) });
     if (resp.status === 200) {
         emit('save');
-        onlyMessage('操作成功', 'success');
+        onlyMessage($t('DataCollect.index.400150-28'), 'success');
     }
 };
 

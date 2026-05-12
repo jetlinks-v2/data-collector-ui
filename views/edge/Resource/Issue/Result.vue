@@ -1,23 +1,23 @@
 <template>
     <a-modal
         open
-        title="下发结果"
+        :title="$t('Resource.Result.400159-0')"
         :width="900"
         @ok="emit('close')"
         @cancel="emit('close')"
     >
         <a-row>
             <a-col :span="8">
-                <div>成功：{{ count }}</div>
+                <div>{{ $t('Resource.Result.400159-1') }}{{ count }}</div>
                 <div>
-                    失败：{{ countErr }}
-                    <a-button @click="_download(errMessage || '', '下发失败原因')" v-if="errMessage.length" type="link"
-                        >下载</a-button
+                    {{ $t('Resource.Result.400159-2') }}{{ countErr }}
+                    <a-button @click="_download(errMessage || '', $t('Resource.Result.400159-3'))" v-if="errMessage.length" type="link"
+                        >{{ $t('Import.index.400157-4') }}</a-button
                     >
                 </div>
             </a-col>
-            <a-col :span="8">下发设备数量：{{ list.length || 0 }}</a-col>
-            <a-col :span="8">已下发数量：{{ countErr + count }}</a-col>
+            <a-col :span="8">{{ $t('Resource.Result.400159-4') }}{{ list.length || 0 }}</a-col>
+            <a-col :span="8">{{ $t('Resource.Result.400159-5') }}{{ countErr + count }}</a-col>
         </a-row>
         <div v-if="!flag">
             <a-textarea :rows="10" :value="JSON.stringify(errMessage)" />
@@ -31,6 +31,9 @@ import {TOKEN_KEY, TOKEN_KEY_URL} from '@jetlinks-web/constants';
 import dayjs from 'dayjs';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import {getBaseApi} from "@jetlinks-web-core/utils";
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
     data: {

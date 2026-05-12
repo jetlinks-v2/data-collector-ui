@@ -36,7 +36,7 @@
     </j-pro-table>
   </div>
   <a-modal
-      title="详情"
+      :title="$t('DataCollect.index.400155-37')"
       :open='visible'
       @ok='visible = false'
       @cancel='visible = false'
@@ -75,9 +75,9 @@ const props = defineProps({
 })
 
 const reason = {
-  outlier: '异常数据',
-  deadband: '死区数据',
-  normal: '正常变化数据'
+  outlier: $t('PointHistoryData.Table.400159-0'),
+  deadband: $t('PointHistoryData.Table.400159-1'),
+  normal: $t('PointHistoryData.Table.400159-2')
 }
 const columns = [
   {
@@ -101,15 +101,15 @@ const columns = [
     scopedSlots: true
   },
   {
-    title: '类型',
+    title: $t('Resource.Issue.400159-4'),
     dataIndex: 'reason',
     ellipsis: true,
     search: {
       type: 'select',
       options: [
-        {label: '异常数据', value: 'outlier'},
-        {label: '死区数据', value: 'deadband'},
-        {label: '正常变化数据', value: 'normal'},
+        {label: $t('PointHistoryData.Table.400159-0'), value: 'outlier'},
+        {label: $t('PointHistoryData.Table.400159-1'), value: 'deadband'},
+        {label: $t('PointHistoryData.Table.400159-2'), value: 'normal'},
       ]
     },
     scopedSlots: true,

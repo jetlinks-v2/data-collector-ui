@@ -1,6 +1,11 @@
 <template>
-  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="900"
+  <a-drawer open :title="data?.id ? $t('DataCollect.index.400151-2') : $t('DataCollect.index.400151-3')" :width="900" :closable="false"
             @close="emit('close')" :maskClosable="false">
+    <template #extra>
+      <a-button type="text" @click="emit('close')">
+        <AIcon type="CloseOutlined" />
+      </a-button>
+    </template>
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
@@ -46,7 +51,7 @@
               <div style="color: #999;font-size: 12px">{{ $t('DataCollect.index.400151-7') }}</div>
             </template>
           </TitleComponent>
-          <DataParsing :showSwitch="false"/>
+          <DataParsing v-if="configuration.autoCodec === false" :showSwitch="false"/>
           <CollectionConfiguration :showSwitch="false"/>
           <DataConversion/>
           <AbnormalJudgment/>

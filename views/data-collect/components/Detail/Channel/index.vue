@@ -1,5 +1,5 @@
 <template>
-  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false">
+  <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="emits('close')" destroy-on-close :maskClosable="false" :closable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -29,6 +29,9 @@
             <AIcon :type="item.icon"></AIcon>
           </j-permission-button>
         </template>
+        <a-button type="text" @click="emits('close')">
+          <AIcon type="CloseOutlined" />
+        </a-button>
       </a-space>
     </template>
     <a-spin :spinning="loading" :key="info.id">

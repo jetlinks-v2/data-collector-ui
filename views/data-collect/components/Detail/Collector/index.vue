@@ -1,6 +1,6 @@
 <template>
   <a-drawer open :mask="loading" :maskStyle="{opacity: 0}" width="1000px" @close="onClose" destroy-on-close
-            :maskClosable="false">
+            :maskClosable="false" :closable="false">
     <template #title>
       <div class="header">
         <InputEditable
@@ -30,6 +30,9 @@
             <AIcon :type="item.icon"></AIcon>
           </j-permission-button>
         </template>
+        <a-button type="text" @click="onClose">
+          <AIcon type="CloseOutlined" />
+        </a-button>
       </a-space>
     </template>
     <a-spin :spinning="loading" :key="info.id">
@@ -185,7 +188,7 @@ const onSave = (arr) => {
 const handleClose = (next) => {
   if (errorList.value.length) {
     Modal.confirm({
-      title: '还有未保存的修改,确定关闭吗?',
+      title: $t('DataCollect.index.400159-6'),
       onOk() {
         next?.()
         errorList.value = []

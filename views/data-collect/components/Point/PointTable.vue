@@ -53,6 +53,14 @@
               {{ $t('Point.index.400149-0') }}
             </j-permission-button>
             <j-permission-button
+              v-if="pointActions.scan"
+              type="primary"
+              :hasPermission="true"
+              @click="handleScan"
+            >
+              扫描点位
+            </j-permission-button>
+            <j-permission-button
                 v-if="pointActions.batchAdd"
                 type="primary"
                 @click="handleBatchAdd"
@@ -131,7 +139,7 @@
         {{ slotProps.interval }}ms
       </template>
       <template #address="slotProps">
-        {{ slotProps.metadata?.address || '--' }}
+        {{ slotProps?.address || '--' }}
       </template>
       <template #description="slotProps">
         <j-ellipsis style="max-width: 200px;white-space: normal;">{{ slotProps.description || '--' }}</j-ellipsis>
@@ -188,7 +196,8 @@ import {
   exportTemplate,
   queryPoint, savePointBatch,
   pointImport,
-  enablePoints
+  enablePoints,
+  queryCodecProvider
 } from "@data-collector-ui/api/data-collect/collector";
 import SortsIcon from "./SortsIcon.vue";
 import ColumnsConfig from "./ColumnsConfig/index.vue";
@@ -198,7 +207,7 @@ import {
   ChannelState,
   COLLECTOR_DATA,
   COLLECTOR_TYPE,
-  REFRESH_HANDLER
+  REFRESH_HANDLER,
 } from "@data-collector-ui/views/data-collect/data";
 import dayjs from "dayjs";
 import {cloneDeep, map} from "lodash-es";
@@ -249,7 +258,7 @@ const subRef = ref();
 const propertyValue = ref(new Map());
 
 const visible = reactive({ // 判断按钮显示
-  batchAdd: true,
+  batchAdd: false,
   save: false,
   import: false,
   batchUpdate: false,
@@ -259,10 +268,22 @@ const _visible = inject('detail-visible')
 const current = ref({})
 const pointActions = reactive({
   add: false,
+  scan: false,
+  batchAdd: false,
 });
 const jsonData = ref();
+const scanSetting = ref({
+  columns: [],
+  selectedData: [],
+  handleData: undefined,
+})
+
+const codecList = ref([])
 
 provide("point-actions", pointActions);
+provide('plugin-scan-point', scanSetting);
+provide('collector-data', data);
+provide('codec-list', codecList)
 
 const searchCount = computed(() => {
   // 统计filterValue
@@ -743,6 +764,10 @@ const handleAdd = () => {
   }
 };
 
+const handleScan = () => {
+  menuStore.jumpPage('data-collect/Scan', {params: {id: data.value?.id}});
+};
+
 const handleBatchAdd = () => {
   menuStore.jumpPage('data-collect/BatchAdd', {params: {id: data.value?.id}});
 };
@@ -776,16 +801,31 @@ const refresh = () => {
   batchRef.value?.reload?.()
 }
 
+const queryCodecList = async () => {
+  const res = await queryCodecProvider()
+  if(res.success) {
+    codecList.value = res.result.map(item => {
+      return {
+        label: item.name,
+        value: item.id,
+        ...item
+      }
+    })
+  }
+}
+
 watch(
     () => data.value.id,
     (value) => {
       if (value && !!data.value.provider) {
         if (data.value.provider === 'COLLECTOR_GATEWAY') {
           pointActions.add = true
+          pointActions.scan = false
           pointActions.batchAdd = false
         } else {
           pointActions.add = false
-          pointActions.batchAdd = true
+          pointActions.scan = false
+          pointActions.batchAdd = false
           getPointAction()
         }
       }
@@ -793,7 +833,7 @@ watch(
       params.value = {}
       // 清空高级搜索
       refresh()
-      console.log('data.value.id变化')
+      console.log('data.value.id changed')
     },
     {immediate: true},
 );
@@ -805,7 +845,7 @@ watch(
         pointTypeRefresh = true
       } else {
         refresh()
-        console.log('pointType变化')
+        console.log('pointType changed')
       }
     },
     {immediate: true},
@@ -815,10 +855,14 @@ watch(
     () => filterValue,
     () => {
       columnsConfig.key = randomString()
-      console.log('filterValue变化')
+      console.log('filterValue changed')
     },
     {immediate: true, deep: true},
 )
+
+onMounted(() => {
+  queryCodecList()
+})
 
 onUnmounted(() => {
   subRef.value?.unsubscribe();

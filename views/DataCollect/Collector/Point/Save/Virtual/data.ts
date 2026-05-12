@@ -1,3 +1,4 @@
+import i18n from '@jetlinks-web-core/locales';
 export const symbolList = [
     {
       key: "add",
@@ -76,410 +77,410 @@ export const symbolList = [
 export const dataType =  [
     {
       "id": "Number",
-      "name": "数值类型",
-      "description": "数值类型",
+      "name": i18n.global.t('Virtual.data.400159-0'),
+      "description": i18n.global.t('Virtual.data.400159-0'),
       "children": [
         {
           "id": "Number",
-          "name": "数值类型",
-          "description": "数值类型"
+          "name": i18n.global.t('Virtual.data.400159-0'),
+          "description": i18n.global.t('Virtual.data.400159-0')
         },
         {
           "id": "Byte",
-          "name": "字节",
-          "description": "加"
+          "name": i18n.global.t('Virtual.data.400159-1'),
+          "description": i18n.global.t('Virtual.data.400159-2')
         },
         {
           "id": "Short",
-          "name": "短整型",
-          "description": "短整型"
+          "name": i18n.global.t('Virtual.data.400159-3'),
+          "description": i18n.global.t('Virtual.data.400159-3')
         },
         {
           "id": "UShort",
-          "name": "16位无符号整型",
-          "description": "16位无符号整型"
+          "name": i18n.global.t('Virtual.data.400159-4'),
+          "description": i18n.global.t('Virtual.data.400159-4')
         },
         {
           "id": "Integer",
-          "name": "整型",
-          "description": "整型"
+          "name": i18n.global.t('Virtual.data.400159-5'),
+          "description": i18n.global.t('Virtual.data.400159-5')
         },
         {
           "id": "DINT",
-          "name": "32位有符号双整型",
-          "description": "32位有符号双整型"
+          "name": i18n.global.t('Virtual.data.400159-6'),
+          "description": i18n.global.t('Virtual.data.400159-6')
         },
         {
           "id": "Long",
-          "name": "长整型",
-          "description": "长整型"
+          "name": i18n.global.t('Virtual.data.400159-7'),
+          "description": i18n.global.t('Virtual.data.400159-7')
         },
         {
           "id": "LLong",
-          "name": "长整型",
-          "description": "长整型"
+          "name": i18n.global.t('Virtual.data.400159-7'),
+          "description": i18n.global.t('Virtual.data.400159-7')
         },
         {
           "id": "Float",
-          "name": "浮点型",
-          "description": "浮点型"
+          "name": i18n.global.t('Virtual.data.400159-8'),
+          "description": i18n.global.t('Virtual.data.400159-8')
         },
         {
           "id": "Double",
-          "name": "双精度浮点型",
-          "description": "双精度浮点型"
+          "name": i18n.global.t('Virtual.data.400159-9'),
+          "description": i18n.global.t('Virtual.data.400159-9')
         },
         {
           "id": "int",
-          "name": "整型",
-          "description": "整型"
+          "name": i18n.global.t('Virtual.data.400159-5'),
+          "description": i18n.global.t('Virtual.data.400159-5')
         },
         {
           "id": "int8",
-          "name": "整型",
-          "description": "整型"
+          "name": i18n.global.t('Virtual.data.400159-5'),
+          "description": i18n.global.t('Virtual.data.400159-5')
         },
         {
           "id": "int16",
-          "name": "整型",
-          "description": "整型"
+          "name": i18n.global.t('Virtual.data.400159-5'),
+          "description": i18n.global.t('Virtual.data.400159-5')
         },
         {
           "id": "int32",
-          "name": "整型",
-          "description": "整型"
+          "name": i18n.global.t('Virtual.data.400159-5'),
+          "description": i18n.global.t('Virtual.data.400159-5')
         },
         {
           "id": "int64",
-          "name": "整型",
-          "description": "整型"
+          "name": i18n.global.t('Virtual.data.400159-5'),
+          "description": i18n.global.t('Virtual.data.400159-5')
         },
         {
           "id": "ieee754_float",
-          "name": "浮点",
-          "description": "浮点"
+          "name": i18n.global.t('Virtual.data.400159-10'),
+          "description": i18n.global.t('Virtual.data.400159-10')
         },
         {
           "id": "ieee754_double",
-          "name": "浮点",
-          "description": "浮点"
+          "name": i18n.global.t('Virtual.data.400159-10'),
+          "description": i18n.global.t('Virtual.data.400159-10')
         },
         {
           "id": "Real",
-          "name": "浮点",
-          "description": "浮点"
+          "name": i18n.global.t('Virtual.data.400159-10'),
+          "description": i18n.global.t('Virtual.data.400159-10')
         },
         {
           "id": "LREAL",
-          "name": "浮点",
-          "description": "浮点"
+          "name": i18n.global.t('Virtual.data.400159-10'),
+          "description": i18n.global.t('Virtual.data.400159-10')
         },
         {
           "id": "Unsigned8",
-          "name": "数值",
-          "description": "数值"
+          "name": i18n.global.t('Virtual.data.400159-11'),
+          "description": i18n.global.t('Virtual.data.400159-11')
         },
         {
           "id": "Unsigned16",
-          "name": "数值",
-          "description": "数值"
+          "name": i18n.global.t('Virtual.data.400159-11'),
+          "description": i18n.global.t('Virtual.data.400159-11')
         },
         {
           "id": "Unsigned32",
-          "name": "数值",
-          "description": "数值"
+          "name": i18n.global.t('Virtual.data.400159-11'),
+          "description": i18n.global.t('Virtual.data.400159-11')
         },
         {
           "id": "UnsignedInteger",
-          "name": "数值",
-          "description": "数值"
+          "name": i18n.global.t('Virtual.data.400159-11'),
+          "description": i18n.global.t('Virtual.data.400159-11')
         },
         {
           "id": "LINT",
-          "name": "64位有符号整型",
-          "description": "64位有符号整型"
+          "name": i18n.global.t('Virtual.data.400159-12'),
+          "description": i18n.global.t('Virtual.data.400159-12')
         },
         {
           "id": "WORD",
-          "name": "16位有符号整型",
-          "description": "16位有符号整型"
+          "name": i18n.global.t('Virtual.data.400159-13'),
+          "description": i18n.global.t('Virtual.data.400159-13')
         },
         {
           "id": "SINT",
-          "name": "8位整型",
-          "description": "8位整型"
+          "name": i18n.global.t('Virtual.data.400159-14'),
+          "description": i18n.global.t('Virtual.data.400159-14')
         },
         {
           "id": "USINT",
-          "name": "8位整型",
-          "description": "8位整型"
+          "name": i18n.global.t('Virtual.data.400159-14'),
+          "description": i18n.global.t('Virtual.data.400159-14')
         },
         {
           "id": "UINT",
-          "name": "16位整型",
-          "description": "16位整型"
+          "name": i18n.global.t('Virtual.data.400159-15'),
+          "description": i18n.global.t('Virtual.data.400159-15')
         },
         {
           "id": "UDINT",
-          "name": "32位有符号双整型",
-          "description": "32位有符号双整型"
+          "name": i18n.global.t('Virtual.data.400159-6'),
+          "description": i18n.global.t('Virtual.data.400159-6')
         },
         {
           "id": "ULINT",
-          "name": "64位无符号长整型",
-          "description": "64位无符号长整型"
+          "name": i18n.global.t('Virtual.data.400159-16'),
+          "description": i18n.global.t('Virtual.data.400159-16')
         },
         {
           "id": "DWord",
-          "name": "32位整数",
-          "description": "32位整数"
+          "name": i18n.global.t('Virtual.data.400159-17'),
+          "description": i18n.global.t('Virtual.data.400159-17')
         }
       ],
       "operator": [
         {
-          "name": "等于",
+          "name": i18n.global.t('Virtual.data.400159-18'),
           "value": "eq"
         },
         {
-          "name": "不等于",
+          "name": i18n.global.t('Virtual.data.400159-19'),
           "value": "neq"
         },
         {
-          "name": "大于",
+          "name": i18n.global.t('Virtual.data.400159-20'),
           "value": "gt"
         },
         {
-          "name": "小于",
+          "name": i18n.global.t('Virtual.data.400159-21'),
           "value": "lt"
         },
         {
-          "name": "大于等于",
+          "name": i18n.global.t('Virtual.data.400159-22'),
           "value": "gte"
         },
         {
-          "name": "小于等于",
+          "name": i18n.global.t('Virtual.data.400159-23'),
           "value": "lte"
         },
         {
-          "name": "在...之间",
+          "name": i18n.global.t('Virtual.data.400159-24'),
           "value": "btw"
         },
         {
-          "name": "不在...之间",
+          "name": i18n.global.t('Virtual.data.400159-25'),
           "value": "nbtw"
         },
         {
-          "name": "在...之中",
+          "name": i18n.global.t('Virtual.data.400159-26'),
           "value": "in"
         },
         {
-          "name": "不在...之中",
+          "name": i18n.global.t('Virtual.data.400159-27'),
           "value": "nin"
         }
       ]
     },
     {
       "id": "DateTime",
-      "name": "时间",
+      "name": i18n.global.t('Virtual.data.400159-28'),
       "code": "",
       "description": "",
       "children": [
         {
           "id": "DateTime",
-          "name": "时间类型",
+          "name": i18n.global.t('Virtual.data.400159-29'),
           "description": ""
         },
         {
           "id": "Date",
-          "name": "时间类型",
+          "name": i18n.global.t('Virtual.data.400159-29'),
           "description": ""
         }
       ],
       "operator": [
         {
-          "name": "等于",
+          "name": i18n.global.t('Virtual.data.400159-18'),
           "value": "eq"
         },
         {
-          "name": "不等于",
+          "name": i18n.global.t('Virtual.data.400159-19'),
           "value": "neq"
         },
         {
-          "name": "大于",
+          "name": i18n.global.t('Virtual.data.400159-20'),
           "value": "gt"
         },
         {
-          "name": "小于",
+          "name": i18n.global.t('Virtual.data.400159-21'),
           "value": "lt"
         },
         {
-          "name": "大于等于",
+          "name": i18n.global.t('Virtual.data.400159-22'),
           "value": "gte"
         },
         {
-          "name": "小于等于",
+          "name": i18n.global.t('Virtual.data.400159-23'),
           "value": "lte"
         },
         {
-          "name": "在...之间",
+          "name": i18n.global.t('Virtual.data.400159-24'),
           "value": "btw"
         },
         {
-          "name": "不在...之间",
+          "name": i18n.global.t('Virtual.data.400159-25'),
           "value": "nbtw"
         },
         {
-          "name": "在...之中",
+          "name": i18n.global.t('Virtual.data.400159-26'),
           "value": "in"
         },
         {
-          "name": "不在...之中",
+          "name": i18n.global.t('Virtual.data.400159-27'),
           "value": "nin"
         }
       ]
     },
     {
       "id": "Time",
-      "name": "时间",
+      "name": i18n.global.t('Virtual.data.400159-28'),
       "code": "",
       "description": "",
       "children": [
         {
           "id": "Time",
-          "name": "时间类型",
+          "name": i18n.global.t('Virtual.data.400159-29'),
           "description": ""
         }
       ],
       "operator": [
         {
-          "name": "等于",
+          "name": i18n.global.t('Virtual.data.400159-18'),
           "value": "eq"
         },
         {
-          "name": "不等于",
+          "name": i18n.global.t('Virtual.data.400159-19'),
           "value": "neq"
         },
         {
-          "name": "大于",
+          "name": i18n.global.t('Virtual.data.400159-20'),
           "value": "gt"
         },
         {
-          "name": "小于",
+          "name": i18n.global.t('Virtual.data.400159-21'),
           "value": "lt"
         },
         {
-          "name": "大于等于",
+          "name": i18n.global.t('Virtual.data.400159-22'),
           "value": "gte"
         },
         {
-          "name": "小于等于",
+          "name": i18n.global.t('Virtual.data.400159-23'),
           "value": "lte"
         },
         {
-          "name": "在...之间",
+          "name": i18n.global.t('Virtual.data.400159-24'),
           "value": "btw"
         },
         {
-          "name": "不在...之间",
+          "name": i18n.global.t('Virtual.data.400159-25'),
           "value": "nbtw"
         },
         {
-          "name": "在...之中",
+          "name": i18n.global.t('Virtual.data.400159-26'),
           "value": "in"
         },
         {
-          "name": "不在...之中",
+          "name": i18n.global.t('Virtual.data.400159-27'),
           "value": "nin"
         }
       ]
     },
     {
       "id": "Boolean",
-      "name": "布尔",
+      "name": i18n.global.t('Virtual.data.400159-30'),
       "code": "",
       "description": "",
       "children": [
         {
           "id": "Boolean",
-          "name": "布尔",
+          "name": i18n.global.t('Virtual.data.400159-30'),
           "description": ""
         },
         {
           "id": "BOOL",
-          "name": "布尔",
+          "name": i18n.global.t('Virtual.data.400159-30'),
           "description": ""
         }
       ],
       "operator":[
         {
-          "name": "等于",
+          "name": i18n.global.t('Virtual.data.400159-18'),
           "value": "eq"
         }
       ]
     },
     {
       "id": "String",
-      "name": "文本类型",
+      "name": i18n.global.t('Virtual.data.400159-31'),
       "code": "",
       "description": "",
       "children": [
         {
           "id": "String",
-          "name": "字符串",
+          "name": i18n.global.t('Virtual.data.400159-32'),
           "description": ""
         },
         {
           "id": "hex",
-          "name": "文本",
+          "name": i18n.global.t('Virtual.data.400159-33'),
           "description": ""
         },
         {
           "id": "Enumerated",
-          "name": "字符串",
-          "description": "字符串"
+          "name": i18n.global.t('Virtual.data.400159-32'),
+          "description": i18n.global.t('Virtual.data.400159-32')
         },
         {
           "id": "BinaryPV",
-          "name": "字符串",
-          "description": "字符串"
+          "name": i18n.global.t('Virtual.data.400159-32'),
+          "description": i18n.global.t('Virtual.data.400159-32')
         },
         {
           "id": "CharacterString",
-          "name": "字符串",
-          "description": "字符串"
+          "name": i18n.global.t('Virtual.data.400159-32'),
+          "description": i18n.global.t('Virtual.data.400159-32')
         },
         {
           "id": "SHORT_STRING",
-          "name": "字符串",
-          "description": "字符串"
+          "name": i18n.global.t('Virtual.data.400159-32'),
+          "description": i18n.global.t('Virtual.data.400159-32')
         }
       ],
       "operator":[
         {
-          "name": "等于",
+          "name": i18n.global.t('Virtual.data.400159-18'),
           "value": "eq"
         }
       ]
     },
     {
       "id": "Array",
-      "name": "数组类型",
+      "name": i18n.global.t('Virtual.data.400159-34'),
       "code": "",
       "description": "",
       "children": [
         {
           "id": "Array",
-          "name": "字符串",
+          "name": i18n.global.t('Virtual.data.400159-32'),
           "description": ""
         }
       ],
       "operator":[
         {
-          "name": "包含",
+          "name": i18n.global.t('Virtual.data.400159-35'),
           "value": "like"
         },
         {
-          "name": "不包含",
+          "name": i18n.global.t('Virtual.data.400159-36'),
           "value": "nlike"
         }
       ]

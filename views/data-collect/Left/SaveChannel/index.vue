@@ -3,9 +3,15 @@
     visible
     :title="data.id ? $t('DataCollect.index.400150-26') : $t('DataCollect.index.400150-27')"
     :maskClosable="false"
+    :closable="false"
     width="40%"
     @close="emits('close')"
   >
+    <template #extra>
+      <a-button type="text" @click="emits('close')">
+        <AIcon type="CloseOutlined" />
+      </a-button>
+    </template>
     <Provider v-if="step === 0" :options="options" v-model:value="provider" v-model:name="providerName" @change="step = 1"/>
     <ChannelForm
       v-show="step === 1"

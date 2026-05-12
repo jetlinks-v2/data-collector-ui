@@ -2,7 +2,7 @@
   <div class="batch-item" @click.stop="onClick">
     <div class="item-content">
       <div class="item-avatar">
-        <img :width="40" :height="40" :src="record.photoUrl || DeviceGateWayImg />
+        <img :width="40" :height="40" :src="record.photoUrl || DeviceGateWayImg" />
       </div>
       <div class="item-body">
         <div class="item-body-title">

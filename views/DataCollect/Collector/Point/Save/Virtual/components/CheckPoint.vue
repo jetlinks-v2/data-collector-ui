@@ -1,7 +1,7 @@
 <template>
   <a-modal
       open
-      title="点位选择"
+      :title="$t('Virtual.CheckPoint.400159-0')"
       centered
       :width="1200"
       :maskClosable="false"
@@ -10,12 +10,12 @@
     <template #footer>
       <div class="footerContainer">
         <div>
-          <a-button v-if="current !== 0" @click="lastStep">上一步</a-button>
+          <a-button v-if="current !== 0" @click="lastStep">{{ $t('Issue.index.517977-11') }}</a-button>
         </div>
         <div>
-          <a-button @click="emits('close')">取消</a-button>
+          <a-button @click="emits('close')">{{ $t('Issue.index.517977-12') }}</a-button>
           <a-button @click="nextStep" type="primary">{{
-              current !== 2 ? "下一步" : "确认"
+              current !== 2 ? $t('Issue.index.517977-13') : $t('Issue.index.517977-14')
             }}
           </a-button>
         </div>
@@ -23,9 +23,9 @@
     </template>
     <div class="body_height_60">
       <a-steps v-model:current="current">
-        <a-step title="选择通道" disabled></a-step>
-        <a-step title="选择设备" disabled></a-step>
-        <a-step title="选择点位" disabled></a-step>
+        <a-step :title="$t('Virtual.CheckPoint.400159-1')" disabled></a-step>
+        <a-step :title="$t('Virtual.CheckPoint.400159-2')" disabled></a-step>
+        <a-step :title="$t('Virtual.CheckPoint.400159-3')" disabled></a-step>
       </a-steps>
       <div class="content">
         <div v-if="current === 0">
@@ -40,12 +40,12 @@
               <a-radio-group v-model:value="recent">
                 <a-space>
                   <a-radio-button :value="`$recent(&quot;${item?.id}&quot;)`"
-                  >实时值
+                  >{{ $t('Virtual.PointAssign.400159-4') }}
                   </a-radio-button
                   >
                   <a-radio-button
                       :value="`$lastState(&quot;${item?.id}&quot;)`"
-                  >上一值
+                  >{{ $t('Virtual.PointAssign.400159-5') }}
                   </a-radio-button
                   >
                 </a-space>
@@ -60,9 +60,12 @@
 
 <script setup>
 import {onlyMessage} from "@jetlinks-web/utils";
+import {useI18n} from 'vue-i18n';
 import Channel from "./Channel.vue";
 import Device from "./Device.vue";
 import Point from "./Point.vue";
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   modalType: {
@@ -106,10 +109,10 @@ const lastStep = () => {
 
 const nextStep = () => {
   if (current.value === 0 && !selectedChannel.value) {
-    onlyMessage("请选择通道", 'error');
+    onlyMessage($t('Save.index.4001415-3'), 'error');
     return;
   } else if (current.value === 1 && !selectedDevice.value) {
-    onlyMessage("请选择设备", 'error');
+    onlyMessage($t('Resource.Issue.400159-8'), 'error');
     return;
   } else if (current.value === 2) {
     if (props.modalType === "commonPoint") {
@@ -124,7 +127,7 @@ const nextStep = () => {
       ];
       emits("choosePoint", points);
     } else {
-      onlyMessage("请选择点位");
+      onlyMessage($t('Virtual.PointAssign.400159-2'));
     }
     return;
   }

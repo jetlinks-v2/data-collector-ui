@@ -19,9 +19,16 @@ import * as Router from 'vue-router'
 import * as LocalUtils from '@jetlinks-web-core/utils'
 import * as LodashEs from 'lodash-es'
 import * as hooks from '@data-collector-ui/hooks'
+import dayjs from 'dayjs'
 import PointEditTable
   from "@data-collector-ui/views/data-collect/components/Point/BatchSave/components/PointEditTable.vue";
-import { commandRequest, queryCodecProvider, queryPointMetadata } from '@data-collector-ui/api/data-collect/collector'
+import {
+  commandRequest,
+  queryCodecProvider,
+  queryPointMetadata,
+  queryPointNoPaging,
+  scanOpcUAList,
+} from '@data-collector-ui/api/data-collect/collector'
 import { handlePointConfigMetadata } from '@data-collector-ui/utils/utils'
 
 defineOptions({name: 'RenderComponents'})
@@ -44,6 +51,7 @@ const render = debounce(() => {
       '@jetlinks-web/types': JetlinksTypes,
       '@jetlinks-web/constants': JetlinksConstants,
       '@jetlinks-web/hooks': JetlinksHooks,
+      'dayjs': dayjs,
       pinia: pinia,
       'vue-router': Router,
       'local-utils': { ...LocalUtils, handlePointConfigMetadata },
@@ -55,7 +63,9 @@ const render = debounce(() => {
       request: {
         commandRequest,
         queryCodecProvider,
-        queryPointMetadata
+        queryPointMetadata,
+        queryPointNoPaging,
+        scanOpcUAList,
       }
     },
     getFile(url) {

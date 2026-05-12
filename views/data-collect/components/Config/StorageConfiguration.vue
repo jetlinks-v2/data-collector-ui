@@ -33,6 +33,7 @@
 <script setup>
 import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
+import { getPointMetadata } from "@data-collector-ui/views/data-collect/utils";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {isEqual} from "./data";
 import {useI18n} from "vue-i18n";
@@ -156,6 +157,10 @@ watch(
     if (val) {
       getPointDataType(val).then(res => {
         formData.dataType = res.result?.dataType
+      })
+    } else {
+      getPointMetadata(formData.provider, {configuration: formData.configuration}).then((res) => {
+        formData.dataType = res?.dataType
       })
     }
   }, 

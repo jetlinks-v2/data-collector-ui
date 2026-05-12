@@ -1,6 +1,6 @@
 <template>
   <a-modal
-    title="添加点位"
+    :title="$t('Virtual.index.400159-0')"
     open
     centered
     :confirmLoading="loading"
@@ -17,25 +17,25 @@
         :model="formData"
         :rules="rules"
       >
-        <a-form-item label="点位名称" name="name">
+        <a-form-item :label="$t('Save.SaveBACNet.4001416-2')" name="name">
           <a-input
             v-model:value="formData.name"
             :maxlength="64"
             autocomplete="off"
-            placeholder="请输入点位名称"
+            :placeholder="$t('Save.SaveBACNet.4001416-3')"
           />
         </a-form-item>
         <a-form-item name="virtualPoint">
           <template #label>
             <div class="label">
-              当点位
+              {{ $t('Virtual.index.400159-1') }}
               <div class="label-content">
                 <div class="label-btn" @click="choosePoint">
                   <div class="btn" v-for="i of checkPoint.keyPoint">
                     {{ i.name || "--" }}
                   </div>
                 </div>
-                数据被采集时，将会触发生成当前虚拟点位的值
+                {{ $t('Virtual.index.400159-2') }}
               </div>
             </div>
           </template>
@@ -62,12 +62,15 @@
 
 <script setup>
 import { onlyMessage } from "@jetlinks-web/utils";
+import {useI18n} from 'vue-i18n';
 import CheckPoint from "./components/CheckPoint.vue";
 import Editor from "./components/Editor.vue";
 import {
   savePoint,
   updatePoint,
 } from '@data-collector-ui/api/data-collect/collector';
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   data: {
@@ -110,14 +113,14 @@ const handlePoint = () => {
 
 const validator = (_rule, value) => {
   if (checkPoint.keyPoint.length < 3) {
-    return Promise.reject("请选择关键点位");
+    return Promise.reject($t('Virtual.index.400159-3'));
   } else {
     return Promise.resolve();
   }
 };
 
 const rules = {
-  name: [{ required: true, message: "请输入设备名称", trigger: "blur" }],
+  name: [{ required: true, message: $t('Virtual.index.400159-4'), trigger: "blur" }],
   virtualPoint: [{ required: true, validator: validator, trigger: "blur" }],
 };
 
@@ -181,7 +184,7 @@ const submit = async () => {
         loading.value = false;
       });
   if (res.status === 200) {
-    onlyMessage("操作成功");
+    onlyMessage($t('DataCollect.index.400150-28'));
     emits("change", true);
   }
   loading.value = false;

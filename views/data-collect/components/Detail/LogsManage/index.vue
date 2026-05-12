@@ -30,7 +30,7 @@
             </a-button>
           </div>
           <a-button type="primary" @click="toggleAutoScroll">
-            滚动到底部
+            {{ $t('DataCollect.index.400159-1') }}
           </a-button>
         </div>
         <div class="console-controls">

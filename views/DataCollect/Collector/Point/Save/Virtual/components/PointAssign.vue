@@ -1,7 +1,7 @@
 <template>
   <a-modal
     open
-    title="点位赋值"
+    :title="$t('Virtual.PointAssign.400159-0')"
     centered
     :maskClosable="false"
     @cancel="emits('close')"
@@ -10,12 +10,12 @@
     <div class="body_height_60">
       <a-form ref="formRef" layout="vertical" :model="formState">
         <a-form-item
-          label="点位名称"
+          :label="$t('Save.SaveBACNet.4001416-2')"
           name="pointID"
-          :rules="[{ required: true, message: '请选择点位', trigger: 'blur' }]"
+          :rules="[{ required: true, message: $t('Virtual.PointAssign.400159-2'), trigger: 'blur' }]"
         >
           <a-select
-            placeholder="请选择"
+            :placeholder="$t('DataCollect.index.400156-20')"
             v-model:value="formState.pointID"
             :options="options"
             :disabled="!!formState.pointID && type !== 'add'"
@@ -24,25 +24,25 @@
         </a-form-item>
         <a-form-item
           v-if="!formState.type"
-          label="数据类型"
+          :label="$t('Save.SaveBACNet.4001416-8')"
           name="type"
-          :rules="[{ required: true, message: '请选择数据类型' }]"
+          :rules="[{ required: true, message: $t('Collector.data.400141-8') }]"
         >
           <a-radio-group
             v-model:value="formState.type"
             style="margin-bottom: 10px"
           >
-            <a-radio-button value="Number">数值类型</a-radio-button>
-            <a-radio-button value="Boolean">布尔类型</a-radio-button>
-            <a-radio-button value="DateTime">时间类型</a-radio-button>
-            <a-radio-button value="String">字符类型</a-radio-button>
+            <a-radio-button value="Number">{{ $t('Virtual.data.400159-0') }}</a-radio-button>
+            <a-radio-button value="Boolean">{{ $t('Virtual.data.400159-37') }}</a-radio-button>
+            <a-radio-button value="DateTime">{{ $t('Virtual.data.400159-29') }}</a-radio-button>
+            <a-radio-button value="String">{{ $t('Virtual.data.400159-38') }}</a-radio-button>
           </a-radio-group>
         </a-form-item>
         <a-form-item
           v-if="formState.type"
-          label="实时值"
+          :label="$t('Virtual.PointAssign.400159-4')"
           name="current"
-          :rules="[{ required: true, message: '请输入值', trigger: 'blur' }]"
+          :rules="[{ required: true, message: $t('Virtual.TypeForm.400159-0'), trigger: 'blur' }]"
         >
           <TypeForm
             v-model:value="formState.current"
@@ -51,9 +51,9 @@
         </a-form-item>
         <a-form-item
           v-if="formState.type"
-          label="上一值"
+          :label="$t('Virtual.PointAssign.400159-5')"
           name="last"
-          :rules="[{ required: true, message: '请输入值', trigger: 'blur' }]"
+          :rules="[{ required: true, message: $t('Virtual.TypeForm.400159-0'), trigger: 'blur' }]"
         >
           <TypeForm
             v-model:value="formState.last"
@@ -66,7 +66,10 @@
 </template>
 <script setup>
 import { dataType } from "../data";
+import {useI18n} from 'vue-i18n';
 import TypeForm from "./TypeForm.vue";
+
+const {t: $t} = useI18n();
 const props = defineProps({
   options: {
     type: Array,

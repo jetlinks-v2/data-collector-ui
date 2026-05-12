@@ -36,6 +36,9 @@ import {onlyMessage} from "@jetlinks-web/utils";
 import {isBoolean, isNumber} from "lodash-es";
 import dayjs from "dayjs";
 import WritePoint from './WritePoint.vue'
+import { useI18n } from "vue-i18n";
+
+const { t: $t } = useI18n();
 
 const props = defineProps({
   value: {

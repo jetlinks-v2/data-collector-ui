@@ -41,7 +41,7 @@
                             <a-row style="margin-top: 18px">
                                 <a-col :span="12">
                                     <div class="card-item-content-text">
-                                        通讯协议
+                                        {{ $t('Channel.index.290640-4') }}
                                     </div>
                                     <j-ellipsis>{{
                                         slotProps.category
@@ -49,7 +49,7 @@
                                 </a-col>
                                 <a-col :span="12">
                                     <div class="card-item-content-text">
-                                        所属边缘网关
+                                        {{ $t('Resource.index.400159-0') }}
                                     </div>
                                     <j-ellipsis style="width: 100%">
                                         {{ slotProps.sourceName }}
@@ -156,7 +156,9 @@ import dayjs from 'dayjs';
 import { query, _delete, _start, _stop } from '../../../api/edge/resource';
 import Save from './Save/index.vue';
 import Issue from './Issue/index.vue';
+import {useI18n} from 'vue-i18n';
 
+const {t: $t} = useI18n();
 const menuStory = useMenuStore();
 
 const defaultParams = { sorts: [{ name: 'createTime', order: 'desc' }] };
@@ -178,7 +180,7 @@ const columns = [
         key: 'id',
     },
     {
-        title: '名称',
+        title: $t('NewResource.index.035355-3'),
         dataIndex: 'name',
         key: 'name',
         ellipsis: true,
@@ -188,7 +190,7 @@ const columns = [
     },
     {
         dataIndex: 'category',
-        title: '通信协议',
+        title: $t('Resource.index.400159-1'),
         valueType: 'select',
         scopedSlots: true,
         key: 'category',
@@ -213,7 +215,7 @@ const columns = [
         },
     },
     {
-        title: '所属边缘网关',
+        title: $t('Resource.index.400159-0'),
         dataIndex: 'sourceId',
         key: 'sourceId',
         scopedSlots: true,
@@ -243,7 +245,7 @@ const columns = [
         },
     },
     {
-        title: '创建时间',
+        title: $t('Save.GateWayDeviceModal.290645-4'),
         dataIndex: 'createTime',
         key: 'createTime',
         scopedSlots: true,
@@ -252,20 +254,20 @@ const columns = [
         },
     },
     {
-        title: '状态',
+        title: $t('Channel.index.290640-5'),
         dataIndex: 'state',
         key: 'state',
         scopedSlots: true,
         search: {
             type: 'select',
             options: [
-                { label: '禁用', value: 'disabled' },
-                { label: '正常', value: 'enabled' },
+                { label: $t('Channel.index.290640-7'), value: 'disabled' },
+                { label: $t('Channel.index.290640-6'), value: 'enabled' },
             ],
         },
     },
     {
-        title: '操作',
+        title: $t('Channel.index.290640-11'),
         key: 'action',
         fixed: 'right',
         width: 200,
@@ -281,9 +283,9 @@ const getActions = (
     const actions = [
         {
             key: 'view',
-            text: '查看',
+            text: $t('NewResource.index.035355-16'),
             tooltip: {
-                title: '查看',
+                title: $t('NewResource.index.035355-16'),
             },
             icon: 'EyeOutlined',
             onClick: () => {
@@ -292,9 +294,9 @@ const getActions = (
         },
         {
             key: 'update',
-            text: '编辑',
+            text: $t('Channel.index.290640-13'),
             tooltip: {
-                title: '编辑',
+                title: $t('Channel.index.290640-13'),
             },
             icon: 'EditOutlined',
             onClick: () => {
@@ -304,13 +306,13 @@ const getActions = (
         },
         {
             key: 'setting',
-            text: '下发',
+            text: $t('NewResource.index.035355-11'),
             disabled: data.state?.value === 'disabled',
             tooltip: {
                 title:
                     data.state.value === 'disabled'
-                        ? '请先启用，再下发'
-                        : '下发',
+                        ? $t('NewResource.index.035355-12')
+                        : $t('NewResource.index.035355-11'),
             },
             icon: 'DownSquareOutlined',
             onClick: () => {
@@ -320,18 +322,18 @@ const getActions = (
         },
         {
             key: 'action',
-            text: data.state?.value !== 'disabled' ? '禁用' : '启用',
+            text: data.state?.value !== 'disabled' ? $t('Channel.index.290640-7') : $t('Channel.index.290640-12'),
             tooltip: {
-                title: data.state?.value !== 'disabled' ? '禁用' : '启用',
+                title: data.state?.value !== 'disabled' ? $t('Channel.index.290640-7') : $t('Channel.index.290640-12'),
             },
             icon:
                 data.state.value !== 'disabled'
                     ? 'StopOutlined'
                     : 'CheckCircleOutlined',
             popConfirm: {
-                title: `确认${
-                    data.state.value !== 'disabled' ? '禁用' : '启用'
-                }?`,
+                title: $t('Channel.index.290640-14', [
+                    data.state.value !== 'disabled' ? $t('Channel.index.290640-7') : $t('Channel.index.290640-12')
+                ]),
                 onConfirm: () => {
                     let response = undefined;
                     if (data.state.value !== 'disabled') {
@@ -341,10 +343,10 @@ const getActions = (
                     }
                     response.then((res) => {
                         if (res && res.status === 200) {
-                            onlyMessage('操作成功！');
+                            onlyMessage($t('DataCollect.index.400150-28'));
                             edgeResourceRef.value?.reload();
                         } else {
-                            onlyMessage('操作失败！', 'error');
+                            onlyMessage($t('Resource.index.400159-2'), 'error');
                         }
                     });
                     return response;
@@ -353,24 +355,24 @@ const getActions = (
         },
         {
             key: 'delete',
-            text: '删除',
+            text: $t('Channel.index.290640-16'),
             disabled: data.state?.value !== 'disabled',
             tooltip: {
                 title:
                     data.state.value !== 'disabled'
-                        ? '请先禁用，再删除。'
-                        : '删除',
+                        ? $t('NewResource.index.035355-14')
+                        : $t('Channel.index.290640-16'),
             },
             popConfirm: {
-                title: '确认删除?',
+                title: $t('NewResource.index.035355-15'),
                 onConfirm: () => {
                     const response = _delete(data.id);
                     response.then((res) => {
                         if (res.status === 200) {
-                            onlyMessage('操作成功！');
+                            onlyMessage($t('DataCollect.index.400150-28'));
                             edgeResourceRef.value?.reload();
                         } else {
-                            onlyMessage('操作失败！', 'error');
+                            onlyMessage($t('Resource.index.400159-2'), 'error');
                         }
                     });
                     return response

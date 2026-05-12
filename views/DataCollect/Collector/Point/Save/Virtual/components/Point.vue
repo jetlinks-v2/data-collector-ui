@@ -49,7 +49,7 @@
                   </j-ellipsis>
                   <div class="card-item-content-box">
                     <div class="card-item-content-text">
-                      说明
+                      {{ $t('Channel.index.290640-2') }}
                     </div>
                     <j-ellipsis>
                       {{ slotProps.description || "--" }}
@@ -76,6 +76,9 @@
 <script setup lang="ts" name="Channel">
 import {queryPoint} from "@data-collector-ui/api/data-collect/collector";
 import {ImageMap} from "@data-collector-ui/views/DataCollect/Channel/data";
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 type Emit = {
   (e: "update:rowKey", data: string): void;
@@ -113,7 +116,7 @@ const handleSearch = (p: any) => {
 
 const columns = [
   {
-    title: '名称',
+    title: $t('NewResource.index.035355-3'),
     dataIndex: 'name',
     key: 'name',
     ellipsis: true,

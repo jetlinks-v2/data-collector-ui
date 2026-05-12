@@ -7,6 +7,7 @@
       @close="onClose"
       destroy-on-close
       :maskClosable="false"
+      :closable="false"
   >
     <template #title>
       <div class="header">
@@ -37,6 +38,9 @@
             <AIcon :type="item.icon"></AIcon>
           </j-permission-button>
         </template>
+        <a-button type="text" @click="onClose">
+          <AIcon type="CloseOutlined" />
+        </a-button>
       </a-space>
     </template>
     <a-spin :spinning="loading" :key="info.id">
@@ -114,10 +118,10 @@ const tabsList = [
     key: 'HistoryData',
     tab: $t('DataCollect.index.400151-33')
   },
-  // {
-  //   key: 'RelatedDevice',
-  //   tab: $t('DataCollect.index.400152-0')
-  // },
+  {
+    key: 'RelatedDevice',
+    tab: $t('DataCollect.index.400152-0')
+  },
   {
     key: 'PointLogs',
     tab: $t('DataCollect.index.400151-34')
@@ -155,7 +159,7 @@ const handleSearch = (id) => {
 const handleClose = (next) => {
   if (errorList.value.length) {
     Modal.confirm({
-      title: '还有未保存的修改,确定关闭吗?',
+      title: $t('DataCollect.index.400159-6'),
       onOk() {
         next?.()
         errorList.value = []

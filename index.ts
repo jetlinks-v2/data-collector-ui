@@ -33,8 +33,14 @@ const getExtraRoutesMap = () => {
                 {
                     code: 'BatchAdd',
                     url: '/batch-add/:id',
-                    name: '批量添加',
+                    name: i18n.global.t('DataCollect.index.400152-13'),
                     component: () => import('./views/data-collect/components/Point/BatchSave/index.vue')
+                },
+                {
+                    code: 'Scan',
+                    url: '/scan/:id',
+                    name: i18n.global.t('data-collector-ui.index.237811-1'),
+                    component: () => import('./views/data-collect/components/Point/Scan/Page.vue')
                 }
             ]
         }

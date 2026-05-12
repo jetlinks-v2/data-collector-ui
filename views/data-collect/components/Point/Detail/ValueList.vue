@@ -34,7 +34,7 @@ const subscribeProperty = () => {
   }
   const channel = info.value?.channelId || '*'
   const collector = info.value.collectorId || '*'
-  const id = `collector-${channel}-${collector}-data-${info.value.id}`;
+  const id = `collector-${channel}-${collector}-data-${info.value.id}-${dayjs().valueOf()}`;
   const topic = `/collector/${channel}/${collector}/data`;
   subRef.value = wsClient.getWebSocket(id, topic, {
     pointId: info.value.id,

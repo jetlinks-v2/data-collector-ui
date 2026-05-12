@@ -44,32 +44,32 @@
       />
     </div>
     <div class="actions-window">
-      <span>按</span>
+      <span>{{ $t('Virtual.Editor.400159-6') }}</span>
       <a-radio-group v-model:value="winActions.radioType">
         <a-space>
           <a-radio-button
             value="time"
             @click.native.prevent="onRadioChange('time')"
-            >时间窗口</a-radio-button
+            >{{ $t('Virtual.Editor.400159-7') }}</a-radio-button
           >
           <a-radio-button
             value="num"
             @click.native.prevent="onRadioChange('num')"
-            >次数窗口</a-radio-button
+            >{{ $t('Virtual.Editor.400159-8') }}</a-radio-button
           >
         </a-space>
       </a-radio-group>
-      <span>每</span>
+      <span>{{ $t('Virtual.Editor.400159-9') }}</span>
       <a-input-number
         id="inputNumber"
         v-model:value="winActions.interval"
         :min="1"
         style="width: auto !important"
       />
-      <span v-if="winActions.radioType === 'num'">次，使用</span>
-      <span v-else>秒，使用</span>
+      <span v-if="winActions.radioType === 'num'">{{ $t('Virtual.Editor.400159-10') }}</span>
+      <span v-else>{{ $t('Virtual.Editor.400159-11') }}</span>
       <a-select
-        placeholder="请选择函数"
+        :placeholder="$t('Virtual.Editor.400159-4')"
         v-model:value="winActions.fun"
         style="width: 120px"
       >
@@ -77,19 +77,19 @@
           >{{ item.value }}({{ item.text }})</a-select-option
         >
       </a-select>
-      <span>计算一次</span>
+      <span>{{ $t('Virtual.Editor.400159-12') }}</span>
     </div>
     <div>
       <a-row>
         <a-col :span="12">
           <div class="point-assignment">
             <div class="point-header">
-              <span>点位赋值</span>
-              <span class="result-text">对上方规则使用的点位进行赋值</span>
+              <span>{{ $t('Virtual.PointAssign.400159-0') }}</span>
+              <span class="result-text">{{ $t('Virtual.Editor.400159-13') }}</span>
               <div>
                 <span v-if="winActions.radioType !== '' && !showRun">
                   <a-button type="primary" ghost @click="beginRun('again')"
-                    >发送数据</a-button
+                    >{{ $t('Virtual.Editor.400159-14') }}</a-button
                   >
                 </span>
               </div>
@@ -101,12 +101,12 @@
                 </div>
                 <div class="card-content" @click="choosePoint(item)">
                   <span v-if="item.current === '' && item.last === ''"
-                    >点击赋值</span
+                    >{{ $t('Virtual.Editor.400159-15') }}</span
                   >
                   <span v-else>
                     <a-space>
-                      <span>{{ item.current }}(当前值)</span>
-                      <span>{{ item.last }}(上一值)</span>
+                      <span>{{ item.current }}({{ $t('Virtual.Editor.400159-16') }})</span>
+                      <span>{{ item.last }}({{ $t('Virtual.PointAssign.400159-5') }})</span>
                     </a-space>
                   </span>
                 </div>
@@ -127,7 +127,7 @@
                 style="width: 100%"
                 shape="round"
                 @click="choosePoint('add')"
-                >新增</a-button
+                >{{ $t('DataCollect.index.400152-1') }}</a-button
               >
             </div>
           </div>
@@ -135,19 +135,19 @@
         <a-col :span="12">
           <div class="running-result">
             <div class="run-header">
-              <span>调试结果</span>
+              <span>{{ $t('Virtual.Editor.400159-17') }}</span>
               <a-space>
                 <a-button
                   type="primary"
                   ghost
                   @click="beginRun('begin')"
                   v-if="showRun"
-                  >开始调试</a-button
+                  >{{ $t('Virtual.Editor.400159-18') }}</a-button
                 >
                 <a-button type="primary" ghost @click="stopRun" v-else
-                  >停止调试</a-button
+                  >{{ $t('Virtual.Editor.400159-19') }}</a-button
                 >
-                <a-button type="primary" ghost @click="clear">清空</a-button>
+                <a-button type="primary" ghost @click="clear">{{ $t('Virtual.Editor.400159-20') }}</a-button>
               </a-space>
             </div>
             <div class="run-body">
@@ -195,6 +195,9 @@ import dayjs from "dayjs";
 import { onlyMessage } from "@jetlinks-web/utils";
 import { wsClient } from '@jetlinks-web/core';
 import { omit } from "lodash-es";
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 const props = defineProps({
   codeValue: {
@@ -280,7 +283,7 @@ const editorInit = (editor, monaco) => {
 const buttonOptions = [
   {
     key: "point",
-    name: "点位",
+    name: $t('Virtual.Editor.400159-0'),
     click: () => {
       emits("codePoint");
     },
@@ -298,28 +301,28 @@ const buttonOptions = [
   //   },
   {
     key: "control",
-    name: "控制语句",
+    name: $t('Virtual.Editor.400159-1'),
     click: () => {
-      modal.title = "选择控制语句";
+      modal.title = $t('Virtual.Editor.400159-2');
       modal.options = propertyCalculateRule.value.filter(
         (i) => i.id === "control"
       )[0].children;
       modal.visible = true;
       modal.type = "control";
-      modal.name = "控制语句";
+      modal.name = $t('Virtual.Editor.400159-1');
     },
   },
   {
     key: "function",
-    name: "函数",
+    name: $t('Virtual.Editor.400159-3'),
     click: () => {
-      modal.title = "选择函数";
+      modal.title = $t('Virtual.Editor.400159-4');
       modal.options = propertyCalculateRule.value.filter(
         (i) => i.id === "function"
       )[0].children;
       modal.visible = true;
       modal.type = "function";
-      modal.name = "函数";
+      modal.name = $t('Virtual.Editor.400159-3');
     },
   },
 ];
@@ -423,7 +426,7 @@ const beginRun = (str) => {
   let sub
   try {
     if (code.value === "") {
-      onlyMessage("请编辑规则", "error");
+      onlyMessage($t('Virtual.Editor.400159-5'), "error");
       return;
     }
     // 参数
@@ -493,7 +496,7 @@ const beginRun = (str) => {
         },
       });
   } catch (error) {
-    onlyMessage("请选择关键点位", "error");
+    onlyMessage($t('Virtual.index.400159-3'), "error");
   }
   if (str === "begin") {
     subRef.value = sub;

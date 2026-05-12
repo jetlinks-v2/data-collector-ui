@@ -30,7 +30,7 @@ const pointStatusOptions = computed(() => {
   return {
     tooltip: {
       trigger: 'item',
-      formatter: '{b}: {c}个 ({d}%)'
+      formatter: (params) => $t('DataCollect.index.400159-7', [params.name, params.value, params.percent])
     },
     legend: {
       top: 'center',

@@ -1,4 +1,4 @@
-import {request} from '@jetlinks-web/core'
+import {request, ndJson} from '@jetlinks-web/core'
 import { getBaseApi } from '@jetlinks-web-core/utils';
 
 export const queryCollector = (data: any) =>
@@ -95,7 +95,7 @@ export const exportTemplate = (provider: string, format: string) => request.get(
  * @param channelId 通道id
  * @param instanceNumber 设备实例号
  */
-export const getBacnetObjectList = (channelId: string, instanceNumber: string) => request.get(`/collect/bacnet/${channelId}/${instanceNumber}/objects`);
+export const getBacnetObjectList = (channelId: string, instanceNumber: string) => request.get(`/collect/BACNetIp/${channelId}/${instanceNumber}/objects`);
 
 /**
  * 查询未使用的属性id
@@ -106,7 +106,7 @@ export const getBacnetPropertyIdNotUse = (data: any) => request.post(`/data-coll
 // /**
 //  * 查询所有属性id
 //  */
-// export const getBacnetAllPropertyId = () => request.get('/collect/bacnet/property/ids')
+// export const getBacnetAllPropertyId = () => request.get('/collect/BACNetIp/property/ids')
 
 /**查询bacnet值类型*/
 export const getBacnetValueType = () => request.post(`/data-collect/BACNetIp/command/QueryValueTypes`)
@@ -182,3 +182,48 @@ export const updatePoints = (data: any) => request.post(`/data-collect/point/bat
  * 获取点位数据类型
  */
 export const getPointDataType = (id: string) => request.get(`/things/collector/codecs/${id}/_detail`);
+
+/**
+ * 查询设备列表
+ */
+export const queryDeviceList = (data: any) => request.post(`/device-instance/_query/no-paging`, data);
+
+/**
+ * 查询设备详情
+ */
+export const queryDeviceDetail = (id: string) => request.get(`/device-instance/${id}/detail`);
+
+/**
+ * 查询设备映射的点位列表
+ */
+export const queryDevicePoints = (deviceId: string) => request.get(`things/collector/device/${deviceId}/_query`);
+
+/**
+ * 查询点位关联的设备列表
+ */
+export const queryPointRelatedDevices = (pointId: string, data?: any) =>
+    request.post(`/data-collect/point/${pointId}/collector/_query/no-paging`, data || { paging: false });
+
+/**
+ * 保存点位关联设备映射
+ */
+export const savePointRelatedDevices = (pointId: string, autoCreate: boolean, data: any[]) =>
+    request.patch(`/data-collect/point/${pointId}/collector?autoCreate=${autoCreate}`, data);
+
+/**
+ * 删除点位关联设备映射
+ */
+export const deletePointRelatedDevices = (pointId: string, data: string[]) =>
+    request.post(`/data-collect/point/${pointId}/collectors/_delete`, data);
+
+/**
+ * 下载点位关联设备映射导入模板
+ */
+export const downloadPointRelatedDevicesTemplate = (format: string) =>
+    request.get(`/data-collect/point/download/collector/mapping/template.${format}`, {}, { responseType: 'blob' });
+
+/**
+ * 点位关联设备映射导入
+ */
+export const importPointRelatedDevices = (pointId: string, fileUrl: string, autoCreate: boolean) =>
+   ndJson.get(`/data-collect/point/${pointId}/collector/import?fileUrl=${fileUrl}&autoCreate=${autoCreate}`)

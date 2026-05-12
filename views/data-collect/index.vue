@@ -2,7 +2,7 @@
   <j-page-container>
     <full-page>
       <div class="collect-warp">
-        <div class="left" v-if="!foldTree">
+        <div class="left" v-show="!foldTree">
           <Left @change="onChange" ref="leftRef"/>
         </div>
         <div class="right">

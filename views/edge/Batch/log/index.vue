@@ -7,7 +7,7 @@
                     :options="stateOptions"
                     style="width: 100px;text-align: left;"
                 />
-                <a-input-search v-model:value="searchItem.name" placeholder="请输入任务名称" @search="handleSearch"></a-input-search>
+                <a-input-search v-model:value="searchItem.name" :placeholder="$t('Issue.index.517977-2')" @search="handleSearch"></a-input-search>
             </a-space>
         </div>
         <!-- <pro-search

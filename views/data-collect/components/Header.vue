@@ -1,6 +1,6 @@
 <template>
   <div class="right-header-warp">
-    <a-tooltip title="展开" v-if="foldTree">
+    <a-tooltip :title="$t('DataCollect.index.400159-2')" v-if="foldTree">
       <a-button size="small" @click="foldTree = !foldTree">
         <AIcon type="DoubleRightOutlined" />
       </a-button>

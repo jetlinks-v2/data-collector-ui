@@ -110,8 +110,8 @@ const rules = {
 }
 
 const options = [
-    {label: $t('Issue.index.517977-16'), value: 'device', describe: '按设备列表选择对应网关设备', icon: 'icon-shebeixinxi'},
-    {label: $t('Issue.index.517977-17'), value: 'more', disabled: true, describe: '敬请期待！', icon: 'AppstoreOutlined'},
+    {label: $t('Issue.index.517977-16'), value: 'device', describe: $t('Issue.index.517977-20'), icon: 'icon-shebeixinxi'},
+    {label: $t('Issue.index.517977-17'), value: 'more', disabled: true, describe: $t('Issue.index.517977-21'), icon: 'AppstoreOutlined'},
 ]
 
 const handleSubmit = () => {

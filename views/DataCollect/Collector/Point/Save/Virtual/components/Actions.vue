@@ -9,12 +9,12 @@
   >
     <template #footer>
       <a-space>
-        <a-button @click="emits('close')">取消</a-button>
+        <a-button @click="emits('close')">{{ $t('Save.index.290643-38') }}</a-button>
         <a-button
           type="primary"
           :disabled="!selectedOperator?.code"
           @click="emits('updateCode', selectedOperator?.code)"
-          >确定</a-button
+          >{{ $t('components.LogDetail.1651510-0') }}</a-button
         >
       </a-space>
     </template>

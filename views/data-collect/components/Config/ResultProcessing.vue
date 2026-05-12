@@ -19,7 +19,7 @@
       <template v-if="collector?.managedConfiguration?.handler?.configuration?.shakeLimit?.enabled">
         <p v-if="_handler?.reason && _handler.time && _handler?.threshold">
           <b>{{ _handler?.reason }}</b>
-          {{ `异常时,${_handler.time}秒内最多触发${_handler?.threshold}次同一类型告警` }}
+          {{ $t('DataCollect.index.400159-0', [_handler.time, _handler?.threshold]) }}
         </p>
       </template>
     </template>

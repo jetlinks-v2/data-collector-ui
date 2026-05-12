@@ -1,7 +1,7 @@
 <template>
     <a-modal
         open
-        title="下发设备"
+        :title="$t('Resource.Issue.400159-0')"
         :width="1000"
         @ok="onSave"
         @cancel="onCancel"
@@ -10,7 +10,7 @@
             <AIcon
                 type="InfoCircleOutlined"
                 style="margin-right: 10px"
-            />离线设备无法进行设备模板下发
+            />{{ $t('Resource.Issue.400159-1') }}
         </div>
         <pro-search
             :columns="columns"
@@ -62,6 +62,9 @@ import { queryDeviceList } from '../../../../api/edge/resource';
 import dayjs from 'dayjs';
 import Result from './Result.vue';
 import { queryNoPagingPost } from '../../../../api/others';
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 const defaultParams = {
     sorts: [{ name: 'registerTime', order: 'desc' }],
@@ -111,7 +114,7 @@ const columns = [
         },
     },
     {
-        title: '产品名称',
+        title: $t('Resource.Issue.400159-2'),
         dataIndex: 'productName',
         key: 'productName',
         ellipsis: true,
@@ -133,7 +136,7 @@ const columns = [
         },
     },
     {
-        title: '设备名称',
+        title: $t('Save.GateWayDeviceModal.290645-3'),
         ellipsis: true,
         dataIndex: 'name',
         key: 'name',
@@ -142,7 +145,7 @@ const columns = [
         },
     },
     {
-        title: '注册时间',
+        title: $t('Resource.Issue.400159-3'),
         dataIndex: 'registerTime',
         key: 'registerTime',
         width: 200,
@@ -153,16 +156,16 @@ const columns = [
         },
     },
     {
-        title: '状态',
+        title: $t('Channel.index.290640-5'),
         dataIndex: 'state',
         key: 'state',
         scopedSlots: true,
         search: {
             type: 'select',
             options: [
-                { label: '禁用', value: 'notActive' },
-                { label: '离线', value: 'offline' },
-                { label: '在线', value: 'online' },
+                { label: $t('Save.GateWayDeviceModal.290645-6'), value: 'notActive' },
+                { label: $t('Save.GateWayDeviceModal.290645-7'), value: 'offline' },
+                { label: $t('Save.GateWayDeviceModal.290645-8'), value: 'online' },
             ],
         },
     },
@@ -181,7 +184,7 @@ const onSave = () => {
     if (_data.value.length) {
         visible.value = true;
     } else {
-        onlyMessage('请选择设备', 'error');
+        onlyMessage($t('Resource.Issue.400159-8'), 'error');
     }
 };
 

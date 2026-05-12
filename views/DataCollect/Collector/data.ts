@@ -138,7 +138,7 @@ export const ModBusRules = {
     byteCount: [
         {
             required: true,
-            message: '请输入自定义数据区长度(byte)',
+            message: i18n.global.t('Collector.data.400141-45'),
         },
     ],
     interval: [

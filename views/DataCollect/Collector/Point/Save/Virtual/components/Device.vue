@@ -48,10 +48,10 @@
                 </j-ellipsis>
                 <div class="card-item-content-box">
                   <div class="card-item-content-text">
-                    类型
+                    {{ $t('Resource.Issue.400159-4') }}
                   </div>
                   <div class="card-item-content-text">
-                    {{ slotProps.provider === 'virtual' ? '虚拟通道' : '设备通道' }}
+                    {{ slotProps.provider === 'virtual' ? $t('Virtual.Device.400159-0') : $t('Virtual.Device.400159-1') }}
                   </div>
                 </div>
               </div>
@@ -66,6 +66,9 @@
 <script setup lang="ts" name="Channel">
 import {queryCollectorDevice} from "@data-collector-ui/api/data-collect/collector";
 import {ImageMap} from "@data-collector-ui/views/DataCollect/Channel/data";
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
 
 type Emit = {
   (e: "update:rowKey", data: string): void;
@@ -99,7 +102,7 @@ const handleSearch = (p: any) => {
 
 const columns = [
   {
-    title: '名称',
+    title: $t('NewResource.index.035355-3'),
     dataIndex: 'name',
     key: 'name',
     ellipsis: true,

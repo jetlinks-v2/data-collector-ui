@@ -6,14 +6,14 @@
       @change="updateData"
       :maxlength="64"
       autocomplete="off"
-      placeholder="请输入值"
+      :placeholder="$t('Virtual.TypeForm.400159-0')"
     />
     <a-input-number
       v-else-if="inputType === 'Number'"
       style="width: 100%"
       v-model:value="dataValue"
       @change="updateData"
-      placeholder="请输入值"
+      :placeholder="$t('Virtual.TypeForm.400159-0')"
       :controls="false"
       maxLength="20"
     />
@@ -23,7 +23,7 @@
       value-format="YYYY-MM-DD HH:mm:ss"
       v-model:value="dataValue"
       @change="updateData"
-      placeholder="请选择"
+      :placeholder="$t('DataCollect.index.400156-20')"
       style="width: 100%"
     />
     <!-- 时间 -->
@@ -33,7 +33,7 @@
       value-format="HH:mm:ss"
       @change="updateData"
       v-model:value="dataValue"
-      placeholder="请选择"
+      :placeholder="$t('DataCollect.index.400156-20')"
       style="width: 100%"
     />
     <!-- Boolean -->
@@ -43,14 +43,18 @@
       v-model:value="dataValue"
       @change="updateData"
       style="width: 100%"
-      placeholder="请选择"
+      :placeholder="$t('DataCollect.index.400156-20')"
     >
-      <a-select-option :value="true">是</a-select-option>
-      <a-select-option :value="false">否</a-select-option>
+      <a-select-option :value="true">{{ $t('DataCollect.index.400156-18') }}</a-select-option>
+      <a-select-option :value="false">{{ $t('DataCollect.index.400156-19') }}</a-select-option>
     </a-select>
   </div>
 </template>
 <script setup>
+import {useI18n} from 'vue-i18n';
+
+const {t: $t} = useI18n();
+
 const props = defineProps({
   value: {
     type: [String, Number, Boolean, Date, undefined],

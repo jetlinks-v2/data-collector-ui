@@ -2,7 +2,7 @@
   <div>
     <p>{{ $t('DataCollect.index.400156-2') }}</p>
     <a-form :model="formData" ref="formRef" layout="vertical">
-      <DataParsing :showSwitch="false" :value="true"/>
+      <DataParsing v-if="configuration.autoCodec === false" :showSwitch="false" :value="true"/>
       <CollectionConfiguration :showSwitch="false" :value="true"/>
       <DataConversion/>
       <AbnormalJudgment/>

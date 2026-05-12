@@ -1,5 +1,10 @@
 <template>
-  <a-drawer open :title="$t('DataCollect.index.400153-1')" width="800px" @close="emit('close')">
+  <a-drawer open :title="$t('DataCollect.index.400153-1')" width="800px" :closable="false" @close="emit('close')">
+    <template #extra>
+      <a-button type="text" @click="emit('close')">
+        <AIcon type="CloseOutlined" />
+      </a-button>
+    </template>
     <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%">
       <div style="flex: 1; min-height: 0; overflow: hidden auto">
         <a-form :model="formData" ref="formRef" layout="vertical">
