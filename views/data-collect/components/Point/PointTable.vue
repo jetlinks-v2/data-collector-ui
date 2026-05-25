@@ -194,6 +194,7 @@ import {
   disablePoints,
   exportPoint,
   exportTemplate,
+  queryChannelNoPaging,
   queryPoint, savePointBatch,
   pointImport,
   enablePoints,
@@ -542,7 +543,23 @@ const subscribeProperty = (value) => {
   });
 };
 
-const getDataSource = (p) => {
+const buildAllChannelTerms = async () => {
+  const channelResp = await queryChannelNoPaging();
+  const channelIds = channelResp?.result?.map((item) => item.id).filter(Boolean) || [];
+
+  if (!channelIds.length) {
+    return null;
+  }
+
+  return {
+    column: 'channelId',
+    termType: 'in',
+    type: 'and',
+    value: channelIds,
+  };
+};
+
+const getDataSource = async (p) => {
   const _params = {...p}
   const terms = []
   if (filterValue.point) {
@@ -555,6 +572,21 @@ const getDataSource = (p) => {
   }
   // 根据左边的搜索来查询数据
   if (type.value === 'all') {
+    // 点击全部时先限定已有通道范围，避免无通道时继续查询点位转换接口。
+    const channelTerm = await buildAllChannelTerms();
+    if (!channelTerm) {
+      currentPageRows.value = [];
+      subRef.value?.unsubscribe();
+      syncSelectAllPageSelection();
+      return {
+        success: true,
+        result: {
+          data: [],
+          total: 0,
+        },
+      };
+    }
+    terms.push(channelTerm);
     if (filterValue.channel) {
       terms.push({
         column: 'channelId',
