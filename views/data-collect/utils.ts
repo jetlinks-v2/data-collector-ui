@@ -2,6 +2,7 @@ import {remove as removeChannel, update as updateChannel} from "@data-collector-
 import {updateStatus} from "@data-collector-ui/views/data-collect/Left/type";
 import {onlyMessage} from "@jetlinks-web/utils";
 import {
+    queryChannelNoPaging,
     queryPointMetadata,
     remove as removeCollector,
     removePoint,
@@ -203,7 +204,187 @@ export const CollectorTypeList = [
     }
 ];
 
-export const getCountList = async (_type, id, flag) => {
+const isNotEmptyArray = (value) => Array.isArray(value) && value.length > 0;
+
+const buildInTerm = (column, value, type = 'and') => {
+    if (!isNotEmptyArray(value)) {
+        return undefined;
+    }
+
+    return {
+        column,
+        termType: 'in',
+        value,
+        type,
+    };
+};
+
+const buildCollectorStateTerm = (states = []) => {
+    if (!isNotEmptyArray(states)) {
+        return undefined;
+    }
+
+    return {
+        column: 'state',
+        termType: 'in',
+        value: states,
+    };
+};
+
+const buildAbnormalTerm = (type) => {
+    if (type === 'channel' || type === 'point') {
+        return {
+            column: 'runningState',
+            termType: 'not',
+            value: 'running',
+            type: 'and'
+        };
+    }
+
+    if (type === 'collector') {
+        return buildCollectorStateTerm(['disabled', 'stopped']);
+    }
+
+    return undefined;
+};
+
+const buildChannelScopeFilterTerms = (filterValue = {}) => {
+    const terms = [
+        ...buildDataCollectFilterTerms('channel', filterValue)
+    ];
+
+    if (filterValue.channel) {
+        terms.push(buildAbnormalTerm('channel'));
+    }
+
+    return terms.filter(Boolean);
+};
+
+export const buildDataCollectFilterTerms = (targetType, filterValue = {}) => {
+    const terms = [];
+
+    if (targetType === 'channel') {
+        const providerTerm = buildInTerm('provider', filterValue.provider);
+        const runningStateTerm = buildInTerm('runningState', filterValue.runningState);
+        const stateTerm = buildInTerm('state', filterValue.state);
+
+        providerTerm && terms.push(providerTerm);
+        runningStateTerm && terms.push(runningStateTerm);
+        stateTerm && terms.push(stateTerm);
+    }
+
+    if (targetType === 'collector') {
+        const stateTerm = buildCollectorStateTerm(filterValue.collectorState);
+        stateTerm && terms.push(stateTerm);
+    }
+
+    return terms;
+};
+
+export const buildPointRelatedFilterTerms = (filterValue = {}, options = {}) => {
+    const terms = [];
+    const channelTerms = options.skipChannel ? [] : buildDataCollectFilterTerms('channel', filterValue);
+    const collectorTerms = buildDataCollectFilterTerms('collector', filterValue);
+
+    if (channelTerms.length) {
+        terms.push({
+            column: 'channelId',
+            termType: 'data-collector-channel',
+            type: 'and',
+            value: channelTerms,
+        });
+    }
+
+    if (collectorTerms.length) {
+        terms.push({
+            column: 'collectorId',
+            termType: 'data-collector',
+            type: 'and',
+            value: collectorTerms,
+        });
+    }
+
+    return terms;
+};
+
+export const buildPointQueryFilterTerms = (filterValue = {}, options = {}) => {
+    const terms = [
+        ...buildPointRelatedFilterTerms(filterValue, options)
+    ];
+
+    if (filterValue.channel && !options.skipChannel) {
+        terms.push({
+            column: 'channelId',
+            termType: 'data-collector-channel',
+            type: 'and',
+            value: [
+                {
+                    column: 'runningState',
+                    value: 'stopped'
+                },
+                {
+                    column: 'state',
+                    value: 'disabled'
+                }
+            ]
+        });
+    }
+
+    if (filterValue.collector) {
+        terms.push({
+            column: 'collectorId',
+            termType: 'data-collector',
+            type: 'and',
+            value: [
+                buildCollectorStateTerm(['disabled', 'stopped'])
+            ]
+        });
+    }
+
+    if (filterValue.point) {
+        terms.push(buildAbnormalTerm('point'));
+    }
+
+    return terms.filter(Boolean);
+};
+
+export const buildAllChannelTerm = async (filterValue = {}) => {
+    const channelResp = await queryChannelNoPaging({
+        terms: buildChannelScopeFilterTerms(filterValue)
+    });
+    const channelIds = channelResp?.result?.map((item) => item.id).filter(Boolean) || [];
+
+    if (!channelIds.length) {
+        return null;
+    }
+
+    return {
+        column: 'channelId',
+        termType: 'in',
+        type: 'and',
+        value: channelIds,
+    };
+};
+
+const buildCountFilterTerms = (targetType, filterValue = {}) => {
+    if (targetType === 'point') {
+        return buildPointQueryFilterTerms(filterValue);
+    }
+
+    const terms = buildDataCollectFilterTerms(targetType, filterValue);
+    const activeAbnormal = targetType === 'channel'
+        ? filterValue.channel
+        : targetType === 'collector'
+            ? filterValue.collector
+            : false;
+    const abnormalTerm = activeAbnormal ? buildAbnormalTerm(targetType) : undefined;
+
+    abnormalTerm && terms.push(abnormalTerm);
+
+    return terms;
+};
+
+export const getCountList = async (_type, id, flag, filterValue = {}) => {
     const _terms = []
     let typeList = []
     if (_type === 'all') {
@@ -226,18 +407,31 @@ export const getCountList = async (_type, id, flag) => {
         })
     }
     const tasks = typeList.map(async (item) => {
+        const pointAllScope = _type === 'all' && item.type === 'point';
+        const collectorAllScope = _type === 'all' && item.type === 'collector';
+        const channelTerm = pointAllScope || collectorAllScope ? await buildAllChannelTerm(filterValue) : undefined;
+
+        if ((pointAllScope || collectorAllScope) && !channelTerm) {
+            return {
+                ...item,
+                total: 0,
+                value: 0
+            }
+        }
+
+        const filterTerms = pointAllScope
+            ? buildPointQueryFilterTerms(filterValue, {skipChannel: true})
+            : buildCountFilterTerms(item.type, filterValue);
+        const baseTerms = [..._terms, ...filterTerms];
+        channelTerm && baseTerms.push(channelTerm);
+        const abnormalTerm = buildAbnormalTerm(item.type);
         const [totalRes, stopRes] = await Promise.all([
-            queryCount(item.type, {terms: _terms}),
+            queryCount(item.type, {terms: baseTerms}),
             flag
                 ? queryCount(item.type, {
                     terms: [
-                        ..._terms,
-                        {
-                            column: 'runningState',
-                            termType: 'not',
-                            value: 'running',
-                            type: 'and'
-                        }
+                        ...baseTerms,
+                        ...(abnormalTerm ? [abnormalTerm] : [])
                     ]
                 })
                 : Promise.resolve(null)
@@ -289,4 +483,3 @@ export const getPointMetadata = (provider: string, configuration: any = {}) => {
         })
     })
 }
-

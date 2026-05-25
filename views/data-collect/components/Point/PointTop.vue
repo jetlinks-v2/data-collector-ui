@@ -31,8 +31,9 @@
 
 <script setup>
 import {COLLECTOR_DATA, COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
-import {queryPointStatistics} from "@data-collector-ui/api/data-collect/collector";
 import {useI18n} from "vue-i18n";
+import {buildAllChannelTerm, buildPointQueryFilterTerms} from "@data-collector-ui/views/data-collect/utils";
+import {queryCount} from "@data-collector-ui/api/data-collect/dashboard";
 
 const {t: $t} = useI18n();
 
@@ -48,19 +49,45 @@ const num = reactive({
 const filterValue = inject('filter-value', reactive({
   channel: false,
   collector: false,
-  point: false
+  point: false,
+  provider: [],
+  runningState: [],
+  state: [],
+  collectorState: []
 }))
 
 const handleSearch = async (params) => {
-  const resp = await queryPointStatistics(params);
-  if (resp.success) {
-    const point = resp.result?.point || {};
-    const total = Number(point.total) || 0;
-    const abnormal = Number(point.abnormal) || 0;
-    num.total = total;
-    num.stopped = abnormal;
-    num.running = Math.max(total - abnormal, 0);
-  }
+  const terms = params.terms || []
+  const [totalResp, runningResp, stoppedResp] = await Promise.all([
+    queryCount('point', params),
+    queryCount('point', {
+      ...params,
+      terms: [
+        ...terms,
+        {
+          column: 'runningState',
+          value: 'running',
+          type: 'and'
+        }
+      ]
+    }),
+    queryCount('point', {
+      ...params,
+      terms: [
+        ...terms,
+        {
+          column: 'runningState',
+          termType: 'not',
+          value: 'running',
+          type: 'and'
+        }
+      ]
+    })
+  ]);
+
+  num.total = totalResp?.result || 0;
+  num.running = runningResp?.result || 0;
+  num.stopped = stoppedResp?.result || 0;
 }
 
 const onClick = (item) => {
@@ -72,19 +99,44 @@ const onClick = (item) => {
 }
 
 const loadData = async () => {
-  const params = {}
-  if (type.value === 'channel' && data.value.id) {
-    params.channelId = data.value.id
+  const params = {
+    terms: [
+      ...buildPointQueryFilterTerms(filterValue, {skipChannel: type.value === 'all'})
+    ]
+  }
+
+  if (type.value === 'all') {
+    const channelTerm = await buildAllChannelTerm(filterValue);
+    if (!channelTerm) {
+      num.total = 0;
+      num.running = 0;
+      num.stopped = 0;
+      return;
+    }
+    params.terms.push(channelTerm);
+  } else if (type.value === 'channel' && data.value.id) {
+    params.terms.push({
+      column: 'channelId',
+      termType: 'eq',
+      type: 'and',
+      value: data.value.id,
+    })
   } else if (type.value === 'collector' && data.value.id) {
-    params.collectorId = data.value.id
+    params.terms.push({
+      column: 'collectorId',
+      termType: 'eq',
+      type: 'and',
+      value: data.value.id,
+    })
   }
   await handleSearch(params)
 }
 
-watch(() => [type.value, data.value.id, filterValue.channel, filterValue.collector, filterValue.point], () => {
+watch(() => [type.value, data.value.id, filterValue.channel, filterValue.collector, filterValue.point, filterValue.provider, filterValue.runningState, filterValue.state, filterValue.collectorState], () => {
   loadData()
 }, {
-  immediate: true
+  immediate: true,
+  deep: true
 })
 
 defineExpose({

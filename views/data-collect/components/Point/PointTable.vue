@@ -194,7 +194,6 @@ import {
   disablePoints,
   exportPoint,
   exportTemplate,
-  queryChannelNoPaging,
   queryPoint, savePointBatch,
   pointImport,
   enablePoints,
@@ -222,6 +221,7 @@ import RenderComponents from "@data-collector-ui/components/RenderComponents/Ren
 import {useMenuStore} from "@jetlinks-web-core/store";
 import BatchUpdate from "./components/BatchUpdate.vue";
 import Import from "@data-collector-ui/views/data-collect/components/Import/index.vue"
+import {buildAllChannelTerm, buildPointQueryFilterTerms} from "@data-collector-ui/views/data-collect/utils";
 
 const {t: $t} = useI18n();
 const sortValue = reactive({
@@ -252,7 +252,11 @@ const batchRef = ref()
 const filterValue = inject('filter-value', reactive({
   channel: false,
   collector: false,
-  point: false
+  point: false,
+  provider: [],
+  runningState: [],
+  state: [],
+  collectorState: []
 }))
 const refreshHandler = inject(REFRESH_HANDLER)
 const subRef = ref();
@@ -288,8 +292,13 @@ provide('codec-list', codecList)
 
 const searchCount = computed(() => {
   // 统计filterValue
-  const _filterValue = Object.keys(filterValue).filter(i => filterValue[i])
-  let count = _filterValue.length || 0;
+  let count = Object.keys(filterValue).filter((key) => {
+    const value = filterValue[key]
+    if (Array.isArray(value)) {
+      return value.length > 0
+    }
+    return !!value
+  }).length;
   if (pointType.value !== 'total') {
     count++
   }
@@ -311,7 +320,7 @@ const onResizeColumn = (w, col) => {
 
 const rowSelection = computed(() => {
   if (!isCheck.value) {
-    return false
+    return undefined
   }
   return {
     selectedRowKeys: _selectedRowKeys.value,
@@ -543,37 +552,15 @@ const subscribeProperty = (value) => {
   });
 };
 
-const buildAllChannelTerms = async () => {
-  const channelResp = await queryChannelNoPaging();
-  const channelIds = channelResp?.result?.map((item) => item.id).filter(Boolean) || [];
-
-  if (!channelIds.length) {
-    return null;
-  }
-
-  return {
-    column: 'channelId',
-    termType: 'in',
-    type: 'and',
-    value: channelIds,
-  };
-};
-
 const getDataSource = async (p) => {
   const _params = {...p}
-  const terms = []
-  if (filterValue.point) {
-    terms.push({
-      column: 'runningState',
-      termType: 'not',
-      type: 'and',
-      value: 'running'
-    })
-  }
+  const terms = [
+    ...buildPointQueryFilterTerms(filterValue, {skipChannel: type.value === 'all'})
+  ]
   // 根据左边的搜索来查询数据
   if (type.value === 'all') {
-    // 点击全部时先限定已有通道范围，避免无通道时继续查询点位转换接口。
-    const channelTerm = await buildAllChannelTerms();
+    // “全部”视图先按通道筛选得到范围，避免通道为空时继续查询点位转换接口。
+    const channelTerm = await buildAllChannelTerm(filterValue);
     if (!channelTerm) {
       currentPageRows.value = [];
       subRef.value?.unsubscribe();
@@ -587,40 +574,6 @@ const getDataSource = async (p) => {
       };
     }
     terms.push(channelTerm);
-    if (filterValue.channel) {
-      terms.push({
-        column: 'channelId',
-        termType: 'data-collector-channel',
-        type: 'and',
-        value: [
-          {
-            "column": "runningState",
-            "value": 'stopped'
-          },
-          {
-            "column": "state",
-            "value": 'disabled'
-          }
-        ]
-      })
-    }
-    if (filterValue.collector) {
-      terms.push({
-        column: 'collectorId',
-        termType: 'data-collector',
-        type: 'and',
-        value: [
-          {
-            "column": "state",
-            termType: 'in',
-            "value": [
-              "disabled",
-              "stopped"
-            ]
-          }
-        ]
-      })
-    }
   } else {
     terms.push({
       column: type.value === 'channel' ? 'channelId' : 'collectorId',
@@ -635,10 +588,10 @@ const getDataSource = async (p) => {
       // termType: pointType.value === 'running' ? 'eq' : 'not',
       // type: 'and',
       // value: 'running'
-      column: 'state',
+      column: 'runningState',
       termType: pointType.value === 'running' ? 'eq' : 'not',
       type: 'and',
-      value: 'enabled'
+      value: 'running'
     })
   }
   if (!_params.terms?.length) {
@@ -884,10 +837,18 @@ watch(
 )
 
 watch(
-    () => filterValue,
+    () => [
+      filterValue.channel,
+      filterValue.collector,
+      filterValue.point,
+      filterValue.provider,
+      filterValue.runningState,
+      filterValue.state,
+      filterValue.collectorState,
+    ],
     () => {
-      columnsConfig.key = randomString()
-      console.log('filterValue changed')
+      clearSelectionState();
+      tableRef.value?.reload?.();
     },
     {immediate: true, deep: true},
 )

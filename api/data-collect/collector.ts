@@ -10,10 +10,11 @@ export const queryCollectorTree = (data: any) =>
 export const queryCollectorDevice = (data: any) =>
     request.post(`/data-collect/collector/_query`, data)
 
-export const queryChannelNoPaging = () =>
+export const queryChannelNoPaging = (data?: any) =>
     request.post(`/data-collect/channel/_query/no-paging`, {
         paging: false,
         sorts: [{name: 'createTime', order: 'desc'}],
+        ...(data || {}),
     });
 
 export const save = (data: any) => request.post(`/data-collect/collector`, data);

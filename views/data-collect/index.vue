@@ -26,7 +26,11 @@ const filterValue = reactive(
     {
       channel: false,
       collector: false,
-      point: false
+      point: false,
+      provider: [],
+      runningState: [],
+      state: [],
+      collectorState: []
     }
 )
 const foldTree = ref(false)

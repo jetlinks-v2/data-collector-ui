@@ -229,7 +229,11 @@ let firstRender = true
 const _filterValue = inject('filter-value', reactive({
   channel: false,
   collector: false,
-  point: false
+  point: false,
+  provider: [],
+  runningState: [],
+  state: [],
+  collectorState: []
 }))
 
 const viewType = ref('compact'); //视图类型
@@ -275,7 +279,7 @@ const filterTreeData = computed(() => {
     if ((!searchValue.value || item.name.includes(searchValue.value))
         && (filterValue.value?.provider?.includes(item.provider) || !filterValue.value?.provider?.length)
         && (filterValue.value?.state?.includes(item.state?.value) || !filterValue.value?.state?.length)
-        && (filterValue.value?.runningState?.includes(item.runningState?.value) || !filterValue.value?.runningState?.length)
+        && (filterValue.value?.runningState?.includes(item.runningState?.value) || filterValue.value?.runningState?.includes(item.state?.value) || !filterValue.value?.runningState?.length)
     ) {
       const arr: any[] = separateViewCollectors.value.filter((collector: any) => collector.channelId === item.id)
       // 如果有子节点（采集器），也需要过滤
@@ -283,6 +287,7 @@ const filterTreeData = computed(() => {
         item.children = arr.filter((child: any) => {
           return (!searchValue.value || child.name.includes(searchValue.value)) &&
               (filterValue.value?.collectorState?.includes(child.state?.value) ||
+                  filterValue.value?.collectorState?.includes(child.runningState?.value) ||
                   !filterValue.value?.collectorState?.length)
         });
         if (item.children.length && filterValue.value.collectorState?.length) {
@@ -297,11 +302,22 @@ const filterTreeData = computed(() => {
 const onFilterSave = (dt) => {
   filterModalVisible.value = false
   filterValue.value = dt
+  // 左侧筛选改动后，统一回到“全部”并让右侧重新按同一条件刷新。
+  Object.assign(_filterValue, {
+    provider: dt.provider || [],
+    runningState: dt.runningState || [],
+    state: dt.state || [],
+    collectorState: dt.collectorState || [],
+    channel: false,
+    collector: false,
+    point: false
+  })
   selectedKeys.value = ["all"];
   selectedNode.value = {
     id: 'all',
     name: $t('DataCollect.index.400150-3'),
   };
+  emit('change', 'all', selectedNode.value);
 }
 
 //通道节点按钮

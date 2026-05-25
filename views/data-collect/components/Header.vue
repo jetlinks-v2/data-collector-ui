@@ -58,7 +58,11 @@ const data = inject(COLLECTOR_DATA, ref({}))
 const filterValue = inject('filter-value', reactive({
   channel: false,
   collector: false,
-  point: false
+  point: false,
+  provider: [],
+  runningState: [],
+  state: [],
+  collectorState: []
 }))
 
 const visible = inject('detail-visible')
@@ -102,15 +106,26 @@ const onDetail = () => {
 }
 
 const loadData = () => {
-  getCountList(type.value || 'all', data.value.id || '', true).then(resp => {
+  getCountList(type.value || 'all', data.value.id || '', true, filterValue).then(resp => {
     countList.value = resp
   })
 }
 
-watch(() => [type.value, data.value.id], () => {
+watch(() => [
+  type.value,
+  data.value.id,
+  filterValue.channel,
+  filterValue.collector,
+  filterValue.point,
+  filterValue.provider,
+  filterValue.runningState,
+  filterValue.state,
+  filterValue.collectorState,
+], () => {
   loadData()
 }, {
-  immediate: true
+  immediate: true,
+  deep: true
 })
 
 defineExpose({
