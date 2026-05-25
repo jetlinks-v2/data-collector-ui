@@ -13,6 +13,13 @@
                 :params="params"
                 :defaultParams="{
                     sorts: [{ name: 'createTime', order: 'desc' }],
+                    terms: [
+                        {
+                            column: 'targetType',
+                            value: TargetTypeOptions.map(item => item.value),
+                            termType: 'in'
+                        }
+                    ]
                 }"
                 modeValue="CARD"
             >
@@ -160,11 +167,16 @@ import Issue from './Issue/index.vue';
 import {queryPage, remove, update} from '../../../api/edge/newResource'
 import {onlyMessage} from "@jetlinks-web/utils";
 import { useMenuStore } from "@jetlinks-web-core/store/menu";
-import { TargetTypeOptions, ServiceIdEnum, JobTypeEnum } from './utils';
+import { TargetTypeOriginOptions, ServiceIdOriginEnum, JobTypeOriginEnum } from './utils';
 import DeviceGatewayImg from '../../../assets/device-gateway.png';
 import { useI18n } from 'vue-i18n';
 
 const { t: $t } = useI18n();
+
+const TargetTypeOptions = inject('TargetTypeOptions', TargetTypeOriginOptions);
+const ServiceIdEnum = inject('ServiceIdEnum', ServiceIdOriginEnum);
+const JobTypeEnum = inject('JobTypeEnum', JobTypeOriginEnum);
+const ResourceDetailPage = inject('ResourceDetailPage', 'edge/NewResource/Detail');
 
 const columns = [
     {
@@ -335,7 +347,7 @@ const handleSave = () => {
 }
 
 const handleView = (id: string) => {
-    menuStore.jumpPage('edge/NewResource/Detail', {params: {id}});
+    menuStore.jumpPage(ResourceDetailPage, {params: {id}});
 }
 </script>
 

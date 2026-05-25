@@ -1,9 +1,5 @@
 import i18n from "@jetlinks-web-core/locales";
-export const TargetTypeOptions = [
-    {
-        label: i18n.global.t('NewResource.utils.262184-0'),
-        value: 'AiModel'
-    },
+export const TargetTypeOriginOptions = [
     {
         label: i18n.global.t('NewResource.utils.262184-1'),
         value: 'PluginDriver'
@@ -14,14 +10,12 @@ export const TargetTypeOptions = [
     }
 ]
 
-export const ServiceIdEnum = {
-    'AiModel': 'aiService:modelManager',
+export const ServiceIdOriginEnum = {
     'PluginDriver': 'pluginService:driver',
     'entityTemplate:Collector': 'commonService:entityTemplate'
 }
 
-export const JobTypeEnum = {
-    'AiModel': 'AiModel',
+export const JobTypeOriginEnum = {
     'PluginDriver': 'plugin',
     'entityTemplate:Collector': 'CollectorTemplate'
 }
