@@ -161,6 +161,7 @@ if (!('handler' in formData.managedConfiguration)) {
 }
 
 if (!('configuration' in formData.managedConfiguration.handler)) {
+	formData.managedConfiguration.handler.provider = 'alarm'
   formData.managedConfiguration.handler.configuration = {
     "reason": "deadband",
     shakeLimit: {
@@ -179,6 +180,7 @@ const showExtra = computed(() => {
 
 const onSwitchChange = (val) => {
   formData.managedConfiguration.handler.enabled = !!val
+	formData.managedConfiguration.handler.provider = 'alarm'
   formData.managedConfiguration.handler.configuration = {
     "reason": "deadband",
     shakeLimit: {
