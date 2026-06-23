@@ -105,7 +105,6 @@ import {save, update} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 import {
-  getCollectorTemplate,
   setCollectorTemplate
 } from "@data-collector-ui/views/data-collect/Left/SaveCollector/data";
 
@@ -243,20 +242,10 @@ const handleOk = async (flag) => {
 watch(() => [props.channel, props.data], ([val, val1]) => {
   const _val1 = cloneDeep(val1)
   if (!_val1.id) {
-    const obj = getCollectorTemplate(val?.id)
-    if (obj) {
-      oldCollector.value = obj
-      Object.assign(formData, obj)
-      const _template = obj.configuration?.template || {}
-      defaultKeys.forEach(i => { // 转换模板中的数据
-        formData[i] = _template[i]
-      })
-      formData.name = undefined
-    } else {
-      formData.channelId = props.channel.id
-      formData.channelName = props.channel.name
-      formData.provider = props.channel.provider
-    }
+    oldCollector.value = {}
+    formData.channelId = props.channel.id
+    formData.channelName = props.channel.name
+    formData.provider = props.channel.provider
     onChange(val)
   } else {
     oldCollector.value = {}
