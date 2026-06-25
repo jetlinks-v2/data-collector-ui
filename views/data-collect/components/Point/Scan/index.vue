@@ -8,6 +8,7 @@
 import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import {savePointBatch} from "@data-collector-ui/api/data-collect/collector";
+import {applyCollectorPointTemplate} from "./data";
 
 const props = defineProps({
   collector: {
@@ -56,7 +57,8 @@ const handleSave = async () => {
     }
   }
 
-  const resp = await savePointBatch(list)
+  // 扫描插件只负责识别点位本身，采集器里的点位模板作为批量新增默认配置写入。
+  const resp = await savePointBatch(applyCollectorPointTemplate(list, collectorData.value))
   return {
     success: !!resp?.success,
     response: resp,

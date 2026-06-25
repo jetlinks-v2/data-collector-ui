@@ -56,7 +56,6 @@ provide(PLUGIN_DETAIL_SAVE_EVENTS, {
     const res = await formRef.value?.validate().catch((err) => {
       errorList.value = err.errorFields || []
     })
-    debugger
     // 校验表单  保存
     if (res) {
       formData.configuration.interval = res.interval
