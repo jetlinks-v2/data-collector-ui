@@ -1202,6 +1202,7 @@
   "DataCollect.columns.290651-12": "Ascending",
   "PointTable.index.40014110-0": "Cancel Select All",
   "PointTable.index.40014110-1": "Select All",
+  "PointTable.index.40014110-2": "No data available for batch operations",
   "Collector.data.400141-45": "Please enter the custom data area length (byte)",
   "data-collector-ui.index.237811-1": "Scan points",
   "Virtual.index.400159-0": "Add Point",

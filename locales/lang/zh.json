@@ -1202,6 +1202,7 @@
   "DataCollect.columns.290651-12": "升序",
   "PointTable.index.40014110-0": "取消全选",
   "PointTable.index.40014110-1": "全选所有",
+  "PointTable.index.40014110-2": "暂无可批量操作的数据",
   "Collector.data.400141-45": "请输入自定义数据区长度(byte)",
   "data-collector-ui.index.237811-1": "扫描点位",
   "Virtual.index.400159-0": "添加点位",

@@ -360,8 +360,20 @@ const toggleSelectAll = () => {
   }
 }
 
+const hasTableDataForBatchAction = () => {
+  if (currentPageRows.value.length) {
+    return true
+  }
+  // 全选所有会按当前筛选范围提交批量请求，空表必须先拦截，避免误触发空范围操作。
+  onlyMessage($t('PointTable.index.40014110-2'), 'warning')
+  return false
+}
+
 const handleBatchActionWithSelectAll = async (actionKey, handler) => {
   if (isAllSelected.value) {
+    if (!hasTableDataForBatchAction()) {
+      return
+    }
     // TODO: 全选所有场景下需要调用单独的批量接口，按当前筛选条件处理全部点位。
     switch(actionKey) {
       case 'enable':
@@ -429,6 +441,9 @@ const batchActions = computed(() => {
       icon: 'EditOutlined',
       selected: {
         onClick: () => {
+          if (isAllSelected.value && !hasTableDataForBatchAction()) {
+            return
+          }
           visible.batchUpdate = true
         }
       }
