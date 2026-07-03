@@ -58,7 +58,7 @@
               :hasPermission="true"
               @click="handleScan"
             >
-              扫描点位
+              {{ $t('data-collector-ui.index.237811-1') }}
             </j-permission-button>
             <j-permission-button
                 v-if="pointActions.batchAdd"

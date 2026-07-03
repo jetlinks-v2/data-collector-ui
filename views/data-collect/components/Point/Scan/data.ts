@@ -26,6 +26,11 @@ const mergeDefaults = (defaults: PlainRecord, value: PlainRecord): PlainRecord =
       return;
     }
 
+    if (key === 'features' && Array.isArray(defaultValue) && Array.isArray(currentValue)) {
+      result[key] = Array.from(new Set([...defaultValue, ...currentValue]));
+      return;
+    }
+
     if (
       defaultValue &&
       currentValue &&

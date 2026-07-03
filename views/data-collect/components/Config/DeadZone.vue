@@ -67,7 +67,7 @@ import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/hooks";
 import {omit, pick} from "lodash-es";
-import {isEqual} from "./data";
+import {cloneTemplateConfig, isEqual} from "./data";
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
@@ -159,6 +159,12 @@ const percent = ref()
 
 useTermsParseConText({options: options, map: optionsMap});
 
+const defaultDeadband = {
+  enabled: false,
+  provider: "term",
+  configuration: {},
+}
+
 const _deadband = computed(() => {
   const _configuration = collector?.managedConfiguration?.deadband?.configuration || {}
   const __value = _configuration.terms?.[0]?.terms;
@@ -189,6 +195,15 @@ const showExtra = computed(() => {
 })
 
 const onSwitchChange = (val) => {
+  if (val === 'template') {
+    // 模板态需要提交采集器模板的完整配置，不能只把 enabled 当作普通开启处理。
+    formData.managedConfiguration.deadband = cloneTemplateConfig(
+        collector?.managedConfiguration?.deadband,
+        defaultDeadband,
+    )
+    return onOutsize()
+  }
+
   formData.managedConfiguration.deadband.enabled = !!val
   formData.managedConfiguration.deadband.provider = "term"
   if (!val) {

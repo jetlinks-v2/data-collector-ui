@@ -67,7 +67,7 @@ import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {getCollectorError} from "@data-collector-ui/api/data-collect/collector";
-import {isEqual} from "./data";
+import {cloneTemplateConfig, isEqual} from "./data";
 import {useI18n} from "vue-i18n";
 
 const props = defineProps({
@@ -93,6 +93,20 @@ const initialSnapshot = ref(null)
 
 const flag = computed(() => !!formData.managedConfiguration?.handler?.enabled)
 const type = ref()
+const defaultHandler = {
+  enabled: false,
+  provider: 'alarm',
+  configuration: {
+    reason: 'deadband',
+    shakeLimit: {
+      enabled: false,
+      "alarmFirst": true,
+      "outputFirst": false,
+      "continuous": false,
+      "rolling": false
+    }
+  }
+}
 const options = computed(() => {
   const arr = errorList.value.map(i => {
     return {
@@ -179,6 +193,17 @@ const showExtra = computed(() => {
 })
 
 const onSwitchChange = (val) => {
+  if (val === 'template') {
+    // 模板态直接沿用采集器的结果处理配置，避免默认 shakeLimit 覆盖模板值。
+    formData.managedConfiguration.handler = cloneTemplateConfig(
+        collector?.managedConfiguration?.handler,
+        defaultHandler,
+    )
+    const _configuration = formData.managedConfiguration.handler.configuration || {}
+    type.value = _configuration.reason || _configuration.code
+    return onOutsize()
+  }
+
   formData.managedConfiguration.handler.enabled = !!val
 	formData.managedConfiguration.handler.provider = 'alarm'
   formData.managedConfiguration.handler.configuration = {
