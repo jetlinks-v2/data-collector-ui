@@ -131,7 +131,7 @@ const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) =>
   if (_value.enabled) {
     const value = _value.configuration || {}
     if (value.min != null && value.max != null) {
-      if (value.min <= value.max) {
+      if (value.min < value.max) {
         return resolve("");
       } else {
         return reject($t('DataCollect.index.400155-9'));

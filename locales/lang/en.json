@@ -1095,7 +1095,7 @@
   "DataCollect.index.400155-6": "Define normal data range (only applicable to numeric types), abnormal data is discarded by default",
   "DataCollect.index.400155-7": "Abnormal Value Range",
   "DataCollect.index.400155-8": "Normal Point Value",
-  "DataCollect.index.400155-9": "Maximum cannot be less than minimum",
+  "DataCollect.index.400155-9": "Maximum must be greater than minimum",
   "DataCollect.index.400155-10": "Please enter parameter value",
   "DataCollect.index.400155-11": "Result Processing",
   "DataCollect.index.400155-12": "Perform operations such as alarm triggering, data aggregation, and forwarding on data",

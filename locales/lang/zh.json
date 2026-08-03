@@ -1095,7 +1095,7 @@
   "DataCollect.index.400155-6": "定义正常数据范围（仅适用于数值类型）,异常数据默认丢弃",
   "DataCollect.index.400155-7": "异常值范围",
   "DataCollect.index.400155-8": "正常点位值",
-  "DataCollect.index.400155-9": "最大值不能小于最小值",
+  "DataCollect.index.400155-9": "最大值必须大于最小值",
   "DataCollect.index.400155-10": "请输入参数值",
   "DataCollect.index.400155-11": "结果处理",
   "DataCollect.index.400155-12": "对数据进行告警触发、数据聚合、转发等操作",
