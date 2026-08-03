@@ -39,9 +39,9 @@
           </template>
           <CollectionConfiguration :disabledList="[false]"/>
           <DataConversion />
-          <div style="cursor: pointer; font-weight: bold;" @click="configVisible = !configVisible">
-            {{ $t('DataCollect.index.400151-30') }}
-            <AIcon :type="!configVisible ? 'RightOutlined' : 'DownOutlined'"/>
+          <div style="display: flex; align-items: center; justify-content: space-between; font-weight: bold;">
+            <span>{{ $t('DataCollect.index.400151-30') }}</span>
+            <a-switch v-model:checked="configVisible" :aria-label="$t('DataCollect.index.400151-30')" />
           </div>
           <template v-if="configVisible">
             <AbnormalJudgment/>
@@ -131,6 +131,8 @@ const jsonData = ref();
 const configVisible = ref(false)
 const loading = ref(false)
 const configuration = ref({})
+const advancedFeatures = ['storageData', 'storageOutlier', 'storageDeadband']
+const advancedManagedConfigurationKeys = ['outlier', 'deadband', 'handler']
 
 const _collector = computed(() => {
   return {...props.collector, ...(props.collector?.configuration?.template || {})}
@@ -156,15 +158,34 @@ const onChange = async (provider) => {
   jsonData.value = await devGetProtocol(provider || 'modbus_tcp', "point");
 };
 
+const buildSubmitData = () => {
+  const data = !props.data?.id ? {...formData} : {...props.data, ...formData}
+  if (configVisible.value) {
+    return data
+  }
+
+  // 关闭高级配置时仅忽略提交值，保留表单内容供用户重新开启后继续编辑。
+  const managedConfiguration = Object.fromEntries(
+      Object.entries(data.managedConfiguration || {})
+          .filter(([key]) => !advancedManagedConfigurationKeys.includes(key))
+  )
+  return {
+    ...data,
+    features: (data.features || []).filter(item => !advancedFeatures.includes(item)),
+    managedConfiguration
+  }
+}
+
 const onSubmit = async (flag) => {
   const resp = await formRef.value?.validate?.()
   if (resp) {
     loading.value = true;
+    const submitData = buildSubmitData()
     const response = !props.data?.id
-        ? await savePointBatch(formData).finally(() => {
+        ? await savePointBatch(submitData).finally(() => {
           loading.value = false
         })
-        : await updatePoint(props.data?.id, {...props.data, ...formData}).finally(() => {
+        : await updatePoint(props.data?.id, submitData).finally(() => {
           loading.value = false
         });
     if (response.success) {
