@@ -2,7 +2,7 @@
   <a-form :model="formData" ref="formRef" layout="vertical">
     <AbnormalJudgment/>
     <DeadZone/>
-    <template v-if="formData.accessModes?.includes('read') ">
+    <template v-if="formData.accessModes?.includes('read') || formData.accessModes?.includes('subscribe')">
       <StorageConfiguration/>
     </template>
     <ResultProcessing/>
