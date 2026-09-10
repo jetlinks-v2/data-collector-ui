@@ -12,7 +12,7 @@
     },
     "id": "jetlinks-resource",
     "url": "/resources",
-    "icon": "ApiOutlined",
+    "icon": "icon-ziyuanzhongxin",
     "sortIndex": 10,
     "permissions": [],
     "buttons": [],
@@ -31,7 +31,7 @@
         "id": "f97141d2737ebc3e3ab2cda4a38e67453",
         "sortIndex": 50,
         "url": "/resources/collectors",
-        "icon": "icon-yingyongguanli",
+        "icon": "icon-shujucaiji",
         "showPage": [
           "data-collect-channel",
           "data-collector",
