@@ -1,190 +1,192 @@
 <template>
     <j-page-container>
+    <FullPage transparentBackground>
+      <ContentPanel>
         <pro-search
             :columns="columns"
             target="edge-device"
             @search="handleSearch"
         />
-        <FullPage>
-            <JProTable
-                ref="edgeDeviceRef"
-                :columns="columns"
-                :request="query"
-                modeValue="CARD"
-                :defaultParams="defaultParams"
-                :params="params"
-                :gridColumns="[2, 2, 2, 3]"
-            >
-                <template #headerLeftRender>
-                    <a-space>
-                        <j-permission-button
-                            type="primary"
-                            @click="handleAdd"
-                            hasPermission="edge/Device:add"
-                        >
-                            <template #icon
-                                ><AIcon type="PlusOutlined"
-                            /></template>
-                            {{ $t('Device.index.911422-0') }}
-                        </j-permission-button>
-                        <j-permission-button
-                            @click="importVisible = true"
-                            hasPermission="edge/Device:import"
-                        >
-                            <template #icon
-                                ><AIcon type="ImportOutlined"
-                            /></template>
-                            {{ $t('Device.index.911422-1') }}
-                        </j-permission-button>
-                    </a-space>
-                </template>
-                <template #card="slotProps">
-                    <CardBox
-                        :value="slotProps"
-                        :actions="getActions(slotProps, 'card')"
-                        :status="slotProps.state?.value"
-                        :statusText="slotProps.state?.text"
-                        @click="handleView(slotProps.id)"
-                        :statusNames="{
-                            online: 'processing',
-                            offline: 'error',
-                            notActive: 'warning',
-                        }"
+        <JProTable
+            ref="edgeDeviceRef"
+            :columns="columns"
+            :request="query"
+            modeValue="CARD"
+            :defaultParams="defaultParams"
+            :params="params"
+            :gridColumns="[2, 2, 2, 3]"
+        >
+            <template #headerLeftRender>
+                <a-space>
+                    <j-permission-button
+                        type="primary"
+                        @click="handleAdd"
+                        hasPermission="edge/Device:add"
                     >
-                        <template #img>
-                          <Image
-                            :src="slotProps?.photoUrl || url"
-                            class="card-list-img-80"
-                          />
-                        </template>
-                        <template #content>
-                            <j-ellipsis style="width: calc(100% - 100px)">
-                                <span style="font-size: 16px; font-weight: 600">
-                                    {{ slotProps.name }}
-                                </span>
-                            </j-ellipsis>
-                            <a-row style="margin-top: 18px">
-                                <a-col :span="12">
-                                    <div class="card-item-content-text">
-                                        {{ $t('Device.index.911422-3') }}
-                                    </div>
-                                    <j-ellipsis style="width: 100%">
-                                        {{ slotProps.productName }}
-                                    </j-ellipsis>
-                                </a-col>
-                            </a-row>
-                        </template>
-                        <template #actions="item">
-                            <a-dropdown
-                                placement="bottomRight"
-                                v-if="item.key === 'others'"
-                            >
-                                <a-button>
-                                    <AIcon :type="item.icon" />
-                                    <span>{{ item.text }}</span>
-                                </a-button>
-                                <template #overlay>
-                                    <a-menu>
-                                        <a-menu-item
-                                            v-for="(o, i) in item.children"
-                                            :key="i"
-                                        >
-                                            <j-permission-button
-                                                :disabled="
-                                                    o.disabled ||
-                                                    slotProps.state.value !==
-                                                        'online'
-                                                "
-                                                :popConfirm="o.popConfirm"
-                                                :tooltip="{
-                                                    ...o.tooltip,
-                                                }"
-                                                @click="o.onClick"
-                                                :hasPermission="
-                                                    'edge/Device:' + o.key
-                                                "
-                                                type="link"
-                                            >
-                                                <AIcon :type="o.icon" />
-                                                <span>{{ o?.text }}</span>
-                                            </j-permission-button>
-                                        </a-menu-item>
-                                    </a-menu>
-                                </template>
-                            </a-dropdown>
-                            <j-permission-button
-                                :disabled="item.disabled"
-                                v-else
-                                :popConfirm="item.popConfirm"
-                                :tooltip="{
-                                    ...item.tooltip,
-                                }"
-                                @click="item.onClick"
-                                :hasPermission="'edge/Device:' + item.key"
-                            >
-                                <AIcon
-                                    type="DeleteOutlined"
-                                    v-if="item.key === 'delete'"
-                                />
-                                <template v-else>
-                                    <AIcon :type="item.icon" />
-                                    <span>{{ item?.text }}</span>
-                                </template>
-                            </j-permission-button>
-                        </template>
-                    </CardBox>
-                </template>
-                <template #state="slotProps">
-                    <j-badge-status
-                        :status="slotProps.state?.value"
-                        :text="slotProps.state?.text"
-                        :statusNames="{
-                            online: 'processing',
-                            offline: 'error',
-                            notActive: 'warning',
-                        }"
-                    />
-                </template>
-                <template #registryTime="slotProps">
-                    <span>{{
-                        slotProps.registryTime
-                            ? dayjs(slotProps.registryTime).format(
-                                  'YYYY-MM-DD HH:mm:ss',
-                              )
-                            : '--'
-                    }}</span>
-                </template>
-                <template #action="slotProps">
-                    <a-space :size="16">
-                        <template
-                            v-for="i in getActions(slotProps, 'table')"
-                            :key="i.key"
+                        <template #icon
+                            ><AIcon type="PlusOutlined"
+                        /></template>
+                        {{ $t('Device.index.911422-0') }}
+                    </j-permission-button>
+                    <j-permission-button
+                        @click="importVisible = true"
+                        hasPermission="edge/Device:import"
+                    >
+                        <template #icon
+                            ><AIcon type="ImportOutlined"
+                        /></template>
+                        {{ $t('Device.index.911422-1') }}
+                    </j-permission-button>
+                </a-space>
+            </template>
+            <template #card="slotProps">
+                <CardBox
+                    :value="slotProps"
+                    :actions="getActions(slotProps, 'card')"
+                    :status="slotProps.state?.value"
+                    :statusText="slotProps.state?.text"
+                    @click="handleView(slotProps.id)"
+                    :statusNames="{
+                        online: 'processing',
+                        offline: 'error',
+                        notActive: 'warning',
+                    }"
+                >
+                    <template #img>
+                      <Image
+                        :src="slotProps?.photoUrl || url"
+                        class="card-list-img-80"
+                      />
+                    </template>
+                    <template #content>
+                        <j-ellipsis style="width: calc(100% - 100px)">
+                            <span style="font-size: 16px; font-weight: 600">
+                                {{ slotProps.name }}
+                            </span>
+                        </j-ellipsis>
+                        <a-row style="margin-top: 18px">
+                            <a-col :span="12">
+                                <div class="card-item-content-text">
+                                    {{ $t('Device.index.911422-3') }}
+                                </div>
+                                <j-ellipsis style="width: 100%">
+                                    {{ slotProps.productName }}
+                                </j-ellipsis>
+                            </a-col>
+                        </a-row>
+                    </template>
+                    <template #actions="item">
+                        <a-dropdown
+                            placement="bottomRight"
+                            v-if="item.key === 'others'"
                         >
-                            <j-permission-button
-                                :disabled="i.disabled"
-                                :popConfirm="i.popConfirm"
-                                :tooltip="{
-                                    ...i.tooltip,
-                                }"
-                                @click="i.onClick"
-                                type="link"
-                                style="padding: 0 5px"
-                                :danger="i.key === 'delete'"
-                                :hasPermission="
-                                    i.key === 'view'
-                                        ? true
-                                        : 'edge/Device:' + i.key
-                                "
-                            >
-                                <template #icon
-                                    ><AIcon :type="i.icon"
-                                /></template>
-                            </j-permission-button>
-                        </template>
-                    </a-space>
-                </template>
-            </JProTable>
-        </FullPage>
+                            <a-button>
+                                <AIcon :type="item.icon" />
+                                <span>{{ item.text }}</span>
+                            </a-button>
+                            <template #overlay>
+                                <a-menu>
+                                    <a-menu-item
+                                        v-for="(o, i) in item.children"
+                                        :key="i"
+                                    >
+                                        <j-permission-button
+                                            :disabled="
+                                                o.disabled ||
+                                                slotProps.state.value !==
+                                                    'online'
+                                            "
+                                            :popConfirm="o.popConfirm"
+                                            :tooltip="{
+                                                ...o.tooltip,
+                                            }"
+                                            @click="o.onClick"
+                                            :hasPermission="
+                                                'edge/Device:' + o.key
+                                            "
+                                            type="link"
+                                        >
+                                            <AIcon :type="o.icon" />
+                                            <span>{{ o?.text }}</span>
+                                        </j-permission-button>
+                                    </a-menu-item>
+                                </a-menu>
+                            </template>
+                        </a-dropdown>
+                        <j-permission-button
+                            :disabled="item.disabled"
+                            v-else
+                            :popConfirm="item.popConfirm"
+                            :tooltip="{
+                                ...item.tooltip,
+                            }"
+                            @click="item.onClick"
+                            :hasPermission="'edge/Device:' + item.key"
+                        >
+                            <AIcon
+                                type="DeleteOutlined"
+                                v-if="item.key === 'delete'"
+                            />
+                            <template v-else>
+                                <AIcon :type="item.icon" />
+                                <span>{{ item?.text }}</span>
+                            </template>
+                        </j-permission-button>
+                    </template>
+                </CardBox>
+            </template>
+            <template #state="slotProps">
+                <j-badge-status
+                    :status="slotProps.state?.value"
+                    :text="slotProps.state?.text"
+                    :statusNames="{
+                        online: 'processing',
+                        offline: 'error',
+                        notActive: 'warning',
+                    }"
+                />
+            </template>
+            <template #registryTime="slotProps">
+                <span>{{
+                    slotProps.registryTime
+                        ? dayjs(slotProps.registryTime).format(
+                              'YYYY-MM-DD HH:mm:ss',
+                          )
+                        : '--'
+                }}</span>
+            </template>
+            <template #action="slotProps">
+                <a-space :size="16">
+                    <template
+                        v-for="i in getActions(slotProps, 'table')"
+                        :key="i.key"
+                    >
+                        <j-permission-button
+                            :disabled="i.disabled"
+                            :popConfirm="i.popConfirm"
+                            :tooltip="{
+                                ...i.tooltip,
+                            }"
+                            @click="i.onClick"
+                            type="link"
+                            style="padding: 0 5px"
+                            :danger="i.key === 'delete'"
+                            :hasPermission="
+                                i.key === 'view'
+                                    ? true
+                                    : 'edge/Device:' + i.key
+                            "
+                        >
+                            <template #icon
+                                ><AIcon :type="i.icon"
+                            /></template>
+                        </j-permission-button>
+                    </template>
+                </a-space>
+            </template>
+        </JProTable>
+      </ContentPanel>
+    </FullPage>
         <Save
             v-if="visible"
             :data="current"
