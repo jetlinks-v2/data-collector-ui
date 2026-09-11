@@ -1,131 +1,134 @@
 <template>
     <j-page-container>
+    <FullPage transparentBackground>
+      <ContentPanel>
         <div>
             <pro-search
                 :columns="columns"
                 target="search-datacollect-channel"
                 @search="handleSearch"
             />
-            <FullPage>
-                <j-pro-table
-                    ref="tableRef"
-                    :columns="columns"
-                    mode="CARD"
-                    :gridColumn="3"
-                    :request="query"
-                    :defaultParams="{
-                        sorts: [{ name: 'createTime', order: 'desc' }],
-                    }"
-                    :params="params"
+        <j-pro-table
+            ref="tableRef"
+            :columns="columns"
+            mode="CARD"
+            :gridColumn="3"
+            :request="query"
+            :defaultParams="{
+                sorts: [{ name: 'createTime', order: 'desc' }],
+            }"
+            :params="params"
+        >
+            <template #headerLeftRender>
+                <j-permission-button
+                    type="primary"
+                    @click="handlAdd"
+                    :hasPermission="`${permissionKey}:add`"
                 >
-                    <template #headerLeftRender>
+                    <template #icon
+                        ><AIcon type="PlusOutlined"
+                    /></template>
+                    {{ $t('Channel.index.290640-0') }}
+                </j-permission-button>
+            </template>
+            <template #card="slotProps">
+                <CardBox
+                    :showStatus="true"
+                    :value="slotProps"
+                    :actions="getActions(slotProps, 'card')"
+                    v-bind="slotProps"
+                    :status="getState(slotProps).value"
+                    :statusText="getState(slotProps).text"
+                    :statusNames="StatusColorEnum"
+                    @click="handlEye(slotProps.id)"
+                >
+                    <template #img>
+                        <slot name="img">
+                          <Image
+                            :src="ImageMap.get(slotProps.provider)?ImageMap.get(slotProps.provider):ImageMap.get('protocol')"
+                            class="card-list-img-80"
+                          />
+                        </slot>
+                    </template>
+                    <template #content>
+                        <div class="card-item-content">
+                            <j-ellipsis style="width: calc(100% - 100px)">
+                                <span
+                                    style="
+                                        font-size: 18px;
+                                        font-weight: 800;
+                                        line-height: 22px;
+                                    "
+                                >
+                                    {{ slotProps.name }}
+                                </span>
+                            </j-ellipsis>
+                            <a-row class="card-item-content-box">
+                                <a-col :span="12">
+                                    <div class="card-item-content-text">
+                                        {{ $t('Channel.index.290640-1') }}
+                                    </div>
+                                    <div class="card-item-content-text">
+                                        <a-tooltip>
+                                            <template #title>{{
+                                                protocolList.find(
+                                                    (item) =>
+                                                        item.value ===
+                                                        slotProps.provider,
+                                                )?.label
+                                            }}</template>
+                                            {{
+                                                protocolList.find(
+                                                    (item) =>
+                                                        item.value ===
+                                                        slotProps.provider,
+                                                )?.label
+                                            }}
+                                        </a-tooltip>
+                                    </div>
+                                </a-col>
+
+                                <a-col :span="12">
+                                    <div class="card-item-content-text">
+                                        {{ $t('Channel.index.290640-2') }}
+                                    </div>
+                                    <j-ellipsis>
+                                        <div class="explain">
+                                            {{ slotProps.description }}
+                                        </div>
+                                    </j-ellipsis>
+                                </a-col>
+                            </a-row>
+                        </div>
+                    </template>
+                    <template #actions="item">
                         <j-permission-button
-                            type="primary"
-                            @click="handlAdd"
-                            :hasPermission="`${permissionKey}:add`"
+                            :disabled="item.disabled"
+                            :popConfirm="item.popConfirm"
+                            :tooltip="{
+                                ...item.tooltip,
+                            }"
+                            @click="item.onClick"
+                            :hasPermission="`${permissionKey}:${item.key}`"
                         >
-                            <template #icon
-                                ><AIcon type="PlusOutlined"
-                            /></template>
-                            {{ $t('Channel.index.290640-0') }}
+                            <AIcon
+                                type="DeleteOutlined"
+                                v-if="item.key === 'delete'"
+                            />
+                            <template v-else>
+                                <AIcon :type="item.icon" />
+                                <span>{{ item?.text }}</span>
+                            </template>
                         </j-permission-button>
                     </template>
-                    <template #card="slotProps">
-                        <CardBox
-                            :showStatus="true"
-                            :value="slotProps"
-                            :actions="getActions(slotProps, 'card')"
-                            v-bind="slotProps"
-                            :status="getState(slotProps).value"
-                            :statusText="getState(slotProps).text"
-                            :statusNames="StatusColorEnum"
-                            @click="handlEye(slotProps.id)"
-                        >
-                            <template #img>
-                                <slot name="img">
-                                  <Image
-                                    :src="ImageMap.get(slotProps.provider)?ImageMap.get(slotProps.provider):ImageMap.get('protocol')"
-                                    class="card-list-img-80"
-                                  />
-                                </slot>
-                            </template>
-                            <template #content>
-                                <div class="card-item-content">
-                                    <j-ellipsis style="width: calc(100% - 100px)">
-                                        <span
-                                            style="
-                                                font-size: 18px;
-                                                font-weight: 800;
-                                                line-height: 22px;
-                                            "
-                                        >
-                                            {{ slotProps.name }}
-                                        </span>
-                                    </j-ellipsis>
-                                    <a-row class="card-item-content-box">
-                                        <a-col :span="12">
-                                            <div class="card-item-content-text">
-                                                {{ $t('Channel.index.290640-1') }}
-                                            </div>
-                                            <div class="card-item-content-text">
-                                                <a-tooltip>
-                                                    <template #title>{{
-                                                        protocolList.find(
-                                                            (item) =>
-                                                                item.value ===
-                                                                slotProps.provider,
-                                                        )?.label
-                                                    }}</template>
-                                                    {{
-                                                        protocolList.find(
-                                                            (item) =>
-                                                                item.value ===
-                                                                slotProps.provider,
-                                                        )?.label
-                                                    }}
-                                                </a-tooltip>
-                                            </div>
-                                        </a-col>
-
-                                        <a-col :span="12">
-                                            <div class="card-item-content-text">
-                                                {{ $t('Channel.index.290640-2') }}
-                                            </div>
-                                            <j-ellipsis>
-                                                <div class="explain">
-                                                    {{ slotProps.description }}
-                                                </div>
-                                            </j-ellipsis>
-                                        </a-col>
-                                    </a-row>
-                                </div>
-                            </template>
-                            <template #actions="item">
-                                <j-permission-button
-                                    :disabled="item.disabled"
-                                    :popConfirm="item.popConfirm"
-                                    :tooltip="{
-                                        ...item.tooltip,
-                                    }"
-                                    @click="item.onClick"
-                                    :hasPermission="`${permissionKey}:${item.key}`"
-                                >
-                                    <AIcon
-                                        type="DeleteOutlined"
-                                        v-if="item.key === 'delete'"
-                                    />
-                                    <template v-else>
-                                        <AIcon :type="item.icon" />
-                                        <span>{{ item?.text }}</span>
-                                    </template>
-                                </j-permission-button>
-                            </template>
-                        </CardBox>
-                    </template>
-                </j-pro-table>
-            </FullPage>
-            <Save v-if="visible" :data="current" @change="saveChange" />
+                </CardBox>
+            </template>
+        </j-pro-table>
         </div>
+      </ContentPanel>
+    </FullPage>
+            <Save v-if="visible" :data="current" @change="saveChange" />
+        
     </j-page-container>
 </template>
 <script lang="ts" setup name="DataCollectPage">

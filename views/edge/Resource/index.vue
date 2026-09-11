@@ -1,138 +1,140 @@
 <template>
     <j-page-container>
+    <FullPage transparentBackground>
+      <ContentPanel>
         <pro-search
             :columns="columns"
             target="edge-resource"
             @search="handleSearch"
         />
-        <FullPage>
-            <JProTable
-                ref="edgeResourceRef"
-                :columns="columns"
-                :request="query"
-                :defaultParams="defaultParams"
-                :params="params"
-            >
-                <template #card="slotProps">
-                    <CardBox
-                        :value="slotProps"
-                        @click="handleView(slotProps)"
-                        :actions="getActions(slotProps, 'card')"
-                        :status="slotProps.state?.value"
-                        :statusText="slotProps.state?.text"
-                        :statusNames="{
-                            enabled: 'processing',
-                            disabled: 'error',
-                        }"
-                    >
-                        <template #img>
-                            <img
-                                :src="imgUrl
-                                    // getImage('/device/instance/device-card.png')
-                                "
-                            />
-                        </template>
-                        <template #content>
-                            <j-ellipsis style="width: calc(100% - 100px)">
-                                <span style="font-size: 16px; font-weight: 600">
-                                    {{ slotProps.name }}
-                                </span>
-                            </j-ellipsis>
-                            <a-row style="margin-top: 18px">
-                                <a-col :span="12">
-                                    <div class="card-item-content-text">
-                                        {{ $t('Channel.index.290640-4') }}
-                                    </div>
-                                    <j-ellipsis>{{
-                                        slotProps.category
-                                    }}</j-ellipsis>
-                                </a-col>
-                                <a-col :span="12">
-                                    <div class="card-item-content-text">
-                                        {{ $t('Resource.index.400159-0') }}
-                                    </div>
-                                    <j-ellipsis style="width: 100%">
-                                        {{ slotProps.sourceName }}
-                                    </j-ellipsis>
-                                </a-col>
-                            </a-row>
-                        </template>
-                        <template #actions="item">
-                            <j-permission-button
-                                :disabled="item.disabled"
-                                :popConfirm="item.popConfirm"
-                                :tooltip="{
-                                    ...item.tooltip,
-                                }"
-                                @click="item.onClick"
-                                :hasPermission="'edge/Resource:' + item.key"
-                            >
-                                <AIcon
-                                    type="DeleteOutlined"
-                                    v-if="item.key === 'delete'"
-                                />
-                                <template v-else>
-                                    <AIcon :type="item.icon" />
-                                    <span>{{ item?.text }}</span>
-                                </template>
-                            </j-permission-button>
-                        </template>
-                    </CardBox>
-                </template>
-                <template #state="slotProps">
-                    <j-badge-status
-                        :status="slotProps.state?.value"
-                        :text="slotProps.state?.text"
-                        :statusNames="{
-                            enabled: 'processing',
-                            disabled: 'error',
-                        }"
-                    />
-                </template>
-                <template #sourceId="slotProps">
-                    {{ slotProps.sourceName }}
-                </template>
-                <template #category="slotProps">
-                    {{ slotProps.category }}
-                </template>
-                <template #createTime="slotProps">
-                    <span>{{
-                        dayjs(slotProps.createTime).format(
-                            'YYYY-MM-DD HH:mm:ss',
-                        )
-                    }}</span>
-                </template>
-                <template #action="slotProps">
-                    <a-space :size="16">
-                        <template
-                            v-for="i in getActions(slotProps, 'table')"
-                            :key="i.key"
+        <JProTable
+            ref="edgeResourceRef"
+            :columns="columns"
+            :request="query"
+            :defaultParams="defaultParams"
+            :params="params"
+        >
+            <template #card="slotProps">
+                <CardBox
+                    :value="slotProps"
+                    @click="handleView(slotProps)"
+                    :actions="getActions(slotProps, 'card')"
+                    :status="slotProps.state?.value"
+                    :statusText="slotProps.state?.text"
+                    :statusNames="{
+                        enabled: 'processing',
+                        disabled: 'error',
+                    }"
+                >
+                    <template #img>
+                        <img
+                            :src="imgUrl
+                                // getImage('/device/instance/device-card.png')
+                            "
+                        />
+                    </template>
+                    <template #content>
+                        <j-ellipsis style="width: calc(100% - 100px)">
+                            <span style="font-size: 16px; font-weight: 600">
+                                {{ slotProps.name }}
+                            </span>
+                        </j-ellipsis>
+                        <a-row style="margin-top: 18px">
+                            <a-col :span="12">
+                                <div class="card-item-content-text">
+                                    {{ $t('Channel.index.290640-4') }}
+                                </div>
+                                <j-ellipsis>{{
+                                    slotProps.category
+                                }}</j-ellipsis>
+                            </a-col>
+                            <a-col :span="12">
+                                <div class="card-item-content-text">
+                                    {{ $t('Resource.index.400159-0') }}
+                                </div>
+                                <j-ellipsis style="width: 100%">
+                                    {{ slotProps.sourceName }}
+                                </j-ellipsis>
+                            </a-col>
+                        </a-row>
+                    </template>
+                    <template #actions="item">
+                        <j-permission-button
+                            :disabled="item.disabled"
+                            :popConfirm="item.popConfirm"
+                            :tooltip="{
+                                ...item.tooltip,
+                            }"
+                            @click="item.onClick"
+                            :hasPermission="'edge/Resource:' + item.key"
                         >
-                            <j-permission-button
-                                :disabled="i.disabled"
-                                :popConfirm="i.popConfirm"
-                                :tooltip="{
-                                    ...i.tooltip,
-                                }"
-                                @click="i.onClick"
-                                type="link"
-                                style="padding: 0 5px"
-                                :danger="i.key === 'delete'"
-                                :hasPermission="
-                                    i.key === 'view'
-                                        ? true
-                                        : 'edge/Resource:' + i.key
-                                "
-                            >
-                                <template #icon
-                                    ><AIcon :type="i.icon"
-                                /></template>
-                            </j-permission-button>
-                        </template>
-                    </a-space>
-                </template>
-            </JProTable>
-        </FullPage>
+                            <AIcon
+                                type="DeleteOutlined"
+                                v-if="item.key === 'delete'"
+                            />
+                            <template v-else>
+                                <AIcon :type="item.icon" />
+                                <span>{{ item?.text }}</span>
+                            </template>
+                        </j-permission-button>
+                    </template>
+                </CardBox>
+            </template>
+            <template #state="slotProps">
+                <j-badge-status
+                    :status="slotProps.state?.value"
+                    :text="slotProps.state?.text"
+                    :statusNames="{
+                        enabled: 'processing',
+                        disabled: 'error',
+                    }"
+                />
+            </template>
+            <template #sourceId="slotProps">
+                {{ slotProps.sourceName }}
+            </template>
+            <template #category="slotProps">
+                {{ slotProps.category }}
+            </template>
+            <template #createTime="slotProps">
+                <span>{{
+                    dayjs(slotProps.createTime).format(
+                        'YYYY-MM-DD HH:mm:ss',
+                    )
+                }}</span>
+            </template>
+            <template #action="slotProps">
+                <a-space :size="16">
+                    <template
+                        v-for="i in getActions(slotProps, 'table')"
+                        :key="i.key"
+                    >
+                        <j-permission-button
+                            :disabled="i.disabled"
+                            :popConfirm="i.popConfirm"
+                            :tooltip="{
+                                ...i.tooltip,
+                            }"
+                            @click="i.onClick"
+                            type="link"
+                            style="padding: 0 5px"
+                            :danger="i.key === 'delete'"
+                            :hasPermission="
+                                i.key === 'view'
+                                    ? true
+                                    : 'edge/Resource:' + i.key
+                            "
+                        >
+                            <template #icon
+                                ><AIcon :type="i.icon"
+                            /></template>
+                        </j-permission-button>
+                    </template>
+                </a-space>
+            </template>
+        </JProTable>
+      </ContentPanel>
+    </FullPage>
 
         <Save
             v-if="visible"

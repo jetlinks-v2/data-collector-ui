@@ -1,5 +1,7 @@
 <template>
     <j-page-container>
+    <FullPage transparentBackground>
+      <ContentPanel>
         <pro-search
             :columns="columns"
             target="edge-resource-ai-model"
@@ -156,7 +158,9 @@
                 </template>
             </JProTable>
         </full-page>
-    </j-page-container>
+      </ContentPanel>
+    </FullPage>
+  </j-page-container>
     <Save v-if="saveVisible" :data="currentData" @close="saveVisible = false" @save="handleSave"/>
     <Issue v-if="issueVisible" :jobType="JobTypeEnum[currentData?.targetType]" :service-id="ServiceIdEnum[currentData?.targetType]" :data="currentData" @close="issueVisible = false"/>
 </template>
