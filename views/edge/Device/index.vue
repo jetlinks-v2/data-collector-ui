@@ -201,6 +201,8 @@
 </template>
 
 <script lang="ts" setup>
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useMenuStore } from '@jetlinks-web-core/store/menu';
 import { onlyMessage } from '@jetlinks-web/utils'
 import { openEdgeUrl } from '@jetlinks-web-core/utils/utils';
@@ -213,6 +215,8 @@ import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@jetlinks-web-core/store'
 
 const { t: $t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
 const menuStory = useMenuStore();
 const userStory = useUserStore();
@@ -530,6 +534,18 @@ const handleAdd = () => {
     visible.value = true;
     current.value = {};
 };
+
+watch(
+    () => route.query.action,
+    (action) => {
+        if (action === 'create') {
+            handleAdd();
+            const { action: _action, ...query } = route.query;
+            void router.replace({ query });
+        }
+    },
+    { immediate: true },
+);
 
 const saveBtn = () => {
     visible.value = false;
