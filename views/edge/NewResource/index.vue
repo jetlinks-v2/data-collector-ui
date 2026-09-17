@@ -1,7 +1,7 @@
 <template>
     <j-page-container>
     <FullPage transparentBackground>
-      <ContentPanel>
+      
         <pro-search
             :columns="columns"
             target="edge-resource-ai-model"
@@ -158,7 +158,7 @@
                 </template>
             </JProTable>
         </full-page>
-      </ContentPanel>
+      
     </FullPage>
   </j-page-container>
     <Save v-if="saveVisible" :data="currentData" @close="saveVisible = false" @save="handleSave"/>

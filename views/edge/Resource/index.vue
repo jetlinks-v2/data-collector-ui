@@ -1,7 +1,7 @@
 <template>
     <j-page-container>
     <FullPage transparentBackground>
-      <ContentPanel>
+      
         <pro-search
             :columns="columns"
             target="edge-resource"
@@ -133,7 +133,7 @@
                 </a-space>
             </template>
         </JProTable>
-      </ContentPanel>
+      
     </FullPage>
 
         <Save

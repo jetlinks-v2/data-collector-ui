@@ -1,7 +1,7 @@
 <template>
     <j-page-container>
     <FullPage transparentBackground>
-      <ContentPanel>
+      
         <div>
             <pro-search
                 :columns="columns"
@@ -125,7 +125,7 @@
             </template>
         </j-pro-table>
         </div>
-      </ContentPanel>
+      
     </FullPage>
             <Save v-if="visible" :data="current" @change="saveChange" />
         
