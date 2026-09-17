@@ -1,7 +1,7 @@
 <template>
     <j-page-container>
     <FullPage transparentBackground>
-      <ContentPanel>
+      
         <pro-search
             :columns="columns"
             target="edge-device"
@@ -185,7 +185,7 @@
                 </a-space>
             </template>
         </JProTable>
-      </ContentPanel>
+      
     </FullPage>
         <Save
             v-if="visible"
