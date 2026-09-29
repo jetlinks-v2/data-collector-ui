@@ -139,10 +139,10 @@
         {{ slotProps.interval }}ms
       </template>
       <template #address="slotProps">
-        {{ slotProps?.address || '--' }}
+        {{ slotProps?.address || $t('comm.table.empty') }}
       </template>
       <template #description="slotProps">
-        <j-ellipsis style="max-width: 200px;white-space: normal;">{{ slotProps.description || '--' }}</j-ellipsis>
+        <j-ellipsis style="max-width: 200px;white-space: normal;">{{ slotProps.description || $t('comm.table.empty') }}</j-ellipsis>
       </template>
     </j-pro-table>
   </div>

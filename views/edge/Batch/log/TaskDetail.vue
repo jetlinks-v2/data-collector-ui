@@ -179,7 +179,7 @@
             <template #filename="{ detail }">
                 {{
                     JSON.parse(detail.data.metadata || '{}')?.filename || detail.data.file ||
-                    '--'
+                    $t('comm.table.empty')
                 }}
             </template>
             <template #completeTime="record">
@@ -188,7 +188,7 @@
                         ? dayjs(record.completeTime).format(
                               'YYYY-MM-DD HH:mm:ss',
                           )
-                        : '--'
+                        : $t('comm.table.empty-2')
                 }}
             </template>
             <template #state="record">

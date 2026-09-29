@@ -70,12 +70,12 @@
                 </template>
                 <template #registryTime="slotProps">
                     {{
-                        slotProps.registryTime ?dayjs(slotProps.registryTime).format('YYYY-MM-DD HH:mm:ss'):'--'
+                        slotProps.registryTime ?dayjs(slotProps.registryTime).format('YYYY-MM-DD HH:mm:ss'):$t('comm.table.empty-2')
                     }}
                 </template>
                 <template #describe="scopedSlots">
                     <j-ellipsis>{{
-                            scopedSlots.describe || '--'
+                            scopedSlots.describe || $t('comm.table.empty')
                         }}</j-ellipsis></template
                 >
                 <template #state="slotProps">

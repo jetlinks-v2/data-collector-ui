@@ -701,13 +701,13 @@ const getParseData = (item: any) => {
   return _data;
 };
 const getReadParseData = (item: any) => {
-  let _data = '--';
+  let _data = $t('comm.table.empty-2');
   if (ReadIdMap.has(item.id)) {
     const {parseData, dataType} = ReadIdMap.get(item.id);
     if (isBoolean(parseData)) {
       _data = `${parseData}(${dataType || '-'}) `;
     } else {
-      _data = !!parseData ? `${parseData}(${dataType || '-'}) ` : '--';
+      _data = !!parseData ? `${parseData}(${dataType || '-'}) ` : $t('comm.table.empty-2');
     }
   }
   return _data;

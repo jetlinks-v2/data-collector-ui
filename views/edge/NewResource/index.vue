@@ -86,7 +86,7 @@
                                         {{ $t('NewResource.index.035355-2') }}
                                     </div>
                                     <j-ellipsis style="width: 100%">
-                                        {{ JSON.parse(slotProps.metadata || '{}')?.description || '--' }}
+                                        {{ JSON.parse(slotProps.metadata || '{}')?.description || $t('comm.table.empty') }}
                                     </j-ellipsis>
                                 </a-col>
                             </a-row>
@@ -114,7 +114,7 @@
                     </CardBox>
                 </template>
                 <template #describe="slotProps">
-                    {{ JSON.parse(slotProps.metadata || '{}')?.description || '--' }}
+                    {{ JSON.parse(slotProps.metadata || '{}')?.description || $t('comm.table.empty') }}
                 </template>
                 <template #targetType="slotProps">
                     {{ TargetTypeOptions.find(item => slotProps.targetType === item.value)?.label }}

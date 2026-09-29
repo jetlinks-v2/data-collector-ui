@@ -66,7 +66,7 @@
                       {{ $t('Channel.index.290640-2') }}
                     </div>
                     <j-ellipsis>
-                      {{ slotProps.description || "--" }}
+                      {{ slotProps.description || $t('comm.table.empty') }}
                     </j-ellipsis>
                   </a-col>
                 </a-row>

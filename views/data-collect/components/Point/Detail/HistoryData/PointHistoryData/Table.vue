@@ -23,10 +23,10 @@
         {{ dayjs(slotProps.timestamp).format('YYYY-MM-DD HH:mm:ss') }}
       </template>
       <template #numberValue="slotProps">
-        {{ !isNil(slotProps.numberValue) ? slotProps.numberValue : '--' }}
+        {{ !isNil(slotProps.numberValue) ? slotProps.numberValue : $t('comm.table.empty-2') }}
       </template>
       <template #reason="slotProps">
-        {{reason[slotProps.reason] || slotProps.slotProps || "--"}}
+        {{reason[slotProps.reason] || slotProps.slotProps || $t('comm.table.empty-2')}}
       </template>
       <template #action="slotProps">
         <a-button type="link" @click='showDetail(slotProps)'>

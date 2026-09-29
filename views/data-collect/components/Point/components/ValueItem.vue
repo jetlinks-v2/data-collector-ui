@@ -5,7 +5,7 @@
       <j-ellipsis v-else>{{ getReadParseData() }}</j-ellipsis>
       <j-ellipsis v-if="type !== 'detail'">
         {{
-          value?.timestamp ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : '--'
+          value?.timestamp ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : $t('comm.table.empty-2')
         }}
       </j-ellipsis>
     </div>
@@ -65,13 +65,13 @@ const getParseData = () => {
 };
 
 const getReadParseData = () => {
-  let _data = '--';
+  let _data = $t('comm.table.empty-2');
   if (!!historyData.value.dataType) {
     const {parseData, dataType} = historyData.value;
     if (isBoolean(parseData)) {
       _data = `${parseData}(${dataType || '-'}) `;
     } else {
-      _data = !!parseData ? `${parseData}(${dataType || '-'}) ` : '--';
+      _data = !!parseData ? `${parseData}(${dataType || '-'}) ` : $t('comm.table.empty-2');
     }
   }
   return _data;

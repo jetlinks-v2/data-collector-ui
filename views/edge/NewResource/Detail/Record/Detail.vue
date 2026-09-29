@@ -122,7 +122,7 @@
                         </div>
                     </template>
                     <template #completeTime="slotProps">
-                        {{ slotProps.completeTime ? dayjs(slotProps.completeTime).format('YYYY-MM-DD HH:mm:ss') : '--' }}
+                        {{ slotProps.completeTime ? dayjs(slotProps.completeTime).format('YYYY-MM-DD HH:mm:ss') : $t('comm.table.empty-2') }}
                     </template>
                     <template #action="record">
                         <a-space :size="24">

@@ -67,7 +67,7 @@
           <div class="detail-desc">
             <div class="detail-title text-color-500">{{ $t('log.Card.332932-4') }}</div>
             <div class="detail-value text-color-600">
-              <j-ellipsis>{{ detail.description || '--'}}</j-ellipsis>
+              <j-ellipsis>{{ detail.description || $t('comm.table.empty')}}</j-ellipsis>
             </div>
           </div>
           <div class="detail-time">
