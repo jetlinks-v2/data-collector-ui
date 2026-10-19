@@ -1,5 +1,5 @@
 <template>
-  <div class="channel-collector" :style="{width: treeWidth, padding: foldTree ? '16px 0' : '0px'}">
+  <div class="channel-collector">
     <div class="channel-collector-content">
       <a-flex style="width: 100%; padding: 0 8px 8px;" justify="space-between"
               :style="{borderBottom: viewType !== 'compact' ? '1px solid #e8e8e8' : 'none'}">
@@ -167,13 +167,17 @@ import {omit, uniqBy} from "lodash-es";
 
 const {t: $t} = useI18n();
 const props = defineProps({
+  viewType: {
+    type: String,
+    default: 'compact',
+  },
   isCollapse: {
     type: Boolean,
     default: false,
   },
 });
 
-const emit = defineEmits(["change"]);
+const emit = defineEmits(["change", "update:viewType"]);
 const treeData = computed(() => {
   const channels = channelList.value.map((item: ChannelEntity) => {
     return {
@@ -236,13 +240,9 @@ const _filterValue = inject('filter-value', reactive({
   collectorState: []
 }))
 
-const viewType = ref('compact'); //视图类型
-const treeWidth = computed(() => {
-  if (!foldTree.value) {
-    return viewType.value === 'compact' ? '312px' : '624px';
-  } else {
-    return '0'
-  }
+const viewType = computed({
+  get: () => props.viewType,
+  set: (value: string) => emit('update:viewType', value),
 });
 
 const selectedNode = ref<any>({});
@@ -648,6 +648,7 @@ defineExpose({
 
 <style scoped lang="less">
 .channel-collector {
+  width: 100%;
   height: 100%;
   transition: all 0.3s;
   box-sizing: border-box;
