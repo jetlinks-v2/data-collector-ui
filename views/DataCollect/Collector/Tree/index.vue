@@ -129,7 +129,7 @@
             </a-space>
           </template>
         </a-tree>
-        <a-empty v-else :description="$t('Tree.index.4001410-10')"/>
+        <CloudEmpty v-else :description="$t('Tree.index.4001410-10')"/>
       </a-spin>
     </div>
   </div>

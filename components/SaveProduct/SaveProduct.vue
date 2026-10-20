@@ -87,7 +87,7 @@
                 :rules="{ required: true, message: $t('SaveProduct.SaveProduct.476751-10') }"
             >
                 <div class="gateway-box">
-                    <a-empty
+                    <CloudEmpty
                         v-if="!gatewayList.length"
                         style="margin-top: 50px"
                     >
@@ -108,7 +108,7 @@
                                 </a-button>
                             </template>
                         </template>
-                    </a-empty>
+                    </CloudEmpty>
                     <div
                         class="gateway-item"
                         v-for="(item, index) in gatewayList"

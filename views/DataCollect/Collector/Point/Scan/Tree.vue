@@ -58,7 +58,7 @@
           </template>
         </VirtualScroll>
       </div>
-      <a-empty v-else style="margin-top: 22%"/>
+      <CloudEmpty v-else style="margin-top: 22%"/>
     </a-spin>
   </div>
 </template>

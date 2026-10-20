@@ -235,7 +235,7 @@
                 </template>
             <!-- </template> -->
         </j-edit-table>
-        <a-empty v-else style="margin-top: 10%" />
+        <CloudEmpty v-else style="margin-top: 10%" />
     </a-form>
 </template>
 
