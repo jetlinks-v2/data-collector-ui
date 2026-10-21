@@ -64,7 +64,8 @@ const errorDataOptions = computed(() => {
     },
     xAxis: {
       type: 'category',
-      data: cycleType.value === '*' ? historyData.value?.map(item => item.time).reverse() : aggregationData.value?.map(item => item.time).reverse()
+      data: cycleType.value === '*' ? historyData.value?.map(item => item.time) : aggregationData.value?.map(item =>
+          item.time).reverse()
     },
     yAxis: {
       type: 'value'
@@ -92,7 +93,7 @@ const errorDataOptions = computed(() => {
     },
     series: [
       {
-        data: cycleType.value === '*' ? historyData.value?.map(item => item.value).reverse() : aggregationData.value?.map((i) => {
+        data: cycleType.value === '*' ? historyData.value?.map(item => item.value) : aggregationData.value?.map((i) => {
           return typeof i.value === 'number' && !isNaN(i.value) ? Number(i.value).toFixed(2) : i.value
         }).reverse(), //如果是数字保留两位小数
         type: 'line',
@@ -180,6 +181,7 @@ watchEffect(() => {
     runHistoryData(info.value.collectorId, {
       pageSize: 200,
       pageIndex: 0,
+        sorts: [{ name: 'timestamp', order: 'asc' }],
       terms: [
         { column: 'pointId', value: info.value.id },
         { column: 'timestamp', value: [props.time.start, props.time.end], termType: 'btw' }
