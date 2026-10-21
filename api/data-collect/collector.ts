@@ -1,11 +1,19 @@
 import {request, ndJson} from '@jetlinks-web/core'
 import { getBaseApi } from '@jetlinks-web-core/utils';
 
+// 不分页接口仍要求请求体显式关闭分页，覆盖调用方的默认分页参数。
 export const queryCollector = (data: any) =>
-    request.post(`/data-collect/collector/_query/no-paging?paging=false`, data);
+    request.post(`/data-collect/collector/_query/no-paging?paging=false`, {
+        ...data,
+        paging: false,
+    });
 
+// 详情查询同样在请求体关闭分页，供采集器树和分离列表读取全部数据。
 export const queryCollectorTree = (data: any) =>
-    request.post(`/data-collect/collector/_detail/no-paging?paging=false`, data);
+    request.post(`/data-collect/collector/_detail/no-paging?paging=false`, {
+        ...data,
+        paging: false,
+    });
 
 export const queryCollectorDevice = (data: any) =>
     request.post(`/data-collect/collector/_query`, data)

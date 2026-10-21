@@ -557,7 +557,7 @@ const onDetailRefresh = () => {
 
 const subscribeProperty = (value) => {
   const list = map(value, 'id');
-  const channel = type.value === 'all' ? ' * ' : (type.value === 'channel' ? data?.value?.id : data?.value?.channelId)
+  const channel = type.value === 'all' ? '*' : (type.value === 'channel' ? data?.value?.id : data?.value?.channelId)
   const collector = type.value === 'all' ? '*' : (type.value === 'collector' ? data?.value?.id : '*')
   const id = `collector-${channel || '*'}-${collector || '*'}-data-${list.join('-')}`;
   const topic = `/collector/${channel || '*'}/${collector || '*'}/data`;
