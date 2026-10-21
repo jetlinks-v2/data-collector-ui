@@ -72,6 +72,7 @@ import AbnormalJudgment from "../../Config/AbnormalJudgment.vue";
 import DeadZone from "../../Config/DeadZone.vue";
 import StorageConfiguration from "../../Config/StorageConfiguration.vue";
 import ResultProcessing from "../../Config/ResultProcessing.vue";
+import {cloneTemplateConfig} from "../../Config/data";
 import {DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
 import {useI18n} from "vue-i18n";
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
@@ -164,14 +165,27 @@ const buildSubmitData = () => {
     return data
   }
 
-  // 关闭高级配置时仅忽略提交值，保留表单内容供用户重新开启后继续编辑。
+  // 未展开时子组件不会回填模板，在提交副本中补齐，保留表单草稿供重新展开编辑。
   const managedConfiguration = Object.fromEntries(
       Object.entries(data.managedConfiguration || {})
           .filter(([key]) => !advancedManagedConfigurationKeys.includes(key))
   )
+  advancedManagedConfigurationKeys.forEach(key => {
+    const templateConfig = _collector.value.managedConfiguration?.[key]
+    if (templateConfig) {
+      managedConfiguration[key] = cloneTemplateConfig(templateConfig, {enabled: false})
+    }
+  })
+  // 存储配置与展开后的面板一致，仅对具有读取权限的点位继承。
+  const templateFeatures = data.accessModes?.includes('read')
+      ? (_collector.value.features || []).filter(item => advancedFeatures.includes(item))
+      : []
   return {
     ...data,
-    features: (data.features || []).filter(item => !advancedFeatures.includes(item)),
+    features: [
+      ...(data.features || []).filter(item => !advancedFeatures.includes(item)),
+      ...templateFeatures
+    ],
     managedConfiguration
   }
 }
