@@ -8,7 +8,7 @@
       <div class="hover-dropdown">
         <div style="height: 100%; display: flex; align-items: center; gap: 16px">
           <div style="width: 20px; height: 20px;" v-if="node.isChannel">
-            <Image :src="`/protocol/${node.provider}/icon.png`" alt=""/>
+            <Image :src="getCollectorProviderIcon(node.provider)" alt=""/>
           </div>
           <div style="flex: 1; min-width: 0;">
             <j-ellipsis>
@@ -116,6 +116,7 @@
 <script setup lang="ts">
 import {colorMap} from "../type";
 import {useI18n} from "vue-i18n";
+import {getCollectorProviderIcon} from "@data-collector-ui/utils/collectorIcon";
 
 const {t: $t} = useI18n();
 

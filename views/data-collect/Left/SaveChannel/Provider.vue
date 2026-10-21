@@ -3,7 +3,7 @@
   <div v-for="item in filterOptions" :key="item.id" :class="{'provider-item': true, active: item.id === value}"
        @click="handleChooseProvider(item.id, item.name)">
     <div style="width: 80px;height: 80px;">
-      <Image :src="`/protocol/${item.id}/icon.png`" :width="80" :height="80" alt=""/>
+      <Image :src="getCollectorProviderIcon(item.id)" :width="80" :height="80" alt=""/>
     </div>
     <div>
       <p>
@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import {PropType} from "vue";
 import {useI18n} from "vue-i18n";
+import {getCollectorProviderIcon} from "@data-collector-ui/utils/collectorIcon";
 
 const {t: $t} = useI18n();
 
