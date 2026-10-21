@@ -66,8 +66,8 @@ import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/hooks";
-import {omit, pick} from "lodash-es";
 import {cloneTemplateConfig, isEqual} from "./data";
+import {useDeadbandTerms} from "./useDeadbandTerms";
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
@@ -134,7 +134,6 @@ const _options = [
   {name: '≤', id: 'gt'},
 ]
 
-const type = ref('currentValue')
 const options = ref([
   {
     title: $t('DataCollect.index.400155-4'),
@@ -146,16 +145,12 @@ const options = ref([
 ])
 const optionsMap = ref(new Map())
 optionsMap.value.set('currentValue', options.value[0])
-const terms = ref(
-    [
-      {
-        column: 'currentValue',
-        termType: 'neq',
-        value: undefined
-      }
-    ]
+const {type, terms, percent, onChange, onValueChange, onRadioChange, resetTerms} = useDeadbandTerms(
+    () => formData.managedConfiguration.deadband.configuration,
+    (configuration) => {
+      formData.managedConfiguration.deadband.configuration = configuration
+    }
 )
-const percent = ref()
 
 useTermsParseConText({options: options, map: optionsMap});
 
@@ -184,12 +179,6 @@ const _deadband = computed(() => {
   }
 })
 
-const onRadioChange = () => {
-  formData.managedConfiguration.deadband.configuration = {
-    terms: [{}]
-  }
-}
-
 const showExtra = computed(() => {
   return !!collector.id // return !!collector.managedConfiguration?.deadband?.enabled
 })
@@ -207,17 +196,7 @@ const onSwitchChange = (val) => {
   formData.managedConfiguration.deadband.enabled = !!val
   formData.managedConfiguration.deadband.provider = "term"
   if (!val) {
-    // {$t('DataCollect.index.400156-11')}
-    type.value = 'currentValue'
-    percent.value = undefined
-    terms.value = [
-      {
-        column: 'currentValue',
-        termType: 'neq',
-        value: undefined
-      }
-    ]
-    formData.managedConfiguration.deadband.configuration = {}
+    resetTerms()
   }
   if (val !== true) {
     onOutsize()
@@ -257,57 +236,9 @@ const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) =>
   return resolve("");
 });
 
-const onChange = (val) => {
-  terms.value = val.map(i => {
-    return {
-      ...i,
-      column: "currentValue",
-      termType: i.termType || "neq",
-      type: 'and'
-    }
-  })
-  formData.managedConfiguration.deadband.configuration = {
-    terms: [{
-      terms: terms.value.map(i => {
-        return pick(i, ['termType', 'type', 'value', 'key', 'column'])
-      })
-    }]
-  }
-
-}
-
-const onValueChange = () => {
-  formData.managedConfiguration.deadband.configuration = {
-    terms: [{
-      terms: [
-        {
-          "column": type.value,
-          "value": percent.value,
-          "termType": "neq",
-        }
-      ]
-    }]
-  }
-}
-
 watch(() => formData.managedConfiguration?.deadband?.enabled, (val) => {
   if (firstRender && (__type || formData.id  || oldCollector.value?.channelId)) {
     data.value = !!val
-    // {$t('DataCollect.index.400156-12')}
-    const _configuration = formData.managedConfiguration?.deadband?.configuration || {}
-    const __value = _configuration.terms?.[0]?.terms?.[0];
-    type.value = __value?.column || 'currentValue'
-    if (__value) {
-      if (type.value === 'currentValue') {
-        terms.value = _configuration.terms?.[0]?.terms || [{
-          column: 'currentValue',
-          termType: 'neq',
-          value: undefined
-        }]
-      } else {
-        percent.value = __value.value
-      }
-    }
     firstRender = false
   }
 }, {
