@@ -196,8 +196,10 @@ const onSubmit = async (flag) => {
         formData.id = undefined
         formData.description = undefined
       } else {
-        emit('save');
+        emit('close');
       }
+      // 连续新增也要刷新列表和统计，保留抽屉供用户继续填写。
+      emit('save');
     }
   }
 }

@@ -613,9 +613,8 @@ const handleDelete = (data: ChannelEntity | CollectorEntity) => {
   deleteNode(data.id!);
 }
 
-//采集器更新后更新树节点
+// 每次保存成功都刷新采集器列表，抽屉由子组件按操作类型关闭。
 const onSaveCollector = () => {
-  saveCollectorVisible.value = false;
   loadCollectors();
 };
 

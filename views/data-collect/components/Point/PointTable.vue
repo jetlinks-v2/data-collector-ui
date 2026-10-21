@@ -156,7 +156,7 @@
       v-if="visible.save"
       :data="current"
       :collector="data"
-      @save="onRefresh"
+      @save="onDetailRefresh"
       @close="visible.save = false"
   />
   <Detail

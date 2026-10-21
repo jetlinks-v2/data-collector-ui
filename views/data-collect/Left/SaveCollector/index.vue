@@ -230,8 +230,10 @@ const handleOk = async (flag) => {
           formData.id = undefined
           // formData.description = undefined
         } else {
-          emit('save');
+          emit('close');
         }
+        // 连续新增也要刷新列表，关闭抽屉由 close 事件单独控制。
+        emit('save');
       }
     } catch (e) {
       loading.value = false;
