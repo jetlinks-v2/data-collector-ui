@@ -1,22 +1,16 @@
 <template>
   <div class="channel-collector">
     <div class="channel-collector-content">
-      <a-flex style="width: 100%; padding: 0 8px 8px;" justify="space-between"
+      <a-flex style="width: 100%; padding: 0 8px 8px;" justify="flex-end"
               :style="{borderBottom: viewType !== 'compact' ? '1px solid #e8e8e8' : 'none'}">
-        <j-permission-button style="padding: 0" :hasPermission="true"
-                             :tooltip="{title: $t('DataCollect.index.400150-0')}" type="text"
-                             @click="foldTree = !foldTree">
-          <AIcon style="font-size: 18px" type="InboxOutlined"></AIcon>
-        </j-permission-button>
         <a-space>
           <a-button type="text" style="padding: 0">
             <AIcon style="font-size: 18px" type="FilterOutlined" :class="{'filter-active': filterIconActive}"
                    @click="filterModalVisible = true"></AIcon>
           </a-button>
-          <a-radio-group v-model:value="viewType" size="small">
-            <a-radio-button value="compact">{{ $t('DataCollect.index.400150-1') }}</a-radio-button>
-            <a-radio-button value="separate">{{ $t('DataCollect.index.400150-2') }}</a-radio-button>
-          </a-radio-group>
+            <a-segmented v-model:value="viewType" block :options="scopeOptions">
+
+            </a-segmented>
         </a-space>
       </a-flex>
       <ActionButtons
@@ -229,6 +223,17 @@ const expandKeys = ref([])
 const filterValue = ref({})
 const _value = sessionStorage.getItem('collector-patch-add-key')
 let firstRender = true
+
+const scopeOptions = [
+    {
+        label: $t('DataCollect.index.400150-1'),
+        value: 'compact'
+    },
+    {
+        label: $t('DataCollect.index.400150-2'),
+        value: 'separate'
+    }
+]
 
 const _filterValue = inject('filter-value', reactive({
   channel: false,
@@ -660,7 +665,6 @@ defineExpose({
     flex-direction: column;
     align-items: flex-start;
     height: calc(100% - 40px);
-    padding: 16px;
   }
 
   .filter-active {
@@ -668,15 +672,14 @@ defineExpose({
   }
 
   .channel-collector-path {
-    height: 40px;
     width: 100%;
     display: flex;
     align-items: center;
     border-top: 1px solid #e8e8e8;
     position: absolute;
+      padding: 0.5rem 0;
     bottom: 0;
-    padding-left: 10px;
-    gap: 8px;
+    gap: 0.5rem;
 
     .switch-node {
       cursor: pointer;
@@ -700,30 +703,33 @@ defineExpose({
       margin: 4px 0;
 
       &:has(.channel-node) {
-        border-radius: 4px;
-        background-color: #F5F5F5;
+        border-radius: var(--r-3);
+        background: transparent;
         height: 32px;
-        padding-top: 4px;
         padding-left: 4px;
-      }
-
-      &:has(.ant-tree-node-selected) {
-        background-color: #e6f4ff;
       }
 
       &:has(.device-node) {
         height: 64px;
-        border-radius: 4px;
+        border-radius: var(--r-3);
         border: 1px solid #F5F5F5;
         padding-top: 4px;
       }
 
       &:hover {
-        background-color: #e6f4ff;
+        background: var(--bg-hover);
       }
 
-      .ant-tree-node-content-wrapper:hover {
-        background-color: transparent;
+      &.ant-tree-treenode-selected {
+        background: var(--accent-soft);
+        border-color: transparent;
+        border-width: 0;
+        color: var(--primary-color);
+      }
+
+      .ant-tree-node-content-wrapper:hover,
+      .ant-tree-node-content-wrapper.ant-tree-node-selected {
+        background: transparent;
       }
 
       .ant-tree-indent-unit {
@@ -735,16 +741,17 @@ defineExpose({
   .all-node {
     padding: 8px 12px;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--r-3);
     margin-bottom: 4px;
-    background-color: #f5f5f5;
+    background: transparent;
 
     &:hover {
-      background-color: #e6f4ff;
+      background: var(--bg-hover);
     }
 
     &.active {
-      background-color: #e6f4ff;
+      background: var(--accent-soft);
+      color: var(--primary-color);
     }
   }
 
@@ -780,18 +787,19 @@ defineExpose({
     }
 
     .tree-node-item {
-      background-color: #F5F5F5;
+      background: transparent;
       height: 32px;
       padding: 6px 12px 0 12px;
-      border-radius: 4px;
+      border-radius: var(--r-3);
       cursor: pointer;
 
       &:hover {
-        background-color: #e6f4ff;
+        background: var(--bg-hover);
       }
 
       &.active {
-        background-color: #e6f4ff;
+        background: var(--accent-soft);
+        color: var(--primary-color);
       }
     }
 
@@ -799,14 +807,16 @@ defineExpose({
       cursor: pointer;
       padding: 8px 16px;
       border: 1px solid #F5F5F5;
-      border-radius: 4px;
+      border-radius: var(--r-3);
 
       &:hover {
         background-color: #f5f5f5;
       }
 
       &.active {
-        background-color: #e6f4ff;
+        background: var(--accent-soft);
+        border-color: transparent;
+        color: var(--primary-color);
       }
     }
   }

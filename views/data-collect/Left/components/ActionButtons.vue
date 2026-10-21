@@ -1,55 +1,44 @@
 <template>
   <a-flex style="width: 100%;margin-bottom: 8px;" justify="flex-end">
-    <a-space>
-      <div class="search-input-wrapper" :class="{ expanded: isSearchMode }">
-        <a-button
-          v-if="!isSearchMode"
-          type="text"
-          shape="circle"
-          @click="handleSearchClick"
-        >
-          <AIcon type="SearchOutlined"/>
-        </a-button>
-        <a-input
-          v-else
-          ref="searchInputRef"
-          allow-clear
-          v-model:value="searchValue"
-          class="search-input"
-          :placeholder="$t('DataCollect.index.400150-10')"
-          @blur="handleSearchBlur"
-          @keyup.enter="handleSearchEnter"
-        >
-          <template #prefix>
-            <AIcon type="SearchOutlined"/>
-          </template>
-        </a-input>
+      <div class="search-input-wrapper" :class="{ expanded: true }">
+          <a-input
+              ref="searchInputRef"
+              allow-clear
+              v-model:value="searchValue"
+              class="search-input"
+              :placeholder="$t('DataCollect.index.400150-10')"
+              @blur="handleSearchBlur"
+              @keyup.enter="handleSearchEnter"
+          >
+              <template #prefix>
+                  <AIcon type="SearchOutlined"/>
+              </template>
+          </a-input>
       </div>
       <j-permission-button type="text" shape="circle" @click="handleAdd">
-        <AIcon type="PlusOutlined"></AIcon>
+          <AIcon type="PlusOutlined"></AIcon>
       </j-permission-button>
       <a-dropdown>
-        <template #overlay>
-          <a-menu @click="handleMenuClick">
-            <a-menu-item key="importChannel">
-              <a-space>
-                <AIcon type="ImportOutlined"/>
-                {{ $t('DataCollect.index.400150-11') }}
-              </a-space>
-            </a-menu-item>
-            <a-menu-item key="importCollector">
-              <a-space>
-                <AIcon type="ImportOutlined"/>
-                {{ $t('DataCollect.index.400150-12') }}
-              </a-space>
-            </a-menu-item>
-          </a-menu>
-        </template>
-        <j-permission-button type="text" shape="circle">
-          <AIcon type="MoreOutlined"></AIcon>
-        </j-permission-button>
+          <template #overlay>
+              <a-menu @click="handleMenuClick">
+                  <a-menu-item key="importChannel">
+                      <a-space>
+                          <AIcon type="ImportOutlined"/>
+                          {{ $t('DataCollect.index.400150-11') }}
+                      </a-space>
+                  </a-menu-item>
+                  <a-menu-item key="importCollector">
+                      <a-space>
+                          <AIcon type="ImportOutlined"/>
+                          {{ $t('DataCollect.index.400150-12') }}
+                      </a-space>
+                  </a-menu-item>
+              </a-menu>
+          </template>
+          <j-permission-button type="text" shape="circle">
+              <AIcon type="MoreOutlined"></AIcon>
+          </j-permission-button>
       </a-dropdown>
-    </a-space>
   </a-flex>
   <Import
     v-if="importVisible"
@@ -176,17 +165,13 @@ watch(() => importVisible.value, (newValue) => {
 
 <style scoped lang="less">
 .search-input-wrapper {
+    flex: 1;
+    min-width: 0;
   position: relative;
-  width: 32px;
   overflow: hidden;
-  transition: width 0.3s ease-in-out;
-  &.expanded {
-    width: 200px;
-  }
 
   .search-input {
     width: 100%;
-    animation: expandWidth 0.3s ease-in-out forwards;
   }
 }
 

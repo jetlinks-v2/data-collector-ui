@@ -2,11 +2,9 @@
   <j-page-container>
     <full-page>
       <EqualHeightColumns
-          class="collect-warp"
           :left-width="foldTree ? 0 : viewType === 'compact' ? '15rem' : '30rem'"
           right-width="1fr"
           :gap="foldTree ? 0 : 24"
-          :collapsible="false"
       >
         <template #left>
           <div class="left" v-show="!foldTree">
@@ -82,18 +80,9 @@ const onChange = (_type, row) => {
 </script>
 
 <style lang="less" scoped>
-.collect-warp {
-  background-color: #f5f5f5;
-}
 
 .left, .right {
   height: 100%;
-  background-color: #ffffff;
 }
 
-.right {
-  min-width: 0;
-  overflow: auto;
-  padding: 24px;
-}
 </style>

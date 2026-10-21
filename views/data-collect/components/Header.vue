@@ -11,15 +11,13 @@
           <div class="title" :class="{'_title': type !== 'all'}" @click="onDetail">{{ title }}</div>
         </j-ellipsis>
       </div>
-      <a-space>
         <a-tag v-if="type === 'channel'" :color="ChannelState[getState(data).value]">{{ getState(data).text }}</a-tag>
         <!--通讯协议类型-->
         <a-tag v-if="type !== 'all'">{{ data.provider }}</a-tag>
         <!--通道/采集器ID-->
         <a-tag v-if="type !== 'all'">
-          <j-ellipsis style="max-width: 120px; white-space: normal">{{ data.id }}</j-ellipsis>
+            <j-ellipsis style="max-width: 120px; white-space: normal">{{ data.id }}</j-ellipsis>
         </a-tag>
-      </a-space>
     </div>
     <div class="header-right">
       <div class="header-right-item" v-for="item in countList" :key="item.type">
@@ -158,6 +156,10 @@ defineExpose({
     ._title {
       color: @primary-color;
     }
+
+      .ant-tag {
+          margin-inline-end: 0;
+      }
   }
 
   .header-right {

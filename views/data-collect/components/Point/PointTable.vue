@@ -1,12 +1,17 @@
 <template>
   <div style="display: flex; flex-direction: column; flex: 1; min-height: 0" :key="columnsConfig.key">
-    <pro-search
-        :columns="columnsConfig.data"
-        target="data-collector-point"
-        @search="handleSearch"
-        style="margin-bottom: 0; padding: 16px 0"
-        v-if="showSearch"
-    />
+<!--    <pro-search-->
+<!--        :columns="columnsConfig.data"-->
+<!--        target="data-collector-point"-->
+<!--        @search="handleSearch"-->
+<!--        style="margin-bottom: 0; padding: 16px 0"-->
+<!--        v-if="showSearch"-->
+<!--    />-->
+          <ConditionFilter
+              :columns="columnsConfig.data"
+              style="margin-bottom: var(--space-4)"
+              @search="handleSearch"
+          />
     <j-pro-table
         ref="tableRef"
         :columns="columnsConfig.data"
@@ -38,6 +43,7 @@
       </template>
       <template #headerLeftRender>
         <a-space>
+            <PointTop ref="pointTopRef"/>
           <template v-if="type === 'collector' && data.id">
             <j-permission-button
                 v-if="pointActions.add"
@@ -97,25 +103,18 @@
         </a-space>
       </template>
       <template #headerRightRender>
-        <a-space>
-          <j-ellipsis>{{ $t('DataCollect.index.400151-13', [searchCount]) }}</j-ellipsis>
-          <a-button @click="showSearch = !showSearch">
-            <AIcon type="SearchOutlined"/>
-            {{ showSearch ? $t('DataCollect.index.400151-14') : $t('DataCollect.index.400151-15') }}
-          </a-button>
           <a-button @click="columnsConfig.visible = true">
-            <AIcon type="SettingOutlined"/>
-            {{ $t('DataCollect.index.400151-16') }}
+              <AIcon type="SettingOutlined"/>
+              {{ $t('DataCollect.index.400151-16') }}
           </a-button>
-        </a-space>
       </template>
       <template #name="slotProps">
         <div style="display: flex; align-items: center;gap: 8px; white-space: normal">
           <span style="color: #1677FF;"><AIcon type="EnvironmentFilled"/></span>
           <div class="name" @click="handleView(slotProps)">
-            <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
+              <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
           </div>
-          <div style="width: 60px">
+          <div style="width: 70px">
             <j-badge-status
                 :status="slotProps?.state?.value === 'disabled' ? slotProps?.state?.value : slotProps?.runningState?.value"
                 :text="slotProps?.state?.value === 'disabled' ? slotProps?.state?.text : slotProps?.runningState?.text"
@@ -222,6 +221,8 @@ import {useMenuStore} from "@jetlinks-web-core/store";
 import BatchUpdate from "./components/BatchUpdate.vue";
 import Import from "@data-collector-ui/views/data-collect/components/Import/index.vue"
 import {buildAllChannelTerm, buildPointQueryFilterTerms} from "@data-collector-ui/views/data-collect/utils";
+import ConditionFilter from '@jetlinks-web-core/components/ConditionFilter'
+import PointTop from "./PointTop.vue";
 
 const {t: $t} = useI18n();
 const sortValue = reactive({
@@ -232,6 +233,7 @@ const sortValue = reactive({
 const params = ref({})
 const showSearch = ref(false)
 const tableRef = ref()
+const pointTopRef = ref()
 let pointTypeRefresh = false
 
 const columnsConfig = reactive({
@@ -877,8 +879,10 @@ onUnmounted(() => {
 });
 
 defineExpose({
-  loadData: () => {
-    tableRef.value?.reload()
+  loadData: async () => {
+      // 刷新点位统计
+    await pointTopRef.value?.loadData?.()
+    await tableRef.value?.reload()
   }
 })
 </script>

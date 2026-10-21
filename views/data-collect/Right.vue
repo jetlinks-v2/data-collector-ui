@@ -1,14 +1,12 @@
 <template>
   <div class="right-warp">
     <Header ref="pointHeader"/>
-    <PointTop ref="pointTopRef"/>
     <PointTable ref="pointTableRef"/>
   </div>
 </template>
 
 <script setup>
 import Header from './components/Header.vue'
-import PointTop from "./components/Point/PointTop.vue";
 import PointTable from "./components/Point/PointTable.vue";
 import {COLLECTOR_TYPE} from "@data-collector-ui/views/data-collect/data";
 
@@ -23,7 +21,7 @@ const visible = reactive({
 
 provide('detail-visible', visible)
 const pointHeader = ref()
-const pointTopRef = ref()
+
 const pointTableRef = ref()
 
 const type = inject(COLLECTOR_TYPE, ref('all'))
@@ -31,8 +29,6 @@ const type = inject(COLLECTOR_TYPE, ref('all'))
 // 统一的刷新方法
 const refresh = async () => {
   await pointHeader.value?.loadData?.()
-  // 刷新点位统计
-  await pointTopRef.value?.loadData?.()
   // 刷新点位表格
   await pointTableRef.value?.loadData?.()
 }

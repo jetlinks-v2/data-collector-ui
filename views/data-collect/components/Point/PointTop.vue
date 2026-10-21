@@ -1,32 +1,15 @@
 <template>
-  <div class="point-top-warp">
-    <div class="title">{{ $t('DataCollect.index.400150-7') }}</div>
-    <div class="status-warp">
-      <div class="status-warp-item">
-        <div>
-          <span style="color: #1677FF;"><AIcon type="EnvironmentFilled"/></span>
-          {{ $t('DataCollect.index.400150-6') }}
-        </div>
-        <div class="status-warp-item-value" :class="{'active': pointType === 'total'}"
-             @click="onClick('total')">{{ num.total }}
-        </div>
-      </div>
-      <a-divider type="vertical"/>
-      <div class="status-warp-item">
-        <a-badge status="success" :text="$t('DataCollect.index.400150-8')"/>
-        <div class="status-warp-item-value" :class="{'active': pointType === 'running'}"
-             @click="onClick('running')">{{ num.running }}
-        </div>
-      </div>
-      <a-divider type="vertical"/>
-      <div class="status-warp-item">
-        <a-badge status="error" :text="$t('DataCollect.index.400150-9')"/>
-        <div class="status-warp-item-value" :class="{'active': pointType === 'stopped'}"
-             @click="onClick('stopped')">{{ num.stopped }}
-        </div>
-      </div>
-    </div>
-  </div>
+    <a-button-group role="group">
+        <a-button @click="onClick('total')">
+            <a-badge color="#1677FF" /> {{ $t('DataCollect.index.400150-6') }} {{ num.total }}
+        </a-button>
+        <a-button @click="onClick('running')">
+            <a-badge status="success" /> {{ $t('DataCollect.index.400150-8') }} {{ num.running }}
+        </a-button>
+        <a-button @click="onClick('stopped')">
+            <a-badge status="error" /> {{ $t('DataCollect.index.400150-9') }} {{num.stopped}}
+        </a-button>
+    </a-button-group>
 </template>
 
 <script setup>
