@@ -102,9 +102,9 @@
       </div>
     </div>
     <div class="channel-collector-path">
-      <div class="switch-node" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</div>
+      <div class="switch-node path-root" @click="switchNode('all')">{{ $t('DataCollect.index.400150-3') }}</div>
       <template v-if="(selectedNode?.id !== 'all' && selectedNode?.isChannel) || selectedNode?.channelId">
-        <div>></div>
+        <AIcon class="path-separator" type="RightOutlined" />
         <div class="switch-node" @click="switchNode(selectedNode?.channelId || selectedNode?.id)">
           <j-ellipsis>{{
               selectedNode?.channelName || selectedNode?.name
@@ -113,7 +113,7 @@
         </div>
       </template>
       <template v-if="selectedNode?.id !== 'all' && selectedNode?.isLeaf && selectedNode?.channelId">
-        <div>></div>
+        <AIcon class="path-separator" type="RightOutlined" />
         <div class="switch-node">
           <j-ellipsis>{{ selectedNode?.name }}</j-ellipsis>
         </div>
@@ -672,17 +672,37 @@ defineExpose({
 
   .channel-collector-path {
     width: 100%;
+    height: 40px;
     display: flex;
     align-items: center;
-    border-top: 1px solid #e8e8e8;
+    border-top: 1px solid var(--jet-theme-border-secondary);
     position: absolute;
-      padding: 0.5rem 0;
+    padding: 8px 0;
     bottom: 0;
-    gap: 0.5rem;
+    gap: 8px;
+    color: var(--text-color-secondary);
+
+    .path-separator {
+      flex: none;
+      font-size: 12px;
+      color: var(--text-color-disabled);
+    }
 
     .switch-node {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: max-content;
       cursor: pointer;
-      max-width: 100px;
+
+      &.path-root {
+        flex: none;
+        white-space: nowrap;
+      }
+
+      &:last-child {
+        color: var(--text-color);
+        font-weight: 500;
+      }
 
       &:hover {
         color: @primary-color;
