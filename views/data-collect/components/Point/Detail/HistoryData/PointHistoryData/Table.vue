@@ -13,7 +13,7 @@
         mode="TABLE"
         :request="(e) => queryPointHistory(info?.collectorId, {...e, terms: [...e.terms, {column: 'timestamp', value: [time.start, time.end], termType: 'btw'}, {column: 'pointId', value: info?.id}]})"
         :defaultParams="{
-            sorts: [{ name: 'timestamp', order: 'asc' }],
+            sorts: [{ name: 'timestamp', order: 'desc' }],
         }"
         :scroll="{y: 300}"
         :params="params"
