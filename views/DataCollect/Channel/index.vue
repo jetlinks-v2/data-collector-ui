@@ -1,5 +1,18 @@
 <template>
-    <j-page-container>
+
+    <DefineEmptyCreate>
+      <j-permission-button
+          type="primary"
+          @click="handlAdd"
+          :hasPermission="`${permissionKey}:add`"
+      >
+          <template #icon
+              ><AIcon type="PlusOutlined"
+          /></template>
+          {{ $t('Channel.index.290640-0') }}
+      </j-permission-button>
+    </DefineEmptyCreate>
+    <j-page-container v-bind="$attrs">
     <FullPage transparentBackground>
       
         <div>
@@ -19,17 +32,13 @@
             }"
             :params="params"
         >
+          <template #emptyText>
+            <CloudEmpty :search="params?.terms" :search-name="$t('DataCollect.index.400150-15')">
+              <EmptyCreateButton />
+            </CloudEmpty>
+          </template>
             <template #headerLeftRender>
-                <j-permission-button
-                    type="primary"
-                    @click="handlAdd"
-                    :hasPermission="`${permissionKey}:add`"
-                >
-                    <template #icon
-                        ><AIcon type="PlusOutlined"
-                    /></template>
-                    {{ $t('Channel.index.290640-0') }}
-                </j-permission-button>
+                <EmptyCreateButton />
             </template>
             <template #card="slotProps">
                 <CardBox
@@ -132,6 +141,8 @@
     </j-page-container>
 </template>
 <script lang="ts" setup name="DataCollectPage">
+import { createReusableTemplate } from '@vueuse/core'
+
 import {
     query,
     remove,
@@ -335,6 +346,8 @@ const getState = (record: Partial<Record<string, any>>) => {
 const handleSearch = (e: any) => {
     params.value = e;
 };
+
+const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 <style lang="less" scoped>
 .card-item-content {

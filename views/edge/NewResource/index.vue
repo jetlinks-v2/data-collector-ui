@@ -1,4 +1,19 @@
 <template>
+
+    <DefineEmptyCreate>
+      <j-permission-button
+          type="primary"
+          hasPermission="edge/NewResource:add"
+          @click="handleAdd"
+      >
+          <template #icon
+          >
+              <AIcon type="PlusOutlined"
+              />
+          </template>
+          {{ $t('NewResource.index.035355-0') }}
+      </j-permission-button>
+    </DefineEmptyCreate>
     <j-page-container>
     <FullPage transparentBackground>
       
@@ -25,20 +40,14 @@
                 }"
                 modeValue="CARD"
             >
+              <template #emptyText>
+                <CloudEmpty :search="params?.terms" :search-name="$t('EmptyCreate.names.resources')">
+                  <EmptyCreateButton />
+                </CloudEmpty>
+              </template>
                 <template #headerLeftRender>
                     <a-space>
-                        <j-permission-button
-                            type="primary"
-                            hasPermission="edge/NewResource:add"
-                            @click="handleAdd"
-                        >
-                            <template #icon
-                            >
-                                <AIcon type="PlusOutlined"
-                                />
-                            </template>
-                            {{ $t('NewResource.index.035355-0') }}
-                        </j-permission-button>
+                        <EmptyCreateButton />
                     </a-space>
                 </template>
                 <template #card="slotProps">
@@ -166,6 +175,8 @@
 </template>
 
 <script setup lang="ts">
+import { createReusableTemplate } from '@vueuse/core'
+
 import Save from './Save/index.vue';
 import Issue from './Issue/index.vue';
 import {queryPage, remove, update} from '../../../api/edge/newResource'
@@ -353,6 +364,8 @@ const handleSave = () => {
 const handleView = (id: string) => {
     menuStore.jumpPage(ResourceDetailPage, {params: {id}});
 }
+
+const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 
 <style scoped lang="less">

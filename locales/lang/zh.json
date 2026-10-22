@@ -1318,5 +1318,7 @@
   "PointBatch.empty": "暂无待添加点位",
   "PointBatch.emptyHint": "点击上方新增按钮，添加需要采集的点位",
   "PointBatch.addOne": "新增一条",
-  "PointBatch.addMany": "新增多条"
+  "PointBatch.addMany": "新增多条",
+  "EmptyCreate.names.resources": "资源",
+  "EmptyCreate.names.collectors": "采集器"
 }

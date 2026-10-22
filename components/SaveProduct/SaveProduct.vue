@@ -90,6 +90,7 @@
                     <CloudEmpty
                         v-if="!gatewayList.length"
                         style="margin-top: 50px"
+                        :search-name="$t('ComprehensiveHome.index.926510-27')"
                     >
                         <template #description>
                             <template v-if="!isPermission"
@@ -97,17 +98,18 @@
                             >
                             <template v-else>
                                 {{ $t('SaveProduct.SaveProduct.476751-12') }}
-                                <a-button
-                                    type="link"
-                                    style="padding: 0"
-                                    @click="handleAdd"
-                                >
-                                    {{ $t('SaveProduct.SaveProduct.476751-13') }}{{
-                                        providerType[props.channel]
-                                    }}{{ $t('SaveProduct.SaveProduct.476751-9') }}
-                                </a-button>
                             </template>
                         </template>
+                        <a-button
+                            v-if="isPermission"
+                            type="link"
+                            style="padding: 0"
+                            @click="handleAdd"
+                        >
+                            {{ $t('SaveProduct.SaveProduct.476751-13') }}{{
+                                providerType[props.channel]
+                            }}{{ $t('SaveProduct.SaveProduct.476751-9') }}
+                        </a-button>
                     </CloudEmpty>
                     <div
                         class="gateway-item"

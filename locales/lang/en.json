@@ -1318,5 +1318,7 @@
   "PointBatch.empty": "No points to add",
   "PointBatch.emptyHint": "Use the buttons above to add collection points",
   "PointBatch.addOne": "Add one",
-  "PointBatch.addMany": "Add multiple"
+  "PointBatch.addMany": "Add multiple",
+  "EmptyCreate.names.resources": "resources",
+  "EmptyCreate.names.collectors": "collectors"
 }
