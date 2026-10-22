@@ -1,112 +1,27 @@
 <template>
-  <j-page-container :showBack="true">
-    <template #title>
-      <div class="scan-page__title">
-        <j-ellipsis>{{ collector.name }}</j-ellipsis>
-        <a-tag>{{ collector.provider }}</a-tag>
-        <a-tag>{{ collector.id }}</a-tag>
-      </div>
-    </template>
-    <full-page :fixed="false">
-      <div class="scan-page">
-        <div class="scan-page__content">
-          <ScanContent v-if="collector.id" ref="scanRef" :collector="collector"/>
-        </div>
-        <div class="scan-page__footer">
-          <a-space>
-            <a-button type="primary" :loading="saveLoading" @click="handleSave">{{ $t('DataCollect.index.400152-3') }}</a-button>
-          </a-space>
-        </div>
-      </div>
-    </full-page>
-  </j-page-container>
+  <CollectorPointPage :collector="collector" @back="backToList">
+    <div v-if="loading" class="point-scan-page-state">
+      <a-spin :tip="$t('PointBatch.loading')" />
+    </div>
+    <div v-else-if="loadFailed" class="point-scan-page-state">
+      <a-result status="error" :title="$t('PointBatch.loadFailed')">
+        <template #extra><a-button @click="load">{{ $t('PointBatch.retry') }}</a-button></template>
+      </a-result>
+    </div>
+    <ScanContent v-else-if="collector.id" :collector="collector" @saved="backToList" />
+  </CollectorPointPage>
 </template>
 
-<script setup>
-import {detail} from '@data-collector-ui/api/data-collect/collector'
-import {onlyMessage} from '@jetlinks-web/utils'
-import {useMenuStore} from '@jetlinks-web-core/store'
-import {useI18n} from "vue-i18n";
+<script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import CollectorPointPage from '../CollectorPointPage.vue'
 import ScanContent from './index.vue'
+import { usePointScanPage } from './usePointScanPage'
 
-const {t: $t} = useI18n();
-const route = useRoute();
-const menuStore = useMenuStore()
-
-const collector = ref({})
-const scanRef = ref()
-const saveLoading = ref(false)
-const scanSetting = ref({
-  columns: [],
-  selectedData: [],
-  handleData: undefined,
-})
-
-provide('plugin-scan-point', scanSetting)
-
-const loadDetail = async (id) => {
-  const resp = await detail(id)
-  if (resp?.success) {
-    collector.value = resp.result
-  }
-}
-
-const handleSave = async () => {
-  saveLoading.value = true
-  const resp = await scanRef.value?.handleSave?.().finally(() => {
-    saveLoading.value = false
-  })
-
-  if (!resp || resp.validated === false) {
-    return
-  }
-
-  if (resp.empty) {
-    onlyMessage($t('Virtual.PointAssign.400159-2'), 'warning')
-    return
-  }
-
-  if (resp.success) {
-    onlyMessage($t('DataCollect.index.400151-11'))
-    menuStore.jumpPage('data-collect')
-  }
-}
-
-watch(
-    () => route.params.id,
-    (id) => {
-      if (id) {
-        loadDetail(id)
-      }
-    },
-    { immediate: true },
-)
-
-onBeforeRouteLeave((to, from, next) => {
-  if (to.name === 'data-collect' && route.params.id) {
-    sessionStorage.setItem('collector-patch-add-key', route.params.id)
-  }
-  return next();
-})
+const { t: $t } = useI18n()
+const { collector, loading, loadFailed, load, backToList } = usePointScanPage()
 </script>
 
-<style scoped lang="less">
-.scan-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-}
-
-.scan-page__title {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.scan-page__footer {
-  display: flex;
-  justify-content: flex-end;
-}
+<style scoped>
+.point-scan-page-state { display: grid; flex: 1; place-items: center; min-height: 16rem; }
 </style>

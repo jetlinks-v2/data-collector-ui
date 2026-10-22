@@ -7,13 +7,7 @@ import { useMenuStore } from '@jetlinks-web-core/store'
 import { detail, savePointBatch } from '@data-collector-ui/api/data-collect/collector'
 import { devGetProtocol } from '@data-collector-ui/utils/utils'
 import { pointBatchSaveKey } from './context'
-
-interface CollectorSummary {
-  id?: string
-  name?: string
-  provider?: string
-  configuration?: Record<string, unknown>
-}
+import type { CollectorPointSummary } from '../types'
 
 interface PointBatchEditor {
   onSave: () => Promise<Record<string, unknown>[] | false>
@@ -24,7 +18,7 @@ export function usePointBatchSave() {
   const route = useRoute()
   const menuStore = useMenuStore()
   const { t } = useI18n()
-  const collector = ref<CollectorSummary>({})
+  const collector = ref<CollectorPointSummary>({})
   const jsonData = ref<string>()
   const pointBatchRef = shallowRef<PointBatchEditor>()
   const loading = ref(false)
@@ -53,7 +47,7 @@ export function usePointBatchSave() {
       const response = await detail(id)
       if (version !== requestVersion) return
       if (!response.success || !response.result) throw new Error('Collector unavailable')
-      collector.value = response.result as CollectorSummary
+      collector.value = response.result as CollectorPointSummary
       const source = await devGetProtocol(collector.value.provider || 'OPC_UA', 'pointBatch')
       if (version !== requestVersion) return
       if (typeof source !== 'string' || !source.trim()) throw new Error('Protocol unavailable')

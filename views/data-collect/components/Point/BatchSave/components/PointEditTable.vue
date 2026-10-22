@@ -113,7 +113,7 @@ import AccessModes from './AccessModes.vue'
 import { pointBatchSaveKey } from '../context'
 import { usePointEditTable } from './usePointEditTable'
 import type { PointBatchColumn, PointBatchRow } from './usePointEditTable'
-import { usePointTableSize } from './usePointTableSize'
+import { usePointTableSize } from '../../usePointTableSize'
 
 const { t: $t } = useI18n()
 const props = defineProps({

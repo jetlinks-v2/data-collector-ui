@@ -22,6 +22,7 @@ import * as hooks from '@data-collector-ui/hooks'
 import dayjs from 'dayjs'
 import PointEditTable
   from "@data-collector-ui/views/data-collect/components/Point/BatchSave/components/PointEditTable.vue";
+import PointScanWorkspace from '@data-collector-ui/views/data-collect/components/Point/Scan/PointScanWorkspace.vue'
 import {
   commandRequest,
   queryCodecProvider,
@@ -59,7 +60,8 @@ const render = debounce(() => {
       'lodash-es': LodashEs,
       '@hooks': hooks,
       '@components': {
-        PointEditTable
+        PointEditTable,
+        PointScanWorkspace,
       },
       request: {
         commandRequest,

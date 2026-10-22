@@ -51,10 +51,12 @@ const register = () => {
     moduleRegistry.register(name, registerSetting)
 }
 
-// 批量页自绘连续白底面板，避免壳层重复叠加一层内边距。
+// 点位新增与扫描页共用连续白底面板，避免壳层重复叠加一层内边距。
 const getContentPanelOverrides = () => ({
     'data-collect/BatchAdd': false,
     '/resources/collectors/batch-add/:id': false,
+    'data-collect/Scan': false,
+    '/resources/collectors/scan/:id': false,
 })
 
 export default {
