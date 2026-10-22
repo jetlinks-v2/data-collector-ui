@@ -7,26 +7,43 @@
   </a-spin>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Header from "./Header.vue";
+import {computed, reactive, ref, type PropType} from "vue";
 import {useI18n} from "vue-i18n";
 import { dashboard } from "@data-collector-ui/api/others";
 import {abnormalParams} from "./tool";
 
+interface TimeRange {
+  type: string;
+  start: number | string;
+  end: number | string;
+}
+
+interface AbnormalDataBucket {
+  data: {
+    timeString: string;
+    value: number;
+  };
+}
+
 const {t: $t} = useI18n()
 const props = defineProps({
   type: {
+    type: String as PropType<'channel' | 'collector' | 'point'>,
+    required: true
+  },
+  id: {
     type: String,
-    default: '' //channel | collector
+    required: true
   }
 })
 
-const info = inject('collector-info', ref({}))
 const loading = ref(false);
 
 const data = reactive({
-  xAxis: [],
-  y: []
+  xAxis: [] as string[],
+  y: [] as number[]
 })
 
 const errorDataOptions = computed(() => {
@@ -83,16 +100,21 @@ const errorDataOptions = computed(() => {
   }
 })
 
-const onChange = async (val) => {
+// 统计对象由调用方明确指定，缺少 ID 时禁止发出无对象筛选的查询。
+const onChange = async (val: TimeRange) => {
+  if (!props.id) {
+    return;
+  }
   loading.value = true;
-  const resp = await dashboard(abnormalParams(val, props.type, info.value.id)).finally(() => {
+  const resp = await dashboard(abnormalParams(val, props.type, props.id)).finally(() => {
     loading.value = false;
   });
   if (resp.success && resp?.result?.length) {
-    const x = resp.result
+    const result: AbnormalDataBucket[] = resp.result;
+    const x = result
         .map((item) => item.data.timeString)
         .reverse();
-    const y = resp.result.map((item) => item.data.value).reverse();
+    const y = result.map((item) => item.data.value).reverse();
     data.xAxis = x
     data.y = y
   }

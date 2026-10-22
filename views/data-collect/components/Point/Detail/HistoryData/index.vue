@@ -3,7 +3,7 @@
     <PointHistoryData />
   </div>
   <div class="history-data-item">
-    <AbnormalDataTrend />
+    <AbnormalDataTrend v-if="info.id" type="point" :id="info.id" />
   </div>
   <div class="history-data-item">
     <ErrorTypeRatio />
@@ -13,20 +13,14 @@
   </div>
 </template>
 
-<script setup>
-import { useI18n } from "vue-i18n";
-import Header from '../../../Detail/Echarts/Header.vue'
+<script setup lang="ts">
+import {inject, ref} from "vue";
 import PointHistoryData from './PointHistoryData/index.vue'
 import AbnormalDataTrend from "../../../Detail/Echarts/AbnormalDataTrend.vue";
 import ErrorTypeRatio from "./ErrorTypeRatio.vue";
 import DeadArea from "./DeadArea.vue";
 
-const { t: $t } = useI18n();
-
-
-const onChange = (val) => {
-  console.log(val)
-}
+const info = inject('point-info', ref({id: ''}))
 </script>
 
 <style lang="less" scoped>
