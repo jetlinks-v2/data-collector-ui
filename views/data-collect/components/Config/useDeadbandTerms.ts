@@ -28,6 +28,16 @@ export const useDeadbandTerms = (
   const terms = ref<DeadbandTerm[]>([createDefaultTerm()])
   const percent = ref<DeadbandTerm['value']>()
 
+  /** 校验全部条件组及条件；空组和空参数不能保存，数值 0 仍然有效。 */
+  const hasCompleteTerms = (): boolean => {
+    const groups = getConfiguration()?.terms
+    return !!groups?.length && groups.every(group =>
+      !!group.terms?.length && group.terms.every(term =>
+        !!term.column && !!term.termType && term.value != null && term.value !== '',
+      ),
+    )
+  }
+
   // 条件组件附带的展示元数据不进入后端配置，保留原有双层 terms 结构。
   const onChange = (value: DeadbandTerm[]) => {
     terms.value = value.map(term => ({
@@ -84,5 +94,5 @@ export const useDeadbandTerms = (
     }
   }, { immediate: true, deep: true })
 
-  return { type, terms, percent, onChange, onValueChange, onRadioChange, resetTerms }
+  return { type, terms, percent, onChange, onValueChange, onRadioChange, resetTerms, hasCompleteTerms }
 }

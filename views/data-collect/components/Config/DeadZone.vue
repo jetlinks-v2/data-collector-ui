@@ -145,7 +145,7 @@ const options = ref([
 ])
 const optionsMap = ref(new Map())
 optionsMap.value.set('currentValue', options.value[0])
-const {type, terms, percent, onChange, onValueChange, onRadioChange, resetTerms} = useDeadbandTerms(
+const {type, terms, percent, onChange, onValueChange, onRadioChange, resetTerms, hasCompleteTerms} = useDeadbandTerms(
     () => formData.managedConfiguration.deadband.configuration,
     (configuration) => {
       formData.managedConfiguration.deadband.configuration = configuration
@@ -225,13 +225,9 @@ const onOutsize = () => {
   }
 }
 
-const validatorValue = (_rule, _value) => new Promise(async (resolve, reject) => {
-  if (_value.enabled) {
-    const value = _value.configuration || {};
-    const __value = value.terms?.[0]?.terms?.[0];
-    if (!(__value?.column && __value.termType && __value?.value != null)) {
-      return reject($t('DataCollect.index.400155-3'));
-    }
+const validatorValue = (_rule, _value) => new Promise((resolve, reject) => {
+  if (_value.enabled && !hasCompleteTerms()) {
+    return reject($t('DataCollect.index.400155-3'));
   }
   return resolve("");
 });
