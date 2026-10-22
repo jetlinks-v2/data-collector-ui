@@ -143,7 +143,7 @@ export const queryPointHistory = (collectorId: string, data: any) => request.pos
  * 点位历史数据聚合
  */
 export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);
-export const queryAlarmLogList = (id:any,data:any) => request.post(`/alarm/history/${id}/_query`,data)
+export const queryAlarmLogList = (pointId: string, data: any) => request.post(`/alarm/history/collector/${pointId}/_query`, data)
 export const queryPointMetadata = (provider:any, data: any) => request.post(`/data-collect/point/${provider}/_metadata`, data)
 export const commandRequest = {
   pointConfigMetadata: (type: string) => request.post(`/data-collect/${type}/command/GetPointConfigMetadata`)
