@@ -1309,5 +1309,7 @@
   "Virtual.data.400159-37": "布尔类型",
   "Virtual.data.400159-38": "字符类型",
   "DataCollect.index.400159-7": "{0}: {1}个 ({2}%)",
-  "Scan.Table.400147-12": "采集频率为0时不执行轮询任务"
+  "Scan.Table.400147-12": "采集频率为0时不执行轮询任务",
+  "EmptyCreate.names.resources": "资源",
+  "EmptyCreate.names.collectors": "采集器"
 }

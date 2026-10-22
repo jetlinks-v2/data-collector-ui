@@ -1,4 +1,20 @@
 <template>
+
+  <DefineEmptyCreate>
+    <template v-if="data.id && data.id !== '*'"><j-permission-button
+        v-if="pointActions.add"
+        type="primary"
+        @click="handleAdd"
+        :hasPermission="permissionCollectorKey + ':add'"
+    >
+      <template #icon
+      >
+        <AIcon type="PlusOutlined"
+        />
+      </template>
+      {{ $t('Point.index.400149-0') }}
+    </j-permission-button></template>
+  </DefineEmptyCreate>
   <a-spin :spinning="spinning">
     <div style="display: flex; flex-direction: column;height: 100%">
       <pro-search
@@ -27,21 +43,14 @@
                   "
             :params="params"
         >
+          <template #emptyText>
+            <CloudEmpty :search="params?.terms" :search-name="$t('Virtual.Editor.400159-0')">
+              <EmptyCreateButton />
+            </CloudEmpty>
+          </template>
           <template #headerLeftRender>
             <a-space v-if="data.id && data.id !== '*'">
-              <j-permission-button
-                  v-if="pointActions.add"
-                  type="primary"
-                  @click="handleAdd"
-                  :hasPermission="permissionCollectorKey + ':add'"
-              >
-                <template #icon
-                >
-                  <AIcon type="PlusOutlined"
-                  />
-                </template>
-                {{ $t('Point.index.400149-0') }}
-              </j-permission-button>
+              <EmptyCreateButton v-if="pointActions.add" />
               <j-permission-button
                   v-if="pointActions.scan"
                   type="primary"
@@ -353,6 +362,8 @@
   <RenderComponents :key="data.id + (data.state?.value || data.state)" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
 <script lang="ts" setup name="PointPage">
+import { createReusableTemplate } from '@vueuse/core'
+
 import {
   queryPoint,
   batchDeletePoint,
@@ -939,6 +950,8 @@ const handleSearch = (e: any) => {
     terms: handleTerms(e.terms)
   }
 };
+
+const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 <style lang="less" scoped>
 .card-box {

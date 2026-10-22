@@ -1,5 +1,18 @@
 <template>
-    <j-page-container>
+
+    <DefineEmptyCreate>
+      <j-permission-button
+          type="primary"
+          @click="handleAdd"
+          hasPermission="edge/Device:add"
+      >
+          <template #icon
+              ><AIcon type="PlusOutlined"
+          /></template>
+          {{ $t('Device.index.911422-0') }}
+      </j-permission-button>
+    </DefineEmptyCreate>
+    <j-page-container v-bind="$attrs">
     <FullPage transparentBackground>
       
         <pro-search
@@ -16,18 +29,14 @@
             :params="params"
             :gridColumns="[2, 2, 2, 3]"
         >
+          <template #emptyText>
+            <CloudEmpty :search="params?.terms" :search-name="$t('data.RoleData.950813-22')">
+              <EmptyCreateButton />
+            </CloudEmpty>
+          </template>
             <template #headerLeftRender>
                 <a-space>
-                    <j-permission-button
-                        type="primary"
-                        @click="handleAdd"
-                        hasPermission="edge/Device:add"
-                    >
-                        <template #icon
-                            ><AIcon type="PlusOutlined"
-                        /></template>
-                        {{ $t('Device.index.911422-0') }}
-                    </j-permission-button>
+                    <EmptyCreateButton />
                     <j-permission-button
                         @click="importVisible = true"
                         hasPermission="edge/Device:import"
@@ -203,6 +212,8 @@
 </template>
 
 <script lang="ts" setup>
+import { createReusableTemplate } from '@vueuse/core'
+
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMenuStore } from '@jetlinks-web-core/store/menu';
@@ -558,6 +569,8 @@ const onRefresh = () => {
     importVisible.value = false;
     edgeDeviceRef.value?.reload();
 };
+
+const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 
 <style lang="less" scoped></style>

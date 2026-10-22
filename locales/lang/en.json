@@ -1309,5 +1309,7 @@
   "Virtual.data.400159-37": "Boolean Type",
   "Virtual.data.400159-38": "Character Type",
   "DataCollect.index.400159-7": "{0}: {1} items ({2}%)",
-  "Scan.Table.400147-12": "Polling tasks are not executed when the collection frequency is 0"
+  "Scan.Table.400147-12": "Polling tasks are not executed when the collection frequency is 0",
+  "EmptyCreate.names.resources": "resources",
+  "EmptyCreate.names.collectors": "collectors"
 }

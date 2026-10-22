@@ -1,4 +1,20 @@
 <template>
+
+  <DefineEmptyCreate>
+    <j-permission-button
+        v-if="pointActions.add"
+        type="primary"
+        @click="handleAdd"
+        :hasPermission="true"
+    >
+      <template #icon
+      >
+        <AIcon type="PlusOutlined"
+        />
+      </template>
+      {{ $t('Point.index.400149-0') }}
+    </j-permission-button>
+  </DefineEmptyCreate>
   <div style="display: flex; flex-direction: column; flex: 1; min-height: 0" :key="columnsConfig.key">
 <!--    <pro-search-->
 <!--        :columns="columnsConfig.data"-->
@@ -24,6 +40,11 @@
         :scroll="{ x: 'max-content' }"
         :rowSelection="rowSelection"
     >
+      <template #emptyText>
+        <CloudEmpty :search="searchCount > 0" :search-name="$t('Virtual.Editor.400159-0')">
+          <EmptyCreateButton />
+        </CloudEmpty>
+      </template>
       <template #headerCell="{ column }">
         <template v-if="['name', 'modifyTime', 'interval'].includes(column.key)">
           <div class="header-cell-title">
@@ -45,19 +66,7 @@
         <a-space>
             <PointTop ref="pointTopRef"/>
           <template v-if="type === 'collector' && data.id">
-            <j-permission-button
-                v-if="pointActions.add"
-                type="primary"
-                @click="handleAdd"
-                :hasPermission="true"
-            >
-              <template #icon
-              >
-                <AIcon type="PlusOutlined"
-                />
-              </template>
-              {{ $t('Point.index.400149-0') }}
-            </j-permission-button>
+            <EmptyCreateButton v-if="pointActions.add" />
             <j-permission-button
               v-if="pointActions.scan"
               type="primary"
@@ -186,6 +195,8 @@
 </template>
 
 <script setup>
+import { createReusableTemplate } from '@vueuse/core'
+
 import {useI18n} from "vue-i18n";
 import {
   batchDeletePoint,
@@ -885,6 +896,8 @@ defineExpose({
     await tableRef.value?.reload()
   }
 })
+
+const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 
 <style lang="less" scoped>
