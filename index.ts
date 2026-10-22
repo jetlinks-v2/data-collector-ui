@@ -51,9 +51,16 @@ const register = () => {
     moduleRegistry.register(name, registerSetting)
 }
 
+// 批量页自绘连续白底面板，避免壳层重复叠加一层内边距。
+const getContentPanelOverrides = () => ({
+    'data-collect/BatchAdd': false,
+    '/resources/collectors/batch-add/:id': false,
+})
+
 export default {
     getAsyncRoutesMap,
     getExtraRoutesMap,
+    getContentPanelOverrides,
     register,
     priority: -100
 }

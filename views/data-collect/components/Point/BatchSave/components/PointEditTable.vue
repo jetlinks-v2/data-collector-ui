@@ -1,70 +1,101 @@
 <template>
-  <j-edit-table
-      ref="tableRef"
-      :dataSource="_dataSource"
-      :serial="false"
-      :columns="_columns"
-      :height="500"
-  >
-    <template #headerCell="{ title, column }">
-      <slot name="headerCell" :title="title" :column="column">{{title}}</slot>
-      <span
-          v-if="column.form?.required"
-          class="header-cell-required"
+  <div class="point-batch-table-editor">
+    <div class="point-batch-toolbar">
+      <div class="point-batch-toolbar__heading">
+        <h2>{{ $t('DataCollect.index.400152-13') }}</h2>
+        <span>{{ $t('PointBatch.count', { count: _dataSource.length }) }}</span>
+      </div>
+      <div class="point-batch-toolbar__actions">
+        <slot name="toolbar" />
+        <a-button
+          v-if="saveContext"
+          type="primary"
+          :loading="saveContext.saving.value"
+          :disabled="!saveContext.ready.value || !_dataSource.length"
+          @click="saveContext.save"
+        >
+          {{ $t('DataCollect.index.400152-3') }}
+        </a-button>
+      </div>
+    </div>
+    <div ref="viewport" class="point-batch-table" :style="{ '--point-batch-body-height': `${bodyHeight}px` }">
+      <j-edit-table
+          ref="tableRef"
+          :dataSource="_dataSource"
+          :serial="false"
+          :columns="_columns"
+          :height="bodyHeight"
       >
-      *
-    </span>
-    </template>
-    <template
-        v-for="item in columns"
-        :key="item.dataIndex"
-        v-slot:[item.dataIndex]="{ record, index }"
-    >
-      <j-edit-table-form-item :name="[index, item?.form?.name || item.dataIndex]">
-        <div class="scan-ditto-box">
-          <div style="min-width: 0;flex: 1">
-            <component
-                v-bind="item.template?.props || {}"
-                :subscribeId="record.id"
-                :is="componentMap[item.template?.components] || item.template?.components"
-                :value="getFieldValue(record, item)"
-                :checked="getFieldValue(record, item)"
-                :disabled="index !== 0 && record.sames[item.dataIndex] && item.template?.check !== false"
-                :style="item.template?.components !== 'a-switch' ? { width: '100%' } : {}"
-                @change="(value) => onFieldChange(value, item, record)"
-            />
-          </div>
-          <a-checkbox
-              v-if="index !== 0 && item.template?.check !== false"
-              class="ditto-checkbox"
-              :checked="record.sames[item.dataIndex]"
-              @change="(e) => onCheckChange(e, item, record)"
+        <template #emptyText><span /></template>
+        <template #headerCell="{ title, column }">
+          <slot name="headerCell" :title="title" :column="column">{{title}}</slot>
+          <span
+              v-if="column.form?.required"
+              class="header-cell-required"
           >
-            {{ $t('DataCollect.index.400153-0') }}
-          </a-checkbox>
-        </div>
-      </j-edit-table-form-item>
-    </template>
-    <template #otherConfig="{ record, index }">
-      <a @click="showOtherConfig(record, index)">
-        <AIcon type="SettingOutlined"/>
-      </a>
-    </template>
-    <template #actions="{ record, index }">
-      <j-permission-button
-          :tooltip="{
-            title: $t('Scan.Table.400147-9'),
-          }"
-          :popConfirm="{
-            title: $t('Scan.Table.400147-10'),
-            onConfirm: () => removeItem(record, index),
-          }"
-          danger type="link"
-      >
-        <AIcon type="DeleteOutlined"/>
-      </j-permission-button>
-    </template>
-  </j-edit-table>
+          *
+        </span>
+        </template>
+        <template
+            v-for="item in columns"
+            :key="item.dataIndex"
+            v-slot:[item.dataIndex]="{ record, index }"
+        >
+          <j-edit-table-form-item :name="[index, item?.form?.name || item.dataIndex]">
+            <div class="scan-ditto-box">
+              <div style="min-width: 0;flex: 1">
+                <component
+                    v-bind="item.template?.props || {}"
+                    :subscribeId="record.id"
+                    :is="resolveComponent(item)"
+                    :value="getFieldValue(record, item)"
+                    :checked="getFieldValue(record, item)"
+                    :disabled="index !== 0 && record.sames[item.dataIndex] && item.template?.check !== false"
+                    :style="item.template?.components !== 'a-switch' ? { width: '100%' } : {}"
+                    @change="(value: unknown) => onFieldChange(value, item, record)"
+                />
+              </div>
+              <a-checkbox
+                  v-if="index !== 0 && item.template?.check !== false"
+                  class="ditto-checkbox"
+                  :checked="record.sames[item.dataIndex]"
+                  @change="(e) => onCheckChange(e, item, record)"
+              >
+                {{ $t('DataCollect.index.400153-0') }}
+              </a-checkbox>
+            </div>
+          </j-edit-table-form-item>
+        </template>
+        <template #otherConfig="{ record, index }">
+          <a @click="showOtherConfig(record)">
+            <AIcon type="SettingOutlined"/>
+          </a>
+        </template>
+        <template #actions="{ record, index }">
+          <j-permission-button
+              :tooltip="{
+                title: $t('Scan.Table.400147-9'),
+              }"
+              :popConfirm="{
+                title: $t('Scan.Table.400147-10'),
+                onConfirm: () => removeItem(record, index),
+              }"
+              danger type="link"
+          >
+            <AIcon type="DeleteOutlined"/>
+          </j-permission-button>
+        </template>
+      </j-edit-table>
+      <div v-if="!_dataSource.length" class="point-batch-table__empty" :style="{ top: `${headerHeight}px` }">
+        <CloudEmpty :description="$t('PointBatch.empty')" :image-style="{ height: '8rem' }">
+          <template #description>
+            <div class="point-batch-table__empty-title">{{ $t('PointBatch.empty') }}</div>
+            <div>{{ $t('PointBatch.emptyHint') }}</div>
+          </template>
+        </CloudEmpty>
+      </div>
+    </div>
+  </div>
   <OtherSetting
       v-if="otherConfig.visible"
       :data="otherConfig.data"
@@ -73,194 +104,90 @@
   />
 </template>
 
-<script setup>
-import {useI18n} from "vue-i18n";
-import {uniqueByKey} from "../data";
-import OtherSetting from "./OtherSetting.vue";
-import { debounce, get, set } from 'lodash-es'
-import AccessModes from "./AccessModes.vue";
+<script setup lang="ts">
+import { inject, onBeforeUnmount, onMounted } from 'vue'
+import type { PropType } from 'vue'
+import { useI18n } from 'vue-i18n'
+import OtherSetting from './OtherSetting.vue'
+import AccessModes from './AccessModes.vue'
+import { pointBatchSaveKey } from '../context'
+import { usePointEditTable } from './usePointEditTable'
+import type { PointBatchColumn, PointBatchRow } from './usePointEditTable'
+import { usePointTableSize } from './usePointTableSize'
 
-const componentMap = {
-  AccessModes
-}
-const {t: $t} = useI18n();
+const { t: $t } = useI18n()
 const props = defineProps({
-  columns: {
-    type: Array,
-    default: () => []
-  },
-  dataSource: {
-    type: Array,
-    default: () => []
-  },
-  fieldPathMap: {
-    type: Object,
-    default: () => ({})
-  },
-  sameFieldKey: {
-    type: String,
-    default: 'sames'
-  }
+  columns: { type: Array as PropType<PointBatchColumn[]>, default: () => [] },
+  dataSource: { type: Array as PropType<PointBatchRow[]>, default: () => [] },
+  fieldPathMap: { type: Object as PropType<Record<string, string[]>>, default: () => ({}) },
+  sameFieldKey: { type: String, default: 'sames' },
 })
-const emit = defineEmits(['update:dataSource', 'change', 'checkChange', 'fieldChange'])
+const emit = defineEmits<{
+  (event: 'update:dataSource' | 'change', rows: PointBatchRow[]): void
+  (event: 'checkChange' | 'fieldChange', value: unknown, column: PointBatchColumn, row: PointBatchRow): void
+}>()
+const {
+  dataSource: _dataSource, columns: _columns, tableRef, otherConfig,
+  getFieldValue, onCheckChange, onFieldChange, showOtherConfig, onSaveOtherConfig, removeItem, onSave,
+} = usePointEditTable(props, emit)
+const { viewport, bodyHeight, headerHeight } = usePointTableSize(tableRef)
+const saveContext = inject(pointBatchSaveKey, null)
+const resolveComponent = (column: PointBatchColumn) => column.template?.components === 'AccessModes'
+  ? AccessModes : column.template?.components
 
-const otherConfig = reactive({
-  visible: false,
-  data: {},
-})
-const _dataSource = shallowRef(props.dataSource)
-const tableRef = ref();
-const _columns = computed(() => {
-  // Some have "same as above", some don't
-  const arr = [
-    ...props.columns,
-    {
-      title: $t('DataCollect.index.400153-1'),
-      key: 'otherConfig',
-      dataIndex: 'otherConfig',
-      ellipsis: true,
-      fixed: 'right',
-      width: 100
-    },
-    {
-      key: 'actions',
-      title: $t('Collector.data.400141-40'),
-      dataIndex: 'actions',
-      fixed: 'right',
-      width: 80
-
-    }
-  ]
-  return uniqueByKey(arr, 'dataIndex')
-})
-
-const getFieldValue = (record, item) => {
-  const value = get(record, item?.form?.name || [item.dataIndex])
-  if (item.template.getValue) {
-    return item.template.getValue(value)
-  }
-  return value
-}
-
-const onSave = (arr) => {
-  emit('update:dataSource', arr)
-  emit('change', arr)
-}
-
-const setByPath = (obj, path, value) => {
-  set(obj, path, value);
-  return obj;
-}
-
-const sameValue = (index, fieldPath, samePath, value) => {
-  for (let i = index + 1; i < _dataSource.value.length; i++) {
-    const row = _dataSource.value[i];
-    const same = row[props.sameFieldKey][samePath];
-    if (!same) break;
-    set(row, fieldPath, value)
-    // _dataSource.value.splice(i, 1, cloneDeep(setByPath(row, fieldPath, value)))
-  }
-}
-
-// checkbox变化事件
-const onCheckChange = (e, item, record) => {
-  const checked = e.target.checked
-
-  record.sames[item.dataIndex] = checked
-
-  if (checked && record.__dataIndex !== 0) {
-    const formName = item?.form?.name || [item.dataIndex]
-    const dataIndex = item.dataIndex
-    const prevValue = get(_dataSource.value[record.__dataIndex - 1], formName)
-    sameValue(record.__dataIndex - 1,  formName, dataIndex, prevValue)
-  } else if (!checked) {
-    if (item.template.getOptions) {
-      item.template.getOptions(record, _dataSource.value[record.__dataIndex - 1])
-    }
-  }
-
-  onSave(_dataSource.value)
-  emit('checkChange', checked, item, record)
-}
-
-// 字段值变化时，如果下一行勾选了同上，需要同步更新
-const onFieldChange = (value, item, record) => {
-  let _value = value.target ? value.target.value : value
-  const formName = item?.form?.name || [item.dataIndex]
-  const dataIndex = item.dataIndex
-  if (item.template.handleChange) {
-    _value = item.template.handleChange(value, record.__dataIndex)
-  }
-  set(_dataSource.value[record.__dataIndex], formName, _value)
-  sameValue(record.__dataIndex, formName, dataIndex, _value) // 将下面的同上数据进行同步
-  onSave(_dataSource.value)
-  emit('fieldChange', value, item, record)
-
-  onfocus(item, _dataSource.value[record.__dataIndex])
-}
-
-// actions和其他配置项
-const showOtherConfig = (record, index) => {
-  otherConfig.visible = true
-  otherConfig.data = record || {}
-}
-
-const onSaveOtherConfig = (config) => {
-  otherConfig.data.managedConfiguration = config.managedConfiguration
-  otherConfig.data.features = config.features || []
-  otherConfig.visible = false
-}
-
-const removeItem = (record, index) => {
-  // 遍历当前是否没有同上
-  const sames = record.sames
-
-  if (index !== 0) {
-    const prevRecord = _dataSource.value[index - 1]
-
-    Object.keys(sames).forEach(key => {
-      if (!sames[key]) {
-        const column = _columns.value.find(item => item.dataIndex === key)
-        const formName = column?.form?.name || key
-        sameValue(record.__dataIndex, formName, key, get(prevRecord, formName))
-      }
-    })
-  }
-
-  _dataSource.value.splice(index, 1)
-  onSave(_dataSource.value)
-}
-
-/**
- * 失去焦点触发
- * @param column
- * @param record
- */
-const onfocus = debounce((column, record) => {
-  if (column.template.handleOptions && record[props.sameFieldKey]?.[column.dataIndex]) {
-    column.template.handleOptions(record)
-  }
-}, 1500)
-
-watch(() => props.dataSource.length, (newVal) => {
-  _dataSource.value = props.dataSource
-}, {
-  immediate: true,
-})
-
-defineExpose({
-  onSave: async () => {
-    const result = await tableRef.value.validate()
-    console.log(result)
-    if (result) {
-      return _dataSource.value
-    }
-    return false
-  }
-})
+// 共享表格向页面报告承载状态，未使用此表格的旧协议由页面保留保存入口。
+onMounted(() => { if (saveContext) saveContext.hasTable.value = true })
+onBeforeUnmount(() => { if (saveContext) saveContext.hasTable.value = false })
+defineExpose({ onSave })
 </script>
 
 <style lang="less" scoped>
+.point-batch-table-editor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.point-batch-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  &__heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+    min-width: 0;
+    h2 { margin: 0; font-size: var(--fs-16, 1rem); font-weight: 600; }
+    > span { color: var(--text-color-secondary); }
+  }
+  &__actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+}
+.point-batch-table {
+  position: relative;
+  flex: 1;
+  min-height: 10rem;
+  min-width: 0;
+  margin: 0 1rem 1rem;
+  overflow: hidden;
+  :deep(.ant-table-body) { height: var(--point-batch-body-height); }
+  &__empty {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    pointer-events: none;
+  }
+  &__empty-title { margin-bottom: .5rem; color: var(--text-color); font-weight: 500; }
+}
+
 .scan-ditto-box {
   display: flex;
   align-items: center;

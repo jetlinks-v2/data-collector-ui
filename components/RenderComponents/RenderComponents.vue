@@ -1,12 +1,12 @@
 <template>
   <Suspense v-if="!!props.value && myComponents">
-    <component :is="myComponents" ref="componentRef" v-bind="$attrs" ></component>
+    <component :is="myComponents" ref="componentRef" v-bind="$attrs" @vue:mounted="emit('ready')"></component>
   </Suspense>
 </template>
 
 <script setup>
 import {loadModule} from 'vue3-sfc-loader/dist/vue3-sfc-loader'
-import {defineAsyncComponent, ref, watch} from 'vue'
+import {defineAsyncComponent, onBeforeUnmount, ref, watch} from 'vue'
 import * as Vue from 'vue'
 import {debounce} from 'lodash-es'
 import * as JetlinksCore from '@jetlinks-web/core'
@@ -38,6 +38,7 @@ const props = defineProps({
     type: String
   }
 })
+const emit = defineEmits(['ready', 'error'])
 
 const myComponents = ref()
 const componentRef = ref()
@@ -76,6 +77,9 @@ const render = debounce(() => {
       const ref = document.head.getElementsByTagName('style')[0] || null;
       document.head.insertBefore(style, ref);
     }
+  }).catch((error) => {
+    emit('error', error)
+    throw error
   }))
 }, 500)
 
@@ -83,13 +87,11 @@ watch(() => props.value, () => {
   render()
 }, {immediate: true})
 
-// defineExpose({
-//   ...(componentRef.value || {})
-// })
+onBeforeUnmount(() => render.cancel())
 
 defineExpose({
   onSave: async () => {
-    const result = await componentRef.value.onSave?.()
+    const result = await componentRef.value?.onSave?.()
     if (result) {
       return result
     }

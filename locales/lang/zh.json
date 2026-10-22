@@ -1309,5 +1309,14 @@
   "Virtual.data.400159-37": "布尔类型",
   "Virtual.data.400159-38": "字符类型",
   "DataCollect.index.400159-7": "{0}: {1}个 ({2}%)",
-  "Scan.Table.400147-12": "采集频率为0时不执行轮询任务"
+  "Scan.Table.400147-12": "采集频率为0时不执行轮询任务",
+  "PointBatch.back": "返回采集器列表",
+  "PointBatch.loading": "正在加载点位配置",
+  "PointBatch.loadFailed": "点位配置加载失败",
+  "PointBatch.retry": "重新加载",
+  "PointBatch.count": "共 {count} 条待添加",
+  "PointBatch.empty": "暂无待添加点位",
+  "PointBatch.emptyHint": "点击上方新增按钮，添加需要采集的点位",
+  "PointBatch.addOne": "新增一条",
+  "PointBatch.addMany": "新增多条"
 }

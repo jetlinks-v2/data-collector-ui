@@ -1309,5 +1309,14 @@
   "Virtual.data.400159-37": "Boolean Type",
   "Virtual.data.400159-38": "Character Type",
   "DataCollect.index.400159-7": "{0}: {1} items ({2}%)",
-  "Scan.Table.400147-12": "Polling tasks are not executed when the collection frequency is 0"
+  "Scan.Table.400147-12": "Polling tasks are not executed when the collection frequency is 0",
+  "PointBatch.back": "Back to collectors",
+  "PointBatch.loading": "Loading point configuration",
+  "PointBatch.loadFailed": "Unable to load point configuration",
+  "PointBatch.retry": "Reload",
+  "PointBatch.count": "{count} points to add",
+  "PointBatch.empty": "No points to add",
+  "PointBatch.emptyHint": "Use the buttons above to add collection points",
+  "PointBatch.addOne": "Add one",
+  "PointBatch.addMany": "Add multiple"
 }
