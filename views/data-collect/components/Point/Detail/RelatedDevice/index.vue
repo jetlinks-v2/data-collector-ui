@@ -1,9 +1,13 @@
 <template>
+
+  <DefineEmptyCreate>
+    <a-button type="link" @click="addItem">{{ $t('DataCollect.index.400152-1') }}</a-button>
+  </DefineEmptyCreate>
   <div>
     <div class="header">
       <TitleComponent :data="$t('DataCollect.index.400152-0')"/>
       <a-space>
-        <a-button type="link" @click="addItem">{{ $t('DataCollect.index.400152-1') }}</a-button>
+        <EmptyCreateButton />
         <a-button @click="batchImportVisible = true">{{ $t('DataCollect.index.400152-2') }}</a-button>
         <a-button type="primary" :loading="saveLoading" @click="handleSave">
           {{ $t('DataCollect.index.400152-3') }}
@@ -18,6 +22,11 @@
           rowKey="__key"
           :scroll="{ y: 500 }"
       >
+        <template #emptyText>
+          <CloudEmpty :search-name="$t('data.RoleData.950813-22')">
+            <EmptyCreateButton />
+          </CloudEmpty>
+        </template>
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.dataIndex === 'id'">
             {{ record.id || '--' }}
@@ -99,6 +108,8 @@
 </template>
 
 <script setup>
+import { createReusableTemplate } from '@vueuse/core'
+
 import {useI18n} from "vue-i18n";
 import {
   deletePointRelatedDevices,
@@ -633,6 +644,8 @@ watch(() => info.value, () => {
 onMounted(() => {
   loadDeviceList()
 })
+
+const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 
 <style lang="less" scoped>
