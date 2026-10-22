@@ -7,7 +7,8 @@
         <a-tab-pane key="chart" :tab="$t('DataCollect.index.400155-27')"></a-tab-pane>
       </a-tabs>
       <div>
-        <component :is="components[activeKey]" :time="time" />
+        <!-- 时间就绪后再挂载，避免首查读取空时间、补查时表格引用尚未赋值。 -->
+        <component v-if="time" :is="components[activeKey]" :time="time" />
       </div>
     </div>
   </div>
