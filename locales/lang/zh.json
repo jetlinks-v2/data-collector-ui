@@ -1321,5 +1321,6 @@
   "PointBatch.addMany": "新增多条",
   "PointScan.emptyHint": "从点位列表选择需要采集的点位",
   "EmptyCreate.names.resources": "资源",
-  "EmptyCreate.names.collectors": "采集器"
+  "EmptyCreate.names.collectors": "采集器",
+  "DataCollect.deadband.or": "或者"
 }
