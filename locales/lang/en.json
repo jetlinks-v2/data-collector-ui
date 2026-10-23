@@ -1320,5 +1320,6 @@
   "PointBatch.addOne": "Add one",
   "PointBatch.addMany": "Add multiple",
   "EmptyCreate.names.resources": "resources",
-  "EmptyCreate.names.collectors": "collectors"
+  "EmptyCreate.names.collectors": "collectors",
+  "DataCollect.deadband.or": " or "
 }

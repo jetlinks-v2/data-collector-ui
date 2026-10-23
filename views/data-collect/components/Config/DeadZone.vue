@@ -68,6 +68,7 @@ import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-colle
 import {useTermsParseConText} from "@jetlinks-web-core/components/TermsCascader/hooks";
 import {cloneTemplateConfig, isEqual} from "./data";
 import {useDeadbandTerms} from "./useDeadbandTerms";
+import {toDisplayTerms} from "./deadbandTerms";
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
@@ -164,10 +165,11 @@ const _deadband = computed(() => {
   const _configuration = collector?.managedConfiguration?.deadband?.configuration || {}
   const __value = _configuration.terms?.[0]?.terms;
   if (__value?.[0]?.column === 'currentValue') {
-    const _val = __value.map(i => {
+    const _val = toDisplayTerms(_configuration).map((i, index) => {
       const _termType = _options.find(item => item.id === i.termType)?.name
-      return `${$t('DataCollect.index.400155-4')}${_termType}${i.value}`
-    }).join($t('DataCollect.index.400156-14'))
+      const connector = index === 0 ? '' : $t(i.type === 'or' ? 'DataCollect.deadband.or' : 'DataCollect.index.400156-14')
+      return `${connector}${$t('DataCollect.index.400155-4')}${_termType}${i.value}`
+    }).join('')
     return {
       type: $t('DataCollect.index.400155-0'),
       range: _val

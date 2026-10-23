@@ -1320,5 +1320,6 @@
   "PointBatch.addOne": "新增一条",
   "PointBatch.addMany": "新增多条",
   "EmptyCreate.names.resources": "资源",
-  "EmptyCreate.names.collectors": "采集器"
+  "EmptyCreate.names.collectors": "采集器",
+  "DataCollect.deadband.or": "或者"
 }

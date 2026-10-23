@@ -1,17 +1,5 @@
 import { ref, watch } from 'vue'
-import { pick } from 'lodash-es'
-
-interface DeadbandTerm {
-  column?: string
-  termType?: string
-  type?: string
-  value?: number | string | null
-  key?: string
-}
-
-interface DeadbandConfiguration {
-  terms?: Array<{ terms?: DeadbandTerm[] }>
-}
+import { toDisplayTerms, toPassConfiguration, type DeadbandConfiguration, type DeadbandTerm } from './deadbandTerms'
 
 const createDefaultTerm = (): DeadbandTerm => ({
   column: 'currentValue',
@@ -44,13 +32,9 @@ export const useDeadbandTerms = (
       ...term,
       column: 'currentValue',
       termType: term.termType || 'neq',
-      type: 'and',
+      type: term.type || 'and',
     }))
-    setConfiguration({
-      terms: [{
-        terms: terms.value.map(term => pick(term, ['termType', 'type', 'value', 'key', 'column'])),
-      }],
-    })
+    setConfiguration(toPassConfiguration(terms.value))
   }
 
   const onValueChange = () => {
@@ -88,7 +72,8 @@ export const useDeadbandTerms = (
     type.value = first?.column || 'currentValue'
 
     if (type.value === 'currentValue') {
-      terms.value = list.length ? list.map(term => ({ ...term })) : [createDefaultTerm()]
+      const displayTerms = toDisplayTerms(configuration)
+      terms.value = displayTerms.length ? displayTerms : [createDefaultTerm()]
     } else {
       percent.value = first?.value
     }
