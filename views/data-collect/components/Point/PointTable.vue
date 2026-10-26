@@ -15,7 +15,7 @@
       {{ $t('Point.index.400149-0') }}
     </j-permission-button>
   </DefineEmptyCreate>
-  <div style="display: flex; flex-direction: column; flex: 1; min-height: 0" :key="columnsConfig.key">
+  <div ref="tableContainer" style="display: flex; flex-direction: column; flex: 1; min-height: 0" :key="columnsConfig.key" @scroll.capture="onTableScroll">
 <!--    <pro-search-->
 <!--        :columns="columnsConfig.data"-->
 <!--        target="data-collector-point"-->
@@ -29,13 +29,13 @@
               @search="handleSearch"
           />
     <j-pro-table
-        ref="tableRef"
         :columns="columnsConfig.data"
         mode="TABLE"
-        :request="getDataSource"
-        :params="params"
+        :dataSource="pointRows"
+        :noPagination="true"
+        :loading="loadingPoints"
         :alertShow="!isAllSelected"
-        style="padding: 0; margin: 0"
+        style="padding: 0; margin: 0; flex: 1; min-height: 0"
         @resizeColumn="onResizeColumn"
         :scroll="{ x: 'max-content' }"
         :rowSelection="rowSelection"
@@ -118,18 +118,15 @@
           </a-button>
       </template>
       <template #name="slotProps">
-        <div style="display: flex; align-items: center;gap: 8px; white-space: normal">
-          <span style="color: #1677FF;"><AIcon type="EnvironmentFilled"/></span>
+        <div class="point-name-cell">
+          <span class="point-name-icon"><AIcon type="EnvironmentFilled"/></span>
           <div class="name" @click="handleView(slotProps)">
               <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
           </div>
-          <div style="width: 70px">
-            <j-badge-status
-                :status="slotProps?.state?.value === 'disabled' ? slotProps?.state?.value : slotProps?.runningState?.value"
-                :text="slotProps?.state?.value === 'disabled' ? slotProps?.state?.text : slotProps?.runningState?.text"
-                :statusNames="ChannelState"
-            />
-          </div>
+          <a-tag
+              class="point-status"
+              :color="ChannelState[slotProps?.state?.value === 'disabled' ? slotProps?.state?.value : slotProps?.runningState?.value]"
+          >{{ slotProps?.state?.value === 'disabled' ? slotProps?.state?.text : slotProps?.runningState?.text }}</a-tag>
         </div>
       </template>
       <template #value="slotProps">
@@ -153,6 +150,17 @@
         <j-ellipsis style="max-width: 200px;white-space: normal;">{{ slotProps.description || $t('comm.table.empty') }}</j-ellipsis>
       </template>
     </j-pro-table>
+    <div v-if="loadingPoints || loadPointsFailed || (pointRows.length && !hasMorePoints)" class="point-load-status" role="status">
+      <a-space v-if="loadingPoints">
+        <a-spin size="small" />
+        {{ $t('PointTable.scroll.loading') }}
+      </a-space>
+      <a-space v-else-if="loadPointsFailed">
+        {{ $t('PointTable.scroll.failed') }}
+        <a-button type="link" size="small" @click="loadMorePoints">{{ $t('PointTable.scroll.retry') }}</a-button>
+      </a-space>
+      <span v-else>{{ $t('PointTable.scroll.complete') }}</span>
+    </div>
   </div>
   <ColumnsConfig
       :data="columnsConfig.data"
@@ -234,6 +242,7 @@ import Import from "@data-collector-ui/views/data-collect/components/Import/inde
 import {buildAllChannelTerm, buildPointQueryFilterTerms} from "@data-collector-ui/views/data-collect/utils";
 import ConditionFilter from '@jetlinks-web-core/components/ConditionFilter'
 import PointTop from "./PointTop.vue";
+import {usePointTablePagination} from './usePointTablePagination'
 
 const {t: $t} = useI18n();
 const sortValue = reactive({
@@ -243,7 +252,7 @@ const sortValue = reactive({
 })
 const params = ref({})
 const showSearch = ref(false)
-const tableRef = ref()
+const tableContainer = ref()
 const pointTopRef = ref()
 let pointTypeRefresh = false
 
@@ -256,7 +265,18 @@ const isCheck = ref(false);
 const isAllSelected = ref(false);
 const _selectedRowKeys = ref([]);
 const _selectedRows = ref([]);
-const currentPageRows = ref([]);
+const {
+  rows: pointRows,
+  loading: loadingPoints,
+  failed: loadPointsFailed,
+  hasMore: hasMorePoints,
+  loadMore: loadMorePoints,
+  reload: reloadPoints,
+  onScroll: onTableScroll,
+} = usePointTablePagination(
+    (pageIndex, pageSize) => getDataSource({...params.value, pageIndex, pageSize}),
+    tableContainer,
+)
 const menuStore = useMenuStore();
 const data = inject(COLLECTOR_DATA, ref({}))
 const type = inject(COLLECTOR_TYPE, ref('all'))
@@ -353,8 +373,8 @@ const syncSelectAllPageSelection = () => {
   if (!isAllSelected.value) {
     return
   }
-  _selectedRowKeys.value = currentPageRows.value.map(item => item.id)
-  _selectedRows.value = [...currentPageRows.value]
+  _selectedRowKeys.value = pointRows.value.map(item => item.id)
+  _selectedRows.value = [...pointRows.value]
 }
 
 const clearSelectionState = () => {
@@ -374,7 +394,7 @@ const toggleSelectAll = () => {
 }
 
 const hasTableDataForBatchAction = () => {
-  if (currentPageRows.value.length) {
+  if (pointRows.value.length) {
     return true
   }
   // 全选所有会按当前筛选范围提交批量请求，空表必须先拦截，避免误触发空范围操作。
@@ -590,9 +610,6 @@ const getDataSource = async (p) => {
     // “全部”视图先按通道筛选得到范围，避免通道为空时继续查询点位转换接口。
     const channelTerm = await buildAllChannelTerm(filterValue);
     if (!channelTerm) {
-      currentPageRows.value = [];
-      subRef.value?.unsubscribe();
-      syncSelectAllPageSelection();
       return {
         success: true,
         result: {
@@ -637,19 +654,21 @@ const getDataSource = async (p) => {
   } else {
     _params.sorts = [{name: 'createTime', order: 'desc'}]
   }
-  return queryPoint(_params).then(resp => {
-    subRef.value?.unsubscribe();
-    currentPageRows.value = resp?.result?.data || []
-    syncSelectAllPageSelection()
-    if (resp.success && resp.result.data.length) {
-      setTimeout(() => {
-        const _array = resp.result.data
-        subscribeProperty(_array);
-      }, 100)
-    }
-    return resp
-  })
+  // 批量创建点位可能具有相同时间，追加唯一 ID 排序以稳定分页边界。
+  _params.sorts.push({name: 'id', order: 'asc'})
+  return queryPoint(_params)
 }
+
+// 只订阅当前查询已接受的全部点位，避免翻页后旧行失去实时更新或过期请求重建订阅。
+watch(pointRows, (rows) => {
+  subRef.value?.unsubscribe()
+  syncSelectAllPageSelection()
+  if (rows.length) {
+    subscribeProperty(rows)
+  } else {
+    propertyValue.value.clear()
+  }
+})
 
 const getPointAction = async () => {
   jsonData.value = ''
@@ -866,6 +885,8 @@ watch(
 
 watch(
     () => [
+      params.value,
+      columnsConfig.key,
       filterValue.channel,
       filterValue.collector,
       filterValue.point,
@@ -876,7 +897,7 @@ watch(
     ],
     () => {
       clearSelectionState();
-      tableRef.value?.reload?.();
+      reloadPoints();
     },
     {immediate: true, deep: true},
 )
@@ -893,7 +914,7 @@ defineExpose({
   loadData: async () => {
       // 刷新点位统计
     await pointTopRef.value?.loadData?.()
-    await tableRef.value?.reload()
+    await reloadPoints()
   }
 })
 
@@ -901,6 +922,13 @@ const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
 </script>
 
 <style lang="less" scoped>
+.point-load-status {
+  flex-shrink: 0;
+  padding: var(--space-2) 0;
+  text-align: center;
+  color: var(--ink-2);
+}
+
 .header-cell-title {
   display: flex;
   align-items: center;
@@ -921,6 +949,24 @@ const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
   //&:hover {
   color: @primary-color;
   //}
+}
+
+.point-name-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--space-2);
+  white-space: normal;
+}
+
+.point-name-icon {
+  flex: none;
+  color: var(--accent);
+}
+
+.point-status {
+  flex: none;
+  margin-inline-end: 0;
 }
 
 .sort-item {
