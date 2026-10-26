@@ -6,8 +6,8 @@
   >
     <div :class="node.isChannel ? 'channel-node' : 'device-node'">
       <div class="hover-dropdown">
-        <div style="height: 100%; display: flex; align-items: center; gap: 16px">
-          <div style="width: 20px; height: 20px;" v-if="node.isChannel">
+        <div class="node-heading">
+          <div class="node-provider-icon" v-if="node.isChannel">
             <Image :src="getCollectorProviderIcon(node.provider)" alt=""/>
           </div>
           <div style="flex: 1; min-width: 0;">
@@ -68,25 +68,21 @@
           </template>
         </a-dropdown>
       </div>
-      <a-flex v-if="!node.isChannel" align="center" class="collector-point-state">
+      <div v-if="!node.isChannel" class="collector-point-state">
         <div style="color: #1677FF;">
           <AIcon type="EnvironmentFilled"></AIcon>
         </div>
         <div class="collector-point-state-count">
           <j-badge-status status="success"/>
-          <a-space>
-            <span style="color: #777777;">{{ $t('DataCollect.index.400150-8') }}</span>
-            <span>{{ node.pointStateCount?.running || 0 }}</span>
-          </a-space>
+          <j-ellipsis class="collector-point-state-label">{{ $t('DataCollect.index.400150-8') }}</j-ellipsis>
+          <j-ellipsis class="collector-point-state-value">{{ node.pointStateCount?.running || 0 }}</j-ellipsis>
         </div>
         <div class="collector-point-state-count">
           <j-badge-status status="error"/>
-          <a-space>
-            <span style="color: #777777;">{{ $t('DataCollect.index.400150-9') }}</span>
-            <span>{{ node.pointStateCount?.stopped || 0 }}</span>
-          </a-space>
+          <j-ellipsis class="collector-point-state-label">{{ $t('DataCollect.index.400150-9') }}</j-ellipsis>
+          <j-ellipsis class="collector-point-state-value">{{ node.pointStateCount?.stopped || 0 }}</j-ellipsis>
         </div>
-      </a-flex>
+      </div>
     </div>
     <template #overlay>
       <a-menu v-if="node.id !== 'all'">
@@ -140,8 +136,30 @@ const permissionKey = 'data-collect'
   justify-content: space-between;
   align-items: center;
   height: 24px;
+  min-width: 0;
+
+  .node-heading {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .node-provider-icon {
+    flex: none;
+    width: 20px;
+    height: 20px;
+  }
+
+  .tree-left-tag {
+    flex: none;
+    margin-inline-end: 0;
+  }
 
   .more-button {
+    flex: none;
     display: none;
     padding: 0 5px;
   }
@@ -156,8 +174,35 @@ const permissionKey = 'data-collect'
 .collector-point-state {
   font-size: 12px;
   margin-top: 4px;
-  display: flex;
+  // 固定高度树节点内保持单行，数字增大或英文标签较长时由省略组件承接。
+  display: grid;
+  grid-template-columns: auto repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: 24px;
+  gap: var(--space-2);
+  white-space: nowrap;
+
+  .collector-point-state-count {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  :deep(.collector-point-state-label),
+  :deep(.collector-point-state-value) {
+    font-size: inherit;
+    white-space: normal;
+  }
+
+  :deep(.collector-point-state-label) {
+    min-width: 0;
+    color: var(--ink-2);
+  }
+
+  :deep(.collector-point-state-value) {
+    flex-shrink: 0;
+    max-width: 60%;
+    min-width: 0;
+  }
 }
 </style>

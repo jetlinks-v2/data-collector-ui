@@ -1322,5 +1322,9 @@
   "PointScan.emptyHint": "Select collection points from the point list",
   "EmptyCreate.names.resources": "resources",
   "EmptyCreate.names.collectors": "collectors",
-  "DataCollect.deadband.or": " or "
+  "DataCollect.deadband.or": " or ",
+  "PointTable.scroll.loading": "Loading points",
+  "PointTable.scroll.failed": "Unable to load points",
+  "PointTable.scroll.retry": "Retry",
+  "PointTable.scroll.complete": "All points loaded"
 }
