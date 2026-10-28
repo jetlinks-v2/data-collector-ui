@@ -47,6 +47,7 @@
       >
         <template v-for="(i, index) in formData.value">
           <div style="margin-top: 10px">
+            <!-- Int64 以字符串提交，避免超出 JavaScript 安全整数范围后丢失精度。 -->
             <a-input-number
                 v-if="
                                 [
@@ -61,8 +62,7 @@
                 style="width: 100%"
                 :placeholder="$t('WritePoint.index.769007-2')"
                 v-model:value="formData.value[index]"
-                :min="-999999999999999"
-                :max="999999999999999"
+                :string-mode="valueType === 'llong'"
             />
             <a-select
                 v-else-if="['boolean'].includes(valueType)"
