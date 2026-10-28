@@ -253,8 +253,9 @@ watch(() => [props.channel, props.data], ([val, val1]) => {
     oldCollector.value = {}
     Object.assign(formData, _val1)
     const _template = _val1.configuration?.template || {}
-    defaultKeys.forEach(i => { // 转换模板中的数据
-      formData[i] = _template[i]
+    // 未配置或仅配置部分点位模板时，保留表单默认值，避免子组件读取空配置。
+    defaultKeys.forEach(i => {
+      formData[i] = _template[i] ?? formData[i]
     })
     onChange(props.data)
   }
