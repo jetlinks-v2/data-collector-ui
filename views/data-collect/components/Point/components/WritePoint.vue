@@ -188,7 +188,7 @@
             :max="999999999999999"
         />
         <a-select
-            v-else-if="['boolean'].includes(valueType)"
+            v-else-if="['boolean', 'bool'].includes(valueType)"
             style="width: 100%"
             v-model:value="formData.value"
             :options="[
@@ -290,18 +290,37 @@ const props = defineProps({
   },
 });
 
+// 当前点位的编解码器保存在 managedConfiguration；兼容旧字段，避免 ASCII 被回退成数字输入。
 const valueType: string = (
     props.data?.provider === 'OPC_UA'
         ? props?.data?.configuration?.type || 'String'
-        : props.data?.configuration?.codec?.provider || 'int8'
+        : props.data?.managedConfiguration?.codec || props.data?.configuration?.codec?.provider || 'int8'
 ).toLocaleLowerCase();
 
+// 64 位整数沿用文本输入，避免转换为 JavaScript number 后丢失精度。
 const valueTypeArray = [
   'int8',
   'int16',
   'int32',
+  'unsigned_int16',
+  'unsigned_int32',
   'ieee754_float',
   'ieee754_double',
+  'ieee754_float32',
+  'ieee754_float64',
+  'bcd_8',
+  'bcd_16',
+  'bcd_32',
+  'bcd_48',
+  'unpacked_bcd_16',
+  'unpacked_bcd_32',
+  'q1_15',
+  'q1_31',
+  'q8_8',
+  'q7_9',
+  'q15_1',
+  'q31_1',
+  'fix_scaled_10',
   'number',
 ];
 
