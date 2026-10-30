@@ -1,5 +1,11 @@
 import {request, ndJson} from '@jetlinks-web/core'
 import { getBaseApi } from '@jetlinks-web-core/utils';
+import { parseJsonResponseWithPrecision } from '@jetlinks-web-core/utils/json';
+import type { PointValueData } from '@data-collector-ui/utils/pointValue';
+import type { AxiosResponseRewrite } from '@jetlinks-web/types';
+
+// 在默认 JSON.parse 之前处理点位数值，避免后续展示读取到已经舍入的 Number。
+const pointValueResponse = { transformResponse: [parseJsonResponseWithPrecision] };
 
 // 不分页接口仍要求请求体显式关闭分页，覆盖调用方的默认分页参数。
 export const queryCollector = (data: any) =>
@@ -68,8 +74,8 @@ export const batchDeletePoint = (data: any) =>
 export const removePoint = (id: string) =>
     request.remove(`/data-collect/point/${id}`);
 
-export const readPoint = (collectorId: string, data: string[]) =>
-    request.post(`/data-collect/collector/${collectorId}/points/_read`, data);
+export const readPoint = (collectorId: string, data: string[]): Promise<AxiosResponseRewrite<PointValueData[]>> =>
+    request.post(`/data-collect/collector/${collectorId}/points/_read`, data, pointValueResponse);
 
 export const writePoint = (collectorId: string, data: string[]) =>
     request.post(`/data-collect/collector/${collectorId}/points/_write`, data);
@@ -137,12 +143,12 @@ export const getCollectorError = () => request.get('/data-collect/collector/erro
 /**
  * 查询点位历史数据
  */
-export const queryPointHistory = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_query`, data);
+export const queryPointHistory = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_query`, data, pointValueResponse);
 
 /**
  * 点位历史数据聚合
  */
-export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data);
+export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data, pointValueResponse);
 export const queryAlarmLogList = (pointId: string, data: any) => request.post(`/alarm/history/collector/${pointId}/_query`, data)
 export const queryPointMetadata = (provider:any, data: any) => request.post(`/data-collect/point/${provider}/_metadata`, data)
 export const commandRequest = {

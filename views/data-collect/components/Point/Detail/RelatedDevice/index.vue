@@ -29,7 +29,7 @@
         </template>
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.dataIndex === 'id'">
-            {{ record.id || '--' }}
+            {{ record.id || $t('comm.table.empty') }}
           </template>
           <template v-else-if="column.dataIndex === 'name'">
             <a-select

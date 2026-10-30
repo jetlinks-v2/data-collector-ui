@@ -26,6 +26,7 @@ import { useRequest } from '@jetlinks-web/hooks';
 import { getParams } from '@data-collector-ui/views/data-collect/components/Detail/Echarts/tool';
 import dayjs from 'dayjs';
 import {useI18n} from "vue-i18n";
+import { formatPointChartTooltip, toPointChartValue } from '@data-collector-ui/utils/pointValue';
 
 const {t: $t} = useI18n();
 
@@ -83,19 +84,18 @@ const errorDataOptions = computed(() => {
     ],
     tooltip: {
       trigger: 'axis',
+      renderMode: 'richText',
       position: function (pt) {
         const left = pt[0] - 80;
         return [left, '10%'];
       },
-      valueFormatter: (value) => {
-        return value || '--'
-      }
+      formatter: params => formatPointChartTooltip(params, $t('comm.table.empty-2')),
     },
     series: [
       {
-        data: cycleType.value === '*' ? historyData.value?.map(item => item.value) : aggregationData.value?.map((i) => {
-          return typeof i.value === 'number' && !isNaN(i.value) ? Number(i.value).toFixed(2) : i.value
-        }).reverse(), //如果是数字保留两位小数
+        data: cycleType.value === '*'
+          ? historyData.value?.map(item => toPointChartValue(item.value))
+          : aggregationData.value?.map(item => toPointChartValue(item.value)).reverse(),
         type: 'line',
         areaStyle: {},
       },

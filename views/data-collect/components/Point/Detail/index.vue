@@ -50,13 +50,13 @@
         </a-descriptions-item>
         <a-descriptions-item :label="$t('DataCollect.index.400151-37')">
           <j-ellipsis>{{
-              info.collectorName || info.collectorId || '--'
+              info.collectorName || info.collectorId || $t('comm.table.empty')
             }}
           </j-ellipsis>
         </a-descriptions-item>
         <a-descriptions-item :label="$t('DataCollect.index.400151-38')">
           <j-ellipsis>{{
-              info.channelName || '--'
+              info.channelName || $t('comm.table.empty')
             }}
           </j-ellipsis>
         </a-descriptions-item>

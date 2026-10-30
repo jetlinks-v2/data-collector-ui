@@ -5,7 +5,8 @@
   "description": "数据采集",
   "main": "index.js",
   "scripts": {
-    "test:deadband": "node --test tests/deadbandTerms.test.mjs"
+    "test:deadband": "node --test tests/deadbandTerms.test.mjs",
+    "test:point-value": "node --test tests/pointValuePrecision.test.mjs"
   },
   "repository": {
     "type": "git",

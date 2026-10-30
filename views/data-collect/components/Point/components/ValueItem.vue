@@ -1,11 +1,10 @@
 <template>
   <div class="header-cell-title">
     <div class="value">
-      <j-ellipsis v-if="value?.dataType">{{ getParseData() }}</j-ellipsis>
-      <j-ellipsis v-else>{{ getReadParseData() }}</j-ellipsis>
+      <j-ellipsis>{{ formattedValue }}</j-ellipsis>
       <j-ellipsis v-if="type !== 'detail'">
         {{
-          value?.timestamp ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : $t('comm.table.empty-2')
+          value?.timestamp != null ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : $t('comm.table.empty-2')
         }}
       </j-ellipsis>
     </div>
@@ -29,11 +28,13 @@
   <WritePoint v-if="visible" :data="data" @close="visible = false" @save="onSave"/>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import type { PropType } from 'vue';
 import {getAccessModes} from "@data-collector-ui/views/data-collect/components/Point/data";
 import {readPoint} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
-import {isBoolean, isNumber} from "lodash-es";
+import { formatPointData, type PointValueData } from '@data-collector-ui/utils/pointValue';
 import dayjs from "dayjs";
 import WritePoint from './WritePoint.vue'
 import { useI18n } from "vue-i18n";
@@ -41,48 +42,31 @@ import { useI18n } from "vue-i18n";
 const { t: $t } = useI18n();
 
 const props = defineProps({
-  value: {
-    type: Object,
-  },
+  value: { type: Object as PropType<PointValueData> },
   data: {
-    type: Object,
-    default: () => ({})
+    type: Object as PropType<Record<string, unknown> & { collectorId?: string; id?: string }>,
+    default: () => ({}),
   },
-  type: {
-    type: String,
-  }
+  type: { type: String },
 })
 
 const emits = defineEmits(['refresh'])
 
 const visible = ref(false)
-const historyData = ref({})
-
-const getParseData = () => {
-  const {parseData, dataType} = props.value;
-  const data = isNumber(parseData) ? parseData || 0 : parseData;
-  return `${data}(${dataType}) `;
-};
-
-const getReadParseData = () => {
-  let _data = $t('comm.table.empty-2');
-  if (!!historyData.value.dataType) {
-    const {parseData, dataType} = historyData.value;
-    if (isBoolean(parseData)) {
-      _data = `${parseData}(${dataType || '-'}) `;
-    } else {
-      _data = !!parseData ? `${parseData}(${dataType || '-'}) ` : $t('comm.table.empty-2');
-    }
-  }
-  return _data;
-};
+const historyData = ref<PointValueData>()
+const formattedValue = computed(() => formatPointData(
+  props.value?.dataType ? props.value : historyData.value,
+  $t('comm.table.empty-2'),
+))
 const clickEdit = async () => {
   visible.value = true;
 };
 
 // ReadIdMap
 const clickRead = async () => {
-  const res = await readPoint(props.data?.collectorId, [props.data?.id]);
+  const { collectorId, id } = props.data;
+  if (!collectorId || !id) return;
+  const res = await readPoint(collectorId, [id]);
   if (res.success) {
     historyData.value = res.result?.[0] || {};
     emits('refresh')
