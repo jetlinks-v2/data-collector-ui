@@ -20,10 +20,13 @@
         style="padding: 0; margin: 0"
     >
       <template #timestamp="slotProps">
-        {{ dayjs(slotProps.timestamp).format('YYYY-MM-DD HH:mm:ss') }}
+        {{ slotProps.timestamp != null ? dayjs(slotProps.timestamp).format('YYYY-MM-DD HH:mm:ss') : $t('comm.table.empty-2') }}
       </template>
       <template #numberValue="slotProps">
-        {{ !isNil(slotProps.numberValue) ? slotProps.numberValue : $t('comm.table.empty-2') }}
+        {{ formatPointValue(slotProps.numberValue, $t('comm.table.empty-2')) }}
+      </template>
+      <template #value="slotProps">
+        {{ formatPointValue(slotProps.value, $t('comm.table.empty-2')) }}
       </template>
       <template #reason="slotProps">
         {{reason[slotProps.reason] || slotProps.slotProps || $t('comm.table.empty-2')}}
@@ -55,14 +58,14 @@
 <!--        :value='current.formatValue'-->
 <!--        :row='3'-->
 <!--    />-->
-    <a-input disabled :value='current.value' />
+    <a-input disabled :value="formatPointValue(current.value, $t('comm.table.empty-2'))" />
   </a-modal>
 </template>
 
 <script setup>
 import {queryPointHistory} from "@data-collector-ui/api/data-collect/collector";
 import dayjs from "dayjs";
-import { isNil } from "lodash-es";
+import { formatPointValue } from '@data-collector-ui/utils/pointValue';
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
@@ -92,7 +95,8 @@ const columns = [
   {
     title: $t('DataCollect.index.400151-53'),
     dataIndex: 'value',
-    ellipsis: true
+    ellipsis: true,
+    scopedSlots: true,
   },
   {
     title: $t('DataCollect.index.400151-54'),

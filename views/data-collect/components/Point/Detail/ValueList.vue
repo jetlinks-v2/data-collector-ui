@@ -6,11 +6,11 @@
     </div>
     <div class="value-item">
       <div class="value-label">{{ $t('DataCollect.index.400152-11') }}</div>
-      <div class="value">{{ value.hex || '--' }}</div>
+      <div class="value">{{ formatPointValue(value.hex, $t('comm.table.empty-2')) }}</div>
     </div>
     <div class="value-item">
       <div class="value-label">{{ $t('DataCollect.index.400152-12') }}</div>
-      <div class="value">{{ value.timestamp ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : '--' }}</div>
+      <div class="value">{{ value.timestamp != null ? dayjs(value.timestamp).format('YYYY-MM-DD HH:mm:ss') : $t('comm.table.empty-2') }}</div>
     </div>
   </div>
 </template>
@@ -19,6 +19,7 @@
 import {wsClient} from "@jetlinks-web/core";
 import dayjs from "dayjs";
 import ValueItem from "../components/ValueItem.vue";
+import { formatPointValue } from '@data-collector-ui/utils/pointValue';
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();

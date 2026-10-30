@@ -32,7 +32,7 @@ const deathAreaOptions = computed(() => {
         return [left, '10%'];
       },
       valueFormatter: (value) => {
-        return !isNil(value) ? value : '--'
+        return !isNil(value) ? value : $t('comm.table.empty-2')
       }
     },
     grid: {
