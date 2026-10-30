@@ -73,7 +73,7 @@
 import Collapsible from "./Collapsible/index.vue";
 import {inject} from "vue";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
-import {isEqual} from "./data";
+import {cloneTemplateConfig, isEqual} from "./data";
 import {useI18n} from "vue-i18n";
 
 const {t: $t} = useI18n();
@@ -105,8 +105,8 @@ if (!('managedConfiguration' in formData)) {
       enabled: false,
       provider: 'scale',
       configuration: {
-        factor: 1,
-        scale: 3
+        factor: undefined,
+        scale: undefined
       },
     },
     outlier: {
@@ -126,16 +126,16 @@ if (!('converter' in formData.managedConfiguration)) {
     enabled: false,
     provider: 'scale',
     configuration: {
-      factor: 1,
-      scale: 3
+      factor: undefined,
+      scale: undefined
     },
   }
 }
 
 if (!('configuration' in formData.managedConfiguration.converter)) {
   formData.managedConfiguration.converter.configuration = {
-    factor: 1,
-    scale: 3
+    factor: undefined,
+    scale: undefined
   }
 }
 
@@ -144,14 +144,23 @@ const showExtra = computed(() => {
 })
 
 const onSwitchChange = (val) => {
-  formData.managedConfiguration.converter = {
-    ...formData.managedConfiguration.converter,
-    enabled: !!val,
-    provider: 'scale',
-    configuration: {
-      ...formData.managedConfiguration.converter.configuration,
-      factor: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.factor : undefined,
-      scale: val === 'template' ? collector?.managedConfiguration?.converter?.configuration?.scale : undefined
+  if (val === 'template') {
+    // 继承模板的实际启用状态；未配置转换时保持关闭，且不与模板共享配置引用。
+    const converter = cloneTemplateConfig(collector?.managedConfiguration?.converter, {enabled: false})
+    formData.managedConfiguration.converter = {
+      ...converter,
+      configuration: converter.configuration || {}
+    }
+  } else {
+    formData.managedConfiguration.converter = {
+      ...formData.managedConfiguration.converter,
+      enabled: !!val,
+      provider: 'scale',
+      configuration: {
+        ...formData.managedConfiguration.converter.configuration,
+        factor: undefined,
+        scale: undefined
+      }
     }
   }
   if (val !== true) {
