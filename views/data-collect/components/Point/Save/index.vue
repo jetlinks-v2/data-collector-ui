@@ -56,7 +56,7 @@
       <div style="padding-top: 24px;">
         <a-space>
           <a-button type="primary" @click="onSubmit(false)" :loading="loading">{{ $t('DataCollect.index.400151-8') }}</a-button>
-          <a-button @click="onSubmit(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
+          <a-button v-if="!data.id" @click="onSubmit(true)" :loading="loading">{{ $t('DataCollect.index.400151-9') }}</a-button>
           <a-button @click="emit('close')">{{ $t('DataCollect.index.400151-10') }}</a-button>
         </a-space>
       </div>
@@ -79,6 +79,7 @@ import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
 import {savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
+import { cloneDeep } from 'lodash-es';
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 
 const {t: $t} = useI18n();
@@ -131,6 +132,9 @@ const formRef = ref(null)
 const jsonData = ref();
 const configVisible = ref(false)
 const loading = ref(false)
+const editBaseline = ref('')
+const saveFailed = ref(false)
+let submitTask
 const configuration = ref({})
 const advancedFeatures = ['storageData', 'storageOutlier', 'storageDeadband']
 const advancedManagedConfigurationKeys = ['outlier', 'deadband', 'handler']
@@ -190,7 +194,7 @@ const buildSubmitData = () => {
   }
 }
 
-const onSubmit = async (flag) => {
+const submit = async (flag) => {
   const resp = await formRef.value?.validate?.()
   if (resp) {
     loading.value = true;
@@ -215,8 +219,26 @@ const onSubmit = async (flag) => {
       // 连续新增也要刷新列表和统计，保留抽屉供用户继续填写。
       emit('save');
     }
+    return Boolean(response.success)
   }
+  return false
 }
+
+// 页面导航复用同一保存任务，避免离开时重复提交或丢失失败输入。
+const onSubmit = (flag) => {
+  if (submitTask) return submitTask
+  submitTask = submit(flag).then(success => {
+    saveFailed.value = !success
+    return success
+  }).catch(() => { saveFailed.value = true; return false }).finally(() => { submitTask = undefined })
+  return submitTask
+}
+const isDirty = () => loading.value || saveFailed.value || JSON.stringify(formData) !== editBaseline.value
+defineExpose({
+  isDirty,
+  flush: () => submitTask || onSubmit(false),
+  discard: () => emit('close'),
+})
 
 watch(() => props.collector, () => {
   if (props.collector.id) {
@@ -225,6 +247,13 @@ watch(() => props.collector, () => {
     formData.channelId = props.collector.channelId
     formData.channelName = props.collector.channelName
     formData.provider = props.collector.provider
+    if (props.data?.id) {
+      Object.assign(formData, cloneDeep(props.data))
+      formData.accessModes = (props.data.accessModes || []).map(item => typeof item === 'string' ? item : item.value)
+      formData.features = (props.data.features || []).map(item => typeof item === 'string' ? item : item.value)
+      configVisible.value = true
+    }
+    editBaseline.value = JSON.stringify(formData)
     onChange(props.collector.provider)
   }
 }, {

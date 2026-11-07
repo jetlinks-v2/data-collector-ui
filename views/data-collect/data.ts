@@ -10,7 +10,7 @@ export const PLUGIN_DETAIL_SAVE_EVENTS = 'plugin-detail-save-events'
 export const REFRESH_HANDLER = 'refresh-handler'
 
 // 通道状态
-export const ChannelState = {
+export const ChannelState: Record<string, string> = {
     running: 'success',
     disabled: 'error',
     partialError: 'processing',

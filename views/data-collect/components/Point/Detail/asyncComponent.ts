@@ -1,4 +1,6 @@
-export const tabs = {
+import { defineAsyncComponent, type Component } from 'vue'
+
+export const tabs: Record<string, Component> = {
     Info: defineAsyncComponent(() => import('./Info/index.vue')),
     AdvancedConfiguration: defineAsyncComponent(() => import('./AdvancedConfiguration/index.vue')),
     HistoryData: defineAsyncComponent(() => import('./HistoryData/index.vue')),

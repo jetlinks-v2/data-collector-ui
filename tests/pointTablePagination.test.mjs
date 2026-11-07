@@ -3,127 +3,50 @@ import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import test from 'node:test'
-import { effectScope, ref } from 'vue'
+import { effectScope } from 'vue'
 import { transformSync } from 'esbuild'
-
 const require = createRequire(import.meta.url)
-const filename = resolve(import.meta.dirname, '../views/data-collect/components/Point/usePointTablePagination.ts')
+const { code } = transformSync(readFileSync(resolve(import.meta.dirname, '../views/data-collect/components/Point/usePointTablePagination.ts'), 'utf8'), { loader: 'ts', format: 'cjs' })
 const module = { exports: {} }
-const { code } = transformSync(readFileSync(filename, 'utf8'), { loader: 'ts', format: 'cjs' })
-new Function('require', 'module', 'exports', code)(
-  id => id === '@vueuse/core' ? { useResizeObserver: () => {} } : require(id), module, module.exports,
-)
+new Function('require', 'module', 'exports', code)(require, module, module.exports)
 const { usePointTablePagination } = module.exports
-const page = (start, count = 12, total) => ({
-  success: true, result: { data: Array.from({ length: count }, (_, i) => ({ id: `${start + i}` })), total },
-})
-const deferred = () => {
-  let resolve, reject
-  const promise = new Promise((a, b) => { resolve = a; reject = b })
-  return { promise, resolve, reject }
-}
-const fixture = request => {
-  const scope = effectScope()
-  const state = scope.run(() => usePointTablePagination(request, ref()))
-  return { state, scope }
-}
+const page = (start, size = 10, total = 25) => ({ success: true, result: { data: Array.from({ length: size }, (_, n) => ({ id: String(start + n) })), total } })
+const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b }); return { promise, resolve, reject } }
+const fixture = request => { const scope=effectScope(); return { scope, state: scope.run(() => usePointTablePagination(request)) } }
 
-test('appends pages 0/1/2 and stops at the last page', async () => {
-  const requests = []
-  const { state, scope } = fixture(async (index, size) => {
-    requests.push({ index, size })
-    return page(index * size, Math.min(size, 25 - index * size), 25)
-  })
+test('requests zero-based server pages and replaces rows without appending', async () => {
+  const calls=[]; const { scope,state }=fixture(async (index,size)=>{calls.push([index,size]);return page(index*size, size, 100)})
   try {
-    await state.reload()
-    await state.loadMore()
-    assert.equal(state.rows.value.length, 24)
-    assert.equal(state.rows.value[0].id, '0')
-    await state.loadMore()
-    await state.loadMore()
-    assert.equal(state.rows.value.length, 25)
-    assert.equal(state.hasMore.value, false)
-    assert.deepEqual(requests, [{ index: 0, size: 12 }, { index: 1, size: 12 }, { index: 2, size: 12 }])
-  } finally { scope.stop() }
+    await state.load(); await state.load(2,10); assert.deepEqual(calls,[[0,10],[1,10]])
+    assert.equal(state.rows.value.length,10); assert.equal(state.rows.value[0].id,'10');assert.equal(state.total.value,100)
+    await state.load(1,20);assert.equal(state.pageSize.value,20);assert.equal(state.rows.value.length,20)
+  }finally{scope.stop()}
 })
-
-test('repeated bottom events share the in-flight page request', async () => {
-  const pending = deferred()
-  let calls = 0
-  const { state, scope } = fixture(() => { calls++; return pending.promise })
-  try {
-    const first = state.reload()
-    await Promise.all([state.loadMore(), state.loadMore(), state.loadMore()])
-    assert.equal(calls, 1)
-    pending.resolve(page(0))
-    await first
-    assert.equal(state.rows.value.length, 12)
-  } finally { scope.stop() }
+test('late page and old query responses cannot overwrite newer rows',async()=>{
+ const old=deferred(),latest=deferred();let count=0
+ const {scope,state}=fixture(()=>++count===1?old.promise:latest.promise)
+ try{
+  const a=state.load(2),b=state.load(1)
+  latest.resolve(page(0));await b;old.resolve(page(10));await a
+  assert.equal(state.current.value,1);assert.equal(state.rows.value[0].id,'0');assert.equal(state.loading.value,false)
+ }finally{scope.stop()}
 })
-
-test('a failed next page keeps loaded rows and retries the same page index', async () => {
-  const indices = []
-  let fail = true
-  const { state, scope } = fixture(async index => {
-    indices.push(index)
-    if (index === 1 && fail) throw new Error('network failure')
-    return page(index * 12)
-  })
-  try {
-    await state.reload()
-    await state.loadMore()
-    assert.equal(state.failed.value, true)
-    assert.equal(state.rows.value.length, 12)
-    fail = false
-    await state.loadMore()
-    assert.deepEqual(indices, [0, 1, 1])
-    assert.equal(state.failed.value, false)
-    assert.equal(state.rows.value.length, 24)
-  } finally { scope.stop() }
+test('failed page retains retry target and does not display stale page rows',async()=>{
+ let fail=false;const {scope,state}=fixture(async index=>{if(fail)throw Error('offline');return page(index*10)})
+ try{
+  await state.load();fail=true;await state.load(2);assert.equal(state.failed.value,true);assert.deepEqual(state.rows.value,[])
+  fail=false;await state.load();assert.equal(state.current.value,2);assert.equal(state.rows.value[0].id,'10')
+ }finally{scope.stop()}
 })
-
-test('query reset ignores stale responses and restarts at page zero', async () => {
-  const old = deferred(), current = deferred()
-  const indices = []
-  const { state, scope } = fixture(index => {
-    indices.push(index)
-    return indices.length === 1 ? old.promise : current.promise
-  })
-  try {
-    const previous = state.reload()
-    const next = state.reload()
-    old.resolve(page(100))
-    await previous
-    assert.equal(state.rows.value.length, 0)
-    assert.equal(state.loading.value, true)
-    current.resolve(page(200))
-    await next
-    assert.equal(state.rows.value[0].id, '200')
-    assert.deepEqual(indices, [0, 0])
-  } finally { scope.stop() }
+test('deleting the last row of a final page clamps to the last valid page',async()=>{
+ const calls=[];const {scope,state}=fixture(async index=>{calls.push(index);return page(index*10,index===2?0:10,20)})
+ try{await state.load(3);assert.deepEqual(calls,[2,1]);assert.equal(state.current.value,2);assert.equal(state.rows.value.length,10)}
+ finally{scope.stop()}
 })
-
-test('full last pages stop by total, and duplicate IDs do not create duplicate rows', async () => {
-  const { state, scope } = fixture(async index => page(index * 11, 12, 24))
-  try {
-    await state.reload()
-    await state.loadMore()
-    assert.equal(state.rows.value.length, 23)
-    assert.equal(new Set(state.rows.value.map(row => row.id)).size, 23)
-    assert.equal(state.hasMore.value, false)
-  } finally { scope.stop() }
-})
-
-test('unsuccessful responses remain retryable, and disposed scopes ignore late results', async () => {
-  const pending = deferred()
-  let count = 0
-  const { state, scope } = fixture(() => ++count === 1 ? Promise.resolve({ success: false }) : pending.promise)
-  await state.reload()
-  assert.equal(state.failed.value, true)
-  assert.equal(state.hasMore.value, true)
-  const retry = state.loadMore()
-  scope.stop()
-  pending.resolve(page(0))
-  await retry
-  assert.equal(state.rows.value.length, 0)
+test('missing total is a failure; empty datasets and disposed requests are safe',async()=>{
+ const pending=deferred();let count=0
+ const {scope,state}=fixture(()=>++count===1?Promise.resolve({success:true,result:{data:[]}}):count===2?Promise.resolve(page(0,0,0)):pending.promise)
+ await state.load();assert.equal(state.failed.value,true)
+ await state.load();assert.equal(state.total.value,0);assert.equal(state.failed.value,false)
+ const task=state.load();scope.stop();pending.resolve(page(90));await task;assert.deepEqual(state.rows.value,[])
 })

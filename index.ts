@@ -31,6 +31,12 @@ const getExtraRoutesMap = () => {
         'data-collect': {
             children: [
                 {
+                    code: 'PointDetail',
+                    url: '/point/:id',
+                    name: i18n.global.t('PointWorkspace.detail'),
+                    component: () => import('./views/data-collect/components/Point/Detail/index.vue')
+                },
+                {
                     code: 'BatchAdd',
                     url: '/batch-add/:id',
                     name: i18n.global.t('DataCollect.index.400152-13'),

@@ -1,4 +1,5 @@
 import i18n from '@jetlinks-web-core/locales';
+import type { ConditionFilterField } from '@jetlinks-web-core/components/ConditionFilter'
 
 export const baseColumns = [
     {
@@ -101,4 +102,15 @@ export const baseColumns = [
             type: 'string'
         },
     }
+]
+
+export const pointActionColumn = {
+    title: i18n.global.t('Channel.index.290640-11'),
+    dataIndex: 'action', key: 'action', fixed: 'right', width: 96, scopedSlots: true,
+}
+export const defaultPointColumns = () => [...baseColumns.filter(column => column.key !== 'value'), pointActionColumn]
+export const pointSearchFields: ConditionFilterField[] = [
+    ...baseColumns.filter(column => column.search) as ConditionFilterField[],
+    { title: i18n.global.t('PointWorkspace.identifier'), dataIndex: 'id', key: 'id', search: { type: 'string' } },
+    { title: i18n.global.t('DataCollect.columns.290651-8'), dataIndex: 'address', key: 'address', search: { type: 'string' } },
 ]

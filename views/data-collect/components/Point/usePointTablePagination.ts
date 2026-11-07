@@ -1,95 +1,44 @@
-import { nextTick, onScopeDispose, ref, shallowRef, watch, type Ref } from 'vue'
-import { useResizeObserver } from '@vueuse/core'
-import { throttle } from 'lodash-es'
+import { onScopeDispose, ref, shallowRef } from 'vue'
 
 interface PointPage<Row> {
   success: boolean
   result?: { data: Row[]; total?: number }
 }
-
-/** 管理点位追加分页；查询范围重置后忽略旧响应，失败时保留已加载数据与待重试页码。 */
-export const usePointTablePagination = <Row extends { id: string }>(
+/** 服务端分页只接受当前版本响应；删除后越界自动回退，失败保留可重试页码。 */
+export function usePointTablePagination<Row extends { id: string }>(
   request: (pageIndex: number, pageSize: number) => Promise<PointPage<Row>>,
-  container: Ref<HTMLElement | undefined>,
-) => {
+) {
   const rows = shallowRef<Row[]>([])
-  const loading = ref(false)
-  const failed = ref(false)
-  const hasMore = ref(true)
-  const pageSize = 12
-  let pageIndex = 0
+  const total = ref(0), current = ref(1), pageSize = ref(10)
+  const loading = ref(false), failed = ref(false)
   let revision = 0
-  let previousScrollTop = 0
-
-  const getBody = () => container.value?.querySelector<HTMLElement>('.ant-table-body')
-
-  // 同一时刻只请求一页；成功后才推进页码，便于失败重试。
-  const loadMore = async () => {
-    if (loading.value || !hasMore.value) return
-    const currentRevision = revision
+  const load = async (page = current.value, size = pageSize.value): Promise<void> => {
+    const version = ++revision
+    current.value = Math.max(1, page)
+    pageSize.value = size
+    rows.value = []
     loading.value = true
     failed.value = false
     try {
-      const response = await request(pageIndex, pageSize)
-      if (currentRevision !== revision) return
-      if (!response.success || !Array.isArray(response.result?.data)) {
-        failed.value = true
+      const response = await request(current.value - 1, size)
+      if (version !== revision) return
+      if (!response.success || !Array.isArray(response.result?.data) || response.result.total == null) {
+        throw new Error('Invalid point page')
+      }
+      total.value = response.result.total
+      const last = Math.max(1, Math.ceil(total.value / size))
+      if (current.value > last) {
+        await load(last, size)
         return
       }
-      const page = response.result.data
-      // ID 去重保留已加载行；结束判定按服务端分页位置，避免重复行导致无限请求。
-      rows.value = [...new Map([...rows.value, ...page].map(row => [row.id, row])).values()]
-      pageIndex++
-      hasMore.value = page.length === pageSize &&
-        (response.result.total == null || pageIndex * pageSize < response.result.total)
+      rows.value = response.result.data
     } catch {
-      if (currentRevision === revision) failed.value = true
+      if (version === revision) failed.value = true
     } finally {
-      if (currentRevision === revision) loading.value = false
+      if (version === revision) loading.value = false
     }
   }
-
-  // 筛选、排序或采集器变化时建立新查询，旧响应不能覆盖新列表。
-  const reload = () => {
-    revision++
-    pageIndex = 0
-    previousScrollTop = 0
-    rows.value = []
-    loading.value = false
-    failed.value = false
-    hasMore.value = true
-    const body = getBody()
-    if (body) body.scrollTop = 0
-    return loadMore()
-  }
-
-  // scroll 不冒泡，由外层捕获实际表体事件；横向滚动不触发翻页。
-  const onScroll = throttle((event: Event) => {
-    const body = getBody()
-    if (!body || event.target !== body) return
-    const changed = body.scrollTop !== previousScrollTop
-    previousScrollTop = body.scrollTop
-    if (changed && body.scrollHeight - body.scrollTop - body.clientHeight <= 48) {
-      void loadMore()
-    }
-  }, 150)
-
-  // 首屏或窗口放大后不足一屏时继续填充，否则没有滚动条便无法触发下一页。
-  const fillViewport = () => {
-    const body = getBody()
-    if (!failed.value && body && body.clientHeight > 0 && body.scrollHeight <= body.clientHeight + 1) {
-      void loadMore()
-    }
-  }
-  watch([rows, container], async () => {
-    await nextTick()
-    fillViewport()
-  })
-  useResizeObserver(container, fillViewport)
-  onScopeDispose(() => {
-    revision++
-    onScroll.cancel()
-  })
-
-  return { rows, loading, failed, hasMore, loadMore, reload, onScroll }
+  const invalidate = () => { revision++; rows.value = []; loading.value = false }
+  onScopeDispose(invalidate)
+  return { rows, total, current, pageSize, loading, failed, load, invalidate }
 }
