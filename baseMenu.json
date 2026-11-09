@@ -286,7 +286,11 @@
           "value": "support"
         },
         "supportDataAccess": true,
-        "assetType": "dataCollectCollector"
+        "assetType": "dataCollectCollector",
+        "assetTypes": [
+          "dataCollectChannel",
+          "dataCollectCollector"
+        ]
       }
     ]
   }
