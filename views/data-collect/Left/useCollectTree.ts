@@ -12,11 +12,9 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
   const channels = ref<CollectNode[]>([]), collectors = ref<CollectNode[]>([])
   const loading = ref(false), failed = ref(false)
   const expandedKeys = ref<string[]>([])
-  const saveChannelVisible = ref(false), saveCollectorVisible = ref(false), filterModalVisible = ref(false)
+  const saveChannelVisible = ref(false), saveCollectorVisible = ref(false)
   const currentChannel = ref<CollectRecord>({}), currentCollector = ref<CollectRecord>({})
-  const collectorSearch = ref('')
   let revision = 0
-  const filterActive = computed(() => Object.values(state.filters).some(value => Array.isArray(value) ? value.length : value))
   const tree = computed(() => channels.value.map(channel => ({
     ...channel, key: channel.id, isChannel: true,
     pointStateCount: collectors.value.filter(item => item.channelId === channel.id).reduce((counts, item) => ({
@@ -31,25 +29,20 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
     const keyword = state.treeSearch.trim().toLowerCase()
     const f = state.filters
     return tree.value.flatMap(channel => {
-      if (f.provider.length && !f.provider.includes(channel.provider || '')) return []
-      if (f.state.length && !f.state.includes(channel.state?.value || '')) return []
-      if (f.runningState.length && !f.runningState.includes(channel.runningState?.value || '') && !f.runningState.includes(channel.state?.value || '')) return []
       if (f.channel && channel.runningState?.value === 'running' && channel.state?.value !== 'disabled') return []
       const channelMatch = !keyword || channel.name.toLowerCase().includes(keyword)
       const children = channel.children.filter(child => {
-        const states = f.collector ? ['disabled', 'stopped'] : f.collectorState
+        const states = f.collector ? ['disabled', 'stopped'] : []
         return (channelMatch || child.name.toLowerCase().includes(keyword)) &&
           (!states.length || states.includes(child.state?.value || '') || states.includes(child.runningState?.value || ''))
       })
       return channelMatch || children.length ? [{ ...channel, children }] : []
     })
   })
-  const filteredCollectors = computed(() => filteredTree.value.flatMap(channel =>
-    state.scopeType === 'all' || state.scopeId === channel.id ||
-    collectors.value.find(item => item.id === state.scopeId)?.channelId === channel.id ? channel.children : [],
-  ).filter(item => item.name.toLowerCase().includes(collectorSearch.value.toLowerCase())))
   const totalPoints = computed(() => collectors.value.reduce((sum, item) =>
     sum + (item.pointNumber ?? ((item.pointStateCount?.running || 0) + (item.pointStateCount?.stopped || 0))), 0))
+  // 全部点位始终是首个顶层叶节点，搜索只过滤真实通道／采集器，不改变全量入口与计数。
+  const displayTree = computed(() => [{ id: 'all', key: 'all', isLeaf: true }, ...filteredTree.value])
   const selectedKeys = computed(() => [state.scopeId || 'all'])
   function restoreSelection() {
     const row = state.scopeType === 'channel' ? channels.value.find(item => item.id === state.scopeId)
@@ -108,19 +101,14 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
       saveCollectorVisible.value = true
     } else void loadAllData()
   }
-  function filterSave(filters: Partial<typeof state.filters>) {
-    Object.assign(state.filters, filters, { channel: false, collector: false, point: false })
-    filterModalVisible.value = false
-    select({ id: 'all' })
-  }
   watch(() => [state.scopeType, state.scopeId], () => { if (ready.value && !loading.value) restoreSelection() })
   watch(() => state.treeSearch, () => { if (state.treeSearch) expandedKeys.value = filteredTree.value.map(item => item.id) })
   onScopeDispose(() => { revision++ })
   void loadAllData()
   return {
-    state, channels, loading, failed, expandedKeys, selectedKeys, filteredTree, filteredCollectors, totalPoints,
-    saveChannelVisible, saveCollectorVisible, filterModalVisible, currentChannel, currentCollector,
-    collectorSearch, filterActive, loadAllData, select, treeSelect, addChannel, filterSave,
+    state, channels, loading, failed, expandedKeys, selectedKeys, filteredTree, displayTree, totalPoints,
+    saveChannelVisible, saveCollectorVisible, currentChannel, currentCollector,
+    loadAllData, select, treeSelect, addChannel,
     channelActions: (node: CollectRecord) => getChannelActions(node, channelAction),
     collectorActions: (node: CollectRecord) => getCollectorActions(node, collectorAction),
   }

@@ -1,4 +1,4 @@
-import { inject, ref, reactive, computed, watch, onScopeDispose, type Ref } from 'vue'
+import { inject, ref, computed, watch, onScopeDispose, type Ref } from 'vue'
 import type { CollectRecord } from '../hook/context'
 
 import {
@@ -19,15 +19,7 @@ const context = useCollectContext()
 const refreshHandler = inject<any>(REFRESH_HANDLER)
 const type = inject(COLLECTOR_TYPE, ref('all'))
 const data = inject<Ref<CollectRecord>>(COLLECTOR_DATA, ref({}))
-const filterValue = inject<any>('filter-value', reactive({
-  channel: false,
-  collector: false,
-  point: false,
-  provider: [],
-  runningState: [],
-  state: [],
-  collectorState: []
-}))
+const filterValue = context.state.filters
 
 const visible = inject<any>('detail-visible')
 
@@ -41,17 +33,16 @@ const title = computed(() => {
 })
 
 const countList = ref<any[]>([]);
-const getActive = (itemType: string) => {
+const getActive = (itemType: keyof typeof filterValue) => {
   return !!filterValue[itemType]
 }
 
-const onClick = (item: any) => {
+const onClick = (item: { type: keyof typeof filterValue }) => {
+  const active = !filterValue[item.type]
   context.state.page = 1
-  Object.keys(filterValue).forEach(i => {
-    if(['channel', 'collector', 'point'].includes(i)){
-      filterValue[i] = item.type === i ? !filterValue[item.type] : false
-    }
-  })
+  for (const key of ['channel', 'collector', 'point'] as const) {
+    filterValue[key] = key === item.type ? active : false
+  }
 }
 
 const onRefresh = () => {
@@ -86,10 +77,6 @@ watch(() => [
   filterValue.channel,
   filterValue.collector,
   filterValue.point,
-  filterValue.provider,
-  filterValue.runningState,
-  filterValue.state,
-  filterValue.collectorState,
 ], () => {
   loadData()
 }, {

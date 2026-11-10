@@ -4,19 +4,15 @@ import { decodeConditionFilterQuery, encodeConditionFilterQuery } from '@jetlink
 import { pointSearchFields } from '../components/Point/columns'
 import type { CollectFilters, CollectListState, ScopeType } from './context'
 
-const arrayKeys = ['provider', 'runningState', 'state', 'collectorState'] as const
+const retiredKeys = ['view', 'provider', 'runningState', 'state', 'collectorState'] as const
 const boolKeys = ['channel', 'collector', 'point'] as const
 const text = (value: unknown) => typeof value === 'string' ? value : ''
 export const createCollectFilters = (): CollectFilters => ({
   channel: false, collector: false, point: false,
-  provider: [], runningState: [], state: [], collectorState: [],
 })
 export function readCollectRoute(query: LocationQuery): CollectListState {
   const filters = createCollectFilters()
-  arrayKeys.forEach(key => {
-    const values = query[key]
-    filters[key] = (Array.isArray(values) ? values : values ? [values] : []).filter((v): v is string => typeof v === 'string')
-  })
+  // 旧视图与侧栏筛选已移除；旧链接只恢复仍有可见入口的条件，避免隐藏过滤。
   boolKeys.forEach(key => { filters[key] = query['error-' + key] === '1' })
   return {
     scopeType: ['channel', 'collector'].includes(text(query.scopeType)) ? query.scopeType as ScopeType : 'all',
@@ -27,7 +23,6 @@ export function readCollectRoute(query: LocationQuery): CollectListState {
     pageSize: [10, 20, 50, 100].includes(Number(query.pageSize)) ? Number(query.pageSize) : 10,
     sort: ['name', 'modifyTime', 'interval'].includes(text(query.sort)) ? text(query.sort) : '',
     order: query.order === 'asc' ? 'asc' : 'desc',
-    viewType: query.view === 'separate' ? 'separate' : 'compact',
     treeSearch: text(query.treeSearch), filters,
   }
 }
@@ -40,10 +35,9 @@ export function collectRouteQuery(state: CollectListState) {
     page: state.page > 1 ? String(state.page) : undefined,
     pageSize: state.pageSize === 10 ? undefined : String(state.pageSize),
     sort: state.sort || undefined, order: state.sort ? state.order : undefined,
-    view: state.viewType === 'separate' ? 'separate' : undefined,
     treeSearch: state.treeSearch || undefined,
   }
-  arrayKeys.forEach(key => { query[key] = state.filters[key].length ? state.filters[key] : undefined })
+  retiredKeys.forEach(key => { query[key] = undefined })
   boolKeys.forEach(key => { query['error-' + key] = state.filters[key] ? '1' : undefined })
   return query
 }
@@ -72,7 +66,7 @@ export function useCollectRouteState() {
       pendingWrites.add(target.fullPath)
       void router.replace({ path: listPath, query }).finally(() => pendingWrites.delete(target.fullPath))
     }
-  }, { deep: true })
+  }, { deep: true, immediate: true })
   onBeforeUnmount(() => { active = false })
   return state
 }

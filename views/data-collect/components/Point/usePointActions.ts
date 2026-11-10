@@ -89,12 +89,23 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
       if (response.success) { onlyMessage($t('Point.index.400149-14')); await saved() }
     } finally { busy.value = false }
   }
+  const batchAdd = () => menu.jumpPage('data-collect/BatchAdd', { params: { id: scope.value.id } })
+  // 添加与导入作用于当前采集器，不依赖已勾选点位。
   const batchActions = computed(() => [
-    ...(state.scopeType === 'collector' ? [{
-      key: 'update', text: $t('DataCollect.index.400151-19'), icon: 'EditOutlined',
-      disabled: busy.value || !selection.selectedKeys.value.length,
-      onClick: () => { if (rows.value.length) visible.batchUpdate = true },
-    }] : []),
+    ...(state.scopeType === 'collector' ? [
+      ...(pointActions.batchAdd ? [{
+        key: 'batchAdd', text: $t('DataCollect.index.400151-12'), icon: 'PlusOutlined', onClick: batchAdd,
+      }] : []),
+      {
+        key: 'import', text: $t('Point.index.400149-2'), icon: 'ImportOutlined',
+        onClick: () => { visible.import = true },
+      },
+      {
+        key: 'update', text: $t('DataCollect.index.400151-19'), icon: 'EditOutlined',
+        disabled: busy.value || !selection.selectedKeys.value.length,
+        onClick: () => { if (rows.value.length) visible.batchUpdate = true },
+      },
+    ] : []),
     ...(['enable', 'disable', 'delete'] as const).map(key => ({
       key, text: $t(key === 'enable' ? 'DataCollect.index.400151-17' : key === 'disable' ? 'DataCollect.index.400151-20' : 'DataCollect.index.400151-22'),
       icon: key === 'enable' ? 'CheckCircleOutlined' : key === 'disable' ? 'StopOutlined' : 'DeleteOutlined',
@@ -116,8 +127,7 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   onScopeDispose(() => { version++; editVersion++ })
   return {
     visible, current, formCollector, editing, pointActions, jsonData, batchActions, busy, saved, add, edit, view, remove, getBatchParams,
-    exportData, exportTemplate, pointImport, scope,
+    exportData, exportTemplate, pointImport, scope, batchAdd,
     scan: () => menu.jumpPage('data-collect/Scan', { params: { id: scope.value.id } }),
-    batchAdd: () => menu.jumpPage('data-collect/BatchAdd', { params: { id: scope.value.id } }),
   }
 }

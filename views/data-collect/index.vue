@@ -1,6 +1,6 @@
 <template>
   <FullPage class="collect-workspace" transparent-background>
-    <EqualHeightColumns :left-width="state.viewType === 'compact' ? '16rem' : '30rem'" right-width="1fr" gap="var(--space-6)">
+    <EqualHeightColumns left-width="15rem" right-width="1fr">
       <template #left><Left ref="leftRef" @change="onChange" /></template>
       <template #right><Right v-if="ready" ref="rightRef" /></template>
     </EqualHeightColumns>
@@ -33,7 +33,6 @@ onActivated(() => {
 provide(COLLECT_LIST, { state, current, ready, refreshAll })
 provide(COLLECTOR_TYPE, toRef(state, 'scopeType'))
 provide(COLLECTOR_DATA, current)
-provide('filter-value', state.filters)
 provide(REFRESH_HANDLER, {
   refreshAll,
   refreshLeft: () => leftRef.value?.loadAllData(),

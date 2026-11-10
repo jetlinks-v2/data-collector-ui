@@ -29,7 +29,6 @@ export interface CollectRecord {
 export interface PointRecord extends CollectRecord { id: string }
 export interface CollectFilters {
   channel: boolean; collector: boolean; point: boolean
-  provider: string[]; runningState: string[]; state: string[]; collectorState: string[]
 }
 export interface CollectListState {
   scopeType: ScopeType
@@ -40,7 +39,6 @@ export interface CollectListState {
   pageSize: number
   sort: string
   order: 'asc' | 'desc'
-  viewType: 'compact' | 'separate'
   treeSearch: string
   filters: CollectFilters
 }

@@ -171,3 +171,71 @@ test('related-device drafts survive parent refresh, validation failure, and fail
   fail=false;assert.equal(await editor.flush(),true);assert.equal(editor.isDirty(),false)
  }finally{scope.stop()}
 })
+
+const routeCodec = {
+ decodeConditionFilterQuery: value => value ? JSON.parse(value) : [],
+ encodeConditionFilterQuery: terms => terms.length ? JSON.stringify(terms) : '',
+}
+const routeMocks = {
+ '@jetlinks-web-core/components/ConditionFilter': routeCodec,
+ '../components/Point/columns': {pointSearchFields: []},
+}
+test('old sidebar filters are ignored while visible list conditions survive URL round trips', () => {
+ const {readCollectRoute, collectRouteQuery} = load('hook/useCollectRouteState.ts', routeMocks)
+ const query = {
+  view:'list',provider:'modbus',runningState:'failed',state:'disabled',collectorState:'stopped',
+  scopeType:'collector',scopeId:'collector-1',treeSearch:'pump',
+  q:JSON.stringify([{column:'name',value:'motor'}]),pointState:'running',
+  page:'3',pageSize:'20',sort:'interval',order:'asc','error-channel':'1',
+ }
+ const state = readCollectRoute(query)
+ assert.deepEqual(state.filters,{channel:true,collector:false,point:false})
+ assert.equal('viewType' in state,false)
+ const output = collectRouteQuery(state)
+ for (const key of ['view','provider','runningState','state','collectorState']) assert.equal(output[key],undefined)
+ for (const key of ['scopeType','scopeId','treeSearch','q','pointState','page','pageSize','sort','order','error-channel']) assert.equal(output[key],query[key])
+ assert.deepEqual(readCollectRoute(output),state)
+})
+test('list mount normalizes legacy URLs and browser navigation restores supported conditions', async () => {
+ const {createMemoryHistory,createRouter} = await import('vue-router')
+ const router = createRouter({history:createMemoryHistory(),routes:[{path:'/collectors',component:{}}]})
+ await router.push('/collectors?view=list&provider=modbus&state=disabled&page=3&treeSearch=pump&keep=external')
+ const route = vue.reactive(Object.fromEntries(['path','fullPath','query'].map(key=>[key,vue.computed(()=>router.currentRoute.value[key])])))
+ const {useCollectRouteState} = load('hook/useCollectRouteState.ts',{
+  ...routeMocks,vue:{...vue,onBeforeUnmount:vue.onScopeDispose},
+  'vue-router':{useRoute:()=>route,useRouter:()=>router},
+ })
+ const scope = vue.effectScope()
+ const normalized = new Promise(resolve=>{const stop=router.afterEach(()=>{stop();resolve()})})
+ const state = scope.run(()=>useCollectRouteState())
+ try {
+  await normalized;await vue.nextTick()
+  assert.deepEqual({...router.currentRoute.value.query},{page:'3',treeSearch:'pump',keep:'external'})
+  assert.equal(state.page,3)
+  await router.push('/collectors?scopeType=collector&scopeId=k2&page=2&pointState=stopped&error-point=1')
+  await vue.nextTick()
+  assert.equal(state.scopeId,'k2');assert.equal(state.page,2);assert.equal(state.pointType,'stopped')
+  assert.deepEqual({...state.filters},{channel:false,collector:false,point:true})
+  const written = new Promise(resolve=>{const stop=router.afterEach(()=>{stop();resolve()})})
+  state.page=4
+  await written;await vue.nextTick()
+  assert.equal(router.currentRoute.value.query.page,'4')
+  assert.equal(router.currentRoute.value.query.scopeId,'k2')
+ } finally {scope.stop()}
+})
+test('anomaly statistics toggle exclusively and reset pagination', () => {
+ const state=vue.reactive({page:3,filters:{channel:false,collector:false,point:false}})
+ const {useCollectHeader}=load('components/useCollectHeader.ts',{
+  vue:{...vue,inject:(_key,fallback)=>fallback},
+  'vue-i18n':{useI18n:()=>({t:key=>key})},
+  '../hook/context':{useCollectContext:()=>({state})},
+  '@data-collector-ui/views/data-collect/data':{ChannelState:{},COLLECTOR_DATA:'data',COLLECTOR_TYPE:'type',REFRESH_HANDLER:'refresh',getState(){}},
+  '@data-collector-ui/views/data-collect/utils':{getCountList:async()=>[]},
+ })
+ const scope=vue.effectScope(),header=scope.run(()=>useCollectHeader())
+ try {
+  header.onClick({type:'collector'});assert.equal(state.page,1);assert.equal(state.filters.collector,true)
+  header.onClick({type:'point'});assert.deepEqual({...state.filters},{channel:false,collector:false,point:true})
+  header.onClick({type:'point'});assert.deepEqual({...state.filters},{channel:false,collector:false,point:false})
+ } finally {scope.stop()}
+})

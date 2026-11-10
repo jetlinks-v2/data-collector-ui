@@ -1,19 +1,27 @@
 <template>
-  <div class="collect-create">
-    <j-permission-button type="dashed" block @click="emit('add')">
+  <a-dropdown :trigger="['click']" placement="topRight" :min-overlay-width-match-trigger="false"
+    :overlay-style="{ minWidth: '8rem' }">
+    <j-permission-button block>
       <template #icon><AIcon type="PlusOutlined" /></template>
       {{ $t('PointWorkspace.create') }}
     </j-permission-button>
-    <a-dropdown :trigger="['click']">
-      <a-button :title="$t('PointWorkspace.more')"><AIcon type="MoreOutlined" /></a-button>
-      <template #overlay>
-        <a-menu @click="handleMenuClick">
-          <a-menu-item key="importChannel">{{ $t('DataCollect.index.400150-11') }}</a-menu-item>
-          <a-menu-item key="importCollector">{{ $t('DataCollect.index.400150-12') }}</a-menu-item>
-        </a-menu>
-      </template>
-    </a-dropdown>
-  </div>
+    <template #overlay>
+      <a-menu>
+        <a-menu-item key="add" @click="emit('add')">
+          <template #icon><AIcon type="PlusOutlined" /></template>
+          {{ $t('DataCollect.index.400150-27') }}
+        </a-menu-item>
+        <a-menu-item key="importChannel" @click="openImport('importChannel')">
+          <template #icon><AIcon type="ImportOutlined" /></template>
+          {{ $t('PointWorkspace.importChannel') }}
+        </a-menu-item>
+        <a-menu-item key="importCollector" @click="openImport('importCollector')">
+          <template #icon><AIcon type="ImportOutlined" /></template>
+          {{ $t('PointWorkspace.importCollector') }}
+        </a-menu-item>
+      </a-menu>
+    </template>
+  </a-dropdown>
   <Import
     v-if="importVisible"
     :title="activeKey === 'importChannel' ? $t('DataCollect.index.400150-11') : $t('DataCollect.index.400150-12')"
@@ -42,8 +50,5 @@ import { useCollectImport } from './useCollectImport'
 const props = defineProps<{ channelList?: any[] }>()
 const emit = defineEmits<{ add: [] }>()
 const { $t, form, formRef, activeKey, importVisible, providers, providerChannelList, showUpload,
-  handleMenuClick, handleImportSuccess, channelDownloadImportTemplate, collectorDownloadImportTemplate, channelImport, collectorImport } = useCollectImport(props)
+  openImport, handleImportSuccess, channelDownloadImportTemplate, collectorDownloadImportTemplate, channelImport, collectorImport } = useCollectImport(props)
 </script>
-<style scoped>
-.collect-create { display: flex; gap: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--jet-theme-border-secondary); }
-</style>

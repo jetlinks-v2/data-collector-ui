@@ -7,6 +7,7 @@ import { useCollectorProvider } from "@data-collector-ui/hooks";
 import { REFRESH_HANDLER } from "../../data";
 import {useI18n} from "vue-i18n";
 
+type CollectImportType = 'importChannel' | 'importCollector'
 
 export function useCollectImport(props: { channelList?: any[] }) {
 const {t: $t} = useI18n();
@@ -19,7 +20,7 @@ const form = reactive<{provider?: string; channelId?: string}>({
   provider: undefined,
   channelId: undefined
 })
-const activeKey = ref<'importChannel' | 'importCollector' | undefined>()
+const activeKey = ref<CollectImportType>()
 const importVisible = ref(false)
 
 
@@ -37,8 +38,8 @@ const showUpload = computed(() => {
   }
 })
 
-const handleMenuClick = (e: any) => {
-  activeKey.value = e.key;
+const openImport = (type: CollectImportType) => {
+  activeKey.value = type;
   importVisible.value = true;
 }
 
@@ -53,5 +54,5 @@ watch(() => importVisible.value, (newValue) => {
 })
 
 return { $t, form, formRef, activeKey, importVisible, providers, providerChannelList, showUpload,
-  handleMenuClick, handleImportSuccess, channelDownloadImportTemplate, collectorDownloadImportTemplate, channelImport, collectorImport }
+  openImport, handleImportSuccess, channelDownloadImportTemplate, collectorDownloadImportTemplate, channelImport, collectorImport }
 }

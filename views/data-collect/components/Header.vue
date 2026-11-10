@@ -39,11 +39,11 @@ const { $t, title, type, data, visible, countList, getActive, onClick, onDetail,
 defineExpose({ loadData })
 </script>
 <style scoped>
-.right-header-warp { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); flex-wrap: wrap; padding-bottom: var(--space-3); border-bottom: 1px solid var(--jet-theme-border-secondary); }
+.right-header-warp { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; padding-bottom: var(--space-3); border-bottom: 1px solid var(--jet-theme-border-secondary); }
 .header-left, .header-right, .header-right-item { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .header-left, .header-right { flex-wrap: wrap; }
 .header-right { margin-left: auto; gap: var(--space-4); font-size: var(--fs-13); color: var(--jet-theme-text-secondary); }
-.title { font-size: var(--fs-16); font-weight: 600; color: var(--jet-theme-text-title); }
+.title { font-size: var(--fs-14); font-weight: 600; color: var(--jet-theme-text-title); }
 ._title, .error { color: var(--jet-theme-primary); cursor: pointer; }
 .error.active { color: var(--jet-theme-error, #f84343); }
 .header-left :deep(.ant-tag) { margin-inline-end: 0; }

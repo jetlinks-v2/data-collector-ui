@@ -23,5 +23,5 @@ const refresh = async () => { await Promise.all([headerRef.value?.loadData(), ta
 defineExpose({ refresh })
 </script>
 <style scoped>
-.collect-main { display: flex; flex-direction: column; gap: var(--space-4); height: 100%; min-height: 0; min-width: 0; }
+.collect-main { display: flex; flex-direction: column; gap: var(--space-3); height: 100%; min-height: 0; min-width: 0; overflow-y: auto; }
 </style>
