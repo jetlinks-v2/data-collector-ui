@@ -2,6 +2,12 @@
 
 当前入口属于 `runtime-ui/modules/data-collector-ui`。本页采用运行时设备列表的双栏布局、共享组件与主题 token；点位详情已由抽屉改为独立页面。旧版 `views/DataCollect/`、运营端 `ui/`、后端接口及通道／采集器详情承载方式保持原有边界。
 
+## 配置项切换布局
+
+`components/Config/Collapsible/CollapseRadio.vue` 使用 `a-segmented` 承载开／关／复用模板，右侧控件固定为 264px，选项等分宽度，模板文字与说明图标间距为 0.25rem；`components/Config/Collapsible/index.vue` 的左侧说明自适应剩余空间，右侧不参与压缩。组件内部使用字符串选项，对外仍发送布尔值／`template`；沿用禁用项、模板说明浮层和既有配置表单，不修改后端接口。
+
+验证：模块构建 `pnpm -C runtime-ui -F jetlinks-web-core build -- --module-name data-collector-ui` 与 `git diff --check` 通过。`pnpm -C runtime-ui exec vue-tsc --noEmit -p modules/data-collector-ui/tsconfig.json` 改前／改后均为 438 项既有诊断，按文件、错误码和消息比较无新增；工作区与模块未提供独立 lint 脚本。真实 Modbus 新增点位表单已核对普通与高级配置六行控件均为 264px、位置对齐、三项等宽，数据转换开启显示表单、关闭收起、复用模板恢复选中，采集配置的关闭禁用及模板说明浮层保留。后续仅增加文字与图标间距，SFC 样式编译及差异检查通过，未重复运行模块构建或浏览器验证。本次未提交表单，保存链路沿用原实现。
+
 ## 采集器列表原型对齐（2026-11-10）
 
 任务级别 M，用户已确认实施。参考原型 `https://jetlinks-ai-new.ez7268-453.workers.dev/midhub/res/collect/collector`，在运行时数采列表内调整树表左右布局、信息密度和操作分区；按用户后续提供的设备列表截图，最终采用统一面板内的 `EqualHeightColumns`。状态拆列与默认实时值遵循用户补充要求。改动仅属于 `runtime-ui/modules/data-collector-ui`，不改运营端、后端、共享 core 或旧版 `views/DataCollect/`。
