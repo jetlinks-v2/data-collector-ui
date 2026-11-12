@@ -18,11 +18,13 @@
   </j-page-container>
 </template>
 
-<script setup name="Batch">
+<script setup>
 import Device from './device/index.vue'
 import Operate from './operate/index.vue'
 import Task from './task'
 import { ContextName} from "./util";
+
+defineOptions({ name: 'Batch' })
 
 const visible = ref(false)
 const deviceList = ref([])

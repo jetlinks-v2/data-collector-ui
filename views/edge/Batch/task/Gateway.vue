@@ -26,7 +26,10 @@
   </div>
 </template>
 
-<script setup name="GatewaySelect">
+<script setup>
+
+defineOptions({ name: 'GatewaySelect' })
+
 
 const emit = defineEmits(['update:value', 'change', 'delete'])
 const props = defineProps({

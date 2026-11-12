@@ -141,7 +141,7 @@
   />
 </template>
 
-<script setup lang="ts" name="TreePage">
+<script setup lang="ts">
 import {
   queryCollectorTree,
   queryChannelNoPaging,
@@ -153,6 +153,8 @@ import {onlyMessage} from '@jetlinks-web/utils'
 import {cloneDeep, isArray} from 'lodash-es';
 import {colorMap} from '../data';
 import {useI18n} from 'vue-i18n';
+
+defineOptions({ name: 'TreePage' })
 
 const permissionCollectorKey = inject('dataCollectCollectorPermissionKey', 'DataCollect/Collector')
 

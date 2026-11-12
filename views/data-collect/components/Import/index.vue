@@ -67,13 +67,15 @@
   </a-modal>
 </template>
 
-<script setup name="BatchImport">
+<script setup>
 import {FileStaticPath} from "@jetlinks-web-core/api/comm";
 import {downloadFileByUrl, getToken, onlyMessage} from "@jetlinks-web/utils";
 import {useI18n} from "vue-i18n";
 import { getUploadHeaders } from '@jetlinks-web-core/utils'
 import { Observable } from "rxjs";
 import { TOKEN_KEY } from "@jetlinks-web/constants";
+
+defineOptions({ name: 'BatchImport' })
 const {t: $t} = useI18n();
 
 const props = defineProps({

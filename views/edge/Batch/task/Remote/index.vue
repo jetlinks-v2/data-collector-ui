@@ -57,9 +57,11 @@
   </div>
 </template>
 
-<script setup name="TaskRemote">
+<script setup>
 import Firmware from './Firmware.vue';
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'TaskRemote' })
 
 const { t: $t } = useI18n();
 

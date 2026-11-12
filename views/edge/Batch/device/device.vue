@@ -87,7 +87,7 @@
     </div>
 </template>
 
-<script setup name="BatchDeviceSelect">
+<script setup>
 import { query, queryNoPagingPost, queryTree, detail } from '../../../../api/others';
 import { getContext } from '../util';
 import { omit } from 'lodash-es';
@@ -95,6 +95,8 @@ import dayjs from 'dayjs';
 import DeviceCardImg from '../../../../assets/device-card.png';
 import { useI18n } from 'vue-i18n';
 import { device } from '@device-manager-ui/assets'
+
+defineOptions({ name: 'BatchDeviceSelect' })
 
 const { t: $t } = useI18n();
 

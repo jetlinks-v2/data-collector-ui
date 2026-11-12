@@ -35,11 +35,13 @@
     </div>
 </template>
 
-<script setup name="TaskFirmware">
+<script setup>
 import {queryFirmwareList, queryProductDetailAllList} from '../../../../../api/others';
 import {map} from "lodash-es";
 import dayjs from 'dayjs';
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'TaskFirmware' })
 
 const { t: $t } = useI18n();
 

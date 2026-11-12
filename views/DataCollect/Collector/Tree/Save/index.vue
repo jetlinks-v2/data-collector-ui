@@ -182,13 +182,15 @@
     </template>
   </a-modal>
 </template>
-<script name="CollectorTreeSave" setup>
+<script setup>
 import {save, update, getProviders} from '@data-collector-ui/api/data-collect/collector';
 import {LeftTreeRules} from '../../data';
 import {cloneDeep, omit} from "lodash-es";
 import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
+
+defineOptions({ name: 'CollectorTreeSave' })
 
 const permissionCollectorKey = inject('dataCollectCollectorPermissionKey', 'DataCollect/Collector')
 

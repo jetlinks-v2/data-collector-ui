@@ -190,7 +190,7 @@
     </a-drawer>
 </template>
 
-<script setup name="LogDrawer">
+<script setup>
 import {
     queryIssueDetail,
     pauseAll,
@@ -207,6 +207,8 @@ import Icon from '../../../Batch/components/Icon.vue';
 import { useResourceStore } from "../../../../../store/resource";
 import { useI18n } from 'vue-i18n';
 import {theme} from "ant-design-vue";
+
+defineOptions({ name: 'LogDrawer' })
 
 const { token } = theme.useToken()
 const { t: $t } = useI18n();
