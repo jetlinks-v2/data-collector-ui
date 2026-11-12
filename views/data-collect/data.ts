@@ -1,4 +1,5 @@
 import i18n from '@jetlinks-web-core/locales'
+import type { BadgeProps } from 'ant-design-vue'
 export const COLLECTOR_TYPE = 'data-collector-type'
 export const COLLECTOR_DATA = 'data-collector-data'
 export const DATA_COLLECTOR_SAVE_TYPE = 'collector'
@@ -10,7 +11,7 @@ export const PLUGIN_DETAIL_SAVE_EVENTS = 'plugin-detail-save-events'
 export const REFRESH_HANDLER = 'refresh-handler'
 
 // 通道状态
-export const ChannelState = {
+export const ChannelState: Record<string, NonNullable<BadgeProps['status']>> = {
     running: 'success',
     disabled: 'error',
     partialError: 'processing',

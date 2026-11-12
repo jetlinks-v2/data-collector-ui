@@ -1,88 +1,51 @@
 <template>
-  <j-page-container>
-    <full-page>
-      <EqualHeightColumns
-          :left-width="foldTree ? 0 : viewType === 'compact' ? '15rem' : '30rem'"
-          right-width="1fr"
-          :gap="foldTree ? 0 : 24"
-      >
-        <template #left>
-          <div class="left" v-show="!foldTree">
-            <Left v-model:view-type="viewType" @change="onChange" ref="leftRef"/>
-          </div>
-        </template>
-        <template #right>
-          <div class="right">
-            <Right ref="rightRef"/>
-          </div>
-        </template>
-      </EqualHeightColumns>
-    </full-page>
-  </j-page-container>
+  <FullPage class="collect-workspace" transparent-background>
+    <EqualHeightColumns left-width="15rem" right-width="1fr">
+      <template #left><Left ref="leftRef" @change="onChange" /></template>
+      <template #right><Right v-if="ready" ref="rightRef" /></template>
+    </EqualHeightColumns>
+  </FullPage>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { onActivated, provide, ref, toRef } from 'vue'
+import EqualHeightColumns from '@jetlinks-web-core/components/EqualHeightColumns/index.vue'
 import Left from './Left/index.vue'
 import Right from './Right.vue'
-import EqualHeightColumns from '@jetlinks-web-core/components/EqualHeightColumns/index.vue'
-import {COLLECTOR_DATA, COLLECTOR_TYPE, FOLD_TREE, REFRESH_HANDLER} from "@data-collector-ui/views/data-collect/data";
+import { COLLECTOR_DATA, COLLECTOR_TYPE, REFRESH_HANDLER } from './data'
+import { COLLECT_LIST, type CollectRecord, type ScopeType } from './hook/context'
+import { useCollectRouteState } from './hook/useCollectRouteState'
 
-const leftRef = ref()
-const rightRef = ref()
-const current = ref({})
-const type = ref('all')
-const filterValue = reactive(
-    {
-      channel: false,
-      collector: false,
-      point: false,
-      provider: [],
-      runningState: [],
-      state: [],
-      collectorState: []
-    }
-)
-const foldTree = ref(false)
-const viewType = ref('compact')
-
-provide(FOLD_TREE, foldTree)
-provide('filter-value', filterValue)
-provide(COLLECTOR_TYPE, type) // all/channel/collector
-provide(COLLECTOR_DATA, current)
-
-// 🔥 核心：提供统一的刷新方法
-const refreshHandler = {
-  // 刷新所有
-  refreshAll: async () => {
-    await leftRef.value?.loadAllData?.()
-    await rightRef.value?.refresh?.()
-  },
-
-  // 只刷新左侧
-  refreshLeft: async () => {
-    await leftRef.value?.loadAllData?.()
-  },
-
-  // 只刷新右侧
-  refreshRight: async () => {
-    await rightRef.value?.refresh?.()
-  },
+const state = useCollectRouteState()
+const current = ref<CollectRecord>({})
+const ready = ref(false)
+const leftRef = ref<InstanceType<typeof Left>>()
+const rightRef = ref<InstanceType<typeof Right>>()
+const refreshAll = async () => {
+  await leftRef.value?.loadAllData()
+  await rightRef.value?.refresh()
 }
-
-// 通过 provide 向下传递刷新方法
-provide(REFRESH_HANDLER, refreshHandler)
-
-
-const onChange = (_type, row) => {
-  type.value = _type || 'all'
-  current.value = _type === 'all' ? {} : row
+let activated = false
+onActivated(() => {
+  if (activated) void refreshAll()
+  activated = true
+})
+provide(COLLECT_LIST, { state, current, ready, refreshAll })
+provide(COLLECTOR_TYPE, toRef(state, 'scopeType'))
+provide(COLLECTOR_DATA, current)
+provide(REFRESH_HANDLER, {
+  refreshAll,
+  refreshLeft: () => leftRef.value?.loadAllData(),
+  refreshRight: () => rightRef.value?.refresh(),
+})
+function onChange(type: ScopeType, row: CollectRecord) {
+  state.scopeType = type
+  state.scopeId = type === 'all' ? '' : row.id || ''
+  current.value = type === 'all' ? {} : row
+  ready.value = true
 }
 </script>
 
-<style lang="less" scoped>
-
-.left, .right {
-  height: 100%;
-}
-
+<style scoped>
+.collect-workspace { min-height: 0; min-width: 0; height: 100%; }
 </style>

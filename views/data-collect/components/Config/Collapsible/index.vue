@@ -8,7 +8,7 @@
       <div class="tip">
         <j-ellipsis>{{ tip }}</j-ellipsis>
       </div>
-      <div>
+      <div class="switch">
         <slot v-if="showSwitch" name="extra" :onSwitch="onSwitch">
           <CollapseRadio :value="_value" @change="onSwitch" :show-extra="showExtra" :disabledList="disabledList">
             <template #extraTemplate>
@@ -104,7 +104,13 @@ const onSwitch = (flag) => {
   }
 
   .tip {
+    flex: 1;
+    min-width: 0;
     font-size: 12px;
+  }
+
+  .switch {
+    flex: none;
   }
 }
 

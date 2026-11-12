@@ -1,983 +1,167 @@
 <template>
-
-  <DefineEmptyCreate>
-    <j-permission-button
-        v-if="pointActions.add"
-        type="primary"
-        @click="handleAdd"
-        :hasPermission="true"
-    >
-      <template #icon
-      >
-        <AIcon type="PlusOutlined"
-        />
-      </template>
-      {{ $t('Point.index.400149-0') }}
-    </j-permission-button>
-  </DefineEmptyCreate>
-  <div ref="tableContainer" style="display: flex; flex-direction: column; flex: 1; min-height: 0" :key="columnsConfig.key" @scroll.capture="onTableScroll">
-<!--    <pro-search-->
-<!--        :columns="columnsConfig.data"-->
-<!--        target="data-collector-point"-->
-<!--        @search="handleSearch"-->
-<!--        style="margin-bottom: 0; padding: 16px 0"-->
-<!--        v-if="showSearch"-->
-<!--    />-->
-          <ConditionFilter
-              :columns="columnsConfig.data"
-              style="margin-bottom: var(--space-4)"
-              @search="handleSearch"
-          />
-    <j-pro-table
-        :columns="columnsConfig.data"
-        mode="TABLE"
-        :dataSource="pointRows"
-        :noPagination="true"
-        :loading="loadingPoints"
-        :alertShow="!isAllSelected"
-        style="padding: 0; margin: 0; flex: 1; min-height: 0"
-        @resizeColumn="onResizeColumn"
-        :scroll="{ x: 'max-content' }"
-        :rowSelection="rowSelection"
-    >
-      <template #emptyText>
-        <CloudEmpty :search="searchCount > 0" :search-name="$t('Virtual.Editor.400159-0')">
-          <EmptyCreateButton />
-        </CloudEmpty>
-      </template>
-      <template #headerCell="{ column }">
-        <template v-if="['name', 'modifyTime', 'interval'].includes(column.key)">
-          <div class="header-cell-title">
-            <j-ellipsis>{{ column.title }}</j-ellipsis>
-            <a-popover>
+  <section class="point-workspace">
+    <div class="point-workspace__toolbar">
+      <ConditionFilter class="point-workspace__search" :fields="pointSearchFields" v-model="searchTerms"
+        :placeholder="$t('PointWorkspace.searchPoints')" @change="search" />
+      <PointTop ref="pointTopRef" class="point-workspace__status-filter" />
+      <div class="point-workspace__actions">
+        <template v-if="state.scopeType === 'collector'">
+          <j-permission-button v-if="actions.pointActions.add" type="primary" :has-permission="true" @click="actions.add">
+            <AIcon type="PlusOutlined" /> {{ $t('Point.index.400149-0') }}
+          </j-permission-button>
+          <j-permission-button v-if="actions.pointActions.scan" type="primary" :has-permission="true" @click="actions.scan">
+            <AIcon type="ScanOutlined" /> {{ $t('data-collector-ui.index.237811-1') }}
+          </j-permission-button>
+          <j-permission-button :has-permission="true" @click="actions.exportData">{{ $t('Point.index.400149-3') }}</j-permission-button>
+        </template>
+        <BatchDropdown :actions="actions.batchActions.value" />
+      </div>
+    </div>
+    <a-alert v-if="failed" type="error" show-icon :message="$t('PointWorkspace.loadFailed')">
+      <template #action><a-button type="link" @click="reload">{{ $t('PointWorkspace.retry') }}</a-button></template>
+    </a-alert>
+    <div ref="viewport" class="point-workspace__table">
+      <j-pro-table mode="TABLE" size="small" table-layout="fixed" row-key="id" :columns="columns" :data-source="rows" :no-pagination="true"
+        :loading="loading" :alert-show="false" :row-selection="rowSelection"
+        :scroll="{ x: tableWidth, y: bodyHeight }" :body-style="{ padding: 0 }" @resize-column="resizeColumn">
+        <template #emptyText><CloudEmpty :search="hasSearch" :search-name="$t('Virtual.Editor.400159-0')" /></template>
+        <template #headerCell="{ column }">
+          <div v-if="column.sortsList" class="point-workspace__sort">
+            <span>{{ column.title }}</span>
+            <a-popover trigger="click">
               <template #content>
-                <div v-for="item in column.sortsList" class="sort-item"
-                     :class="{'active': item.value === sortValue[column.key]}" :key="item.value"
-                     @click="handleSort(column.key, item.value)">
-                  {{ item.text }}
-                </div>
+                <a-menu @click="({ key }) => sort(column.key, String(key))">
+                  <a-menu-item v-for="item in column.sortsList" :key="item.value">{{ item.text }}</a-menu-item>
+                </a-menu>
               </template>
-              <SortsIcon :value="sortValue[column.key]"/>
+              <SortsIcon :value="state.sort === column.key ? state.order : undefined" />
             </a-popover>
           </div>
-        </template>
-      </template>
-      <template #headerLeftRender>
-        <a-space>
-            <PointTop ref="pointTopRef"/>
-          <template v-if="type === 'collector' && data.id">
-            <EmptyCreateButton v-if="pointActions.add" />
-            <j-permission-button
-              v-if="pointActions.scan"
-              type="primary"
-              :hasPermission="true"
-              @click="handleScan"
-            >
-              {{ $t('data-collector-ui.index.237811-1') }}
-            </j-permission-button>
-            <j-permission-button
-                v-if="pointActions.batchAdd"
-                type="primary"
-                @click="handleBatchAdd"
-                :hasPermission="true"
-            >
-              {{ $t('DataCollect.index.400151-12') }}
-            </j-permission-button>
-            <j-permission-button
-                type="primary"
-                @click="handleImport"
-                :hasPermission="true"
-            >
-              {{ $t('Point.index.400149-2') }}
-            </j-permission-button>
-            <j-permission-button
-                type="primary"
-                @click="handleExport"
-                :hasPermission="true"
-            >
-              {{ $t('Point.index.400149-3') }}
-            </j-permission-button>
-          </template>
-          <BatchDropdown
-              ref="batchRef"
-              v-model:isCheck="isCheck"
-              :actions="batchActions"
-              @change="onCheckChange"
-          >
-          </BatchDropdown>
-          <a-button v-if="isCheck" size="small" type="link" @click="toggleSelectAll">
-            <AIcon type="PartitionOutlined"/>
-            {{ isAllSelected ? $t('PointTable.index.40014110-0') : $t('PointTable.index.40014110-1') }}
-          </a-button>
-        </a-space>
-      </template>
-      <template #headerRightRender>
-          <a-button @click="columnsConfig.visible = true">
-              <AIcon type="SettingOutlined"/>
-              {{ $t('DataCollect.index.400151-16') }}
-          </a-button>
-      </template>
-      <template #name="slotProps">
-        <div class="point-name-cell">
-          <span class="point-name-icon"><AIcon type="EnvironmentFilled"/></span>
-          <div class="name" @click="handleView(slotProps)">
-              <j-ellipsis>{{ slotProps.name }}</j-ellipsis>
+          <div v-else-if="column.key === 'action'" class="point-workspace__action-header">
+            <span>{{ column.title }}</span>
+            <a-tooltip :title="$t('DataCollect.index.400151-16')">
+              <a-button type="text" size="small" :aria-label="$t('DataCollect.index.400151-16')" @click.stop="columnsVisible = true">
+                <AIcon type="SettingOutlined" />
+              </a-button>
+            </a-tooltip>
           </div>
-          <a-tag
-              class="point-status"
-              :color="ChannelState[slotProps?.state?.value === 'disabled' ? slotProps?.state?.value : slotProps?.runningState?.value]"
-          >{{ slotProps?.state?.value === 'disabled' ? slotProps?.state?.text : slotProps?.runningState?.text }}</a-tag>
-        </div>
-      </template>
-      <template #value="slotProps">
-        <ValueItem :value="propertyValue.get(slotProps.id)" :data="slotProps"/>
-      </template>
-      <template #modifyTime="slotProps">
-        {{
-          dayjs(slotProps.modifyTime).format('YYYY-MM-DD HH:mm:ss')
-        }}
-      </template>
-      <template #accessModes="slotProps">
-        <a-tag v-for="item in slotProps.accessModes" :key="item.value" :type="item.value">{{ item.text }}</a-tag>
-      </template>
-      <template #interval="slotProps">
-        {{ slotProps.interval }}ms
-      </template>
-      <template #address="slotProps">
-        {{ slotProps?.address || $t('comm.table.empty') }}
-      </template>
-      <template #description="slotProps">
-        <j-ellipsis style="max-width: 200px;white-space: normal;">{{ slotProps.description || $t('comm.table.empty') }}</j-ellipsis>
-      </template>
-    </j-pro-table>
-    <div v-if="loadingPoints || loadPointsFailed || (pointRows.length && !hasMorePoints)" class="point-load-status" role="status">
-      <a-space v-if="loadingPoints">
-        <a-spin size="small" />
-        {{ $t('PointTable.scroll.loading') }}
-      </a-space>
-      <a-space v-else-if="loadPointsFailed">
-        {{ $t('PointTable.scroll.failed') }}
-        <a-button type="link" size="small" @click="loadMorePoints">{{ $t('PointTable.scroll.retry') }}</a-button>
-      </a-space>
-      <span v-else>{{ $t('PointTable.scroll.complete') }}</span>
+        </template>
+        <template #name="record">
+          <div class="point-workspace__name">
+            <a @click="actions.view(record)"><j-ellipsis>{{ record.name }}</j-ellipsis></a>
+          </div>
+        </template>
+        <template #runningState="record">
+          <a-badge class="point-workspace__status"
+            :status="ChannelState[record.state?.value === 'disabled' ? 'stopped' : record.runningState?.value] || 'default'"
+            :text="record.state?.value === 'disabled' ? record.state?.text : record.runningState?.text" />
+        </template>
+        <template #value="record"><div class="point-workspace__value"><ValueItem :value="propertyValue.get(record.id)" :data="record" /></div></template>
+        <template #modifyTime="record">{{ record.modifyTime != null ? dayjs(record.modifyTime).format('YYYY-MM-DD HH:mm:ss') : '—' }}</template>
+        <template #address="record"><j-ellipsis><code class="point-workspace__address">{{ record.address ?? '—' }}</code></j-ellipsis></template>
+        <template #accessModes="record">{{ record.accessModes?.map((item: { text: string }) => item.text).join(' / ') || '—' }}</template>
+        <template #interval="record">{{ record.interval != null ? record.interval + ' ms' : '—' }}</template>
+        <template #description="record"><j-ellipsis>{{ record.description || '—' }}</j-ellipsis></template>
+        <template #action="record">
+          <a-space>
+            <j-permission-button type="link" size="small" :has-permission="true" :disabled="actions.editing.value"
+              :tooltip="{ title: $t('Channel.index.290640-13') }" @click="actions.edit(record)"><AIcon type="EditOutlined" /></j-permission-button>
+            <j-permission-button type="link" size="small" danger :has-permission="true"
+              :tooltip="{ title: $t('Channel.index.290640-16') }"
+              :pop-confirm="{ title: $t('DataCollect.utils.400158-2'), onConfirm: () => actions.remove(record) }"><AIcon type="DeleteOutlined" /></j-permission-button>
+          </a-space>
+        </template>
+      </j-pro-table>
     </div>
-  </div>
-  <ColumnsConfig
-      :data="columnsConfig.data"
-      :collectorData="data"
-      v-if="columnsConfig.visible"
-      @save="onSaveColumnsConfig"
-      @close="columnsConfig.visible = false"
-  />
-  <Save
-      v-if="visible.save"
-      :data="current"
-      :collector="data"
-      @save="onDetailRefresh"
-      @close="visible.save = false"
-  />
-  <Detail
-      v-if="_visible.point"
-      :data="current"
-      :collector="data"
-      @close="_visible.point = false"
-      @refresh="onDetailRefresh"
-  />
-  <Import
-      v-if="visible.import"
-      :downloadUrlBuilder="(_type) => exportTemplate(data.provider, _type)"
-      :request="() => pointImport(data.id, data.provider)"
-      @close="visible.import = false"
-      @save="onRefresh"
-  />
-  <BatchUpdate
-      v-if="visible.batchUpdate"
-      :data="_selectedRows"
-      :provider="data.provider"
-      :isAllSelected="isAllSelected"
-      :getBatchParams="getBatchParams"
-      @close="visible.batchUpdate = false"
-      @save="onRefresh"
-  />
-  <RenderComponents v-if="jsonData" :value="jsonData"/>
+    <footer class="point-workspace__footer">
+      <div v-if="selectedKeys.length" class="point-workspace__selection">
+        <span>{{ all ? $t('PointWorkspace.allSelected') : $t('PointWorkspace.selected', { count: selectedKeys.length }) }}</span>
+        <a-button type="link" size="small" @click="toggleAll">{{ $t(all ? 'PointTable.index.40014110-0' : 'PointTable.index.40014110-1') }}</a-button>
+      </div>
+      <div class="point-workspace__pagination">
+        <span>{{ $t('PointWorkspace.total', { total }) }}</span>
+        <a-pagination :current="current" :page-size="pageSize" :total="total" show-size-changer show-less-items
+          :page-size-options="['10', '20', '50', '100']" @change="changePage" />
+      </div>
+    </footer>
+  </section>
+  <ColumnsConfig v-if="columnsVisible" :data="columns" :collector-data="actions.scope.value"
+    @close="columnsVisible = false" @save="saveColumns" />
+  <Save v-if="actions.visible.save" :data="actions.current.value" :collector="actions.formCollector.value"
+    @close="actions.visible.save = false" @save="actions.saved" />
+  <Import v-if="actions.visible.import"
+    :download-url-builder="(format: string) => actions.exportTemplate(actions.scope.value.provider || '', format)"
+    :request="() => actions.pointImport(actions.scope.value.id || '', actions.scope.value.provider || '')"
+    @close="actions.visible.import = false" @save="actions.saved" />
+  <BatchUpdate v-if="actions.visible.batchUpdate" :data="selectedRows" :provider="actions.scope.value.provider"
+    :is-all-selected="all" :get-batch-params="actions.getBatchParams"
+    @close="actions.visible.batchUpdate = false" @save="actions.visible.batchUpdate = false; actions.saved()" />
+  <RenderComponents v-if="actions.jsonData.value" :value="actions.jsonData.value" />
 </template>
-
-<script setup>
-import { createReusableTemplate } from '@vueuse/core'
-
-import {useI18n} from "vue-i18n";
-import {
-  batchDeletePoint,
-  deletePoints,
-  disablePoints,
-  exportPoint,
-  exportTemplate,
-  queryPoint, savePointBatch,
-  pointImport,
-  enablePoints,
-  queryCodecProvider
-} from "@data-collector-ui/api/data-collect/collector";
-import SortsIcon from "./SortsIcon.vue";
-import ColumnsConfig from "./ColumnsConfig/index.vue";
-import {baseColumns} from "./columns";
-import {downloadFileByUrl, onlyMessage, randomString} from "@jetlinks-web/utils";
-import {
-  ChannelState,
-  COLLECTOR_DATA,
-  COLLECTOR_TYPE,
-  REFRESH_HANDLER,
-} from "@data-collector-ui/views/data-collect/data";
-import dayjs from "dayjs";
-import {cloneDeep, map} from "lodash-es";
-import {wsClient} from "@jetlinks-web/core";
-import {throttle} from "lodash-es";
-import Save from "./Save/index.vue";
-import Detail from "./Detail/index.vue";
-import {devGetProtocol} from "@data-collector-ui/utils/utils";
-import ValueItem from './components/ValueItem.vue'
-import RenderComponents from "@data-collector-ui/components/RenderComponents/RenderComponents.vue";
-import {useMenuStore} from "@jetlinks-web-core/store";
-import BatchUpdate from "./components/BatchUpdate.vue";
-import Import from "@data-collector-ui/views/data-collect/components/Import/index.vue"
-import {buildAllChannelTerm, buildPointQueryFilterTerms} from "@data-collector-ui/views/data-collect/utils";
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
 import ConditionFilter from '@jetlinks-web-core/components/ConditionFilter'
-import PointTop from "./PointTop.vue";
-import {usePointTablePagination} from './usePointTablePagination'
-
-const {t: $t} = useI18n();
-const sortValue = reactive({
-  name: undefined,
-  modifyTime: undefined,
-  interval: undefined,
-})
-const params = ref({})
-const showSearch = ref(false)
-const tableContainer = ref()
-const pointTopRef = ref()
-let pointTypeRefresh = false
-
-const columnsConfig = reactive({
-  visible: false,
-  data: [...baseColumns],
-  key: randomString()
-})
-const isCheck = ref(false);
-const isAllSelected = ref(false);
-const _selectedRowKeys = ref([]);
-const _selectedRows = ref([]);
-const {
-  rows: pointRows,
-  loading: loadingPoints,
-  failed: loadPointsFailed,
-  hasMore: hasMorePoints,
-  loadMore: loadMorePoints,
-  reload: reloadPoints,
-  onScroll: onTableScroll,
-} = usePointTablePagination(
-    (pageIndex, pageSize) => getDataSource({...params.value, pageIndex, pageSize}),
-    tableContainer,
-)
-const menuStore = useMenuStore();
-const data = inject(COLLECTOR_DATA, ref({}))
-const type = inject(COLLECTOR_TYPE, ref('all'))
-const pointType = inject('point-type', ref())
-const batchRef = ref()
-const filterValue = inject('filter-value', reactive({
-  channel: false,
-  collector: false,
-  point: false,
-  provider: [],
-  runningState: [],
-  state: [],
-  collectorState: []
-}))
-const refreshHandler = inject(REFRESH_HANDLER)
-const subRef = ref();
-const propertyValue = ref(new Map());
-
-const visible = reactive({ // 判断按钮显示
-  batchAdd: false,
-  save: false,
-  import: false,
-  batchUpdate: false,
-});
-const _visible = inject('detail-visible')
-
-const current = ref({})
-const pointActions = reactive({
-  add: false,
-  scan: false,
-  batchAdd: false,
-});
-const jsonData = ref();
-const scanSetting = ref({
-  columns: [],
-  selectedData: [],
-  handleData: undefined,
-})
-
-const codecList = ref([])
-
-provide("point-actions", pointActions);
-provide('plugin-scan-point', scanSetting);
-provide('collector-data', data);
-provide('codec-list', codecList)
-
-const searchCount = computed(() => {
-  // 统计filterValue
-  let count = Object.keys(filterValue).filter((key) => {
-    const value = filterValue[key]
-    if (Array.isArray(value)) {
-      return value.length > 0
-    }
-    return !!value
-  }).length;
-  if (pointType.value !== 'total') {
-    count++
-  }
-  const _terms = params.value.terms || [];
-  _terms.map(i => {
-    const __terms = i.terms || [];
-    count += __terms.length
-  })
-  return count
-})
-
-const onResizeColumn = (w, col) => {
-  // 必须替换列对象才能保持响应性
-  const target = columnsConfig.data.find(c => c.key === col.key)
-  if (target) {
-    target.width = w
-  }
+import BatchDropdown from '@jetlinks-web-core/components/BatchDropdown/index.vue'
+import RenderComponents from '@data-collector-ui/components/RenderComponents'
+import { ChannelState } from '../../data'
+import PointTop from './PointTop.vue'
+import SortsIcon from './SortsIcon.vue'
+import ColumnsConfig from './ColumnsConfig/index.vue'
+import ValueItem from './components/ValueItem.vue'
+import Save from './Save/index.vue'
+import Import from '../Import/index.vue'
+import BatchUpdate from './components/BatchUpdate.vue'
+import { defaultPointColumns, pointActionColumn, pointSearchFields } from './columns'
+import { usePointList } from './usePointList'
+import { usePointSearch } from './usePointSearch'
+import { usePointSelection } from './usePointSelection'
+import { usePointActions } from './usePointActions'
+import { usePointTableSize } from './usePointTableSize'
+const { t: $t } = useI18n()
+const { rows, state, total, current, pageSize, loading, failed, reload, changePage, queryKey, acceptedQuery, propertyValue, hasSearch } = usePointList()
+const selection = usePointSelection(rows, queryKey)
+const { all, selectedRows, selectedKeys, rowSelection, toggleAll } = selection
+const actions = usePointActions(selection, acceptedQuery, rows)
+const { viewport, bodyHeight } = usePointTableSize()
+const pointTopRef = ref<InstanceType<typeof PointTop>>()
+const columns = ref<any[]>(defaultPointColumns())
+// 按可见列分配表格宽度，让长地址在单元格内省略，不反向撑大整页。
+const tableWidth = computed(() => columns.value.reduce((width, column) => width + (Number(column.width) || 150), 48))
+const columnsVisible = ref(false)
+const { searchTerms, search } = usePointSearch(state)
+function sort(key: string, order: string) {
+  state.sort = state.sort === key && state.order === order ? '' : key
+  state.order = order === 'asc' ? 'asc' : 'desc'
+  state.page = 1
 }
-
-const rowSelection = computed(() => {
-  if (!isCheck.value) {
-    return undefined
-  }
-  return {
-    selectedRowKeys: _selectedRowKeys.value,
-    onSelect: onSelectChange,
-    onSelectAll: selectAll,
-    onSelectNone: onSelectNone,
-    getCheckboxProps: () => ({
-      disabled: isAllSelected.value,
-    }),
-    getTitleCheckboxProps: () => ({
-      disabled: isAllSelected.value,
-    }),
-  }
-})
-
-const syncSelectAllPageSelection = () => {
-  if (!isAllSelected.value) {
-    return
-  }
-  _selectedRowKeys.value = pointRows.value.map(item => item.id)
-  _selectedRows.value = [...pointRows.value]
+function resizeColumn(width: number, column: { key: string }) {
+  columns.value = columns.value.map(item => item.key === column.key ? { ...item, width } : item)
 }
-
-const clearSelectionState = () => {
-  isAllSelected.value = false
-  _selectedRowKeys.value = []
-  _selectedRows.value = []
-}
-
-const toggleSelectAll = () => {
-  isAllSelected.value = !isAllSelected.value
-  if (isAllSelected.value) {
-    syncSelectAllPageSelection()
-  } else {
-    _selectedRowKeys.value = []
-    _selectedRows.value = []
-  }
-}
-
-const hasTableDataForBatchAction = () => {
-  if (pointRows.value.length) {
-    return true
-  }
-  // 全选所有会按当前筛选范围提交批量请求，空表必须先拦截，避免误触发空范围操作。
-  onlyMessage($t('PointTable.index.40014110-2'), 'warning')
-  return false
-}
-
-const handleBatchActionWithSelectAll = async (actionKey, handler) => {
-  if (isAllSelected.value) {
-    if (!hasTableDataForBatchAction()) {
-      return
-    }
-    // TODO: 全选所有场景下需要调用单独的批量接口，按当前筛选条件处理全部点位。
-    switch(actionKey) {
-      case 'enable':
-        enablePointsBatch();
-        break;
-      case 'disable':
-        disablePointsBatch();
-        break;
-      case 'delete':
-        deletePointsBatch();
-        break;
-    }
-    return
-  }
-  return handler()
-}
-
-const getBatchParams = () => {
-  const terms = params.value?.terms || []
-  return type.value === 'collector' && data.value.id ? {
-    ...params.value,
-    terms: [
-      ...terms,
-      {
-        column: 'collectorId',
-        value: data.value?.id
-      }
-    ]
-  } : params.value
-}
-
-const enablePointsBatch = async () => {
-  const res = await enablePoints(getBatchParams())
-  if(res.success) {
-    onlyMessage($t('Point.index.400149-14'));
-    onRefresh(true);
-  }
-}
-
-const disablePointsBatch = async () => {
-  const res = await disablePoints(getBatchParams())
-  if(res.success) {
-    onlyMessage($t('Point.index.400149-14'));
-    onRefresh(true);
-  }
-}
-
-const deletePointsBatch = async () => {
-  const res = await deletePoints(getBatchParams())
-  if(res.success) {
-    onlyMessage($t('Point.index.400149-14'));
-    onRefresh(true);
-  }
-}
-
-const batchActions = computed(() => {
-  const arr = []
-  const flag = type.value === 'collector' && !!data.value.id;
-  if (flag) {
-    arr.push({
-      key: 'update',
-      text: $t('DataCollect.index.400151-19'),
-      ghost: true,
-      type: 'primary',
-      icon: 'EditOutlined',
-      selected: {
-        onClick: () => {
-          if (isAllSelected.value && !hasTableDataForBatchAction()) {
-            return
-          }
-          visible.batchUpdate = true
-        }
-      }
-    },)
-  }
-  return [
-    ...arr,
-    {
-      key: 'enabled',
-      text: $t('DataCollect.index.400151-17'),
-      ghost: true,
-      type: 'primary',
-      icon: 'CheckCircleOutlined',
-      selected: {
-        popConfirm: {
-          title: $t('DataCollect.index.400151-18'),
-          onConfirm: async () => handleBatchActionWithSelectAll('enable', async () => {
-            if (!_selectedRowKeys.value.length) {
-              onlyMessage($t('Point.index.400149-15'), 'error');
-              return
-            }
-            const arr = _selectedRows.value.map(i => {
-              return {
-                ...i,
-                state: 'enabled'
-              }
-            })
-            const response = await savePointBatch(arr)
-            if (response.success) {
-              onRefresh(true)
-              onlyMessage($t('Point.index.400149-14'), 'success');
-            }
-          }),
-        },
-      }
-    },
-    {
-      key: 'disable',
-      text: $t('DataCollect.index.400151-20'),
-      danger: true,
-      icon: 'StopOutlined',
-      selected: {
-        popConfirm: {
-          title: $t('DataCollect.index.400151-21'),
-          onConfirm: async () => handleBatchActionWithSelectAll('disable', async () => {
-            if (!_selectedRowKeys.value.length) {
-              onlyMessage($t('Point.index.400149-15'), 'error');
-              return
-            }
-            const arr = _selectedRows.value.map(i => {
-              return {
-                ...i,
-                state: 'disabled'
-              }
-            })
-            const response = await savePointBatch(arr)
-            if (response.success) {
-              onRefresh(true)
-              onlyMessage($t('Point.index.400149-14'), 'success');
-            }
-          }),
-        },
-      },
-    },
-    {
-      key: 'delete',
-      text: $t('DataCollect.index.400151-22'),
-      danger: true,
-      icon: 'DeleteOutlined',
-      selected: {
-        popConfirm: {
-          title: $t('Point.index.400149-6'),
-          onConfirm: async () => handleBatchActionWithSelectAll('delete', async () => {
-            if (!_selectedRowKeys.value.length) {
-              onlyMessage($t('Point.index.400149-15'), 'error');
-              return
-            }
-            const response = await batchDeletePoint(_selectedRowKeys.value)
-            if (response.success) {
-              onRefresh(true)
-              onlyMessage($t('Point.index.400149-14'), 'success');
-            }
-          }),
-        },
-      },
-    },
-  ]
-})
-
-const handleSubscribeValue = throttle((payload) => {
-  propertyValue.value.set(payload.pointId, payload);
-});
-
-const onRefresh = (flag = false) => {
-  _visible.point = false
-  visible.import = false
-  visible.save = false
-  visible.batchUpdate = false
-  if (flag) {
-    batchRef.value?.reload?.()
-    clearSelectionState()
-  }
-  refreshHandler?.refreshAll?.()
-}
-
-const onDetailRefresh = () => {
-  refreshHandler?.refreshAll?.()
-}
-
-const subscribeProperty = (value) => {
-  const list = map(value, 'id');
-  const channel = type.value === 'all' ? '*' : (type.value === 'channel' ? data?.value?.id : data?.value?.channelId)
-  const collector = type.value === 'all' ? '*' : (type.value === 'collector' ? data?.value?.id : '*')
-  const id = `collector-${channel || '*'}-${collector || '*'}-data-${list.join('-')}`;
-  const topic = `/collector/${channel || '*'}/${collector || '*'}/data`;
-  subRef.value = wsClient.getWebSocket(id, topic, {
-    pointId: list.join(','),
-  }).subscribe((res) => {
-    //防止刷新过快
-    handleSubscribeValue(res.payload);
-  });
-};
-
-const getDataSource = async (p) => {
-  const _params = {...p}
-  const terms = [
-    ...buildPointQueryFilterTerms(filterValue, {skipChannel: type.value === 'all'})
-  ]
-  // 根据左边的搜索来查询数据
-  if (type.value === 'all') {
-    // “全部”视图先按通道筛选得到范围，避免通道为空时继续查询点位转换接口。
-    const channelTerm = await buildAllChannelTerm(filterValue);
-    if (!channelTerm) {
-      return {
-        success: true,
-        result: {
-          data: [],
-          total: 0,
-        },
-      };
-    }
-    terms.push(channelTerm);
-  } else {
-    terms.push({
-      column: type.value === 'channel' ? 'channelId' : 'collectorId',
-      type: 'and',
-      termType: 'eq',
-      value: data.value.id
-    })
-  }
-  if (['running', 'stopped'].includes(pointType.value)) {
-    terms.push({
-      // column: 'runningState',
-      // termType: pointType.value === 'running' ? 'eq' : 'not',
-      // type: 'and',
-      // value: 'running'
-      column: 'runningState',
-      termType: pointType.value === 'running' ? 'eq' : 'not',
-      type: 'and',
-      value: 'running'
-    })
-  }
-  if (!_params.terms?.length) {
-    _params.terms = []
-  }
-  if (terms.length > 0) {
-    _params.terms = [..._params.terms, ...terms]
-  }
-  const sorts = Object.keys(sortValue).filter(i => sortValue[i]).map(key => ({
-    name: key,
-    order: sortValue[key]
-  }))
-  if (sorts.length) {
-    _params.sorts = sorts
-  } else {
-    _params.sorts = [{name: 'createTime', order: 'desc'}]
-  }
-  // 批量创建点位可能具有相同时间，追加唯一 ID 排序以稳定分页边界。
-  _params.sorts.push({name: 'id', order: 'asc'})
-  return queryPoint(_params)
-}
-
-// 只订阅当前查询已接受的全部点位，避免翻页后旧行失去实时更新或过期请求重建订阅。
-watch(pointRows, (rows) => {
-  subRef.value?.unsubscribe()
-  syncSelectAllPageSelection()
-  if (rows.length) {
-    subscribeProperty(rows)
-  } else {
-    propertyValue.value.clear()
-  }
-})
-
-const getPointAction = async () => {
-  jsonData.value = ''
-  jsonData.value = await devGetProtocol(data.value.provider, "pointActions");
-};
-
-const onCheckChange = (checked) => {
-  if (!checked) {
-    clearSelectionState()
-    return
-  }
-  _selectedRowKeys.value = [];
-  _selectedRows.value = [];
-};
-
-const onSelectChange = (item, state) => {
-  if (isAllSelected.value) {
-    return
-  }
-  const arr = new Set(_selectedRowKeys.value);
-  if (state) {
-    arr.add(item.id);
-    _selectedRows.value.push(item);
-  } else {
-    arr.delete(item.id);
-  }
-  _selectedRowKeys.value = [...arr.values()];
-  _selectedRows.value = _selectedRows.value.filter(i => _selectedRowKeys.value.includes(i.id))
-};
-
-const onSelectNone = () => {
-  clearSelectionState()
-}
-
-const selectAll = (selected, selectedRows, changeRows) => {
-  if (isAllSelected.value) {
-    return
-  }
-  if (selected) {
-    changeRows.map((i) => {
-      if (!_selectedRowKeys.value.includes(i.id)) {
-        _selectedRowKeys.value.push(i.id);
-        _selectedRows.value.push(i);
-      }
-    });
-  } else {
-    const arr = changeRows.map((item) => item.id);
-    const _ids = [];
-    _selectedRowKeys.value.map((i) => {
-      if (!arr.includes(i)) {
-        _ids.push(i);
-      }
-    });
-    _selectedRowKeys.value = _ids;
-  }
-  _selectedRows.value = _selectedRows.value.filter(i => _selectedRowKeys.value.includes(i.id))
-};
-
-const handleSort = (key, value) => {
-  Object.keys(sortValue).map(i => {
-    if (i === key && sortValue[i] !== value) {
-      sortValue[i] = value
-    } else {
-      sortValue[i] = undefined
-    }
-  })
-  columnsConfig.key = randomString()
-  // Sort change
-}
-
-const isEmptyTerms = (terms) => {
-  if (!Array.isArray(terms) || !terms.length) {
-    return true
-  }
-
-  return terms.every(item => {
-    if (!item || typeof item !== 'object') {
-      return true
-    }
-
-    if (Array.isArray(item.terms)) {
-      return isEmptyTerms(item.terms)
-    }
-
-    return !item.column && !item.termType && !item.type && item.value === undefined
-  })
-}
-
-const handleSearch = (_params) => {
-  params.value = isEmptyTerms(_params?.terms) ? {} : _params
-}
-
-const onSaveColumnsConfig = (dt) => {
-  columnsConfig.data = dt
-  columnsConfig.key = randomString()
-  columnsConfig.visible = false
-}
-
-const handleAdd = () => {
-  if (data.value?.provider === 'COLLECTOR_GATEWAY') {
-    current.value = {
-      collectorId: data.value?.id,
-      provider: data.value?.provider || 'COLLECTOR_GATEWAY',
-    };
-    visible.saveModBus = true;
-  } else {
-    if (data.value?.provider === 'snap7') {
-      current.value = {
-        collectorId: data.value?.id,
-        provider: data.value?.provider,
-        deviceType: data.value?.configuration.type,
-      };
-    } else if (data.value?.provider === 'iec104') {
-      current.value = {
-        collectorId: data.value?.id,
-        provider: data.value?.provider,
-      };
-    } else {
-      current.value = {
-        collectorId: data.value?.id,
-        provider: data.value?.provider || 'MODBUS_TCP',
-      };
-    }
-    visible.save = true;
-  }
-};
-
-const handleScan = () => {
-  menuStore.jumpPage('data-collect/Scan', {params: {id: data.value?.id}});
-};
-
-const handleBatchAdd = () => {
-  menuStore.jumpPage('data-collect/BatchAdd', {params: {id: data.value?.id}});
-};
-const handleImport = () => {
-  visible.import = true;
-  current.value = cloneDeep(data.value);
-};
-const handleExport = async () => {
-  const params =
-      data.value?.provider === 'COLLECTOR_GATEWAY'
-          ? data.value?.configuration?.collectorProvider
-          : data.value?.provider;
-  const res = await exportPoint(data.value.id, params);
-  if (res) {
-    const blob = new Blob([res], {type: 'xlsx'});
-    const url = URL.createObjectURL(blob);
-    downloadFileByUrl(url, $t('Point.index.400149-16', [data.value?.name]), 'xlsx');
-  }
-};
-
-const handleView = (data) => {
-  _visible.point = true;
-  _visible.channel = false;
-  _visible.collector = false;
-  current.value = cloneDeep(data);
-};
-
-const refresh = () => {
-  columnsConfig.key = randomString()
-  clearSelectionState();
-  batchRef.value?.reload?.()
-}
-
-const queryCodecList = async () => {
-  const res = await queryCodecProvider()
-  if(res.success) {
-    codecList.value = res.result.map(item => {
-      return {
-        label: item.name,
-        value: item.id,
-        ...item
-      }
-    })
-  }
-}
-
-watch(
-    () => data.value.id,
-    (value) => {
-      if (value && !!data.value.provider) {
-        if (data.value.provider === 'COLLECTOR_GATEWAY') {
-          pointActions.add = true
-          pointActions.scan = false
-          pointActions.batchAdd = false
-        } else {
-          pointActions.add = false
-          pointActions.scan = false
-          pointActions.batchAdd = false
-          getPointAction()
-        }
-      }
-      // 刷新页面, 清空查询参数
-      params.value = {}
-      // 清空高级搜索
-      refresh()
-      console.log('data.value.id changed')
-    },
-    {immediate: true},
-);
-
-watch(
-    () => pointType.value,
-    () => {
-      if (!pointTypeRefresh) { // 保证第一次只刷新上面的id变化
-        pointTypeRefresh = true
-      } else {
-        refresh()
-        console.log('pointType changed')
-      }
-    },
-    {immediate: true},
-)
-
-watch(
-    () => [
-      params.value,
-      columnsConfig.key,
-      filterValue.channel,
-      filterValue.collector,
-      filterValue.point,
-      filterValue.provider,
-      filterValue.runningState,
-      filterValue.state,
-      filterValue.collectorState,
-    ],
-    () => {
-      clearSelectionState();
-      reloadPoints();
-    },
-    {immediate: true, deep: true},
-)
-
-onMounted(() => {
-  queryCodecList()
-})
-
-onUnmounted(() => {
-  subRef.value?.unsubscribe();
-});
-
-defineExpose({
-  loadData: async () => {
-      // 刷新点位统计
-    await pointTopRef.value?.loadData?.()
-    await reloadPoints()
-  }
-})
-
-const [DefineEmptyCreate, EmptyCreateButton] = createReusableTemplate()
+function saveColumns(value: any[]) { columns.value = [...value.filter(item => item.key !== 'action'), pointActionColumn]; columnsVisible.value = false }
+const loadData = async () => { await Promise.all([pointTopRef.value?.loadData(), reload()]) }
+defineExpose({ loadData })
 </script>
-
-<style lang="less" scoped>
-.point-load-status {
-  flex-shrink: 0;
-  padding: var(--space-2) 0;
-  text-align: center;
-  color: var(--ink-2);
-}
-
-.header-cell-title {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: space-between;
-  white-space: normal;
-
-  .value {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-.name {
-  cursor: pointer;
-  flex: 1;
-  min-width: 0;
-  //&:hover {
-  color: @primary-color;
-  //}
-}
-
-.point-name-cell {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: var(--space-2);
-  white-space: normal;
-}
-
-.point-name-icon {
-  flex: none;
-  color: var(--accent);
-}
-
-.point-status {
-  flex: none;
-  margin-inline-end: 0;
-}
-
-.sort-item {
-  cursor: pointer;
-
-  &:hover {
-    color: @primary-color;
-  }
-
-  &.active {
-    color: @primary-color;
-  }
-}
+<style scoped>
+.point-workspace { display: flex; flex-direction: column; gap: var(--space-3); flex: 1; min-width: 0; min-height: 0; }
+.point-workspace__toolbar, .point-workspace__actions, .point-workspace__footer,
+.point-workspace__selection, .point-workspace__pagination { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.point-workspace__actions, .point-workspace__pagination { margin-left: auto; }
+.point-workspace__actions { justify-content: flex-end; min-width: 0; }
+.point-workspace__search { flex: 1 1 20rem; min-width: 12rem; }
+.point-workspace__status-filter { display: flex; flex-wrap: wrap; max-width: 100%; }
+.point-workspace__table { flex: 1; min-height: 10rem; min-width: 0; overflow: hidden; }
+.point-workspace__table :deep(.j-pro-table) { padding: 0; height: 100%; }
+.point-workspace__name { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.point-workspace__name > a { min-width: 0; max-width: 100%; color: var(--jet-theme-primary); font-size: var(--fs-14); }
+.point-workspace__name > a:hover { color: var(--jet-theme-primary); }
+.point-workspace__status { white-space: nowrap; }
+.point-workspace__status :deep(.ant-badge-status-text) { margin-inline-start: var(--space-1); font-size: var(--fs-12); }
+.point-workspace__value :deep(.value) { flex: 1; min-width: 0; line-height: 18px; }
+.point-workspace__value :deep(.value > :last-child) { color: var(--jet-theme-text-secondary); font-size: var(--fs-12); }
+.point-workspace__address { padding: 0 var(--space-2); border-radius: var(--r-2); background: var(--bg-hover); color: var(--jet-theme-text-secondary); }
+.point-workspace__sort { display: flex; justify-content: space-between; gap: var(--space-2); }
+.point-workspace__action-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); white-space: nowrap; }
+.point-workspace__footer { color: var(--jet-theme-text-secondary); font-size: var(--fs-13); flex: none; padding-top: var(--space-3); border-top: 1px solid var(--jet-theme-border-secondary); }
 </style>

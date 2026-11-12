@@ -15,59 +15,26 @@
   </div>
 </template>
 
-<script setup>
-import {wsClient} from "@jetlinks-web/core";
-import dayjs from "dayjs";
-import ValueItem from "../components/ValueItem.vue";
-import { formatPointValue } from '@data-collector-ui/utils/pointValue';
-import {useI18n} from "vue-i18n";
-
-const {t: $t} = useI18n();
-
-const info = inject('point-info', ref({}))
-const refreshFn = inject('point-refresh')
-const subRef = ref(null);
-const value = ref({})
-// 订阅获取值
-const subscribeProperty = () => {
-  if (subRef.value) {
-    subRef.value?.unsubscribe?.()
-  }
-  const channel = info.value?.channelId || '*'
-  const collector = info.value.collectorId || '*'
-  const id = `collector-${channel}-${collector}-data-${info.value.id}-${dayjs().valueOf()}`;
-  const topic = `/collector/${channel}/${collector}/data`;
-  subRef.value = wsClient.getWebSocket(id, topic, {
-    pointId: info.value.id,
-  }).subscribe((res) => {
-    value.value = res.payload
-  });
-};
-
-const onRefresh = () => {
-  refreshFn?.refresh?.()
-}
-
-watch(() => info.value.id, (newValue) => {
-  if (newValue) {
-    subscribeProperty()
-  }
-}, {
-  immediate: true
-})
-
-onUnmounted(() => {
-  if (subRef.value) {
-    subRef.value?.unsubscribe?.()
-  }
-})
+<script setup lang="ts">
+import { computed, inject, ref, type Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import dayjs from 'dayjs'
+import ValueItem from '../components/ValueItem.vue'
+import { formatPointValue } from '@data-collector-ui/utils/pointValue'
+import { usePointValues } from '../usePointValues'
+import type { CollectRecord } from '../../../hook/context'
+const { t: $t } = useI18n()
+const info = inject<Ref<CollectRecord>>('point-info', ref({}))
+const refreshFn = inject<{ refresh: () => Promise<void> }>('point-refresh')
+const values = usePointValues(computed(() => info.value.id ? [info.value] : []))
+const value = computed(() => values.value.get(info.value.id || '') || {})
+const onRefresh = () => refreshFn?.refresh()
 </script>
-
 <style lang="less" scoped>
 .value-list {
-  border: 1px solid #e8e8e8;
-  padding: 12px;
-  border-radius: 6px;
+  border: 1px solid var(--jet-theme-border-secondary);
+  padding: var(--space-3);
+  border-radius: var(--r-3);
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 12px;
@@ -75,7 +42,7 @@ onUnmounted(() => {
   .value-item {
     .value-label {
       font-size: 12px;
-      color: #a6a6a6;
+      color: var(--jet-theme-text-secondary);
       margin-bottom: 8px;
     }
 
@@ -86,4 +53,5 @@ onUnmounted(() => {
     }
   }
 }
+@media (max-width: 600px) { .value-list { grid-template-columns: 1fr; } }
 </style>

@@ -352,6 +352,7 @@ export const buildAllChannelTerm = async (filterValue = {}) => {
     const channelResp = await queryChannelNoPaging({
         terms: buildChannelScopeFilterTerms(filterValue)
     });
+    if (!channelResp.success) throw new Error('Channel scope unavailable');
     const channelIds = channelResp?.result?.map((item) => item.id).filter(Boolean) || [];
 
     if (!channelIds.length) {
