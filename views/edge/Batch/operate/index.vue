@@ -54,10 +54,12 @@
   </a-drawer>
 </template>
 
-<script setup name="BatchOperate">
+<script setup>
 import { useBatchOperateOptions } from '../util'
 import Log from '../log/index.vue'
 import Icon from '../components/Icon.vue'
+
+defineOptions({ name: 'BatchOperate' })
 
 const props = defineProps({
   deviceList: {

@@ -361,7 +361,7 @@
   />
   <RenderComponents :key="data.id + (data.state?.value || data.state)" v-if="data.id && data.provider !== 'COLLECTOR_GATEWAY' && jsonData" :value="jsonData"/>
 </template>
-<script lang="ts" setup name="PointPage">
+<script lang="ts" setup>
 import { createReusableTemplate } from '@vueuse/core'
 
 import {
@@ -392,6 +392,8 @@ import {useI18n} from 'vue-i18n';
 import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
 import VirtualSave from './Save/Virtual/index.vue';
+
+defineOptions({ name: 'PointPage' })
 
 const {t: $t} = useI18n();
 const props = defineProps({

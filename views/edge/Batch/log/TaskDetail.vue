@@ -286,7 +286,7 @@
     </a-modal>
 </template>
 
-<script setup name="TaskDetail">
+<script setup>
 import {
     queryTaskdDtail,
     startAllTask,
@@ -303,6 +303,8 @@ import Icon from '../components/Icon.vue';
 import { useI18n } from 'vue-i18n';
 import { taskDetailColumnMap } from '../util';
 import {theme} from "ant-design-vue";
+
+defineOptions({ name: 'TaskDetail' })
 
 const { t: $t } = useI18n();
 const { token } = theme.useToken()
