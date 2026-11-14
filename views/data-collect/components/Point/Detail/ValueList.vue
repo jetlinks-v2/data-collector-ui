@@ -7,6 +7,7 @@
     <div class="value-item">
       <div class="value-label">{{ $t('DataCollect.index.400152-11') }}</div>
       <div class="value">{{ formatPointValue(value.hex, $t('comm.table.empty-2')) }}</div>
+      <small v-if="value.rawByteLength > (value.hex?.length || 0) / 2">{{ $t('collectorValue.previewLimit', { count: (value.hex?.length || 0) / 2 }) }}</small>
     </div>
     <div class="value-item">
       <div class="value-label">{{ $t('DataCollect.index.400152-12') }}</div>
@@ -26,7 +27,7 @@ import type { CollectRecord } from '../../../hook/context'
 const { t: $t } = useI18n()
 const info = inject<Ref<CollectRecord>>('point-info', ref({}))
 const refreshFn = inject<{ refresh: () => Promise<void> }>('point-refresh')
-const values = usePointValues(computed(() => info.value.id ? [info.value] : []))
+const values = usePointValues(computed(() => info.value.id ? [info.value] : []), true)
 const value = computed(() => values.value.get(info.value.id || '') || {})
 const onRefresh = () => refreshFn?.refresh()
 </script>

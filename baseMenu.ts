@@ -1,15 +1,11 @@
 import baseMenu from './baseMenu.json'
-import p from './package.json'
+import { id } from './package.json'
 
-const handleMenu = (menus: any[]): any[] => menus.map(item => ({
+// Match the runtime module menu contract; JSON alone is used for translations, not registration.
+const withModule = (menus: typeof baseMenu): unknown[] => menus.map(item => ({
   ...item,
-  children: item.children ? handleMenu(item.children) : undefined,
-  options: { appName: p.id || p.name, ...item.options }
+  options: { appName: id },
+  children: item.children?.map(child => ({ ...child, options: { appName: id } })),
 }))
 
-export default () => {
-  return handleMenu(baseMenu)
-}
-
-
-
+export default () => withModule(baseMenu)

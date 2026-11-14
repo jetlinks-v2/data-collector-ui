@@ -209,7 +209,8 @@ test('display compatibility keeps false, zero and parsedData precedence without 
   }
   assert.equal(values.formatPointData({ parsedData: null, parseData: 42, dataType: 'Value' }, missing), missing)
   assert.equal(values.formatPointValue({ value: uint64 }, missing), `{"value":"${uint64}"}`)
-  for (const value of [undefined, null, '']) assert.equal(values.formatPointValue(value, missing), missing)
+  for (const value of [undefined, null]) assert.equal(values.formatPointValue(value, missing), missing)
+  assert.equal(values.formatPointValue('', missing), '∅')
 })
 
 test('actual ECharts retains exact text while converting coordinates, and zero remains visible', () => {
