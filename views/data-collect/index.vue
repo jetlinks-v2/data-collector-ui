@@ -1,51 +1,105 @@
 <template>
-  <FullPage class="collect-workspace" transparent-background>
-    <EqualHeightColumns left-width="15rem" right-width="1fr">
-      <template #left><Left ref="leftRef" @change="onChange" /></template>
-      <template #right><Right v-if="ready" ref="rightRef" /></template>
+  <FullPage flex transparent-background class="cw-page">
+  <div ref="root" class="collection-workspace" :class="{ 'cw-collapsed': folded || narrow }">
+    <EqualHeightColumns class="cw-layout" left-width="15rem" :collapsible="false" :show-left="!folded && !narrow">
+      <template #left><aside class="cw-sidebar"><div ref="sidebar" /></aside></template>
+      <template #right><main ref="main" class="cw-main">
+        <header v-if="!setupProvider" class="cw-head">
+          <div class="cw-row">
+            <button class="cw-icon-button cw-nav-trigger" :aria-label="$t('collectorWorkspace.navigation')" :title="$t('collectorWorkspace.navigation')" @click="drawerOpen = true"><WorkspaceIcon name="menu" :size="21" /></button>
+            <button v-if="collector" class="cw-icon-button" :aria-label="$t('collectorWorkspace.allCollectors')" :title="$t('collectorWorkspace.allCollectors')" @click="select()"><AIcon type="ArrowLeftOutlined" /></button>
+            <WorkspaceIcon class="cw-heading-icon" :object="collector" :name="collector ? undefined : 'grid'" :size="25" />
+            <h1>{{ choosingProvider || setupProvider ? $t('collectorWorkspace.newCollection') : collector?.name || $t('collectorWorkspace.allCollectors') }}</h1>
+            <WorkspaceStatus v-if="collector" :object="collector" />
+            <RuntimeCardMetrics v-if="collector" :object="collector" kind="collector" />
+            <DiagnosticTrigger v-if="collector" :open="diagnosticId === collector.id" :label="$t('collectorWorkspace.diagnostics')" @visibility="visible => visible ? diagnose('collector', collector!) : closeDiagnostic()"><DiagnosticContent :state="diagnosticState" @close="closeDiagnostic" /></DiagnosticTrigger>
+          </div>
+          <div class="cw-row">
+            <j-permission-button v-if="collector" hasPermission="data-collect:view" @click="data.trial()"><AIcon type="PlayCircleOutlined" />{{ $t('collectorWorkspace.read') }}</j-permission-button>
+            <j-permission-button v-if="collector" type="primary" hasPermission="data-collect:add" @click="addPoint"><AIcon type="PlusOutlined" />{{ $t('collectorWorkspace.newPoint') }}</j-permission-button>
+            <j-permission-button v-else-if="!choosingProvider && !setupProvider" hasPermission="data-collect:add" type="primary" @click="choosingProvider = true"><AIcon type="PlusOutlined" />{{ $t('collectorWorkspace.newCollection') }}</j-permission-button>
+            <a-dropdown :trigger="['click']"><button class="cw-icon-button" :aria-label="$t('collectorWorkspace.more')"><AIcon type="MoreOutlined" /></button><template #overlay><a-menu>
+              <a-menu-item v-if="collector" @click="editObject('collector')"><span class="collector-config-option"><AIcon type="SettingOutlined" /><span class="collector-config-option-copy">{{ $t('collectorWorkspace.collectorSettings') }}<small>{{ $t('collectorOptions.settingsHint') }}</small></span></span></a-menu-item>
+              <a-menu-item @click="advanced = true"><span class="collector-config-option"><AIcon type="ControlOutlined" /><span class="collector-config-option-copy">{{ $t('collectorWorkspace.advanced') }}<small>{{ $t('collectorOptions.advancedHint') }}</small></span></span></a-menu-item>
+              <a-menu-item @click="refresh"><span class="collector-config-option"><AIcon type="ReloadOutlined" /><span class="collector-config-option-copy">{{ $t('collectorWorkspace.refresh') }}<small>{{ $t('collectorOptions.refreshHint') }}</small></span></span></a-menu-item>
+            </a-menu></template></a-dropdown>
+          </div>
+        </header>
+        <ProviderChooser v-if="choosingProvider" :providers="providers" @cancel="choosingProvider = false" @select="provider => { setupProvider = provider; choosingProvider = false }" />
+        <CollectionSetup v-else-if="setupProvider" ref="configurationEditor" :key="setupProvider.id" :provider="setupProvider" :channels="channels" @cancel="cancelSetup" @navigation="drawerOpen = true" @saved="onCollectionCreated" />
+        <template v-else>
+        <div v-if="collector" class="cw-channel">
+          <span class="cw-row cw-channel-name"><AIcon type="ApiOutlined" /><span class="cw-channel-label" :title="channel?.name || collector.channelName">{{ channel?.name || collector.channelName || '—' }}</span><WorkspaceStatus v-if="channel" :object="channel" /></span>
+          <RuntimeCardMetrics v-if="channel" :object="channel" kind="channel" />
+          <j-permission-button v-if="channel" type="link" class="cw-channel-action" :aria-label="$t('collectorWorkspace.connection')" :title="$t('collectorWorkspace.connection')" hasPermission="data-collect:update" @click="editObject(objectForm === 'channel' ? undefined : 'channel')"><AIcon type="SettingOutlined" /><span class="cw-channel-action-label">{{ $t('collectorWorkspace.connection') }}</span></j-permission-button>
+        </div>
+        <ObjectConfiguration v-if="objectForm" ref="configurationEditor" :key="objectForm" :kind="objectForm" :value="objectForm === 'channel' ? channel : collector" :channels="channels" :providers="providers" @close="editObject()" @saved="onObjectSaved" />
+        <div class="cw-toolbar">
+          <a-input-search v-if="collector" v-model:value="pointSearch" class="cw-search" allow-clear :disabled="batchBusy" :placeholder="$t('collectorWorkspace.searchPoints')" @search="data.filterPoints" />
+          <a-input-search v-else v-model:value="search" class="cw-search" allow-clear :placeholder="$t('collectorWorkspace.searchCollectors')" @search="data.filterCollectors" />
+          <div v-if="collector" class="cw-row">
+            <ConfigSelect v-model:value="pointSort" style="width:128px" :disabled="batchBusy" :options="sortOptions" @change="data.filterPoints" />
+            <ConfigSelect v-model:value="pointState" style="width:120px" :disabled="batchBusy" @change="data.filterPoints" :options="[{value:'',label:$t('collectorWorkspace.allStates'),icon:'AppstoreOutlined',description:$t('collectorOptions.allHint')},{value:'enabled',label:$t('collectorWorkspace.enabled'),icon:'CheckCircleOutlined',description:$t('collectorOptions.enabledHint')},{value:'disabled',label:$t('collectorWorkspace.disabled'),icon:'PauseCircleOutlined',description:$t('collectorOptions.disabledHint')}]" />
+            <button class="cw-icon-button" :aria-label="$t(paused ? 'collectorWorkspace.resume' : 'collectorWorkspace.pause')" :aria-pressed="paused" @click="paused = !paused"><AIcon :type="paused ? 'PlayCircleOutlined' : 'PauseCircleOutlined'" /></button>
+            <a-segmented v-if="!inline" v-model:value="view" :options="[{value:'cards',payload:{icon:'AppstoreOutlined',title:$t('collectorWorkspace.cards')}},{value:'table',payload:{icon:'UnorderedListOutlined',title:$t('collectorWorkspace.table')}}]"> <template #label="{payload}"><AIcon :type="payload.icon" :aria-label="payload.title" /></template></a-segmented>
+          </div>
+          <div v-else class="cw-row"><small class="cw-muted">{{ $t('collectorWorkspace.collectorCount', { count: total }) }}</small><ConfigSelect v-model:value="collectorSort" style="width:128px" :options="sortOptions.filter(option => option.value !== 'pointKey')" @change="data.filterCollectors" /></div>
+        </div>
+        <a-alert v-if="error" :message="error" type="error" show-icon><template #action><a-button size="small" @click="refresh">{{ $t('collectorWorkspace.retry') }}</a-button></template></a-alert>
+        <a-spin :spinning="loading || pointLoading">
+          <template v-if="collector">
+            <PointBatchToolbar :state="selection" @all="batch.all" @clear="batch.clear" @run="batch.run" />
+            <PointCollection :points="points" :selected="editingId" :inline="inline" :view="view" :diagnostic-id="diagnosticId" :selection="selection" @check="batch.toggle" @checks="batch.check" @select="selectPoint" @diagnose="point => diagnose('point', point)" @diagnostic-visibility="diagnosticVisibility">
+              <template #editor><div ref="editorHost" /></template>
+              <template #diagnostic><DiagnosticContent :state="diagnosticState" @close="closeDiagnostic" /></template>
+            </PointCollection>
+            <div class="cw-pagination"><a-pagination v-model:current="pointPage" :total="pointTotal" :page-size="48" :disabled="batchBusy" size="small" :show-size-changer="false" hide-on-single-page /></div>
+            <div class="cw-update-status"><i class="cw-dot" :class="valueError ? 'warn' : paused ? 'gray' : 'ok'" />{{ $t(valueError ? 'collectorWorkspace.streamDisconnected' : paused ? 'collectorWorkspace.paused' : 'collectorWorkspace.live') }}<span v-if="valueError" :title="valueError">· {{ $t('collectorWorkspace.lastValue') }}</span></div>
+          </template>
+          <template v-else><CollectorOverview :collectors="collectors" :providers="providers" @select="select" /><a-empty v-if="!collectors.length && !loading" :description="$t('collectorWorkspace.noCollectors')" /><div v-if="collectors.length" class="cw-update-status"><i class="cw-dot" :class="valueError ? 'warn' : 'ok'" />{{ $t(valueError ? 'collectorWorkspace.streamDisconnected' : 'collectorWorkspace.live') }}<a-button v-if="valueError" type="link" size="small" @click="refresh">{{ $t('collectorWorkspace.retry') }}</a-button></div><div class="cw-pagination"><a-pagination v-model:current="page" :total="total" :page-size="48" size="small" :show-size-changer="false" hide-on-single-page /></div></template>
+        </a-spin>
+        </template>
+      </main></template>
     </EqualHeightColumns>
+    <a-drawer v-model:open="drawerOpen" placement="left" :width="240" :closable="false" :force-render="true" root-class-name="cw-navigation-drawer"><div class="collection-workspace"><div ref="drawerHost" /></div></a-drawer>
+    <Teleport v-if="navigationTarget" :to="navigationTarget"><ObjectNavigation :collectors="collectors" :channels="channels" :selected="collector?.id" :total="total" :drawer="narrow || folded" :expandable="folded && !narrow" @select="select" @close="drawerOpen = false" @collapse="folded = true" @expand="folded = false; drawerOpen = false" /></Teleport>
+    <Teleport v-if="model && collector && editingId" :to="editorTarget || '#cw-editor-parking'"><PointEditor :key="`${collector.id}:${model.id}:${revision}`" :model="model" :collector="collector" :dirty="dirty" :saving="saving" :error="draftError" @apply="draft.apply" @restore="draft.restore" @trial="data.trial(selectedPoint)" @close="closePoint" /></Teleport>
+    <div id="cw-editor-parking" hidden />
+    <a-drawer v-model:open="advanced" :width="'min(1200px, 100vw)'" :title="$t('collectorWorkspace.advanced')" destroy-on-close><LegacyWorkspace v-if="advanced" /></a-drawer>
+  </div>
   </FullPage>
 </template>
-
 <script setup lang="ts">
-import { onActivated, provide, ref, toRef } from 'vue'
-import EqualHeightColumns from '@jetlinks-web-core/components/EqualHeightColumns/index.vue'
-import Left from './Left/index.vue'
-import Right from './Right.vue'
-import { COLLECTOR_DATA, COLLECTOR_TYPE, REFRESH_HANDLER } from './data'
-import { COLLECT_LIST, type CollectRecord, type ScopeType } from './hook/context'
-import { useCollectRouteState } from './hook/useCollectRouteState'
-
-const state = useCollectRouteState()
-const current = ref<CollectRecord>({})
-const ready = ref(false)
-const leftRef = ref<InstanceType<typeof Left>>()
-const rightRef = ref<InstanceType<typeof Right>>()
-const refreshAll = async () => {
-  await leftRef.value?.loadAllData()
-  await rightRef.value?.refresh()
-}
-let activated = false
-onActivated(() => {
-  if (activated) void refreshAll()
-  activated = true
-})
-provide(COLLECT_LIST, { state, current, ready, refreshAll })
-provide(COLLECTOR_TYPE, toRef(state, 'scopeType'))
-provide(COLLECTOR_DATA, current)
-provide(REFRESH_HANDLER, {
-  refreshAll,
-  refreshLeft: () => leftRef.value?.loadAllData(),
-  refreshRight: () => rightRef.value?.refresh(),
-})
-function onChange(type: ScopeType, row: CollectRecord) {
-  state.scopeType = type
-  state.scopeId = type === 'all' ? '' : row.id || ''
-  current.value = type === 'all' ? {} : row
-  ready.value = true
-}
+import { computed, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useCollectionWorkspace } from './hook/useCollectionWorkspace'
+import ObjectNavigation from './components/workspace/ObjectNavigation.vue'
+import CollectorOverview from './components/workspace/CollectorOverview.vue'
+import RuntimeCardMetrics from './components/workspace/RuntimeCardMetrics.vue'
+import WorkspaceIcon from './components/workspace/WorkspaceIcon.vue'
+import ConfigSelect from '../../components/ConfigSelect.vue'
+import WorkspaceStatus from './components/workspace/WorkspaceStatus.vue'
+import PointCollection from './components/workspace/PointCollection.vue'
+import PointBatchToolbar from './components/workspace/PointBatchToolbar.vue'
+import PointEditor from './components/workspace/PointEditor.vue'
+import DiagnosticContent from './components/workspace/DiagnosticContent.vue'
+import DiagnosticTrigger from './components/workspace/DiagnosticTrigger.vue'
+import ProviderChooser from './components/workspace/ProviderChooser.vue'
+import type { CollectorObject } from '../../types/workspace'
+import './components/workspace/workspace.less'
+const LegacyWorkspace = defineAsyncComponent(() => import('./LegacyWorkspace.vue'))
+const ObjectConfiguration = defineAsyncComponent(() => import('./components/workspace/ObjectConfiguration.vue'))
+const CollectionSetup = defineAsyncComponent(() => import('./components/workspace/CollectionSetup.vue'))
+const { data, runtime, draft, batch, root, main, sidebar, drawerHost, editorHost, navigationTarget, editorTarget, configurationEditor, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic } = useCollectionWorkspace()
+const { collector, channel, collectors, channels, providers, points, selectedPoint, loading, pointLoading, error, valueError, paused, total, pointTotal, page, pointPage, search, pointSearch, pointState, pointSort, collectorSort } = data
+const { state: selection, busy: batchBusy } = batch
+const { t } = useI18n()
+const sortOptions = computed(() => [
+  { value: 'newest', label: t('collectorList.newest'), icon: 'ClockCircleOutlined', description: t('collectorList.newestHint') },
+  { value: 'name', label: t('collectorList.byName'), icon: 'SortAscendingOutlined', description: t('collectorList.nameHint') },
+  { value: 'pointKey', label: t('collectorList.byKey'), icon: 'NumberOutlined', description: t('collectorList.keyHint') },
+])
+const { model, dirty, saving, error: draftError, revision } = draft
+function onObjectSaved() { objectForm.value = undefined; void refresh() }
+async function onCollectionCreated(value: CollectorObject) { setupProvider.value = undefined; configurationEditor.value = undefined; await refresh(); select(value) }
 </script>
-
-<style scoped>
-.collect-workspace { min-height: 0; min-width: 0; height: 100%; }
-</style>

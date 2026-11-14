@@ -55,7 +55,7 @@ const emits = defineEmits(['refresh'])
 const visible = ref(false)
 const historyData = ref<PointValueData>()
 const formattedValue = computed(() => formatPointData(
-  props.value?.dataType ? props.value : historyData.value,
+  props.value?.timestamp != null ? props.value : historyData.value,
   $t('comm.table.empty-2'),
 ))
 const clickEdit = async () => {

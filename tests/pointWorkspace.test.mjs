@@ -43,16 +43,16 @@ test('current-page subscription releases old rows and ignores late events',async
  const callbacks=[],stopped=[]
  const {usePointValues}=load('components/Point/usePointValues.ts',{
   vue:{...vue,onActivated(){},onDeactivated(){}},
-  '@jetlinks-web/core':{wsClient:{getWebSocket:(_id,_topic,params)=>({subscribe:callback=>{callbacks.push({callback,params});return {unsubscribe:()=>stopped.push(params.pointId)}}})}},
+  '../../../../api/data-collect/workspace':{observePointValues:rows=>({subscribe:callback=>{const ids=rows.map(row=>row.id).join(',');callbacks.push(callback);return {unsubscribe:()=>stopped.push(ids)}}})},
  })
  const scope=vue.effectScope(),rows=vue.ref([{id:'a',channelId:'c',collectorId:'k'}])
  const values=scope.run(()=>usePointValues(rows))
- callbacks[0].callback({payload:{pointId:'a',parsedData:'18446744073709551615'}})
+ callbacks[0].next([{pointId:'a',parsedData:'18446744073709551615'}])
  assert.equal(values.value.get('a').parsedData,'18446744073709551615')
  rows.value=[{...rows.value[0],name:'updated'}];await vue.nextTick();assert.deepEqual(stopped,[])
  rows.value=[{id:'b'}];await vue.nextTick();assert.deepEqual(stopped,['a'])
- callbacks[0].callback({payload:{pointId:'a',parsedData:2}});assert.equal(values.value.has('a'),false)
- callbacks[1].callback({payload:{pointId:'b',parsedData:0}});assert.equal(values.value.get('b').parsedData,0)
+ callbacks[0].next([{pointId:'a',parsedData:2}]);assert.equal(values.value.has('a'),false)
+ callbacks[1].next([{pointId:'b',parsedData:0}]);assert.equal(values.value.get('b').parsedData,0)
  scope.stop();assert.deepEqual(stopped,['a','b']);assert.equal(values.value.size,0)
 })
 test('detail return paths are restricted to the same list and keep its query',()=>{

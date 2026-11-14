@@ -1,3 +1,6 @@
+/** Shared platform decoding options for inherited and inline point configuration. */
+export const byteLayoutOptions = ['AB', 'BA', 'AB_CD', 'CD_AB', 'BA_DC', 'DC_BA', 'AB_CD_EF_GH', 'GH_EF_CD_AB', 'BA_DC_FE_HG', 'HG_FE_DC_BA'].map(value => ({ value, label: value }))
+
 export const isEqual = (obj1: any, obj2: any): boolean => {
   return JSON.stringify(obj1) === JSON.stringify(obj2);
 };

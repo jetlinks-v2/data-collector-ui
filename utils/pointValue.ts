@@ -3,6 +3,9 @@ export interface PointValueData {
   parseData?: unknown
   dataType?: string
   timestamp?: number
+  /** Included only for an explicit raw-data preview. */
+  hex?: string
+  rawByteLength?: number
 }
 
 /** 只做展示格式化；精确数字字符串不再转换为 Number，结构化值保留 JSON 结构。 */

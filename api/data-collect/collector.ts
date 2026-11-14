@@ -4,6 +4,14 @@ import { parseJsonResponseWithPrecision } from '@jetlinks-web-core/utils/json';
 import type { PointValueData } from '@data-collector-ui/utils/pointValue';
 import type { AxiosResponseRewrite } from '@jetlinks-web/types';
 
+import type { ExpressionFunction } from '@jetlinks-web-core/components/Expression';
+
+export async function getCollectorExpressionFunctions():Promise<ExpressionFunction[]> {
+    const response = await request.get('/data-collect/point/expression/functions', undefined, { hiddenError:true });
+    if (!response.success) throw new Error(response.message || 'Expression functions unavailable');
+    return response.result || [];
+}
+
 // 在默认 JSON.parse 之前处理点位数值，避免后续展示读取到已经舍入的 Number。
 const pointValueResponse = { transformResponse: [parseJsonResponseWithPrecision] };
 

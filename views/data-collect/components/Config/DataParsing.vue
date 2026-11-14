@@ -30,7 +30,7 @@
             :name="['managedConfiguration', 'codec']"
             :rules="[{required: data, message: $t('DataCollect.index.400154-22')}]"
         >
-          <a-select v-model:value="formData.managedConfiguration.codec" :placeholder="$t('DataCollect.index.400154-22')"
+          <ConfigSelect v-model:value="formData.managedConfiguration.codec" :placeholder="$t('DataCollect.index.400154-22')"
                     :options="_dataTypeOptions" allow-clear/>
         </a-form-item>
       </a-col>
@@ -40,10 +40,10 @@
             :name="['managedConfiguration', 'byteLayout']"
             :rules="[{required: data, message: $t('DataCollect.index.400154-22')}]"
         >
-          <a-select
+          <ConfigSelect
               v-model:value="formData.managedConfiguration.byteLayout"
               :placeholder="$t('DataCollect.index.400154-22')"
-              :options="memoryOptions"
+              :options="memoryOptions.map(option => byteOrderOption(option.value, $t))"
           />
         </a-form-item>
       </a-col>
@@ -56,8 +56,10 @@ import Collapsible from "./Collapsible/index.vue";
 import {queryCodecProvider} from "@data-collector-ui/api/data-collect/collector";
 import {DATA_COLLECTOR_CONFIG_TYPE, PLUGIN_DETAIL_SAVE_EVENTS} from "@data-collector-ui/views/data-collect/data";
 import {inject} from "vue";
-import {isEqual} from "./data";
+import {isEqual, byteLayoutOptions as memoryOptions} from "./data";
 import {useI18n} from "vue-i18n";
+import ConfigSelect from '../../../../components/ConfigSelect.vue'
+import { codecOption, byteOrderOption } from '../../../../utils/configOptions'
 
 const {t: $t} = useI18n();
 
@@ -104,48 +106,6 @@ if (!('managedConfiguration' in formData)) {
 
 const data = ref(!props.showSwitch)
 const dataTypeOptions = ref([])
-const memoryOptions = [
-  {
-    "label": "AB",
-    "value": "AB"
-  },
-  {
-    "label": "BA",
-    "value": "BA"
-  },
-  {
-    "label": "AB_CD",
-    "value": "AB_CD"
-  },
-  {
-    "label": "CD_AB",
-    "value": "CD_AB"
-  },
-  {
-    "label": "BA_DC",
-    "value": "BA_DC"
-  },
-  {
-    "label": "DC_BA",
-    "value": "DC_BA"
-  },
-  {
-    "label": "AB_CD_EF_GH",
-    "value": "AB_CD_EF_GH"
-  },
-  {
-    "label": "GH_EF_CD_AB",
-    "value": "GH_EF_CD_AB"
-  },
-  {
-    "label": "BA_DC_FE_HG",
-    "value": "BA_DC_FE_HG"
-  },
-  {
-    "label": "HG_FE_DC_BA",
-    "value": "HG_FE_DC_BA"
-  }
-]
 
 const showExtra = computed(() => {
   return !!collector.id // return !!collector?.managedConfiguration?.codec && !!collector?.managedConfiguration?.byteLayout
@@ -198,10 +158,7 @@ const onOutsize = () => {
 onMounted(() => {
   queryCodecProvider().then(res => {
     if (res.success) {
-      dataTypeOptions.value = res.result.map(item => ({
-        label: item.name,
-        value: item.id,
-      }))
+      dataTypeOptions.value = res.result.map(item => codecOption(item, $t))
     }
   })
 })

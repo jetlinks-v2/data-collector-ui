@@ -1,26 +1,23 @@
 import {getResourceFile} from "../api/data-collect/channel";
 import axios from "axios";
 
-export const devGetProtocol = async (protocol: string, module: string) => {
+/** Installed plugin resources take precedence over bundled development examples. */
+export const devGetProtocol = async (protocol: string, module: string): Promise<string | undefined> => {
+    // Keep the root SFC at its real URL so its relative imports resolve beside the plugin.
+    const resource = `/data-collect/${encodeURIComponent(protocol)}/resource/_/script/${module}.vue`
+    const entry = () => `<template><PluginView /></template><script setup>import PluginView from ${JSON.stringify(resource)}<\/script>`
+    const componentSource = (value: unknown): value is string => typeof value === 'string'
+        && !/<(?:!doctype|html)[\s>]/i.test(value)
+        && /<(?:template|script)[\s>]/.test(value)
     try {
-        const isDevelopment = import.meta.env.MODE === 'development'
-
-        if (isDevelopment) {
-            const resp = await axios.get(`/protocol/${protocol}/${module}.vue`)
-            return resp.data
-        } else {
-            const resp = await getResourceFile(protocol, module).catch(async (e) => {
-                if(e){
-                    const resp = await axios.get(`/protocol/${protocol}/${module}.vue`)
-                    return resp.data
-                }
-            })
-            return resp
-        }
-
-    } catch (e) {
-        return undefined
-    }
+        const source = await getResourceFile(protocol, module)
+        if (componentSource(source)) return entry()
+    } catch { /* A bundled editor can still serve older installed plugins. */ }
+    try {
+        const response = await axios.get(`/protocol/${protocol}/${module}.vue`)
+        if (componentSource(response.data)) return response.data
+    } catch { /* The host displays the plugin-unavailable state. */ }
+    return undefined
 }
 
 export const handlePointConfigMetadata = (data: Array<Record<string, any>>, parentId: string) => {

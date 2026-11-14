@@ -4,11 +4,36 @@
   </Suspense>
 </template>
 
+<script>
+// Definitions are shared; form state stays in each component's injected model.
+const resources = new Map()
+function retainResource(source, create) {
+  let entry = resources.get(source)
+  if (!entry) {
+    entry = { references: 0, styles: [], promise: undefined }
+    resources.set(source, entry)
+    entry.promise = create(text => {
+      const style = Object.assign(document.createElement('style'), { textContent: text })
+      entry.styles.push(style)
+      if (entry.references) document.head.appendChild(style)
+    }).catch(error => { resources.delete(source); throw error })
+  }
+  ++entry.references
+  entry.styles.forEach(style => { if (!style.isConnected) document.head.appendChild(style) })
+  return { promise: entry.promise, release: () => {
+    if (--entry.references === 0) entry.styles.forEach(style => style.remove())
+    // A bounded cache retains only inactive definitions, never an edited form instance.
+    for (const [key, value] of resources) {
+      if (resources.size <= 24) break
+      if (!value.references) resources.delete(key)
+    }
+  } }
+}
+</script>
 <script setup>
 import {loadModule} from 'vue3-sfc-loader/dist/vue3-sfc-loader'
-import {defineAsyncComponent, onBeforeUnmount, ref, watch} from 'vue'
+import {markRaw, onBeforeUnmount, shallowRef, ref, watch} from 'vue'
 import * as Vue from 'vue'
-import {debounce} from 'lodash-es'
 import * as JetlinksCore from '@jetlinks-web/core'
 import * as JetlinksUtils from '@jetlinks-web/utils'
 import * as JetlinksTypes from '@jetlinks-web/types'
@@ -23,6 +48,7 @@ import dayjs from 'dayjs'
 import PointEditTable
   from "@data-collector-ui/views/data-collect/components/Point/BatchSave/components/PointEditTable.vue";
 import PointScanWorkspace from '@data-collector-ui/views/data-collect/components/Point/Scan/PointScanWorkspace.vue'
+import ConfigSelect from '../ConfigSelect.vue'
 import {
   commandRequest,
   queryCodecProvider,
@@ -31,6 +57,7 @@ import {
   scanOpcUAList,
 } from '@data-collector-ui/api/data-collect/collector'
 import { handlePointConfigMetadata } from '@data-collector-ui/utils/utils'
+import { getResourceModule } from '@data-collector-ui/api/data-collect/channel'
 
 defineOptions({name: 'RenderComponents'})
 
@@ -41,11 +68,15 @@ const props = defineProps({
 })
 const emit = defineEmits(['ready', 'error'])
 
-const myComponents = ref()
+const myComponents = shallowRef()
 const componentRef = ref()
+let resource, revision = 0
 
-const render = debounce(() => {
-  myComponents.value = defineAsyncComponent(() => loadModule('./components/PluginRender.vue', {
+const render = async () => {
+  const identity = ++revision, source = props.value
+  resource?.release(); resource = undefined; myComponents.value = undefined
+  if (!source) return
+  resource = retainResource(source, addStyle => loadModule('./components/PluginRender.vue', {
     moduleCache: {
       vue: Vue,
       '@jetlinks-web/core': JetlinksCore,
@@ -62,6 +93,7 @@ const render = debounce(() => {
       '@components': {
         PointEditTable,
         PointScanWorkspace,
+        ConfigSelect,
       },
       request: {
         commandRequest,
@@ -71,25 +103,19 @@ const render = debounce(() => {
         scanOpcUAList,
       }
     },
-    getFile(url) {
-      return Promise.resolve(props.value)
-    },
-    addStyle(textContent) {
-      const style = Object.assign(document.createElement('style'), {textContent});
-      const ref = document.head.getElementsByTagName('style')[0] || null;
-      document.head.insertBefore(style, ref);
-    }
-  }).catch((error) => {
-    emit('error', error)
-    throw error
+    // Dependencies keep their real resource URL, allowing normal relative imports.
+    getFile: url => url === './components/PluginRender.vue' ? Promise.resolve(source) : getResourceModule(url),
+    addStyle,
   }))
-}, 500)
+  try { const definition = await resource.promise; if (identity === revision) myComponents.value = markRaw(definition) }
+  catch (error) { if (identity === revision) emit('error', error) }
+}
 
 watch(() => props.value, () => {
   render()
 }, {immediate: true})
 
-onBeforeUnmount(() => render.cancel())
+onBeforeUnmount(() => { ++revision; resource?.release() })
 
 defineExpose({
   onSave: async () => {

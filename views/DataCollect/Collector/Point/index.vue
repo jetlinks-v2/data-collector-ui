@@ -382,9 +382,8 @@ import SaveModBus from './Save/SaveModBus.vue';
 import Scan from './Scan/index.vue';
 import ScanBacnet from './ScanBacnet/index.vue';
 import {colorMap, imgUrl} from '../data';
-import {cloneDeep, isBoolean, isNumber, throttle} from 'lodash-es';
-import { wsClient } from '@jetlinks-web/core';
-import {map} from 'rxjs/operators';
+import {cloneDeep, isBoolean, isNumber} from 'lodash-es';
+import { observePointValues } from '../../../../api/data-collect/workspace';
 import dayjs from 'dayjs';
 import Import from './components/Import/index.vue';
 import BatchDropdown from '@jetlinks-web-core/components/BatchDropdown/index.vue';
@@ -757,30 +756,12 @@ const handleClick = (dt: any) => {
   }
 };
 
-const handleSubscribeValue = throttle((payload: any) => {
-  propertyValue.value.set(payload.pointId, payload);
-});
-
-const subscribeProperty = (value: any) => {
-  const list = value.map((item: any) => item.id);
-  const id = `collector-${props.data?.channelId || 'channel'}-${
-      props.data?.id || (props.data && props.data.id === '*')
-          ? 'point'
-          : props.data?.id
-  }-data-${list.join('-')}`;
-  const topic = `/collector/${props.data?.channelId || '*'}/${
-      props.data?.id || (props.data && props.data.id === '*')
-          ? '*'
-          : props.data?.id
-  }/data`;
-  subRef.value = wsClient.getWebSocket(id, topic, {
-    pointId: list.join(','),
-  })
-      ?.pipe(map((res: any) => res.payload))
-      .subscribe((payload: any) => {
-        //防止刷新过快
-        handleSubscribeValue(payload);
-      });
+const subscribeProperty = (rows: any[]) => {
+  propertyValue.value.clear();
+  subRef.value = observePointValues(rows).subscribe({
+    next: values => values.forEach(value => propertyValue.value.set(value.pointId, value)),
+    error: () => propertyValue.value.clear(),
+  });
 };
 
 const onCheckAllChange = (e: any) => {
