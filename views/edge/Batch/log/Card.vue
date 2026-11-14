@@ -120,12 +120,14 @@
   </div>
 </template>
 
-<script setup name="LogCard">
+<script setup>
 import {getContext, taskDetailColumnMap} from "../util";
 import dayjs from 'dayjs'
 import Icon from '../components/Icon.vue'
 import {deleteAllTask} from "../../../../api/edge/batch";
 import {theme} from "ant-design-vue";
+
+defineOptions({ name: 'LogCard' })
 
 const props = defineProps({
   detail: {

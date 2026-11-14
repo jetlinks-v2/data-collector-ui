@@ -25,9 +25,11 @@
   />
 </template>
 
-<script name="GateWayFormItem" setup>
+<script setup>
 import DeviceModal from './GateWayDeviceModal.vue'
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'GateWayFormItem' })
 
 const {t: $t} = useI18n();
 

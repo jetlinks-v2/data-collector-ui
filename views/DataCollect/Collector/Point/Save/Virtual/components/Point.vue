@@ -73,10 +73,12 @@
   </div>
 </template>
 
-<script setup lang="ts" name="Channel">
+<script setup lang="ts">
 import {queryPoint} from "@data-collector-ui/api/data-collect/collector";
 import {ImageMap} from "@data-collector-ui/views/DataCollect/Channel/data";
 import {useI18n} from 'vue-i18n';
+
+defineOptions({ name: 'Channel' })
 
 const {t: $t} = useI18n();
 

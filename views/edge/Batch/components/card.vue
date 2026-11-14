@@ -39,8 +39,10 @@
   </div>
 </template>
 
-<script setup name="BatchCard">
+<script setup>
 import DeviceGateWayImg from '../../../../assets/device-gateway.png'
+
+defineOptions({ name: 'BatchCard' })
 const props = defineProps({
   record: {
     type: Object,

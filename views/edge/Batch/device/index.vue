@@ -31,9 +31,11 @@
   </div>
 </template>
 
-<script setup name="BatchDevice">
+<script setup>
 import DeviceSelect from './device.vue';
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'BatchDevice' })
 
 const { t: $t } = useI18n();
 

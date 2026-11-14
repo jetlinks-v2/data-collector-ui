@@ -34,10 +34,12 @@
   </div>
 </template>
 
-<script setup name="CollectorTemplate">
+<script setup>
 import { queryPage } from '../../../../../api/edge/newResource'
 import {useTemplateRowSelection} from '../../util'
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'CollectorTemplate' })
 
 const { t: $t } = useI18n();
 
