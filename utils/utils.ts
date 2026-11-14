@@ -5,7 +5,7 @@ import axios from "axios";
 export const devGetProtocol = async (protocol: string, module: string): Promise<string | undefined> => {
     // Keep the root SFC at its real URL so its relative imports resolve beside the plugin.
     const resource = `/data-collect/${encodeURIComponent(protocol)}/resource/_/script/${module}.vue`
-    const entry = () => `<template><PluginView /></template><script setup>import PluginView from ${JSON.stringify(resource)}<\/script>`
+    const entry = () => `<template><PluginView ref="plugin" /></template><script setup>import { ref } from 'vue'; import PluginView from ${JSON.stringify(resource)}; const plugin=ref(); defineExpose({onSave:(...args)=>plugin.value?.onSave?.(...args)})<\/script>`
     const componentSource = (value: unknown): value is string => typeof value === 'string'
         && !/<(?:!doctype|html)[\s>]/i.test(value)
         && /<(?:template|script)[\s>]/.test(value)

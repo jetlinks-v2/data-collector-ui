@@ -1,9 +1,13 @@
 {
-  "collectorValue": {"view": "展示方式", "value": "值", "bytes": "字节", "bits": "位", "noRaw": "本次数据不含原始字节", "elements": "{count} 个元素", "rawBytes": "{count} B · 原始数据", "previewLimit": "仅预览前 {count} 字节", "inspect": "查看数值与原始数据"},
-  "collectorListActions": { "enable": "启用", "disable": "停用" },
-  "collectorList": { "readPartial": "已读到 {count}/{total} 个点位，其余请查看状态", "batch": "批量操作", "thisPage": "本页", "selected": "已选 {count} 项", "clear": "取消选择", "applyDraft": "先应用或还原点位草稿", "working": "正在执行", "noChange": "所选点位已是该状态", "readDone": "已试读 {count} 个点位", "enabledDone": "已启用 {count} 个点位", "disabledDone": "已停用 {count} 个点位", "partial": "已更新 {count}/{total} 项，请核对后重试", "selectPoint": "选择 {name}", "newest": "最新创建", "newestHint": "新建项优先", "byName": "按名称", "nameHint": "名称升序排列", "byKey": "按标识", "keyHint": "点位标识升序排列" },
+  "collectorValue": { "view":"展示方式","value":"值","bytes":"字节","bits":"位","noRaw":"本次数据不含原始字节","elements":"{count} 个元素","rawBytes":"{count} B · 原始数据","previewLimit":"仅预览前 {count} 字节","inspect":"查看数值与原始数据" },
+  "collectorListActions": { "enable":"启用","disable":"停用" },
+  "collectorList": { "allHint": "包含启用与停用", "enabledHint": "配置已启用，运行情况以实时状态为准", "disabledHint": "已停止自动采集", "readPartial":"已读到 {count}/{total} 个点位，其余请查看状态","batch":"批量操作","thisPage":"本页","selected":"已选 {count} 项","clear":"取消选择","applyDraft":"先应用或还原点位草稿","working":"正在执行","noChange":"所选点位已是该状态","readDone":"已试读 {count} 个点位","enabledDone":"已启用 {count} 个点位","disabledDone":"已停用 {count} 个点位","partial":"已更新 {count}/{total} 项，请核对后重试","selectPoint":"选择 {name}","newest":"最新创建","newestHint":"新建项优先","byName":"按名称","nameHint":"名称升序排列","byKey":"按标识","keyHint":"点位标识升序排列","attentionFirst":"异常优先","attentionHint":"优先查看故障、保护和积压","slowestFirst":"耗时优先","slowestHint":"最近一次采集耗时从高到低","gapFirst":"间隔偏差","gapHint":"实际接收间隔相对设定周期的倍数","filteredFirst":"过滤最多","filteredHint":"本次运行累计过滤数量从高到低","needsAttention":"需要关注","runningHint":"正在采集或已恢复","protected":"降频 / 熔断","protectedHint":"正在降频、暂停重试或探测恢复","unavailableHint":"暂时无法读取运行状态","filteredSelection":"全选结果（{count}）","refreshOrder":"更新排序","snapshotHint":"{time} 的全量状态；点击更新筛选和顺序，滚动时保持位置" },
   "collectorProcessing": {
-    "relativeTime":"相对时间", "relativeTimeHint":"从本次执行首个步骤开始计时，条形长度表示耗时；重叠步骤不相加", "approximateTimeHint":"旧记录起点精度为1ms，步骤起点与间隔为近似值", "stepStart":"开始", "stepGap":"等待间隔",
+    "relativeTime": "相对时间",
+    "relativeTimeHint": "从本次执行首个步骤开始计时，条形长度表示耗时；重叠步骤不相加",
+    "approximateTimeHint": "旧记录起点精度为1ms，步骤起点与间隔为近似值",
+    "stepStart": "开始",
+    "stepGap": "等待间隔",
     "output": "输出",
     "conditions": "条件推送",
     "conditionsHint": "满足通过条件时推送",
@@ -114,7 +118,9 @@
     "resetConversionTitle": "切换为简单计算？",
     "resetConversionHint": "当前公式无法表示为两步计算，切换后将重置。",
     "resetConversion": "重置并切换",
-    "latestExecution":"最近一次","latestFailure":"最近异常","noRecentFailure":"暂无异常",
+    "latestExecution": "最近一次",
+    "latestFailure": "最近异常",
+    "noRecentFailure": "暂无异常",
     "diagnosticsEnabled": "自动记录",
     "diagnosticsDisabled": "记录已关闭",
     "waitingExecution": "等待下一次采集",
@@ -122,7 +128,19 @@
     "diagnosticsMemoryHint": "仅保留最近执行和最近异常"
   },
   "collectorMonitoring": {
-    "path": {"label": "收到、输出与过滤", "received": "收到", "filtered": "过滤", "executions": "执行采集", "runsPerSecond": "次/s", "read": "读取", "process": "处理", "output": "输出", "every": "设置每 {time}", "previousRead": "上次读取", "currentRead": "本次读取"},
+    "path": {
+      "label": "收到、输出与过滤",
+      "received": "收到",
+      "filtered": "过滤",
+      "executions": "执行采集",
+      "runsPerSecond": "次/s",
+      "read": "读取",
+      "process": "处理",
+      "output": "输出",
+      "every": "设置每 {time}",
+      "previousRead": "上次读取",
+      "currentRead": "本次读取"
+    },
     "outputTotalHint": "已成功交付的数据总量，包含试读和设备上报；过滤的数据不计入",
     "yes": "是",
     "no": "否",
@@ -219,15 +237,97 @@
     "flowHint": "已结束处理：输出 {output}/s · 按规则忽略 {filtered}/s · 失败 {failed}/s · 繁忙丢弃 {rejected}/s · 旧数据或取消 {other}/s",
     "retryAfter": "暂缓采集 · {seconds} 秒后尝试",
     "sinceLastData": "距上次数据 {seconds} 秒",
-    "empty": {"filteredData":"已按规则忽略","waiting":"待更新","calculating":"统计中","waitingData":"待接收","noSamples":"待采样","notProvided":"未提供","incomplete":"信息不全","unavailable":"不可用","readFailed":"读取失败"},
-    "visual": {"total":"累计","rate":"当前速率","recent":"最近变化","waiting":"等待下次采样","distribution":"分布 · 悬浮查看区间与占比","session":"趋势仅含打开详情后的最近30次采样","trendHint":"本页采样 {from}–{to} · 最低 {min} · 最高 {max}；各图独立刻度","notAvailableHint":"尚无可用观测，不代表数值为零","showMissing":"显示暂无数据的指标 · {count}","hideMissing":"收起暂无数据的指标 · {count}"}
+    "empty": {
+      "filteredData": "已按规则忽略",
+      "waiting": "待更新",
+      "calculating": "统计中",
+      "waitingData": "待接收",
+      "noSamples": "待采样",
+      "notProvided": "未提供",
+      "incomplete": "信息不全",
+      "unavailable": "不可用",
+      "readFailed": "读取失败"
+    },
+    "visual": {
+      "total": "累计",
+      "rate": "当前速率",
+      "recent": "最近变化",
+      "waiting": "等待下次采样",
+      "distribution": "分布 · 悬浮查看区间与占比",
+      "session": "趋势仅含打开详情后的最近30次采样",
+      "trendHint": "本页采样 {from}–{to} · 最低 {min} · 最高 {max}；各图独立刻度",
+      "notAvailableHint": "尚无可用观测，不代表数值为零",
+      "showMissing": "显示暂无数据的指标 · {count}",
+      "hideMissing": "收起暂无数据的指标 · {count}"
+    }
   },
   "collectorRuntime": {
-    "units": {"task":"任务","sample":"样本","event":"次","operation":"次","count":"个"},
-    "states": {"running":"运行中","partialError":"部分异常","failed":"运行异常","stopped":"已停止","unknown":"未知","created":"等待中","completed":"已完成","cancelled":"已取消","paused":"已暂停","collectionError":"采集异常","recentError":"最近有异常","recovered":"已恢复","open":"已熔断","retrying":"降频重试","halfOpen":"恢复探测","initializing":"初始化","starting":"启动中","shutdown":"已关闭","connectionClosed":"连接已断开"},
-    "errors": {"Bad_Timeout":"设备响应超时","Bad_ConnectionLost":"设备连接已断开","Bad_InvalidAddress":"设备地址无效","Bad_DecodingError":"通信数据解析失败","Bad_DecoderError":"数据解析或转换失败"},
-    "stages": {"execution":"执行本轮采集","load":"加载采集配置","subscribe":"订阅设备数据","collect":"读取设备数据","request":"发送请求并等待应答","response":"接收设备应答","point":"处理点位数据","decode":"解析原始数据","convert":"转换采集值","outlier":"检查清洗条件","deadband":"检查推送条件","changedOnly":"检查数据变化","output":"推送采集结果","schedule":"安排采集任务"},
-    "decisions": {"accepted":"已入队","queueFull":"队列已满","duplicate":"重复任务已合并","queueRejected":"队列拒绝","queueUnavailable":"队列未就绪","collectorInactive":"采集器未运行","channelInactive":"通道未运行","circuitOpen":"熔断保护中","noReadablePoints":"没有可读点位","filtered":"已过滤","passed":"已通过","unmatched":"应答未匹配请求","ignored":"已忽略"}
+    "units": {
+      "task": "任务",
+      "sample": "样本",
+      "event": "次",
+      "operation": "次",
+      "count": "个"
+    },
+    "states": {
+      "running": "运行中",
+      "partialError": "部分异常",
+      "failed": "运行异常",
+      "stopped": "已停止",
+      "unknown": "未知",
+      "created": "等待中",
+      "completed": "已完成",
+      "cancelled": "已取消",
+      "paused": "已暂停",
+      "collectionError": "采集异常",
+      "recentError": "最近有异常",
+      "recovered": "已恢复",
+      "open": "已熔断",
+      "retrying": "降频重试",
+      "halfOpen": "恢复探测",
+      "initializing": "初始化",
+      "starting": "启动中",
+      "shutdown": "已关闭",
+      "connectionClosed": "连接已断开"
+    },
+    "errors": {
+      "Bad_Timeout": "设备响应超时",
+      "Bad_ConnectionLost": "设备连接已断开",
+      "Bad_InvalidAddress": "设备地址无效",
+      "Bad_DecodingError": "通信数据解析失败",
+      "Bad_DecoderError": "数据解析或转换失败"
+    },
+    "stages": {
+      "execution": "执行本轮采集",
+      "load": "加载采集配置",
+      "subscribe": "订阅设备数据",
+      "collect": "读取设备数据",
+      "request": "发送请求并等待应答",
+      "response": "接收设备应答",
+      "point": "处理点位数据",
+      "decode": "解析原始数据",
+      "convert": "转换采集值",
+      "outlier": "检查清洗条件",
+      "deadband": "检查推送条件",
+      "changedOnly": "检查数据变化",
+      "output": "推送采集结果",
+      "schedule": "安排采集任务"
+    },
+    "decisions": {
+      "accepted": "已入队",
+      "queueFull": "队列已满",
+      "duplicate": "重复任务已合并",
+      "queueRejected": "队列拒绝",
+      "queueUnavailable": "队列未就绪",
+      "collectorInactive": "采集器未运行",
+      "channelInactive": "通道未运行",
+      "circuitOpen": "熔断保护中",
+      "noReadablePoints": "没有可读点位",
+      "filtered": "已过滤",
+      "passed": "已通过",
+      "unmatched": "应答未匹配请求",
+      "ignored": "已忽略"
+    }
   },
   "collectorOptions": {
     "fixed": "定点数 · 按编码约定换算小数",
@@ -266,7 +366,10 @@
     "expandHint": "在左侧固定显示对象导航"
   },
   "collectorWorkspace": {
-    "identifierDuplicate":"同一采集器内标识不可重复", "address":"地址",
+    "loading": "正在加载",
+    "browsePoints": "浏览点位",
+    "identifierDuplicate": "同一采集器内标识不可重复",
+    "address": "地址",
     "acquisitionSettings": "采集与解析",
     "connectionAndCollection": "连接与采集设置",
     "dataType": "数据类型",

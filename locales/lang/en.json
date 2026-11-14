@@ -1,9 +1,13 @@
 {
-  "collectorValue": {"view": "Display", "value": "Value", "bytes": "Bytes", "bits": "Bits", "noRaw": "No raw bytes in this sample", "elements": "{count} elements", "rawBytes": "{count} B · raw data", "previewLimit": "Previewing the first {count} bytes", "inspect": "Inspect value and raw data"},
-  "collectorListActions": { "enable": "Enable", "disable": "Disable" },
-  "collectorList": { "readPartial": "Read {count}/{total} points; check the remaining states", "batch": "Batch actions", "thisPage": "This page", "selected": "{count} selected", "clear": "Clear", "applyDraft": "Apply or discard point drafts first", "working": "Working", "noChange": "Selected points already have this state", "readDone": "Read requested for {count} points", "enabledDone": "Enabled {count} points", "disabledDone": "Disabled {count} points", "partial": "Updated {count}/{total}; review before retrying", "selectPoint": "Select {name}", "newest": "Newest first", "newestHint": "Recently created items first", "byName": "Name", "nameHint": "Sort by name, ascending", "byKey": "Identifier", "keyHint": "Sort by point identifier, ascending" },
+  "collectorValue": { "view":"Display","value":"Value","bytes":"Bytes","bits":"Bits","noRaw":"No raw bytes in this sample","elements":"{count} elements","rawBytes":"{count} B · raw data","previewLimit":"Previewing the first {count} bytes","inspect":"Inspect value and raw data" },
+  "collectorListActions": { "enable":"Enable","disable":"Disable" },
+  "collectorList": { "allHint": "Include enabled and disabled", "enabledHint": "Enabled in configuration; check live status for health", "disabledHint": "Automatic collection is stopped", "readPartial":"Read {count}/{total} points; check the remaining states","batch":"Batch actions","thisPage":"This page","selected":"{count} selected","clear":"Clear","applyDraft":"Apply or discard point drafts first","working":"Working","noChange":"Selected points already have this state","readDone":"Read requested for {count} points","enabledDone":"Enabled {count} points","disabledDone":"Disabled {count} points","partial":"Updated {count}/{total}; review before retrying","selectPoint":"Select {name}","newest":"Newest first","newestHint":"Recently created items first","byName":"Name","nameHint":"Sort by name, ascending","byKey":"Identifier","keyHint":"Sort by point identifier, ascending","attentionFirst":"Attention first","attentionHint":"Failures, protection and backlog first","slowestFirst":"Slowest first","slowestHint":"Latest collection duration, highest first","gapFirst":"Interval delay","gapHint":"Received interval relative to the configured period","filteredFirst":"Most filtered","filteredHint":"Total filtered in this run, highest first","needsAttention":"Needs attention","runningHint":"Collecting or recovered","protected":"Rate limited / open","protectedHint":"Slowed down, waiting to retry or testing recovery","unavailableHint":"Runtime status cannot be read yet","filteredSelection":"Select results ({count})","refreshOrder":"Update order","snapshotHint":"Full status at {time}; update filters and order here. Scrolling keeps the order stable." },
   "collectorProcessing": {
-    "relativeTime":"Elapsed time", "relativeTimeHint":"Relative to the first step; bar length shows duration. Overlapping steps are not summed", "approximateTimeHint":"Legacy step starts have 1ms precision; offsets and gaps are approximate", "stepStart":"Start", "stepGap":"Waiting gap",
+    "relativeTime": "Elapsed time",
+    "relativeTimeHint": "Relative to the first step; bar length shows duration. Overlapping steps are not summed",
+    "approximateTimeHint": "Legacy step starts have 1ms precision; offsets and gaps are approximate",
+    "stepStart": "Start",
+    "stepGap": "Waiting gap",
     "output": "Output",
     "conditions": "Conditional output",
     "conditionsHint": "Report when the conditions pass",
@@ -114,7 +118,9 @@
     "resetConversionTitle": "Switch to arithmetic?",
     "resetConversionHint": "This formula cannot be represented by two arithmetic steps and will be reset.",
     "resetConversion": "Reset and switch",
-    "latestExecution":"Latest run","latestFailure":"Latest failure","noRecentFailure":"No recent failures",
+    "latestExecution": "Latest run",
+    "latestFailure": "Latest failure",
+    "noRecentFailure": "No recent failures",
     "diagnosticsEnabled": "Auto recording",
     "diagnosticsDisabled": "Recording off",
     "waitingExecution": "Waiting for the next collection",
@@ -122,7 +128,19 @@
     "diagnosticsMemoryHint": "Retain the latest execution and latest failure only"
   },
   "collectorMonitoring": {
-    "path": {"label": "Received, sent and filtered", "received": "Received", "filtered": "Filtered", "executions": "Collection runs", "runsPerSecond": "runs/s", "read": "Read", "process": "Process", "output": "Output", "every": "Every {time}", "previousRead": "Previous", "currentRead": "Latest"},
+    "path": {
+      "label": "Received, sent and filtered",
+      "received": "Received",
+      "filtered": "Filtered",
+      "executions": "Collection runs",
+      "runsPerSecond": "runs/s",
+      "read": "Read",
+      "process": "Process",
+      "output": "Output",
+      "every": "Every {time}",
+      "previousRead": "Previous",
+      "currentRead": "Latest"
+    },
     "outputTotalHint": "Total successfully delivered data, including manual reads and device reports; filtered data is excluded",
     "yes": "Yes",
     "no": "No",
@@ -219,15 +237,97 @@
     "flowHint": "Completed processing: output {output}/s · ignored {filtered}/s · failed {failed}/s · overload {rejected}/s · old or cancelled {other}/s",
     "retryAfter": "Collection paused · retry in {seconds}s",
     "sinceLastData": "Last data {seconds}s ago",
-    "empty": {"filteredData":"Filtered by rules","waiting":"Awaiting update","calculating":"Calculating","waitingData":"Awaiting data","noSamples":"No samples yet","notProvided":"Not provided","incomplete":"Incomplete","unavailable":"Unavailable","readFailed":"Read failed"},
-    "visual": {"total":"total","rate":"Current rate","recent":"Recent changes","waiting":"Awaiting next sample","distribution":"Distribution · hover for ranges and shares","session":"Trends show up to 30 samples since opening details","trendHint":"Page samples {from}–{to} · Min {min} · Max {max}; each chart has its own scale","notAvailableHint":"No available observation; this does not mean zero","showMissing":"Show metrics awaiting data · {count}","hideMissing":"Hide metrics awaiting data · {count}"}
+    "empty": {
+      "filteredData": "Filtered by rules",
+      "waiting": "Awaiting update",
+      "calculating": "Calculating",
+      "waitingData": "Awaiting data",
+      "noSamples": "No samples yet",
+      "notProvided": "Not provided",
+      "incomplete": "Incomplete",
+      "unavailable": "Unavailable",
+      "readFailed": "Read failed"
+    },
+    "visual": {
+      "total": "total",
+      "rate": "Current rate",
+      "recent": "Recent changes",
+      "waiting": "Awaiting next sample",
+      "distribution": "Distribution · hover for ranges and shares",
+      "session": "Trends show up to 30 samples since opening details",
+      "trendHint": "Page samples {from}–{to} · Min {min} · Max {max}; each chart has its own scale",
+      "notAvailableHint": "No available observation; this does not mean zero",
+      "showMissing": "Show metrics awaiting data · {count}",
+      "hideMissing": "Hide metrics awaiting data · {count}"
+    }
   },
   "collectorRuntime": {
-    "units": {"task":"tasks","sample":"samples","event":"events","operation":"operations","count":"items"},
-    "states": {"running":"Running","partialError":"Partial error","failed":"Runtime error","stopped":"Stopped","unknown":"Unknown","created":"Waiting","completed":"Completed","cancelled":"Cancelled","paused":"Paused","collectionError":"Collection error","recentError":"Recent error","recovered":"Recovered","open":"Circuit open","retrying":"Retrying at reduced rate","halfOpen":"Probing recovery","initializing":"Initializing","starting":"Starting","shutdown":"Closed","connectionClosed":"Connection closed"},
-    "errors": {"Bad_Timeout":"Device response timed out","Bad_ConnectionLost":"Device connection lost","Bad_InvalidAddress":"Invalid device address","Bad_DecodingError":"Communication data decoding failed","Bad_DecoderError":"Data decoding or conversion failed"},
-    "stages": {"execution":"Run collection cycle","load":"Load collection settings","subscribe":"Subscribe to device data","collect":"Read device data","request":"Send request and await response","response":"Receive device response","point":"Process point data","decode":"Decode raw data","convert":"Convert collected value","outlier":"Check cleaning conditions","deadband":"Check reporting conditions","changedOnly":"Check for data changes","output":"Publish collection results","schedule":"Schedule collection task"},
-    "decisions": {"accepted":"Queued","queueFull":"Queue full","duplicate":"Duplicate merged","queueRejected":"Queue rejected","queueUnavailable":"Queue not ready","collectorInactive":"Collector inactive","channelInactive":"Channel inactive","circuitOpen":"Circuit open","noReadablePoints":"No readable points","filtered":"Filtered","passed":"Passed","unmatched":"Unmatched response","ignored":"Ignored"}
+    "units": {
+      "task": "tasks",
+      "sample": "samples",
+      "event": "events",
+      "operation": "operations",
+      "count": "items"
+    },
+    "states": {
+      "running": "Running",
+      "partialError": "Partial error",
+      "failed": "Runtime error",
+      "stopped": "Stopped",
+      "unknown": "Unknown",
+      "created": "Waiting",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "paused": "Paused",
+      "collectionError": "Collection error",
+      "recentError": "Recent error",
+      "recovered": "Recovered",
+      "open": "Circuit open",
+      "retrying": "Retrying at reduced rate",
+      "halfOpen": "Probing recovery",
+      "initializing": "Initializing",
+      "starting": "Starting",
+      "shutdown": "Closed",
+      "connectionClosed": "Connection closed"
+    },
+    "errors": {
+      "Bad_Timeout": "Device response timed out",
+      "Bad_ConnectionLost": "Device connection lost",
+      "Bad_InvalidAddress": "Invalid device address",
+      "Bad_DecodingError": "Communication data decoding failed",
+      "Bad_DecoderError": "Data decoding or conversion failed"
+    },
+    "stages": {
+      "execution": "Run collection cycle",
+      "load": "Load collection settings",
+      "subscribe": "Subscribe to device data",
+      "collect": "Read device data",
+      "request": "Send request and await response",
+      "response": "Receive device response",
+      "point": "Process point data",
+      "decode": "Decode raw data",
+      "convert": "Convert collected value",
+      "outlier": "Check cleaning conditions",
+      "deadband": "Check reporting conditions",
+      "changedOnly": "Check for data changes",
+      "output": "Publish collection results",
+      "schedule": "Schedule collection task"
+    },
+    "decisions": {
+      "accepted": "Queued",
+      "queueFull": "Queue full",
+      "duplicate": "Duplicate merged",
+      "queueRejected": "Queue rejected",
+      "queueUnavailable": "Queue not ready",
+      "collectorInactive": "Collector inactive",
+      "channelInactive": "Channel inactive",
+      "circuitOpen": "Circuit open",
+      "noReadablePoints": "No readable points",
+      "filtered": "Filtered",
+      "passed": "Passed",
+      "unmatched": "Unmatched response",
+      "ignored": "Ignored"
+    }
   },
   "collectorOptions": {
     "fixed": "Fixed point · scale according to its encoding",
@@ -266,7 +366,10 @@
     "expandHint": "Keep object navigation visible on the left"
   },
   "collectorWorkspace": {
-    "identifierDuplicate":"Point keys must be unique within a collector", "address":"Address",
+    "loading": "Loading",
+    "browsePoints": "Browse nodes",
+    "identifierDuplicate": "Point keys must be unique within a collector",
+    "address": "Address",
     "acquisitionSettings": "Acquisition and decoding",
     "connectionAndCollection": "Connection and collection",
     "dataType": "Data type",

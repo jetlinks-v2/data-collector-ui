@@ -108,7 +108,7 @@ const render = async () => {
     addStyle,
   }))
   try { const definition = await resource.promise; if (identity === revision) myComponents.value = markRaw(definition) }
-  catch (error) { if (identity === revision) emit('error', error) }
+  catch (error) { if (identity === revision) { console.error('Collector plugin could not load', error); emit('error', error) } }
 }
 
 watch(() => props.value, () => {

@@ -1,4 +1,5 @@
 export interface PointValueData {
+  pointId?: string
   parsedData?: unknown
   parseData?: unknown
   dataType?: string
@@ -10,7 +11,8 @@ export interface PointValueData {
 
 /** 只做展示格式化；精确数字字符串不再转换为 Number，结构化值保留 JSON 结构。 */
 export const formatPointValue = (value: unknown, emptyText: string): string => {
-  if (value === undefined || value === null || value === '') return emptyText
+  if (value === undefined || value === null) return emptyText
+  if (value === '') return '∅'
   return typeof value === 'object' ? JSON.stringify(value) : String(value)
 }
 
@@ -18,7 +20,7 @@ export const formatPointValue = (value: unknown, emptyText: string): string => {
 export const formatPointData = (data: PointValueData | undefined, emptyText: string): string => {
   const value = data && ('parsedData' in data ? data.parsedData : data.parseData)
   const text = formatPointValue(value, emptyText)
-  return value === undefined || value === null || value === ''
+  return value === undefined || value === null
     ? emptyText
     : `${text}${data?.dataType ? `(${data.dataType})` : ''}`
 }

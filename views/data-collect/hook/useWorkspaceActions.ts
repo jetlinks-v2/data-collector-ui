@@ -4,11 +4,11 @@ import { enablePoints, disablePoints } from '../../../api/data-collect/collector
 import { batchTargets, pointBatchQuery, savedPointIds, type PointBatchAction } from '../../../utils/workspaceList'
 import type { useWorkspaceData } from './useWorkspaceData'
 
-/** Selection is bounded to the visible page, independent of the open editor. */
+/** Selection covers the filtered directory, independent of the virtual viewport or open editor. */
 export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, hasDraft: Ref<boolean>) {
   const { t } = useI18n()
   const keys = ref<string[]>([]), busy = ref(false), feedback = ref(''), failed = ref(false)
-  const ids = computed(() => savedPointIds(data.points.value))
+  const ids = computed(() => savedPointIds(data.filteredPoints.value))
   const state = computed(() => ({ keys: keys.value, total: ids.value.length, busy: busy.value, blocked: hasDraft.value, feedback: feedback.value, failed: failed.value }))
   function clear() { if (!busy.value) { keys.value = []; feedback.value = '' } }
   function check(value: string[]) {
@@ -20,7 +20,7 @@ export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, h
   function all() { check(keys.value.length === ids.value.length ? [] : ids.value) }
   // Observation frames replace rows frequently; only identities reset the selection.
   watch(() => `${data.collector.value?.id || ''}:${ids.value.join(',')}`, clear)
-  watch([data.pointPage, data.pointSort, data.pointState, data.pointSearch], clear)
+  watch([data.pointSort, data.pointState, data.pointSearch], clear)
   async function run(action: PointBatchAction) {
     const collectorId = data.collector.value?.id
     if (!collectorId || busy.value || hasDraft.value || !keys.value.length) return

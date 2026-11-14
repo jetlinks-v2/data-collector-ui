@@ -1,7 +1,7 @@
 {
   "collectorValue": {"view": "表示方法", "value": "値", "bytes": "バイト", "bits": "ビット", "noRaw": "このデータには元のバイトがありません", "elements": "{count} 要素", "rawBytes": "{count} B · 元のデータ", "previewLimit": "先頭 {count} バイトを表示", "inspect": "値と元のデータを確認"},
   "collectorListActions": { "enable": "有効化", "disable": "停止" },
-  "collectorList": { "readPartial": "{count}/{total} 点を読取。残りの状態を確認してください", "batch": "一括操作", "thisPage": "このページ", "selected": "{count} 件選択", "clear": "選択解除", "applyDraft": "先に点位の変更を適用または元に戻してください", "working": "実行中", "noChange": "選択した点位はすでにこの状態です", "readDone": "{count} 点の試読を要求しました", "enabledDone": "{count} 点を有効化しました", "disabledDone": "{count} 点を停止しました", "partial": "{total} 件中 {count} 件を更新。確認後に再試行してください", "selectPoint": "{name} を選択", "newest": "新しい順", "newestHint": "作成日時の降順", "byName": "名前順", "nameHint": "名前の昇順", "byKey": "識別子順", "keyHint": "点位識別子の昇順" },
+  "collectorList": { "allHint": "有効と停止を含む", "enabledHint": "設定は有効です。稼働状況は実行状態で確認", "disabledHint": "自動収集は停止しています", "attentionFirst": "異常を優先", "attentionHint": "障害、保護、滞留を優先", "slowestFirst": "所要時間順", "slowestHint": "直近の収集時間が長い順", "gapFirst": "間隔の遅れ", "gapHint": "受信間隔と設定周期の比率", "filteredFirst": "除外数順", "filteredHint": "今回の実行で除外された累計件数が多い順", "needsAttention": "要確認", "runningHint": "収集中または復旧済み", "protected": "減速 / 遮断", "protectedHint": "減速中、再試行待ち、または復旧確認中", "unavailableHint": "実行状態を取得できません", "filteredSelection": "結果を全選択（{count}）", "refreshOrder": "並びを更新", "snapshotHint": "{time} の全件状態。クリックで更新します。スクロール中は順序を維持します。", "readPartial": "{count}/{total} 点を読取。残りの状態を確認してください", "batch": "一括操作", "thisPage": "このページ", "selected": "{count} 件選択", "clear": "選択解除", "applyDraft": "先に点位の変更を適用または元に戻してください", "working": "実行中", "noChange": "選択した点位はすでにこの状態です", "readDone": "{count} 点の試読を要求しました", "enabledDone": "{count} 点を有効化しました", "disabledDone": "{count} 点を停止しました", "partial": "{total} 件中 {count} 件を更新。確認後に再試行してください", "selectPoint": "{name} を選択", "newest": "新しい順", "newestHint": "作成日時の降順", "byName": "名前順", "nameHint": "名前の昇順", "byKey": "識別子順", "keyHint": "点位識別子の昇順" },
   "collectorProcessing": {
     "relativeTime":"相対時間", "relativeTimeHint":"最初のステップからの時間。バーは所要時間を示し、重なる処理は合算しません", "approximateTimeHint":"旧記録の開始時刻の精度は1msです。開始と待機時間は概算です", "stepStart":"開始", "stepGap":"待機時間",
     "processing": "計算",
@@ -266,6 +266,8 @@
     "expandHint": "左側にナビゲーションを固定"
   },
   "collectorWorkspace": {
+    "loading": "読み込み中",
+    "browsePoints": "ノードを参照",
     "identifierDuplicate":"同じ収集器内で識別子は重複できません", "address":"アドレス",
     "acquisitionSettings": "収集・デコード",
     "connectionAndCollection": "接続と収集の設定",

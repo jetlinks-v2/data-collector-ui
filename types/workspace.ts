@@ -28,6 +28,7 @@ export interface CollectorObject {
   managedConfiguration?: PluginConfiguration
   metadata?: { dataType?: { unit?: string } }
   modifyTime?: number
+  createTime?: number
   runtime?: RuntimeSnapshot
   monitoring?: RuntimeMonitoring
 }

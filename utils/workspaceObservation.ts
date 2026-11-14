@@ -14,9 +14,13 @@ export function withObservedRuntime<T extends CollectorObject>(object:T,runtime?
 
 export function observedPoints(points:PointRow[],observation:CollectorObservation,previous?:CollectorObservation):PointRow[] {
   const round=(value:CollectorObservation)=>({timestamp:value.timestamp,snapshots:value.nodes.flatMap(node=>node.points.map(point=>point.runtime))})
+  const latest=new Map<string,CollectorObservation['nodes'][number]['points'][number]>()
+  for(const node of observation.nodes)for(const sample of node.points){
+    const before=latest.get(sample.id)
+    if(!before || sample.runtime.available && (!before.runtime.available || Number(sample.lastData?.timestamp || 0) > Number(before.lastData?.timestamp || 0)))latest.set(sample.id,sample)
+  }
   return monitoredObjects(points,round(observation),previous ? round(previous) : undefined,'point').map(point=>{
-    const samples=observation.nodes.flatMap(node=>node.points.filter(item=>item.id === point.id))
-    const current=samples.filter(item=>item.runtime.available).sort((a,b)=>Number(b.lastData?.timestamp || 0)-Number(a.lastData?.timestamp || 0))[0] || samples[0]
+    const current=latest.get(point.id)
     return current?.lastData ? {...point,latest:current.lastData} : point
   })
 }

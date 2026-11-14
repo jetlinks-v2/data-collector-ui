@@ -1,5 +1,7 @@
 <template>
   <div class="cw-value-display">
+  <a-skeleton-input v-if="!point.runtime && !point.latest && !point.id.startsWith('_new:')" active size="small" class="cw-metric-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
+  <template v-else>
   <!-- Remount only when the array changes kind so virtual item widths stay fixed. -->
   <PointValueStrip v-if="Array.isArray(value) && value.length" :key="booleanArray ? 'boolean' : 'value'" :value="value" :compact="booleanArray" />
   <a-popover v-model:open="open" trigger="click" placement="bottomLeft" :destroy-tooltip-on-hide="true" overlay-class-name="cw-point-value-overlay">
@@ -18,12 +20,13 @@
         <small v-if="mode !== 'value' && raw?.rawByteLength && bytes && raw.rawByteLength > bytes.length" class="cw-value-note">{{ $t('collectorValue.previewLimit',{count:bytes.length}) }}</small>
       </section>
     </template>
-    <button class="cw-value-trigger" :class="{'is-empty':value == null || value === ''}" :aria-label="$t('collectorValue.inspect')" @click.stop>
+    <button class="cw-value-trigger" :class="{'is-empty':value == null}" :aria-label="$t('collectorValue.inspect')" @click.stop>
       <small v-if="Array.isArray(value)" class="cw-value-count">{{ $t('collectorValue.elements',{count:value.length}) }}</small>
-      <span v-else class="cw-reading">{{ value == null || value === '' ? emptyText : format(value) }}<small v-if="value != null && unit">{{ unit }}</small></span>
+      <span v-else class="cw-reading">{{ value == null ? emptyText : format(value) }}<small v-if="value != null && unit">{{ unit }}</small></span>
       <AIcon type="ExpandAltOutlined" class="cw-value-expand" />
     </button>
   </a-popover>
+  </template>
   </div>
 </template>
 <script setup lang="ts">

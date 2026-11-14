@@ -65,7 +65,7 @@ export function useCollectionWorkspace() {
     editingId.value = ''
     void nextTick(() => trigger?.focus({ preventScroll: true }))
   }
-  function addPoint() { if (batch.busy.value) return; const point = draft.add(); if (point) { data.unsavedPoints.value = [point, ...data.unsavedPoints.value]; data.points.value = [point, ...data.points.value]; data.selectedPointId.value = point.id; editingId.value = point.id } }
+  function addPoint() { if (batch.busy.value) return; const point = draft.add(); if (point) { data.unsavedPoints.value = [point, ...data.unsavedPoints.value]; data.points.value = [point, ...data.points.value]; data.filterPoints(); data.selectedPointId.value = point.id; editingId.value = point.id } }
   function diagnose(kind: EntityKind, object: CollectorObject) { diagnosticId.value = object.id; runtime.inspect(kind, object.id) }
   function diagnosticVisibility(point: PointRow, visible: boolean) { if (visible) diagnose('point', point); else if (diagnosticId.value === point.id) closeDiagnostic() }
   function closeDiagnostic() { diagnosticId.value = ''; runtime.close() }
@@ -96,5 +96,6 @@ export function useCollectionWorkspace() {
   const preventLoss = (event: BeforeUnloadEvent) => { if (configurationEditor.value?.dirty) { event.preventDefault(); event.returnValue = '' } }
   window.addEventListener('beforeunload', preventLoss)
   onBeforeUnmount(() => { observer?.disconnect(); window.removeEventListener('beforeunload', preventLoss) })
-  return { data, runtime, draft, batch, root, main, sidebar, drawerHost, editorHost, navigationTarget, editorTarget, configurationEditor, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic }
+  function visiblePoints(ids:string[]) { data.setVisiblePoints(ids);void relocate() }
+  return { data, runtime, draft, batch, root, main, sidebar, drawerHost, editorHost, navigationTarget, editorTarget, configurationEditor, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic, visiblePoints }
 }

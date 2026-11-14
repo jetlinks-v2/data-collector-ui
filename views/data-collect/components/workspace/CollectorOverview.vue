@@ -4,7 +4,7 @@
       <div class="cw-row">
         <WorkspaceIcon :object="item" :size="24" />
         <button class="cw-collector-name" @click.stop="$emit('select', item)"><strong :title="item.name">{{ item.name }}</strong></button>
-        <WorkspaceStatus v-if="item.runtime" :object="item" /><small v-else class="cw-muted">{{ $t('collectorMonitoring.waiting') }}</small>
+        <WorkspaceStatus v-if="item.runtime" :object="item" /><a-skeleton-input v-else active size="small" class="cw-metric-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
         <RuntimeCardMetrics :object="item" kind="collector" />
         <AIcon type="RightOutlined" class="cw-collector-enter" aria-hidden="true" />
       </div>

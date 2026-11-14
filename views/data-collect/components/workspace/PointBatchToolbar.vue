@@ -1,6 +1,6 @@
 <template>
   <div class="cw-batch-toolbar" role="group" :aria-label="$t('collectorList.batch')" :aria-busy="state.busy">
-    <a-checkbox :checked="state.total > 0 && state.keys.length === state.total" :indeterminate="state.keys.length > 0 && state.keys.length < state.total" :disabled="state.busy || !state.total" @change="$emit('all')">{{ $t('collectorList.thisPage') }}</a-checkbox>
+    <a-checkbox :checked="state.total > 0 && state.keys.length === state.total" :indeterminate="state.keys.length > 0 && state.keys.length < state.total" :disabled="state.busy || !state.total" @change="$emit('all')">{{ $t('collectorList.filteredSelection', { count: state.total }) }}</a-checkbox>
     <template v-if="state.keys.length">
       <small class="cw-muted">{{ $t('collectorList.selected', { count: state.keys.length }) }}</small>
       <a-tooltip :title="state.blocked ? $t('collectorList.applyDraft') : undefined">

@@ -1,8 +1,9 @@
 <template>
   <div v-if="variant === 'summary'" class="cw-collector-data">
-    <RuntimeDataFlow :object="object" />
+    <RuntimeDataFlow v-if="object.runtime" :object="object" />
+    <a-skeleton v-else active :title="false" :paragraph="{rows:2,width:['90%','60%']}" :aria-label="$t('collectorWorkspace.loading')" />
   </div>
-  <a-popover v-else :open="!detailsOpen && open" @update:open="open = $event" :trigger="['hover', 'focus']" :placement="variant === 'navigation' ? 'rightTop' : 'bottomRight'" :destroy-tooltip-on-hide="true" overlay-class-name="cw-monitoring-overlay">
+  <a-popover v-else :open="!detailsOpen && open" @update:open="open = $event" :trigger="['hover', 'focus']" :placement="variant === 'navigation' || variant === 'group' ? 'rightTop' : 'bottomRight'" :destroy-tooltip-on-hide="true" overlay-class-name="cw-monitoring-overlay">
     <template #content>
       <div class="cw-monitoring-panel">
         <div class="cw-monitoring-title"><strong>{{ $t('collectorMonitoring.monitoring') }}</strong><WorkspaceStatus v-if="object.runtime" :object="object" /></div>
@@ -18,11 +19,15 @@
         <a-button type="link" block size="small" class="cw-monitoring-more" @click.stop="showDetails"><span>{{ $t('collectorMonitoring.allMetrics') }}</span><span><small v-if="metricCount">{{ metricCount }}</small><AIcon type="RightOutlined" /></span></a-button>
       </div>
     </template>
-    <button v-if="variant === 'navigation'" class="cw-nav-runtime" :class="tone" :aria-label="label" :aria-expanded="open || detailsOpen" @click.stop="showDetails" @keydown.esc.stop="open = false">
-      <i class="cw-dot" :class="tone" />
-      <template v-if="kind === 'channel' && keyMetrics.some(item=>hasValue(item.value))"><span v-for="item in keyMetrics.filter(item=>hasValue(item.value))" :key="item.key" :title="`${item.value} B/s`"><AIcon :type="item.icon" />{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></span></template>
-      <template v-else-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" :class="item.tone"><AIcon :type="item.icon" />{{ item.id === 'state' ? stateText : $t(`collectorMonitoring.attentionShort.${item.id}`,{count:item.count}) }}</span></template>
-      <template v-else><span>{{ stateText }}</span><span v-if="object.runtime?.available && (object.monitoring?.collectionRate ?? object.monitoring?.sampleRate) != null"><AIcon type="LineChartOutlined" />{{ number(object.monitoring?.collectionRate ?? object.monitoring?.sampleRate) }}/s</span></template>
+    <button v-if="variant === 'navigation' || variant === 'group'" class="cw-nav-runtime" :class="[tone,{'cw-nav-channel-runtime':variant === 'group'}]" :aria-label="variant === 'group' ? `${object.name} · ${label}${indicators.length ? '' : ` · ${stateText}`}` : label" :aria-expanded="open || detailsOpen" @click.stop="showDetails" @keydown.esc.stop="open = false">
+      <a-skeleton-avatar v-if="!object.runtime && variant === 'group'" active shape="circle" :size="6" :aria-label="$t('collectorWorkspace.loading')" />
+      <a-skeleton-input v-else-if="!object.runtime" active size="small" class="cw-metric-skeleton cw-nav-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
+      <i v-else class="cw-dot" :class="tone" />
+      <template v-if="object.runtime && variant !== 'group'">
+        <template v-if="kind === 'channel' && keyMetrics.some(item=>hasValue(item.value))"><span v-for="item in keyMetrics.filter(item=>hasValue(item.value))" :key="item.key" :title="`${item.value} B/s`"><AIcon :type="item.icon" />{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></span></template>
+        <template v-else-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" :class="item.tone"><AIcon :type="item.icon" />{{ item.id === 'state' ? stateText : $t(`collectorMonitoring.attentionShort.${item.id}`,{count:item.count}) }}</span></template>
+        <template v-else><span>{{ stateText }}</span><span v-if="object.runtime?.available && (object.monitoring?.collectionRate ?? object.monitoring?.sampleRate) != null"><AIcon type="LineChartOutlined" />{{ number(object.monitoring?.collectionRate ?? object.monitoring?.sampleRate) }}/s</span></template>
+      </template>
     </button>
     <button v-else class="cw-runtime-indicators" :aria-label="label" :aria-expanded="open || detailsOpen" @click.stop="showDetails" @keydown.esc.stop="open = false">
       <span v-if="(kind === 'point' || kind === 'channel') && keyMetrics.length" class="cw-runtime-key-values"><span v-for="item in keyMetrics" :key="item.key" :title="`${$t(item.label)} · ${item.unit}\n${$t(item.hint)}${hasValue(item.value) ? `\n${item.value} ${item.unit}` : ''}`"><AIcon :type="item.icon" /><small v-if="kind === 'point'" class="cw-runtime-metric-label">{{ $t(item.label) }}</small><template v-if="hasValue(item.value)">{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></template><a-tooltip v-else :title="$t('collectorMonitoring.empty.calculating')"><a-skeleton-input class="cw-metric-skeleton" active size="small" :aria-label="$t('collectorMonitoring.empty.calculating')" /></a-tooltip></span></span>
@@ -46,7 +51,7 @@ import RuntimePointSummary from './RuntimePointSummary.vue'
 import RuntimeMetricDetails from './RuntimeMetricDetails.vue'
 import RuntimeDataFlow from './RuntimeDataFlow.vue'
 
-const props=defineProps<{object:CollectorObject; kind:EntityKind; variant?:'summary'|'navigation'}>()
+const props=defineProps<{object:CollectorObject; kind:EntityKind; variant?:'summary'|'navigation'|'group'}>()
 const {t,te,locale}=useI18n()
 const open=ref(false),detailsOpen=ref(false)
 // 悬浮只读已有摘要；完整浏览打开后才解析全部指标和请求说明。
