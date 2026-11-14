@@ -2,27 +2,32 @@ import { computed, onActivated, onDeactivated, onBeforeUnmount, ref, shallowRef,
 import { useI18n } from 'vue-i18n'
 import { debounce, throttle } from 'lodash-es'
 import { Subscription } from 'rxjs'
-import { listWorkspaceChannels, listWorkspaceCollectors, listWorkspacePoints, listWorkspaceProviders, monitorCollectors, observeWorkspace, queryWorkspaceIndex } from '../../../api/data-collect/workspace'
+import { listWorkspaceChannels, listWorkspaceCollectors, listWorkspacePoints, listWorkspaceProviders, loadWorkspacePoint, monitorCollectors, observeWorkspace, queryWorkspaceIndex } from '../../../api/data-collect/workspace'
 import { monitoredObjects, type RuntimeMonitoringRound } from '../../../utils/runtimeMonitoring'
 import { observedPoints } from '../../../utils/workspaceObservation'
 import { readPoint } from '../../../api/data-collect/collector'
 import { runtimeFilter, runtimeSort, workspaceOrder, type WorkspaceRuntimeIndex, type WorkspaceSort } from '../../../utils/workspaceList'
 import type { CollectorObject, CollectorObservation, PointRow, ProviderDescriptor } from '../../../types/workspace'
 
-/** 全量配置目录、有限运行索引和可视值流分别管理，滚动不重查配置或扰动全局排序。 */
+/** 轻量目录、单点编辑配置、有限运行索引和可视值流分别管理。 */
 export function useWorkspaceData() {
   const { t } = useI18n()
   const collectors = shallowRef<CollectorObject[]>([]), channels = shallowRef<CollectorObject[]>([])
   const providers = shallowRef<ProviderDescriptor[]>([]), points = shallowRef<PointRow[]>([])
   const unsavedPoints = shallowRef<PointRow[]>([]), observation = shallowRef<CollectorObservation>()
   const collector = shallowRef<CollectorObject>(), selectedPointId = ref('')
+  const pointDetails = shallowRef<PointRow>(), selectedLoading = ref(false), selectedError = ref('')
   const initializing = ref(true), loading = ref(false), pointLoading = ref(false), ordering = ref(false)
   const error = ref(''), paused = ref(false), valueError = ref('')
   const search = ref(''), pointSearch = ref(''), pointState = ref(''), collectorState = ref('')
   const pointSort = ref<WorkspaceSort>('newest'), collectorSort = ref<WorkspaceSort>('newest')
   const pointOrder = shallowRef<string[]>([]), collectorOrder = shallowRef<string[]>([])
   const indexTime = ref(0)
-  const selectedPoint = computed(() => points.value.find(item => item.id === selectedPointId.value))
+  const selectedPoint = computed(() => {
+    const row=points.value.find(item=>item.id === selectedPointId.value)
+    if(row?.id.startsWith('_new:'))return row
+    return row && pointDetails.value?.id === row.id ? {...pointDetails.value,...row} : undefined
+  })
   const channel = computed(() => channels.value.find(item => item.id === collector.value?.channelId))
   const orderedRows = <T extends CollectorObject>(rows:T[], ids:string[]) => {
     const byId = new Map(rows.map(row => [row.id,row]))
@@ -36,6 +41,29 @@ export function useWorkspaceData() {
   let subscription:Subscription|undefined, detailSubscription:Subscription|undefined, indexSubscription:Subscription|undefined
   let previousObservation:CollectorObservation|undefined
   let visibleIds:string[] = []
+  let firstRange = true, configurationRequest:AbortController|undefined
+  function cancelPointDetails() {
+    configurationRequest?.abort();configurationRequest=undefined
+    pointDetails.value=undefined;selectedLoading.value=false;selectedError.value=''
+  }
+  async function loadPointDetails() {
+    const id=selectedPointId.value,current=collector.value
+    if(pointDetails.value?.id === id)return
+    cancelPointDetails()
+    if(!id || !current || id.startsWith('_new:'))return
+    const request=new AbortController(),revision=pointGeneration
+    configurationRequest=request;selectedLoading.value=true
+    try {
+      const response=await loadWorkspacePoint(current.id,id,request.signal)
+      if(request.signal.aborted || revision !== pointGeneration || selectedPointId.value !== id)return
+      if(!response.success || !response.result?.[0])throw new Error(t('collectorWorkspace.loadFailed'))
+      pointDetails.value=response.result[0]
+    } catch(cause) {
+      if(!request.signal.aborted && revision === pointGeneration)selectedError.value=describe(cause)
+    } finally {
+      if(configurationRequest === request){configurationRequest=undefined;selectedLoading.value=false}
+    }
+  }
   const describe = (cause:unknown) => cause instanceof Error ? cause.message : String(cause)
   const failures=new Map<string,string>()
   function feedback(key:string,cause?:unknown) {
@@ -81,6 +109,8 @@ export function useWorkspaceData() {
     })
     if(previousObservation)previousObservation={...previousObservation,nodes:previousObservation.nodes.map(node=>({...node,points:node.points.filter(point=>retained.has(point.id))}))}
     observation.value=previousObservation
+    // A genuinely empty result still needs collector health; mounting visible rows does not need an empty stream first.
+    if(!ids.length && filteredPoints.value.length)return
     const disconnected=(cause:unknown)=>{
       if(revision !== detailRevision || catalogRevision !== pointGeneration)return
       feedback('detail',cause);collector.value=unavailable(current)
@@ -101,11 +131,13 @@ export function useWorkspaceData() {
       previousObservation=value
     },error:disconnected,complete:()=>disconnected(t('collectorWorkspace.streamEnded'))})
   }
-  const updateVisible=debounce(subscribePoints,120,{maxWait:250})
+  const updateVisible=debounce(subscribePoints,120)
   function setVisiblePoints(ids:string[]) {
     const next=[...new Set(ids)].sort()
     if(next.join(',') === visibleIds.join(','))return
-    visibleIds=next;updateVisible()
+    visibleIds=next;stopDetail();updateVisible.cancel()
+    if(firstRange && next.length){firstRange=false;subscribePoints()}
+    else updateVisible()
   }
   function subscribe() {
     unsubscribe()
@@ -180,6 +212,7 @@ export function useWorkspaceData() {
   async function loadPoints() {
     const current=collector.value,revision=++pointGeneration
     unsubscribe();indexSubscription?.unsubscribe();ordering.value=false
+    cancelPointDetails();firstRange=true
     points.value=[];pointOrder.value=[];visibleIds=[];pointIndex.clear()
     if(!current){pointLoading.value=false;subscribe();return}
     pointLoading.value=true;error.value=''
@@ -189,7 +222,7 @@ export function useWorkspaceData() {
       if(!response.success)throw new Error(t('collectorWorkspace.loadFailed'))
       points.value=[...unsavedPoints.value.filter(point=>point.collectorId === current.id),...response.result || []]
       if(!points.value.some(point=>point.id === selectedPointId.value))selectedPointId.value=''
-      filterPoints();subscribe()
+      filterPoints();subscribe();void loadPointDetails()
     }catch(cause){if(revision === pointGeneration)error.value=describe(cause)}
     finally{if(revision === pointGeneration)pointLoading.value=false}
   }
@@ -229,9 +262,9 @@ export function useWorkspaceData() {
   const onVisibility=()=>{if(document.hidden)unsubscribe();else subscribe()}
   document.addEventListener('visibilitychange',onVisibility)
   watch(paused,subscribe)
-  watch(selectedPointId,()=>updateVisible())
-  onDeactivated(()=>{active=false;++pointGeneration;unsubscribe();indexSubscription?.unsubscribe();ordering.value=false})
-  onActivated(()=>{if(!active){active=true;subscribe()}})
-  onBeforeUnmount(()=>{++generation;++pointGeneration;unsubscribe();indexSubscription?.unsubscribe();document.removeEventListener('visibilitychange',onVisibility)})
-  return {collectors,filteredCollectors,channels,providers,points,filteredPoints,unsavedPoints,observation,collector,channel,selectedPointId,selectedPoint,initializing,loading,pointLoading,ordering,indexTime,error,valueError,paused,total,pointTotal,search,pointSearch,pointState,collectorState,pointSort,collectorSort,initialize,loadCollectors,loadPoints,select,trial,filterPoints,filterCollectors,setVisiblePoints}
+  watch(selectedPointId,()=>{void loadPointDetails();updateVisible.cancel();subscribePoints()})
+  onDeactivated(()=>{active=false;++pointGeneration;cancelPointDetails();unsubscribe();indexSubscription?.unsubscribe();ordering.value=false})
+  onActivated(()=>{if(!active){active=true;subscribe();void loadPointDetails()}})
+  onBeforeUnmount(()=>{++generation;++pointGeneration;cancelPointDetails();unsubscribe();indexSubscription?.unsubscribe();document.removeEventListener('visibilitychange',onVisibility)})
+  return {collectors,filteredCollectors,channels,providers,points,filteredPoints,unsavedPoints,observation,collector,channel,selectedPointId,selectedPoint,selectedLoading,selectedError,loadPointDetails,initializing,loading,pointLoading,ordering,indexTime,error,valueError,paused,total,pointTotal,search,pointSearch,pointState,collectorState,pointSort,collectorSort,initialize,loadCollectors,loadPoints,select,trial,filterPoints,filterCollectors,setVisiblePoints}
 }

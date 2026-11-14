@@ -109,6 +109,6 @@ const reading = (point: PointRow) => {
     : state === 'collectionError' ? t('collectorRuntime.states.collectionError') : t('collectorWorkspace.noData')
   return formatPointValue(pointValue(point), empty)
 }
-const unit = (point: PointRow) => point.latest ? point.metadata?.dataType?.unit || '' : ''
+const unit = (point: PointRow) => point.latest ? point.unit || point.metadata?.dataType?.unit || '' : ''
 const timestamp = (point: PointRow) => point.latest?.timestamp ? dayjs(point.latest.timestamp).format('HH:mm:ss') : ''
 </script>

@@ -65,7 +65,14 @@
     </EqualHeightColumns>
     <a-drawer v-model:open="drawerOpen" placement="left" :width="240" :closable="false" :force-render="true" root-class-name="cw-navigation-drawer"><div class="collection-workspace"><div ref="drawerHost" /></div></a-drawer>
     <Teleport v-if="navigationTarget" :to="navigationTarget"><ObjectNavigation :collectors="collectors" :channels="channels" :selected="collector?.id" :total="error && !collectors.length ? undefined : collectors.length" :loading="initializing || loading && !collectors.length" :drawer="narrow || folded" :expandable="folded && !narrow" @select="select" @close="drawerOpen = false" @collapse="folded = true" @expand="folded = false; drawerOpen = false" /></Teleport>
-    <Teleport v-if="model && collector && editingId" :to="editorTarget || '#cw-editor-parking'"><PointEditor :key="`${collector.id}:${model.id}:${revision}`" :model="model" :collector="collector" :dirty="dirty" :saving="saving" :error="draftError" @apply="draft.apply" @restore="draft.restore" @trial="data.trial(selectedPoint)" @close="closePoint" /></Teleport>
+    <Teleport v-if="collector && editingId" :to="editorTarget || '#cw-editor-parking'">
+      <section v-if="selectedLoading || selectedError" class="cw-editor" :aria-busy="selectedLoading">
+        <div class="cw-between"><span>{{ $t('collectorWorkspace.pointEditor') }}</span><a-button type="text" size="small" :aria-label="$t('collectorWorkspace.close')" @click="closePoint"><AIcon type="CloseOutlined" /></a-button></div>
+        <a-skeleton v-if="selectedLoading" active :paragraph="{rows:5}" />
+        <a-alert v-else :message="selectedError" type="error" show-icon><template #action><a-button size="small" @click="data.loadPointDetails">{{ $t('collectorWorkspace.retry') }}</a-button></template></a-alert>
+      </section>
+      <PointEditor v-else-if="model" :key="`${collector.id}:${model.id}:${revision}`" :model="model" :collector="collector" :resolved="selectedPoint" :dirty="dirty" :saving="saving" :error="draftError" @apply="draft.apply" @restore="draft.restore" @trial="data.trial(selectedPoint)" @close="closePoint" />
+    </Teleport>
     <div id="cw-editor-parking" hidden />
     <a-drawer v-model:open="advanced" :width="'min(1200px, 100vw)'" :title="$t('collectorWorkspace.advanced')" destroy-on-close><LegacyWorkspace v-if="advanced" /></a-drawer>
   </div>
@@ -85,18 +92,18 @@ import PointCollection from './components/workspace/PointCollection.vue'
 import PointBatchToolbar from './components/workspace/PointBatchToolbar.vue'
 import WorkspacePointTools from './components/workspace/WorkspacePointTools.vue'
 import WorkspaceSkeleton from './components/workspace/WorkspaceSkeleton.vue'
-import PointEditor from './components/workspace/PointEditor.vue'
-import DiagnosticContent from './components/workspace/DiagnosticContent.vue'
 import DiagnosticTrigger from './components/workspace/DiagnosticTrigger.vue'
-import ProviderChooser from './components/workspace/ProviderChooser.vue'
 import type { CollectorObject } from '../../types/workspace'
 import { runtimeSort, runtimeFilter } from '../../utils/workspaceList'
 import './components/workspace/workspace.less'
 const LegacyWorkspace = defineAsyncComponent(() => import('./LegacyWorkspace.vue'))
 const ObjectConfiguration = defineAsyncComponent(() => import('./components/workspace/ObjectConfiguration.vue'))
 const CollectionSetup = defineAsyncComponent(() => import('./components/workspace/CollectionSetup.vue'))
+const PointEditor = defineAsyncComponent(() => import('./components/workspace/PointEditor.vue'))
+const DiagnosticContent = defineAsyncComponent(() => import('./components/workspace/DiagnosticContent.vue'))
+const ProviderChooser = defineAsyncComponent(() => import('./components/workspace/ProviderChooser.vue'))
 const { data, runtime, draft, batch, root, main, sidebar, drawerHost, editorHost, navigationTarget, editorTarget, configurationEditor, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic, visiblePoints } = useCollectionWorkspace()
-const { collector, channel, collectors, filteredCollectors, channels, providers, points, filteredPoints, selectedPoint, initializing, loading, pointLoading, ordering, indexTime, error, valueError, paused, total, search, pointSearch, pointState, collectorState, pointSort, collectorSort } = data
+const { collector, channel, collectors, filteredCollectors, channels, providers, points, filteredPoints, selectedPoint, selectedLoading, selectedError, initializing, loading, pointLoading, ordering, indexTime, error, valueError, paused, total, search, pointSearch, pointState, collectorState, pointSort, collectorSort } = data
 const { state: selection, busy: batchBusy } = batch
 const { t } = useI18n()
 const sortOptions = computed(() => [

@@ -1,5 +1,5 @@
 import { onBeforeUnmount, provide, ref } from 'vue'
-import { cloneDeep } from 'lodash-es'
+import { cloneDeep, isEqual } from 'lodash-es'
 import { useI18n } from 'vue-i18n'
 import { devGetProtocol } from '../../../utils/utils'
 import { queryPointMetadata } from '../../../api/data-collect/collector'
@@ -8,9 +8,13 @@ import type { CollectorObject, PluginConfiguration, PointCapabilities } from '..
 
 const resources = new Map<string, Promise<string | undefined>>()
 /** Preserve plugin injection and validation contracts while changing only its host. */
-export function usePointPlugin(model: CollectorObject, collector: CollectorObject) {
+export function usePointPlugin(model: CollectorObject, collector: CollectorObject, resolved?: CollectorObject) {
   const { t } = useI18n()
-  const source = ref(''), capabilities = ref<PointCapabilities>({}), error = ref(''), loading = ref(true)
+  // A restored draft may have changed protocol fields: reuse metadata only for the configuration it describes.
+  const initial=resolved?.metadata && isEqual(model.configuration || {},resolved.configuration || {}) ? resolved.metadata : undefined
+  const source = ref(''), capabilities = ref<PointCapabilities>(initial || {}), error = ref(''), loading = ref(true)
+  let metadataInput: {provider:string;properties:PluginConfiguration}|undefined = initial
+    ? {provider:model.provider,properties:{configuration:cloneDeep(model.configuration || {})}} : undefined
   let disposed = false, metadataRevision = 0
   model.configuration ||= {}; model.managedConfiguration ||= {}; model.features ||= []
   const template = { ...collector, ...cloneDeep(collector.configuration?.template || {}) }
@@ -19,8 +23,11 @@ export function usePointPlugin(model: CollectorObject, collector: CollectorObjec
   provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
   provide('metadata-configuration', capabilities)
   async function loadMetadata(provider: string, configuration?: PluginConfiguration) {
+    if (!configuration) { ++metadataRevision;metadataInput=undefined;capabilities.value = {}; return }
+    const input={provider,properties:configuration}
+    if(isEqual(input,metadataInput))return
+    metadataInput=cloneDeep(input)
     const revision = ++metadataRevision
-    if (!configuration) { capabilities.value = {}; return }
     try {
       const response = await queryPointMetadata(provider, configuration)
       if (!disposed && revision === metadataRevision && response.success) {
@@ -32,7 +39,8 @@ export function usePointPlugin(model: CollectorObject, collector: CollectorObjec
         }
         capabilities.value = metadata
       }
-    } catch (cause) { if (!disposed && revision === metadataRevision) error.value = cause instanceof Error ? cause.message : String(cause) }
+      if(!disposed && revision === metadataRevision && !response.success)metadataInput=undefined
+    } catch (cause) { if (!disposed && revision === metadataRevision) {metadataInput=undefined;error.value = cause instanceof Error ? cause.message : String(cause)} }
   }
   provide('point-metadata-events', { pointMetadataEvents: loadMetadata })
   async function load() {

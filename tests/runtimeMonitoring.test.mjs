@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { monitoredObjects,runtimeIndicators,runtimePrimaryMetrics,runtimeIntervalComparison } from '../utils/runtimeMonitoring.ts'
+import { collectorFlowMetrics,monitoredObjects,runtimeIndicators,runtimePrimaryMetrics,runtimeIntervalComparison } from '../utils/runtimeMonitoring.ts'
 import { observedPoints } from '../utils/workspaceObservation.ts'
 import { objectDisplayState, objectStateText } from '../types/workspace.ts'
 
@@ -97,6 +97,43 @@ function measured(counts,at=1000,instanceId='a'){
   return base
 }
 const boundaries={collectionAttempts:10,receivedSamples:100,outputSamples:30,filteredOutlierSamples:10,filteredUnchangedSamples:20,filteredDeadbandSamples:30,filteredConversionSamples:10,failedSamples:0,cancelledSamples:0,discardedOutOfOrderSamples:0,rejectedSamples:0,outputFailures:0,processingSamples:1,pendingSubscriptionSamples:2,expectedIntervalMillis:100,lastCollectionIntervalNanos:120e6,lastReceivedIntervalNanos:150e6,lastOutputIntervalNanos:500e6,receivedAgeNanos:200e6,outputAgeNanos:700e6}
+
+test('collector first snapshots show cumulative values, including a real zero, without claiming a rate',()=>{
+  const first=monitoredObjects([object],{timestamp:1000,snapshots:[measured({...boundaries,filteredOutlierSamples:0,filteredUnchangedSamples:0,filteredDeadbandSamples:0,filteredConversionSamples:0},1000)]})[0]
+  const flow=collectorFlowMetrics(first)
+  assert.equal(flow.totals,true)
+  assert.deepEqual(flow.steps.map(({value,unit})=>({value,unit})),[{value:100,unit:''},{value:30,unit:''},{value:0,unit:''}])
+  assert.equal(flow.execution.value,10)
+  assert.equal(flow.execution.label,'collectorMonitoring.collectionTotal')
+  assert.deepEqual(runtimePrimaryMetrics(first,'collector').map(({value,unit})=>({value,unit})),[{value:10,unit:''},{value:30,unit:''}])
+})
+
+test('returning to a collector scope reuses only matching observed instances instead of restarting the rate window',()=>{
+  const first=monitoredObjects([object],{timestamp:1000,snapshots:[measured(boundaries,1000)]})
+  const current={timestamp:3000,snapshots:[measured({...boundaries,receivedSamples:120,outputSamples:40,collectionAttempts:14},3000)]}
+  const resumed=monitoredObjects(first,current)[0]
+  assert.equal(resumed.monitoring.sampleRate,10)
+  assert.equal(resumed.monitoring.outputRate,5)
+  assert.equal(collectorFlowMetrics(resumed).totals,false)
+  assert.equal(collectorFlowMetrics(resumed).execution.value,2)
+  for(const next of [measured(boundaries,3000,'new-instance'),measured({...boundaries,receivedSamples:1,outputSamples:1,collectionAttempts:1},3000)]){
+    const replaced=monitoredObjects(first,{timestamp:3000,snapshots:[next]})[0]
+    assert.equal(collectorFlowMetrics(replaced).totals,true)
+    assert.equal(replaced.monitoring.sampleRate,undefined)
+  }
+})
+
+test('subscription cards show real totals on the first snapshot and rates only after a valid second snapshot',()=>{
+  const before={timestamp:1000,snapshots:[measured({receivedSamples:50,outputSamples:40},1000)]}
+  const first=monitoredObjects([object],before,undefined,'point')[0]
+  assert.deepEqual(runtimePrimaryMetrics(first,'point').map(({label,value,unit})=>({label,value,unit})),[
+    {label:'collectorMonitoring.receivedTotal',value:50,unit:''},
+    {label:'collectorMonitoring.outputTotal',value:40,unit:''},
+  ])
+  const after={timestamp:3000,snapshots:[measured({receivedSamples:70,outputSamples:48},3000)]}
+  const second=monitoredObjects([object],after,before,'point')[0]
+  assert.deepEqual(runtimePrimaryMetrics(second,'point').map(({value,unit})=>({value,unit})),[{value:10,unit:'/s'},{value:4,unit:'/s'}])
+})
 
 test('collection, arrivals, output and exclusive outcomes retain distinct boundaries',()=>{
   const previous={timestamp:1000,snapshots:[measured(boundaries)]}

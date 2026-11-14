@@ -2,8 +2,8 @@
   <div v-if="object.runtime?.available" class="cw-data-flow">
     <div v-if="!point" class="cw-collection-path" :aria-label="$t('collectorMonitoring.path.label')">
       <div v-for="step in path" :key="step.id" class="cw-collection-step" :class="{bad:step.failed}" :title="$t(step.hint)">
-        <span class="cw-collection-step-name"><AIcon :type="step.failed ? 'WarningOutlined' : step.icon" />{{ $t(`collectorMonitoring.path.${step.id}`) }}</span>
-        <strong v-if="step.value != null">{{ number(step.value) }}<small>/s</small></strong>
+        <span class="cw-collection-step-name"><AIcon :type="step.failed ? 'WarningOutlined' : step.icon" />{{ $t(step.label) }}</span>
+        <strong v-if="step.value != null">{{ number(step.value) }}<small v-if="step.unit">{{ step.unit }}</small></strong>
         <small v-else>{{ $t('collectorMonitoring.empty.calculating') }}</small>
       </div>
     </div>
@@ -34,7 +34,7 @@
     </div>
     <div v-if="filtered || monitoring?.processing || (!sparse && hasOtherOutcomes)" class="cw-flow-summary">
       <a-popover v-if="filtered" :trigger="['hover','focus','click']" placement="bottom" :destroy-tooltip-on-hide="true" overlay-class-name="cw-filter-overlay">
-        <template #content><div class="cw-filter-details"><strong>{{ $t('collectorMonitoring.ignored') }}</strong><div v-for="item in filters" :key="item.id"><span><AIcon :type="item.icon" />{{ $t(`collectorMonitoring.filterReasons.${item.id}`) }}</span><b>{{ number(item.value) }}<small>{{ flowUnit }}</small></b></div><small>{{ $t('collectorMonitoring.filterHint') }}</small></div></template>
+        <template #content><div class="cw-filter-details"><strong>{{ $t('collectorMonitoring.ignored') }}</strong><div v-for="item in filters" :key="item.id"><span><AIcon :type="item.icon" />{{ $t(`collectorMonitoring.filterReasons.${item.id}`) }}</span><b>{{ number(item.value) }}<small>{{ flowUnit }}</small></b></div><small>{{ $t(totals ? 'collectorMonitoring.filteredTotalHint' : 'collectorMonitoring.filterHint') }}</small></div></template>
         <button class="cw-flow-filter" :aria-label="$t('collectorMonitoring.ignored')" @click.stop><AIcon type="FilterOutlined" />{{ number(filtered) }}<small>{{ flowUnit }}</small><AIcon type="DownOutlined" /></button>
       </a-popover>
       <span v-if="!sparse && monitoring?.outcomes && (monitoring.outcomes.failed + monitoring.outcomes.rejected) > 0" class="bad" :title="$t('collectorMonitoring.failedHint')"><AIcon type="WarningOutlined" />{{ number(monitoring.outcomes.failed + monitoring.outcomes.rejected) }}<small>/s</small></span>
@@ -43,8 +43,8 @@
     </div>
     <div v-if="retrySeconds != null" class="cw-flow-note warn"><AIcon type="ClockCircleOutlined" />{{ $t('collectorMonitoring.retryAfter',{seconds:retrySeconds}) }}</div>
     <div v-if="!point || (!compact && monitoring?.rateWindowMillis != null && (!cadence || cadence.quantityRatio != null))" class="cw-flow-window">
-      <span v-if="!point" :class="{bad:readFailed}" :title="$t('collectorMonitoring.collectionHint')"><AIcon :type="readFailed ? 'WarningOutlined' : 'FieldTimeOutlined'" />{{ $t('collectorMonitoring.path.executions') }} <b>{{ number(monitoring?.collectionRate) }}</b><small v-if="monitoring?.collectionRate != null">{{ $t('collectorMonitoring.path.runsPerSecond') }}</small></span>
-      <span v-if="monitoring?.rateWindowMillis != null">{{ $t('collectorMonitoring.rateWindow',{time:milliseconds(monitoring.rateWindowMillis)}) }}</span>
+      <span v-if="!point" :class="{bad:readFailed}" :title="$t(flow.execution.hint)"><AIcon :type="readFailed ? 'WarningOutlined' : 'FieldTimeOutlined'" />{{ $t(flow.execution.label) }} <b>{{ number(flow.execution.value) }}</b><small v-if="!flow.totals && flow.execution.value != null">{{ $t('collectorMonitoring.path.runsPerSecond') }}</small></span>
+      <span v-if="monitoring?.rateWindowMillis != null && (point || !flow.totals)">{{ $t('collectorMonitoring.rateWindow',{time:milliseconds(monitoring.rateWindowMillis)}) }}</span>
     </div>
   </div>
 </template>
@@ -53,7 +53,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { CollectorObject } from '../../../../types/workspace'
 import { objectDisplayState, stateValue } from '../../../../types/workspace'
-import { runtimeMetricEmptyState, showRuntimeMetric } from '../../../../utils/runtimeMonitoring'
+import { collectorFlowMetrics, runtimeMetricEmptyState, showRuntimeMetric } from '../../../../utils/runtimeMonitoring'
 import { formatMetricQuantity } from '../../../../utils/runtimePresentation'
 
 const props=defineProps<{object:CollectorObject;point?:boolean;compact?:boolean}>()
@@ -63,9 +63,11 @@ const formatter=computed(()=>new Intl.NumberFormat(locale.value,{maximumFraction
 const number=(value?:number)=>value == null ? t('collectorMonitoring.empty.noSamples') : formatter.value.format(value)
 const cadence=computed(()=>monitoring.value?.cadence)
 const sparse=computed(()=>Boolean(cadence.value && (cadence.value.windowMillis == null || cadence.value.windowMillis/cadence.value.expectedMillis < 20)))
-const filtered=computed(()=>sparse.value ? monitoring.value?.filteredTotal : monitoring.value?.filteredRate)
-const flowUnit=computed(()=>sparse.value ? '' : '/s')
-const filterValues=computed(()=>sparse.value ? monitoring.value?.filterTotals : monitoring.value?.filterRates)
+const flow=computed(()=>collectorFlowMetrics(props.object))
+const totals=computed(()=>sparse.value || !props.point && flow.value.totals)
+const filtered=computed(()=>totals.value ? monitoring.value?.filteredTotal : monitoring.value?.filteredRate)
+const flowUnit=computed(()=>totals.value ? '' : '/s')
+const filterValues=computed(()=>totals.value ? monitoring.value?.filterTotals : monitoring.value?.filterRates)
 const expected=computed(()=>cadence.value?.expectedMillis)
 const actual=computed(()=>{
   const value=cadence.value ? cadence.value.intervalNanos : monitoring.value?.receivedIntervalNanos
@@ -77,11 +79,7 @@ const intervalEmpty=computed(()=>{
 })
 // Task executions and received values have different units; do not present them as consecutive stages.
 const readFailed=computed(()=>['collect','read','request','connect'].includes(props.object.runtime?.currentFailure?.stage || ''))
-const path=computed(()=>[
-  {id:'received',icon:'DotChartOutlined',value:monitoring.value?.sampleRate,hint:'collectorMonitoring.sampleRateHint',failed:readFailed.value},
-  {id:'output',icon:'SendOutlined',value:monitoring.value?.outputRate,hint:'collectorMonitoring.outputHint',failed:props.object.runtime?.currentFailure?.stage === 'output'},
-  {id:'filtered',icon:'FilterOutlined',value:monitoring.value?.filteredRate,hint:'collectorMonitoring.filterHint',failed:false},
-])
+const path=computed(()=>flow.value.steps.map(step=>({...step,failed:step.id === 'received' ? readFailed.value : step.id === 'output' && props.object.runtime?.currentFailure?.stage === 'output'})))
 const milliseconds=(value?:number)=>{
   if(value == null)return t('collectorMonitoring.empty.noSamples')
   const display=formatMetricQuantity(value,'milliseconds',number)!

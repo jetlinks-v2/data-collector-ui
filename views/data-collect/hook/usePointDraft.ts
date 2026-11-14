@@ -13,6 +13,9 @@ export function usePointDraft(point: Ref<PointRow | undefined>, collector: Ref<C
   function editable(value: PointRow): CollectorObject {
     const result = cloneDeep(value)
     delete result.latest
+    delete result.runtime
+    delete result.monitoring
+    delete result.metadata
     result.accessModes = accessValues(result)
     result.features = (result.features || []).map(stateValue)
     result.configuration ||= {}; result.managedConfiguration ||= {}

@@ -111,7 +111,8 @@ export function selectRuntime(values:RuntimeSnapshot[],object?:CollectorObject):
 
 /** 每轮完整替换当前页；多节点按运行实例合计，不将未加载节点计为零或延用旧节点。 */
 export function monitoredObjects<T extends CollectorObject>(objects:T[],current:RuntimeMonitoringRound,previous?:RuntimeMonitoringRound,kind:EntityKind='collector'):T[] {
-  const earlier=new Map((previous?.snapshots || []).map(value=>[JSON.stringify([value.id,value.serverId]),value]))
+  // Returning to a scope can reuse its last observed instances; the rate function still rejects resets and migrations.
+  const earlier=new Map((previous?.snapshots || objects.flatMap(object=>object.monitoring?.nodes || [])).map(value=>[JSON.stringify([value.id,value.serverId]),value]))
   const groups=new Map<string,RuntimeSnapshot[]>()
   for(const value of current.snapshots){
     const group=groups.get(value.id)
@@ -152,7 +153,9 @@ export function monitoredObjects<T extends CollectorObject>(objects:T[],current:
       }
       const filterIds={outlier:'filteredOutlierSamples',unchanged:'filteredUnchangedSamples',deadband:'filteredDeadbandSamples',conversion:'filteredConversionSamples'}
       monitoring.collectionRate=rates(['collectionAttempts'])
+      monitoring.collectionTotal=sum(active.map(value=>metric(value,'collectionAttempts')))
       monitoring.outputRate=rates(['outputSamples'])
+      monitoring.receivedTotal=sum(active.map(value=>metric(value,'receivedSamples')))
       monitoring.outputTotal=sum(active.map(value=>metric(value,'outputSamples')))
       monitoring.filteredRate=rates(Object.values(filterIds))
       monitoring.filterRates=Object.fromEntries(Object.entries(filterIds).map(([key,id])=>[key,rates([id])])) as RuntimeMonitoring['filterRates']
@@ -214,13 +217,31 @@ export function monitoredObjects<T extends CollectorObject>(objects:T[],current:
 export function runtimePrimaryMetrics(object:CollectorObject,kind:EntityKind){
   const monitoring=object.monitoring,cadence=monitoring?.cadence
   const sparse=kind === 'point' && cadence != null && (cadence.windowMillis == null || cadence.windowMillis/cadence.expectedMillis < 20)
+  const firstSnapshot=kind !== 'channel' && !cadence && monitoring?.collectionRate == null && monitoring?.sampleRate == null && monitoring?.outputRate == null
   return [
     {key:'collection',icon:sparse ? 'FieldTimeOutlined' : 'LineChartOutlined',
-      label:kind !== 'point' ? 'collectorMonitoring.collection' : sparse ? 'collectorMonitoring.collectedTotal' : cadence ? 'collectorMonitoring.scheduledCollection' : 'collectorMonitoring.data',
-      hint:kind !== 'point' ? 'collectorMonitoring.collectionHint' : cadence ? 'collectorMonitoring.scheduledHint' : 'collectorMonitoring.sampleRateHint',
-      value:kind !== 'point' ? monitoring?.collectionRate : sparse ? cadence?.count : cadence ? cadence.rate : monitoring?.sampleRate,
-      unit:sparse ? '' : '/s',ids:kind !== 'point' ? ['collectionAttempts'] : cadence ? ['scheduledSamples'] : ['receivedSamples']},
-    {key:'output',icon:'SendOutlined',label:sparse ? 'collectorMonitoring.outputTotal' : 'collectorMonitoring.output',hint:sparse ? 'collectorMonitoring.outputTotalHint' : 'collectorMonitoring.outputHint',
-      value:sparse ? monitoring?.outputTotal : monitoring?.outputRate,unit:sparse ? '' : '/s',ids:['outputSamples']},
+      label:kind !== 'point' ? firstSnapshot ? 'collectorMonitoring.collectionTotal' : 'collectorMonitoring.collection' : sparse ? 'collectorMonitoring.collectedTotal' : firstSnapshot ? 'collectorMonitoring.receivedTotal' : cadence ? 'collectorMonitoring.scheduledCollection' : 'collectorMonitoring.data',
+      hint:kind !== 'point' ? firstSnapshot ? 'collectorMonitoring.collectionTotalHint' : 'collectorMonitoring.collectionHint' : cadence ? 'collectorMonitoring.scheduledHint' : firstSnapshot ? 'collectorMonitoring.receivedTotalHint' : 'collectorMonitoring.sampleRateHint',
+      value:kind !== 'point' ? firstSnapshot ? monitoring?.collectionTotal : monitoring?.collectionRate : sparse ? cadence?.count : firstSnapshot ? monitoring?.receivedTotal : cadence ? cadence.rate : monitoring?.sampleRate,
+      unit:sparse || firstSnapshot ? '' : '/s',ids:kind !== 'point' ? ['collectionAttempts'] : cadence ? ['scheduledSamples'] : ['receivedSamples']},
+    {key:'output',icon:'SendOutlined',label:sparse || firstSnapshot ? 'collectorMonitoring.outputTotal' : 'collectorMonitoring.output',hint:sparse || firstSnapshot ? 'collectorMonitoring.outputTotalHint' : 'collectorMonitoring.outputHint',
+      value:sparse || firstSnapshot ? monitoring?.outputTotal : monitoring?.outputRate,unit:sparse || firstSnapshot ? '' : '/s',ids:['outputSamples']},
   ]
+}
+
+/** 首帧使用已有计数；有有效增量后，整组切换为相同时间范围内的速率。 */
+export function collectorFlowMetrics(object:CollectorObject) {
+  const monitoring=object.monitoring
+  const totals=monitoring?.sampleRate == null && monitoring?.outputRate == null && monitoring?.collectionRate == null
+  const unit=totals ? '' : '/s'
+  return {totals,steps:[
+    {id:'received',icon:'DotChartOutlined',value:totals ? monitoring?.receivedTotal : monitoring?.sampleRate,unit,
+      label:totals ? 'collectorMonitoring.receivedTotal' : 'collectorMonitoring.path.received',hint:totals ? 'collectorMonitoring.receivedTotalHint' : 'collectorMonitoring.sampleRateHint'},
+    {id:'output',icon:'SendOutlined',value:totals ? monitoring?.outputTotal : monitoring?.outputRate,unit,
+      label:totals ? 'collectorMonitoring.outputTotal' : 'collectorMonitoring.path.output',hint:totals ? 'collectorMonitoring.outputTotalHint' : 'collectorMonitoring.outputHint'},
+    {id:'filtered',icon:'FilterOutlined',value:totals ? monitoring?.filteredTotal : monitoring?.filteredRate,unit,
+      label:totals ? 'collectorMonitoring.filteredTotal' : 'collectorMonitoring.path.filtered',hint:totals ? 'collectorMonitoring.filteredTotalHint' : 'collectorMonitoring.filterHint'},
+  ],execution:{value:totals ? monitoring?.collectionTotal : monitoring?.collectionRate,
+    label:totals ? 'collectorMonitoring.collectionTotal' : 'collectorMonitoring.path.executions',
+    hint:totals ? 'collectorMonitoring.collectionTotalHint' : 'collectorMonitoring.collectionHint'}}
 }

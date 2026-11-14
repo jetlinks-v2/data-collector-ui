@@ -22,11 +22,12 @@ export interface CollectorObject {
   collectorNumber?: number
   pointKey?: string
   address?: string
+  unit?: string
   interval?: number
   accessModes?: Array<string | { value: string; text?: string }>
   features?: string[]
   managedConfiguration?: PluginConfiguration
-  metadata?: { dataType?: { unit?: string } }
+  metadata?: PointCapabilities
   modifyTime?: number
   createTime?: number
   runtime?: RuntimeSnapshot
@@ -62,7 +63,7 @@ export interface RuntimeMonitoring {
   expectedIntervalMillis?:number; collectionIntervalNanos?:number; receivedIntervalNanos?:number; outputIntervalNanos?:number
   receivedAgeNanos?:number; outputAgeNanos?:number; nextRetryTime?:number
   readRate?:number; writeRate?:number; activeConnections?:number
-  rateWindowMillis?:number; outputTotal?:number
+  rateWindowMillis?:number; collectionTotal?:number; receivedTotal?:number; outputTotal?:number
   cadence?:{ expectedMillis:number; count:number; intervalNanos?:number; ageNanos?:number; rate?:number; windowMillis?:number; quantityRatio?:number }
 }
 export interface MetricUnit { id?: string; value?: string; symbol?: string; name?: string; i18nName?: string }

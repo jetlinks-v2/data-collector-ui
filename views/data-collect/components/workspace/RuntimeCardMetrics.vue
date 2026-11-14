@@ -38,7 +38,7 @@
   <RuntimeMetricDetails v-if="detailsOpen" :open="detailsOpen" :object="object" :kind="kind" :nodes="metricNodes" :loading="metadata.loading.value" :metadata-error="metadata.error.value" @close="detailsOpen = false" />
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import type { CollectorObject, EntityKind, MetricSnapshot } from '../../../../types/workspace'
@@ -48,8 +48,8 @@ import { formatMetricQuantity, runtimeMetricRows } from '../../../../utils/runti
 import { useRuntimeMetricMetadata } from '../../hook/useRuntimeMetricMetadata'
 import WorkspaceStatus from './WorkspaceStatus.vue'
 import RuntimePointSummary from './RuntimePointSummary.vue'
-import RuntimeMetricDetails from './RuntimeMetricDetails.vue'
 import RuntimeDataFlow from './RuntimeDataFlow.vue'
+const RuntimeMetricDetails=defineAsyncComponent(()=>import('./RuntimeMetricDetails.vue'))
 
 const props=defineProps<{object:CollectorObject; kind:EntityKind; variant?:'summary'|'navigation'|'group'}>()
 const {t,te,locale}=useI18n()

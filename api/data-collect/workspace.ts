@@ -12,7 +12,10 @@ export interface Page<T> { data: T[]; total: number; pageIndex?: number; pageSiz
 type Response<T> = Promise<AxiosResponseRewrite<T>>
 export const listWorkspaceCollectors = (data: object): Response<CollectorObject[]> => request.post('/data-collect/collector/_detail/no-paging', { ...data, paging: false })
 export const listWorkspaceChannels = (data: object): Response<CollectorObject[]> => request.post('/data-collect/channel/_query/no-paging', { ...data, paging: false })
-export const listWorkspacePoints = (data: object): Response<PointRow[]> => request.post('/data-collect/point/convert/_query/no-paging', { ...data, paging: false })
+export const listWorkspacePoints = (data: object): Response<PointRow[]> => request.post('/data-collect/point/directory/_query/no-paging', { ...data, paging: false })
+export const loadWorkspacePoint = (collectorId:string,id:string,signal:AbortSignal): Response<PointRow[]> => request.post(
+  '/data-collect/point/convert/_query/no-paging', {paging:false,terms:[{column:'collectorId',value:collectorId},{column:'id',value:id}]}, {signal},
+)
 export const listWorkspaceProviders = (): Response<ProviderDescriptor[]> => request.get('/data-collect/channel/providers')
 export const runtimeMetadata = (kind: EntityKind): Response<{ properties?: MetricDefinition[] }> => request.get(`/data-collect/${kind}/_runtime/metadata`, {}, { hiddenError: true })
 /** 复用资产授权的运行时接口；空投影只读取各节点定义，不执行指标 getter。 */

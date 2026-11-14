@@ -19,6 +19,7 @@ const deferred = () => {
 test('initial queries run together and one stream paints the first snapshot immediately', async () => {
   const channels = deferred(), providers = deferred(), collectors = deferred()
   const calls = [], monitors = [], observations = [], closed = []
+  const details = []
   const collector = { id: 'collector', channelId: 'channel', name: 'Collector' }
   const runtime = id => ({ id, serverId: 'server', available: true, state: 'running' })
   const api = {
@@ -26,6 +27,9 @@ test('initial queries run together and one stream paints the first snapshot imme
     listWorkspaceProviders: () => { calls.push('providers'); return providers.promise },
     listWorkspaceCollectors: () => { calls.push('collectors'); return collectors.promise },
     listWorkspacePoints: async () => ({ success: true, result: ['point', 'second', 'third'].map(id => ({ id, collectorId: collector.id })) }),
+    loadWorkspacePoint: (collectorId, id, signal) => {
+      const result=deferred();details.push({collectorId,id,signal,...result});return result.promise
+    },
     monitorCollectors: (ids, interval, channelIds) => new Observable(observer => {
       monitors.push({ ids, interval, channelIds })
       observer.next({ timestamp: 100, collectors: [runtime('collector')], channels: [runtime('channel')] })
@@ -68,14 +72,16 @@ test('initial queries run together and one stream paints the first snapshot imme
     assert.equal(data.channels.value[0].runtime.state, 'running')
     data.select(data.collectors.value[0])
     await new Promise(resolve => setImmediate(resolve))
-    assert.deepEqual(observations, [{ id: 'collector', pointIds: [] }])
+    assert.deepEqual(observations, [])
     assert.equal(data.points.value[0].latest, undefined)
     data.setVisiblePoints(['point'])
-    await new Promise(resolve => setTimeout(resolve, 160))
+    // The first visible range starts synchronously, with no empty request or debounce delay.
     assert.deepEqual(observations.at(-1), { id: 'collector', pointIds: ['point'] })
     assert.equal(data.points.value[0].latest.parsedData, 0)
     // Scrolling releases old values and cancels their stream without rebuilding navigation monitoring.
     data.setVisiblePoints(['second'])
+    assert.deepEqual(closed.at(-1), ['point'])
+    assert.equal(observations.length, 1)
     await new Promise(resolve => setTimeout(resolve, 160))
     assert.deepEqual(closed.at(-1), ['point'])
     assert.deepEqual(observations.at(-1).pointIds, ['second'])
@@ -84,6 +90,13 @@ test('initial queries run together and one stream paints the first snapshot imme
     assert.equal(monitors.length, 1)
     // An open editor retains exactly its selected point while other off-screen values are released.
     data.selectedPointId.value = 'second'
+    await vue.nextTick()
+    assert.equal(data.selectedLoading.value, true)
+    assert.equal(data.selectedPoint.value, undefined, 'a directory row must never become a saveable form')
+    details.at(-1).resolve({success:true,result:[{id:'second',configuration:{address:2},managedConfiguration:{filters:['test']}}]})
+    await new Promise(resolve => setImmediate(resolve))
+    assert.deepEqual(data.selectedPoint.value.configuration,{address:2})
+    assert.equal(data.points.value[1].configuration,undefined, 'full configuration is held only for the selected point')
     data.setVisiblePoints(['third'])
     await new Promise(resolve => setTimeout(resolve, 160))
     assert.deepEqual(new Set(observations.at(-1).pointIds), new Set(['second', 'third']))
@@ -91,9 +104,33 @@ test('initial queries run together and one stream paints the first snapshot imme
     await new Promise(resolve => setTimeout(resolve, 160))
     assert.equal(data.points.value[1].latest, undefined)
     assert.deepEqual(observations.at(-1).pointIds, ['third'])
+    assert.equal(data.selectedPoint.value,undefined)
+    // Continuous scrolling cancels the old stream immediately and waits until scrolling settles.
+    const before=observations.length
+    for(const id of ['point','second','third','point']){
+      data.setVisiblePoints([id])
+      await new Promise(resolve => setTimeout(resolve,80))
+      assert.equal(observations.length,before)
+    }
+    await new Promise(resolve => setTimeout(resolve,80))
+    assert.deepEqual(observations.at(-1).pointIds,['point'])
+    // Rapid selection aborts the previous detail request; its late response cannot replace the editor.
+    data.selectedPointId.value='point';await vue.nextTick()
+    const stale=details.at(-1)
+    data.selectedPointId.value='third';await vue.nextTick()
+    assert.equal(stale.signal.aborted,true)
+    stale.resolve({success:true,result:[{id:'point',configuration:{address:1}}]})
+    details.at(-1).resolve({success:true,result:[{id:'third',configuration:{address:3}}]})
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(data.selectedPoint.value.id,'third')
+    assert.equal(data.selectedPoint.value.configuration.address,3)
+    const requests=details.length
+    data.setVisiblePoints(['second'])
+    await new Promise(resolve => setTimeout(resolve,160))
+    assert.equal(details.length,requests,'scrolling does not reload protocol configuration')
     data.paused.value = true
     await vue.nextTick()
-    assert.deepEqual(closed.at(-1), ['third'])
+    assert.deepEqual(new Set(closed.at(-1)),new Set(['second','third']))
   } finally {
     scope.stop()
     if (oldDocument === undefined) delete globalThis.document

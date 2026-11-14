@@ -43,10 +43,10 @@ import { accessOption } from '../../../../utils/configOptions'
 import { useI18n } from 'vue-i18n'
 import { _validateField } from '../../../../api/data-collect/collector'
 const { t } = useI18n()
-const props = defineProps<{ model: CollectorObject; collector: CollectorObject; dirty: boolean; saving: boolean; error?: string }>()
+const props = defineProps<{ model: CollectorObject; collector: CollectorObject; resolved?: CollectorObject; dirty: boolean; saving: boolean; error?: string }>()
 const emit = defineEmits<{ apply: [validate: () => Promise<unknown>]; restore: []; trial: []; close: [] }>()
 const form = ref<FormInstance>(), rules = ref<InstanceType<typeof ProcessingRules>>(), pluginError = ref('')
-const plugin = usePointPlugin(props.model, props.collector)
+const plugin = usePointPlugin(props.model, props.collector, props.resolved)
 const initialKey = props.model.pointKey
 const accessModes = computed({ get: () => accessValues(props.model), set: (value: string[]) => { props.model.accessModes = value } })
 const modeOptions = computed(() => (plugin.capabilities.value.accessModes || accessModes.value.map(value => ({ value, text: value }))).map(item => accessOption(item.value, item.text, t)))
