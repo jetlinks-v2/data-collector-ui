@@ -76,12 +76,14 @@
   />
 </template>
 
-<script setup name="LogCard">
+<script setup>
 import Detail from './Detail.vue'
 import {getContext} from "../../../Batch/util";
 import dayjs from 'dayjs'
 import Icon from '../../../Batch/components/Icon.vue'
 import {theme} from "ant-design-vue";
+
+defineOptions({ name: 'LogCard' })
 
 const { token } = theme.useToken()
 const props = defineProps({

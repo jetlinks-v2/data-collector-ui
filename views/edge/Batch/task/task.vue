@@ -110,7 +110,7 @@
   </a-modal>
 </template>
 
-<script setup name="TaskModal">
+<script setup>
 import GatewaySelect from './Gateway.vue'
 import GatewayModal from './GatewayModal.vue'
 import ContentPlugin from './Plugin/index.vue'
@@ -129,6 +129,8 @@ import {onlyMessage} from "@jetlinks-web/utils";
 import ChildrenModal from './Children/ChildrenModal.vue'
 import { useI18n } from 'vue-i18n';
 import {  cloneDeep } from 'lodash-es';
+
+defineOptions({ name: 'TaskModal' })
 
 const { t: $t } = useI18n();
 

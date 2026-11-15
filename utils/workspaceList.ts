@@ -51,6 +51,7 @@ export function workspaceOrder(objects: CollectorObject[], sort: WorkspaceSort, 
 }
 export type PointBatchAction = 'enable' | 'disable' | 'read'
 export interface PointSelection {
+  selecting: boolean
   keys: string[]
   total: number
   busy: boolean

@@ -79,11 +79,13 @@
   </div>
 </template>
 
-<script setup lang="ts" name="Channel">
+<script setup lang="ts">
 import {query} from '@data-collector-ui/api/data-collect/channel'
 import {useI18n} from "vue-i18n";
 import {useCollectorProvider} from "@data-collector-ui/hooks";
 import {ImageMap, StatusColorEnum} from "@data-collector-ui/views/DataCollect/Channel/data";
+
+defineOptions({ name: 'Channel' })
 
 type Emit = {
   (e: "update:rowKey", data: string): void;

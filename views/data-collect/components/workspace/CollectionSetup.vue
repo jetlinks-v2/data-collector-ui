@@ -15,9 +15,9 @@
     <section v-show="expanded" class="cw-connection-editor">
       <div class="cw-between cw-section-heading"><h2>{{ $t('collectorWorkspace.connectionAndCollection') }}</h2><small v-if="createdChannelId" class="cw-muted"><AIcon type="CheckCircleOutlined" />{{ $t('collectorWorkspace.connectionSaved') }}</small></div>
       <template v-if="!existingChannelId">
-        <fieldset :disabled="saving || !!createdChannelId"><ObjectConfiguration ref="channelForm" kind="channel" :value="initialChannel" :channels="channels" :providers="[provider]" form-only /></fieldset>
+        <fieldset :disabled="saving || !!createdChannelId"><h2 class="cw-settings-title"><AIcon type="ApiOutlined" />{{ $t('collectorWorkspace.connection') }}</h2><ObjectConfiguration ref="channelForm" kind="channel" :value="initialChannel" :channels="channels" :providers="[provider]" form-only /></fieldset>
       </template>
-      <ObjectConfiguration ref="collectorForm" kind="collector" :value="initialCollector" :channels="channels" :providers="[provider]" :connection="connection" form-only />
+      <div class="cw-setup-device"><h2 class="cw-settings-title"><AIcon type="SettingOutlined" />{{ $t('collectorWorkspace.collectorSettings') }}</h2><ObjectConfiguration ref="collectorForm" kind="collector" :value="initialCollector" :channels="channels" :providers="[provider]" :connection="connection" form-only /></div>
       <a-alert v-if="error" type="error" :message="error" show-icon />
       <div class="cw-between cw-connection-actions"><small class="cw-muted">{{ $t('collectorWorkspace.unsaved') }}</small><j-permission-button type="primary" has-permission="data-collect:add" :loading="saving" @click="apply"><AIcon type="CheckOutlined" />{{ $t('collectorWorkspace.applyConnection') }}</j-permission-button></div>
     </section>

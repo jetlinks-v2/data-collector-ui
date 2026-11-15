@@ -1,9 +1,11 @@
-<script setup name="ScanPointTable">
+<script setup>
 import i18n from "@jetlinks-web-core/locales";
 import {useI18n} from 'vue-i18n';
 import {set, get, isArray, isNil} from 'lodash-es'
 import {Space, Tooltip} from "ant-design-vue";
 import {QuestionCircleOutlined} from "@ant-design/icons-vue";
+
+defineOptions({ name: 'ScanPointTable' })
 
 const {t: $t} = useI18n();
 

@@ -62,12 +62,14 @@
     </div>
 </template>
 
-<script setup name="BatchLog">
+<script setup>
 import { queryTask } from '../../../../api/edge/batch';
 import Card from './Card.vue';
 import TaskDetail from './TaskDetail.vue';
 import { getContext } from '../util';
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'BatchLog' })
 
 const { t: $t } = useI18n();
 

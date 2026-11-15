@@ -1,5 +1,5 @@
 <template>
-  <div v-bind="containerProps" class="cw-value-strip" :class="{'is-boolean':compact}" tabindex="0" role="list" :aria-label="$t('collectorValue.elements',{count:value.length})" @click.stop>
+  <div v-bind="containerProps" class="cw-value-strip" :class="{'is-boolean':compact}" tabindex="0" role="list" :aria-label="$t('collectorValue.elements',{count:value.length})">
     <div v-bind="wrapperProps" class="cw-value-strip-items">
       <div v-for="item in list" :key="item.index" role="listitem" :title="`[${item.index}] ${format(item.data)}`" :aria-label="`[${item.index}] ${format(item.data)}`">
         <i v-if="compact" :class="{'is-on':item.data}" aria-hidden="true" />

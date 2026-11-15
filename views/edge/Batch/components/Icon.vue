@@ -2,7 +2,10 @@
   <AIcon :type="type"/>
 </template>
 
-<script setup name="BatchIcon">
+<script setup>
+
+defineOptions({ name: 'BatchIcon' })
+
 defineProps({
   type: {
     type: String

@@ -40,6 +40,31 @@ function snapshot(serverId,count,sampledAt,extra={}) {
     pointSummary:{total:1,available:1,states:{running:1}},...extra}
 }
 
+test('mean arrival interval corrects batch delivery and works across sparse updates without inventing zero',()=>{
+  const point={...object,id:'point'}
+  const sample=(at,count,age,instance='a')=>{
+    const value=snapshot('a',count,at);value.id='point';value.metrics.instanceId=instance
+    value.metrics.values.receivedSamples.value=count
+    value.metrics.values.receivedAgeNanos={available:true,value:age}
+    value.metrics.values.lastReceivedIntervalNanos={available:true,value:18600}
+    return {timestamp:at,snapshots:[value]}
+  }
+  const first=sample(1000,10,10e6)
+  const initial=monitoredObjects([point],first,undefined,'point')[0]
+  assert.equal(initial.monitoring.receivedAverageIntervalNanos,undefined)
+  const second=sample(3000,30,10e6)
+  const updated=monitoredObjects([initial],second,first,'point')[0]
+  assert.equal(updated.monitoring.receivedAverageIntervalNanos,100e6)
+  const idle=sample(5000,30,2010e6)
+  const waiting=monitoredObjects([updated],idle,second,'point')[0]
+  assert.equal(waiting.monitoring.receivedAverageIntervalNanos,100e6)
+  assert.equal(waiting.monitoring.receivedAgeNanos,2010e6)
+  const sparse=monitoredObjects([waiting],sample(65000,31,10e6),idle,'point')[0]
+  assert.equal(sparse.monitoring.receivedAverageIntervalNanos,62000e6)
+  const reset=monitoredObjects([sparse],sample(67000,1,10e6,'new'),undefined,'point')[0]
+  assert.equal(reset.monitoring.receivedAverageIntervalNanos,undefined)
+})
+
 test('all cluster instances contribute rates and queue counts without changing logical point totals',()=>{
   const earlier={timestamp:1000,snapshots:[snapshot('a',5,1000),snapshot('b',10,1000)]}
   const current={timestamp:3000,snapshots:[snapshot('a',7,3000),snapshot('b',14,3000)]}

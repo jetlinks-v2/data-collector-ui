@@ -18,7 +18,7 @@
     </a-modal>
 </template>
 
-<script setup name="DeviceDetail">
+<script setup>
 import { useInstanceStore } from '../../../../../../store/instance';
 // import Info from './Info/index.vue';
 // import Running from './Running/index.vue';
@@ -27,6 +27,8 @@ import { useInstanceStore } from '../../../../../../store/instance';
 // import Log from './Log/index.vue';
 import { _detailByEdge } from '../../../../../../api/edge/batch';
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'DeviceDetail' })
 
 const { t: $t } = useI18n();
 const props = defineProps({

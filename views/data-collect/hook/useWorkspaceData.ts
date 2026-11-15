@@ -1,10 +1,10 @@
-import { computed, onActivated, onDeactivated, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
+import { computed, onActivated, onDeactivated, onBeforeUnmount, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { debounce, throttle } from 'lodash-es'
 import { Subscription } from 'rxjs'
 import { listWorkspaceChannels, listWorkspaceCollectors, listWorkspacePoints, listWorkspaceProviders, loadWorkspacePoint, monitorCollectors, observeWorkspace, queryWorkspaceIndex } from '../../../api/data-collect/workspace'
 import { monitoredObjects, type RuntimeMonitoringRound } from '../../../utils/runtimeMonitoring'
-import { observedPoints } from '../../../utils/workspaceObservation'
+import { applyObservedValues, observedPoints } from '../../../utils/workspaceObservation'
 import { readPoint } from '../../../api/data-collect/collector'
 import { runtimeFilter, runtimeSort, workspaceOrder, type WorkspaceRuntimeIndex, type WorkspaceSort } from '../../../utils/workspaceList'
 import type { CollectorObject, CollectorObservation, PointRow, ProviderDescriptor } from '../../../types/workspace'
@@ -22,6 +22,7 @@ export function useWorkspaceData() {
   const search = ref(''), pointSearch = ref(''), pointState = ref(''), collectorState = ref('')
   const pointSort = ref<WorkspaceSort>('newest'), collectorSort = ref<WorkspaceSort>('newest')
   const pointOrder = shallowRef<string[]>([]), collectorOrder = shallowRef<string[]>([])
+  const pointsById = computed(() => new Map(points.value.map(point => [point.id,point])))
   const indexTime = ref(0)
   const selectedPoint = computed(() => {
     const row=points.value.find(item=>item.id === selectedPointId.value)
@@ -70,18 +71,19 @@ export function useWorkspaceData() {
     if(cause == null)failures.delete(key);else failures.set(key,describe(cause))
     valueError.value=[...failures.values()].join('; ')
   }
-  const pending = new Map<string,any>()
+  const pending = new Map<string,NonNullable<CollectorObservation['data']>[number]>()
   const flush = throttle(() => {
-    points.value = points.value.map(point => pending.has(point.id) ? {...point,latest:pending.get(point.id)} : point)
+    applyObservedValues(pointsById.value,pending.values())
     pending.clear()
-  },250,{leading:true,trailing:true})
+  },100,{leading:true,trailing:true})
   function updateValues(payload:any) {
     const retained = new Set([...visibleIds,selectedPointId.value])
     for(const value of Array.isArray(payload) ? payload : [payload]) {
       if(!value)continue
       const sample = 'lastData' in value ? value.lastData : value
       const id = value.pointId || sample?.pointId || value.id
-      if(sample && retained.has(id))pending.set(id,sample)
+      // 同一刷新窗口也按采集时间保留最新值，避免晚到的旧样本覆盖待显示的新值。
+      if(sample && retained.has(id) && Number(sample.timestamp || 0) >= Number(pending.get(id)?.timestamp || 0))pending.set(id,{...sample,pointId:id})
     }
     flush()
   }
@@ -105,7 +107,7 @@ export function useWorkspaceData() {
     points.value=points.value.map(point=>{
       if(retained.has(point.id) || !point.latest && !point.runtime)return point
       const {latest,runtime,monitoring,...configuration}=point
-      return configuration
+      return shallowReactive(configuration)
     })
     if(previousObservation)previousObservation={...previousObservation,nodes:previousObservation.nodes.map(node=>({...node,points:node.points.filter(point=>retained.has(point.id))}))}
     observation.value=previousObservation
@@ -116,12 +118,17 @@ export function useWorkspaceData() {
       feedback('detail',cause);collector.value=unavailable(current)
       collectors.value=collectors.value.map(item=>item.id === current.id ? collector.value! : item)
       channels.value=channels.value.map(item=>item.id === current.channelId ? unavailable(item) : item)
-      points.value=points.value.map(point=>retained.has(point.id) ? unavailable(point) : point)
+      points.value=points.value.map(point=>retained.has(point.id) ? shallowReactive(unavailable(point)) : point)
     }
     detailSubscription=observeWorkspace(current.id,ids).subscribe({next:value=>{
       if(revision !== detailRevision || catalogRevision !== pointGeneration || collector.value?.id !== current.id)return
-      feedback('detail');observation.value=value
-      const updated=new Map(observedPoints(points.value.filter(point=>retained.has(point.id)),value,previousObservation).map(point=>[point.id,point]))
+      feedback('detail')
+      if(value.data){
+        updateValues(value.data)
+        return
+      }
+      observation.value=value
+      const updated=new Map(observedPoints(points.value.filter(point=>retained.has(point.id)),value,previousObservation).map(point=>[point.id,shallowReactive(point)]))
       points.value=points.value.map(point=>updated.get(point.id) || point)
       const round=(sample:CollectorObservation)=>({timestamp:sample.timestamp,snapshots:sample.nodes.map(node=>node.collector)})
       collector.value=monitoredObjects([collector.value!],round(value),previousObservation ? round(previousObservation) : undefined)[0]
@@ -220,7 +227,7 @@ export function useWorkspaceData() {
       const response=await listWorkspacePoints({terms:[{column:'collectorId',value:current.id}],sorts:[{name:'id',order:'asc'}]})
       if(revision !== pointGeneration)return
       if(!response.success)throw new Error(t('collectorWorkspace.loadFailed'))
-      points.value=[...unsavedPoints.value.filter(point=>point.collectorId === current.id),...response.result || []]
+      points.value=[...unsavedPoints.value.filter(point=>point.collectorId === current.id),...response.result || []].map(point=>shallowReactive(point))
       if(!points.value.some(point=>point.id === selectedPointId.value))selectedPointId.value=''
       filterPoints();subscribe();void loadPointDetails()
     }catch(cause){if(revision === pointGeneration)error.value=describe(cause)}

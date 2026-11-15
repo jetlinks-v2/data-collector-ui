@@ -62,6 +62,7 @@ export interface RuntimeMonitoring {
   processing?:number; outputFailures?:number
   expectedIntervalMillis?:number; collectionIntervalNanos?:number; receivedIntervalNanos?:number; outputIntervalNanos?:number
   receivedAgeNanos?:number; outputAgeNanos?:number; nextRetryTime?:number
+  receivedAverageIntervalNanos?:number
   readRate?:number; writeRate?:number; activeConnections?:number
   rateWindowMillis?:number; collectionTotal?:number; receivedTotal?:number; outputTotal?:number
   cadence?:{ expectedMillis:number; count:number; intervalNanos?:number; ageNanos?:number; rate?:number; windowMillis?:number; quantityRatio?:number }
@@ -85,6 +86,8 @@ export interface RecordingSnapshot {
 }
 export interface CollectorObservation {
   timestamp:number
+  /** 数据增量不构成完整统计轮，不改变状态或速率基线。 */
+  data?:PointValueData[]
   nodes:Array<{ serverId:string; collector:RuntimeSnapshot; channel?:RuntimeSnapshot; points:Array<{id:string;runtime:RuntimeSnapshot;lastData?:PointValueData}> }>
 }
 export interface PointRow extends CollectorObject { latest?: PointValueData }

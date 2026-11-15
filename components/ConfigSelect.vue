@@ -6,25 +6,34 @@
         <span class="collector-config-option-copy"><span>{{ option.label }}</span><small v-if="option.description" :title="option.description">{{ option.description }}</small></span>
       </span>
     </template>
+    <!-- Saved labels do not add options missing from the current candidate catalog. -->
+    <template v-if="kind === 'access'" #tagRender="{value,label,closable,onClose}">
+      <a-tag class="collector-config-access-tag" :closable="closable" @mousedown.prevent @close="onClose"><AccessTagLabel :value="value" :label="label" /></a-tag>
+    </template>
   </a-select>
 </template>
-<script setup lang="ts">
-import { computed, h, resolveComponent } from 'vue'
+<script setup lang="ts" generic="ValueKey extends string = 'value'">
+import { computed, h, isVNode, resolveComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { codecOption, byteOrderOption, accessOption, sortCodecOptions } from '../utils/configOptions'
 defineOptions({ inheritAttrs: false })
 const props = defineProps<{
-  options: Array<{ value?: string | number; label?: string; icon?: string; description?: string; [key: string]: unknown }>
-  fieldNames?: { label?: string; value?: string }
+  options: Array<{ value?: string | number | null; label?: string; icon?: string; description?: string; [key: string]: unknown } & Partial<Record<ValueKey, string | number | null>>>
+  fieldNames?: { label?: string; value?: ValueKey }
   kind?: 'codec' | 'byteOrder' | 'access'
 }>()
 const Icon = resolveComponent('AIcon')
 const { t } = useI18n()
+const AccessTagLabel = (props:{value:unknown;label:unknown}) => {
+  if(isVNode(props.label))return props.label
+  const option=accessOption(String(props.value),typeof props.label === 'string' ? props.label : undefined,t)
+  return h('span',{class:'collector-config-selection'},[h(Icon,{type:option.icon}),h('span',option.label)])
+}
 // Keep the searchable label textual; selected values omit the menu-only explanation.
 const displayOptions = computed(() => {
   const result = props.options.map(option => {
   const label = String(option[props.fieldNames?.label || 'label'] ?? option.value ?? '')
-  const value = option[props.fieldNames?.value || 'value']
+  const value = props.fieldNames?.value ? option[props.fieldNames.value] : option.value
   const presentation = props.kind === 'codec' ? codecOption({ id:String(value), name:label }, t)
     : props.kind === 'byteOrder' ? byteOrderOption(String(value), t)
     : props.kind === 'access' ? accessOption(String(value), label, t) : {}
@@ -42,5 +51,6 @@ const displayOptions = computed(() => {
 .collector-config-selection { display:inline-flex; align-items:center; gap:6px; max-width:100%; vertical-align:middle; }
 .collector-config-selection > span:last-child { overflow:hidden; text-overflow:ellipsis; }
 .collector-config-selection .anticon { flex:none; color:var(--text-color-secondary,var(--ant-color-text-secondary,#595959)); }
+.collector-config-access-tag { margin-inline-end:4px; line-height:16px; }
 .collector-config-options { min-width:260px !important; max-width:calc(100vw - 24px); }
 </style>

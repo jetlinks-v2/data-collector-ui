@@ -94,6 +94,17 @@ function metricRate(current:MetricSnapshot|undefined,previous:MetricSnapshot|und
   return delta*1000/elapsed
 }
 
+/** 以实际到达时间跨度除以新增样本数；批量送达和低频跨窗口均适用。 */
+function receivedInterval(current:RuntimeSnapshot,previous:RuntimeSnapshot|undefined):number|undefined {
+  if(!previous?.available || !current.metrics?.instanceId || current.metrics.instanceId !== previous.metrics?.instanceId)return
+  const count=metric(current,'receivedSamples'),before=metric(previous,'receivedSamples')
+  const age=metric(current,'receivedAgeNanos'),beforeAge=metric(previous,'receivedAgeNanos')
+  const elapsed=(current.metrics!.sampledAt-previous.metrics!.sampledAt)*1e6
+  if(count == null || before == null || count <= before || age == null || beforeAge == null || elapsed <= 0)return
+  const span=elapsed+beforeAge-age
+  return span > 0 ? span/(count-before) : undefined
+}
+
 function sum(values:Array<number|undefined>):number|undefined {
   return values.length && values.every(value=>value != null) ? (values as number[]).reduce((total,value)=>total+value,0) : undefined
 }
@@ -174,6 +185,12 @@ export function monitoredObjects<T extends CollectorObject>(objects:T[],current:
         monitoring.outputIntervalNanos=maximum('lastOutputIntervalNanos')
         monitoring.receivedAgeNanos=maximum('receivedAgeNanos')
         monitoring.outputAgeNanos=maximum('outputAgeNanos')
+        const intervals=active.map(value=>receivedInterval(value,earlier.get(JSON.stringify([value.id,value.serverId]))))
+        if(intervals.length && intervals.every(value=>value != null))monitoring.receivedAverageIntervalNanos=Math.max(...intervals as number[])
+        else if(active.length && active.length === object.monitoring?.nodes?.filter(value=>value.available).length && active.every(value=>{
+          const before=object.monitoring?.nodes?.find(node=>node.serverId === value.serverId)
+          return before?.available && value.metrics?.instanceId === before.metrics?.instanceId && metric(value,'receivedSamples') === metric(before,'receivedSamples')
+        }))monitoring.receivedAverageIntervalNanos=object.monitoring?.receivedAverageIntervalNanos
         const scheduled=active.filter(value=>metric(value,'scheduledHere') === 1)
         const expected=scheduled.map(value=>metric(value,'expectedIntervalMillis'))
         const count=sum(scheduled.map(value=>metric(value,'scheduledSamples')))

@@ -40,7 +40,7 @@ export function queryWorkspaceIndex(objects:CollectorObject[],collectorId?:strin
     : monitorCollectors(rows.map(row=>row.id),0,[],collectorIndexMetrics).pipe(map(frame=>monitoredObjects(rows,{timestamp:frame.timestamp,snapshots:frame.collectors}))),2),
     reduce((index,rows)=>{for(const row of rows)index.set(row.id,workspaceRuntimeIndex(row));return index},new Map<string,WorkspaceRuntimeIndex>()))
 }
-/** Legacy value views use the same cluster snapshot; one stream per visible collector, no metric getters. */
+/** 数据增量与首帧快照共用一条流，不因数据更新读取指标。 */
 export function observePointValues(points:PointRow[],interval=2000,includeRawData=false){
   const groups=new Map<string,PointRow[]>()
   for(const point of points){
@@ -49,7 +49,7 @@ export function observePointValues(points:PointRow[],interval=2000,includeRawDat
     group.push(point);groups.set(point.collectorId,group)
   }
   const streams=[...groups].map(([id,rows])=>observeWorkspace(id,rows.map(point=>point.id),interval,[],[],includeRawData).pipe(
-    map(frame=>observedPoints(rows,frame).filter(point=>point.latest).map(point=>({...point.latest!,pointId:point.id}))),
+    map(frame=>frame.data || observedPoints(rows,frame).filter(point=>point.latest).map(point=>({...point.latest!,pointId:point.id}))),
   ))
   return streams.length ? merge(...streams) : EMPTY
 }

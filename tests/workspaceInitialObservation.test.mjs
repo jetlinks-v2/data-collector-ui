@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import * as vue from 'vue'
 import { throttle, debounce } from 'lodash-es'
 import * as workspaceList from '../utils/workspaceList.ts'
+import { applyObservedValues } from '../utils/workspaceObservation.ts'
 import { Observable } from 'rxjs'
 import { transformSync } from 'esbuild'
 
@@ -20,6 +21,7 @@ test('initial queries run together and one stream paints the first snapshot imme
   const channels = deferred(), providers = deferred(), collectors = deferred()
   const calls = [], monitors = [], observations = [], closed = []
   const details = []
+  let pointObserver
   const collector = { id: 'collector', channelId: 'channel', name: 'Collector' }
   const runtime = id => ({ id, serverId: 'server', available: true, state: 'running' })
   const api = {
@@ -35,6 +37,7 @@ test('initial queries run together and one stream paints the first snapshot imme
       observer.next({ timestamp: 100, collectors: [runtime('collector')], channels: [runtime('channel')] })
     }),
     observeWorkspace: (id, pointIds) => new Observable(observer => {
+      pointObserver = observer
       observations.push({ id, pointIds })
       observer.next({ timestamp: 101, nodes: [{ collector: runtime(id), channel: runtime('channel'), points: [] }] })
       return () => closed.push(pointIds)
@@ -47,7 +50,7 @@ test('initial queries run together and one stream paints the first snapshot imme
     if (id === 'lodash-es') return { throttle, debounce }
     if (id.endsWith('/api/data-collect/workspace')) return api
     if (id.endsWith('/utils/runtimeMonitoring')) return { monitoredObjects: (values, round) => values.map(value => ({ ...value, runtime: round.snapshots.find(item => item.id === value.id) })) }
-    if (id.endsWith('/utils/workspaceObservation')) return { observedPoints: values => values.map(value => ({ ...value, latest: { parsedData: 0, timestamp: 101 } })) }
+    if (id.endsWith('/utils/workspaceObservation')) return { applyObservedValues, observedPoints: values => values.map(value => ({ ...value, latest: { parsedData: 0, timestamp: 101 } })) }
     if (id.endsWith('/api/data-collect/collector')) return {}
     if (id.endsWith('/utils/workspaceList')) return workspaceList
     return require(id)
@@ -78,6 +81,17 @@ test('initial queries run together and one stream paints the first snapshot imme
     // The first visible range starts synchronously, with no empty request or debounce delay.
     assert.deepEqual(observations.at(-1), { id: 'collector', pointIds: ['point'] })
     assert.equal(data.points.value[0].latest.parsedData, 0)
+    const directory = data.points.value, ordered = data.filteredPoints.value
+    const push = (timestamp, parsedData) => pointObserver.next({timestamp, nodes: [], data: [{pointId: 'point', timestamp, parsedData}]})
+    push(200, 1)
+    push(203, false)
+    push(202, 2)
+    await new Promise(resolve => setTimeout(resolve, 140))
+    assert.equal(data.points.value[0].latest.parsedData, false, 'pending samples retain the newest timestamp')
+    assert.equal(data.points.value, directory, 'data frames do not replace the directory')
+    assert.equal(data.filteredPoints.value, ordered, 'data frames do not rebuild the ordered rows')
+    push(204, 0)
+    push(205, false)
     // Scrolling releases old values and cancels their stream without rebuilding navigation monitoring.
     data.setVisiblePoints(['second'])
     assert.deepEqual(closed.at(-1), ['point'])
@@ -86,6 +100,7 @@ test('initial queries run together and one stream paints the first snapshot imme
     assert.deepEqual(closed.at(-1), ['point'])
     assert.deepEqual(observations.at(-1).pointIds, ['second'])
     assert.equal(data.points.value[0].latest, undefined)
+    assert.equal(directory[0].latest.timestamp, 204, 'canceling the old stream discards its pending trailing update')
     assert.equal(data.points.value[1].latest.parsedData, 0)
     assert.equal(monitors.length, 1)
     // An open editor retains exactly its selected point while other off-screen values are released.

@@ -16,8 +16,8 @@
       <RuntimeCardMetrics v-if="group.channel" :object="group.channel" kind="channel" variant="group" />
       </div>
       <div v-if="!collapsed.has(group.id)" class="cw-nav-children" role="group" :aria-label="group.name">
-        <div v-for="item in group.items" :key="item.id" class="cw-nav-child" :class="{selected:item.id === selected}">
-          <button class="cw-nav-select" :aria-current="item.id === selected" @click="$emit('select', item)"><WorkspaceIcon :object="item" :size="16" /><span class="cw-nav-name" :title="item.name">{{ item.name }}</span></button>
+        <div v-for="item in group.items" :key="item.id" class="cw-nav-child" :class="{selected:item.id === selected}" @click="$emit('select', item)">
+          <button class="cw-nav-select" :aria-current="item.id === selected"><WorkspaceIcon :object="item" :size="16" /><span class="cw-nav-name" :title="item.name">{{ item.name }}</span></button>
           <RuntimeCardMetrics :object="item" kind="collector" variant="navigation" />
         </div>
       </div>

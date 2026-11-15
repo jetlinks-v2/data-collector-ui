@@ -7,12 +7,13 @@ import type { useWorkspaceData } from './useWorkspaceData'
 /** Selection covers the filtered directory, independent of the virtual viewport or open editor. */
 export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, hasDraft: Ref<boolean>) {
   const { t } = useI18n()
-  const keys = ref<string[]>([]), busy = ref(false), feedback = ref(''), failed = ref(false)
+  const keys = ref<string[]>([]), selecting = ref(false), busy = ref(false), feedback = ref(''), failed = ref(false)
   const ids = computed(() => savedPointIds(data.filteredPoints.value))
-  const state = computed(() => ({ keys: keys.value, total: ids.value.length, busy: busy.value, blocked: hasDraft.value, feedback: feedback.value, failed: failed.value }))
-  function clear() { if (!busy.value) { keys.value = []; feedback.value = '' } }
+  const state = computed(() => ({ selecting: selecting.value, keys: keys.value, total: ids.value.length, busy: busy.value, blocked: hasDraft.value, feedback: feedback.value, failed: failed.value }))
+  function start() { if (!busy.value && !hasDraft.value && ids.value.length) selecting.value = true }
+  function clear() { if (!busy.value) { selecting.value = false; keys.value = []; feedback.value = '' } }
   function check(value: string[]) {
-    if (busy.value) return
+    if (busy.value || !selecting.value) return
     const allowed = new Set(ids.value)
     keys.value = [...new Set(value)].filter(id => allowed.has(id)); feedback.value = ''
   }
@@ -48,5 +49,5 @@ export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, h
       feedback.value = cause instanceof Error ? cause.message : String(cause)
     } finally { busy.value = false }
   }
-  return { state, busy, check, toggle, all, clear, run }
+  return { state, busy, start, check, toggle, all, clear, run }
 }

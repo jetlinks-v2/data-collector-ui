@@ -10,9 +10,11 @@
         </a-select>
     </div>
 </template>
-<script setup lang="ts" name="propertyId">
+<script setup lang="ts">
 import { getBacnetPropertyIdNotUse } from '../../../../../api/data-collect/collector';
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'propertyId' })
 
 const { t: $t } = useI18n();
 const props = defineProps({

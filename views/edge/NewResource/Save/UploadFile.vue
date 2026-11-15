@@ -23,13 +23,15 @@
     </template>
 </template>
 
-<script setup lang="ts" name="fileUpload">
+<script setup lang="ts">
 import { onlyMessage } from '@jetlinks-web/utils';
 import type { UploadChangeParam, UploadProps } from 'ant-design-vue';
 import { notification as Notification } from 'ant-design-vue';
 import { FileStaticPath } from "@jetlinks-web-core/api/comm";
 import { useI18n } from "vue-i18n";
 import {getUploadHeaders} from "@jetlinks-web-core/utils";
+
+defineOptions({ name: 'fileUpload' })
 
 const { t: $t } = useI18n();
 const emit = defineEmits(['update:modelValue', 'change', 'update:fileName']);

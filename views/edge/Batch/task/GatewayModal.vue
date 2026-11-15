@@ -99,12 +99,14 @@
     </a-modal>
 </template>
 
-<script setup name="DeviceSelectBody">
+<script setup>
 import {query, queryNoPagingPost, queryTree} from '../../../../api/others';
 import dayjs from 'dayjs'
 import {onlyMessage} from '@jetlinks-web/utils';
 import DeviceGatewayImg from '../../../../assets/device-gateway.png'
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'DeviceSelectBody' })
 
 const { t: $t } = useI18n();
 const props = defineProps({

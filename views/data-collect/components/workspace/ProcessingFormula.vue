@@ -6,7 +6,7 @@
     <div v-else-if="editor.value.value" class="cw-processing-formula-preview">
       <ArithmeticSteps v-if="!formulaOnly && editor.simple.value && editor.steps.value" :steps="editor.steps.value" :labels="editor.labels.value" @change="editor.updateSteps" />
       <slot v-else>
-        <a-popover :open="previewOpen" :trigger="['hover', 'focus']" placement="topRight" :destroy-tooltip-on-hide="true" @open-change="previewOpen=$event">
+        <a-popover :open="previewOpen" :trigger="['hover', 'focus']" placement="topRight" :destroy-tooltip-on-hide="true" overlay-class-name="cw-workspace-popover" @open-change="previewOpen=$event">
           <template #content><div class="cw-formula-preview"><MathExpressionView :node="editor.value.value.root" :context="editor.context.value" compact /></div></template>
           <button type="button" class="cw-formula-button" :aria-label="$t('collectorProcessing.editFormula')" @click="previewOpen=false; editor.start()" @keydown.esc.stop="previewOpen=false"><MathExpressionView :node="editor.value.value.root" :context="editor.context.value" compact /><AIcon type="EditOutlined" /></button>
         </a-popover>

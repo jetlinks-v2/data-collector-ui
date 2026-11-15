@@ -7,20 +7,20 @@
       <VirtualScroll v-if="points.length" ref="scroll" class="cw-point-scroll" :data="rows" :item-height="rowHeight" :expanded-key="expandedRow" :style="{ height: height + 'px' }" @horizontal-scroll="onHorizontalScroll">
         <template #renderItem="{ points: rowPoints, rowIndex }">
           <div v-if="cards" class="cw-point-grid cw-virtual-card-row" :style="{ gridTemplateColumns: 'repeat(' + columnCount + ', minmax(0, 1fr))',height:rowHeight + 'px' }">
-            <article v-for="point in rowPoints" :key="point.id" class="cw-point" :data-point-id="point.id" :class="{ selected: point.id === selected }" @click="$emit('select', point.id)">
-              <div class="cw-point-heading"><span v-if="!point.id.startsWith('_new:')" class="cw-point-check" @click.stop><a-checkbox :checked="selection.keys.includes(point.id)" :disabled="selection.busy" :aria-label="$t('collectorList.selectPoint', { name: point.name })" @change="$emit('check', point.id)" /></span><button class="cw-point-select" :aria-expanded="inline ? point.id === selected : undefined" :aria-pressed="point.id === selected" @click.stop="$emit('select', point.id)">
-                <PointIdentity :point="point" /><AIcon v-if="inline" :type="point.id === selected ? 'UpOutlined' : 'DownOutlined'" />
-              </button><span class="cw-point-status"><WorkspaceStatus v-if="point.runtime || stateValue(point.state) === 'disabled'" :object="point" /><a-skeleton-input v-else active size="small" class="cw-metric-skeleton" /><DiagnosticTrigger :trigger-class="objectTone(point) === 'bad' ? 'cw-error' : undefined" :open="diagnosticId === point.id" :label="$t('collectorWorkspace.diagnosePoint', { name: point.name })" @visibility="$emit('diagnosticVisibility', point, $event)"><slot name="diagnostic" /></DiagnosticTrigger></span></div>
+            <article v-for="point in rowPoints" :key="point.id" class="cw-point" :data-point-id="point.id" :class="{ selected: point.id === selected && !selection.selecting, 'cw-checked': selection.selecting && selection.keys.includes(point.id) }" @click="$emit('select', point.id)">
+              <div class="cw-point-heading"><span v-if="selection.selecting && !point.id.startsWith('_new:')" class="cw-point-check" @click.stop><a-checkbox :checked="selection.keys.includes(point.id)" :disabled="selection.busy" :aria-label="$t('collectorList.selectPoint', { name: point.name })" @change="$emit('check', point.id)" /></span><button class="cw-point-select" :disabled="selection.selecting && point.id.startsWith('_new:')" :aria-expanded="!selection.selecting && inline ? point.id === selected : undefined" :aria-pressed="selection.selecting ? selection.keys.includes(point.id) : undefined" :aria-current="!selection.selecting && point.id === selected ? 'true' : undefined" @click.stop="$emit('select', point.id)">
+                <PointIdentity :point="point" /><AIcon v-if="inline && !selection.selecting" :type="point.id === selected ? 'UpOutlined' : 'DownOutlined'" />
+              </button><span class="cw-point-status"><WorkspaceStatus v-if="point.runtime || stateValue(point.state) === 'disabled'" :object="point" /><a-skeleton-input v-else active size="small" class="cw-metric-skeleton" /><DiagnosticTrigger :trigger-class="objectTone(point) === 'bad' ? 'cw-error cw-attention' : objectTone(point) === 'warn' ? 'cw-attention' : undefined" :open="diagnosticId === point.id" :label="$t('collectorWorkspace.diagnosePoint', { name: point.name })" @visibility="$emit('diagnosticVisibility', point, $event)"><slot name="diagnostic" /></DiagnosticTrigger></span></div>
               <div class="cw-point-reading"><PointValueDisplay :point="point" :empty-text="reading(point)" :unit="unit(point)" /><RuntimeCardMetrics :object="point" kind="point" /></div>
               <div v-if="point.runtime?.available || timestamp(point)" class="cw-point-footer"><RuntimeDataFlow :object="point" point compact /><time v-if="timestamp(point)" :title="$t('collectorWorkspace.updated')">{{ timestamp(point) }}</time></div>
             </article>
           </div>
-          <div v-else v-for="point in rowPoints" :key="point.id" :data-point-id="point.id" class="cw-virtual-table-row cw-virtual-point-row" role="row" :aria-rowindex="rowIndex" :class="{ selected: point.id === selected }" @click="$emit('select', point.id)">
-            <span role="cell" @click.stop><a-checkbox :checked="selection.keys.includes(point.id)" :disabled="selection.busy || point.id.startsWith('_new:')" :aria-label="$t('collectorList.selectPoint', {name:point.name})" @change="$emit('check', point.id)" /></span>
-            <div role="cell"><button class="cw-point-select" :aria-pressed="point.id === selected" @click.stop="$emit('select', point.id)"><PointIdentity :point="point" /></button></div>
+          <div v-else v-for="point in rowPoints" :key="point.id" :data-point-id="point.id" class="cw-virtual-table-row cw-virtual-point-row" role="row" :aria-rowindex="rowIndex" :class="{ selected: point.id === selected && !selection.selecting, 'cw-checked': selection.selecting && selection.keys.includes(point.id) }" @click="$emit('select', point.id)">
+            <span role="cell" @click.stop><a-checkbox v-if="selection.selecting" :checked="selection.keys.includes(point.id)" :disabled="selection.busy || point.id.startsWith('_new:')" :aria-label="$t('collectorList.selectPoint', {name:point.name})" @change="$emit('check', point.id)" /></span>
+            <div role="cell"><button class="cw-point-select" :disabled="selection.selecting && point.id.startsWith('_new:')" :aria-pressed="selection.selecting ? selection.keys.includes(point.id) : undefined" :aria-current="!selection.selecting && point.id === selected ? 'true' : undefined" @click.stop="$emit('select', point.id)"><PointIdentity :point="point" /></button></div>
             <div role="cell" class="cw-table-value"><PointValueDisplay :point="point" :empty-text="reading(point)" :unit="unit(point)" /><time v-if="timestamp(point)" :title="$t('collectorWorkspace.updated')">{{ timestamp(point) }}</time></div>
             <span role="cell" class="cw-point-status"><WorkspaceStatus :object="point" /><DiagnosticTrigger :open="diagnosticId === point.id" :label="$t('collectorWorkspace.diagnosePoint', { name: point.name })" @visibility="$emit('diagnosticVisibility', point, $event)"><slot name="diagnostic" /></DiagnosticTrigger></span>
-            <div role="cell"><RuntimeDataFlow :object="point" point compact /></div><div role="cell"><RuntimeCardMetrics :object="point" kind="point" /></div>
+            <div role="cell" class="cw-table-cadence"><RuntimeDataFlow :object="point" point compact /></div><div role="cell"><RuntimeCardMetrics :object="point" kind="point" /></div>
           </div>
         </template>
         <template #expandedItem><div :id="'cw-editor-' + selected" class="cw-inline-editor-target" /></template>
@@ -38,7 +38,6 @@ import dayjs from 'dayjs'
 import type { PointRow } from '../../../../types/workspace'
 import type { PointSelection } from '../../../../utils/workspaceList'
 import { objectDisplayState, objectTone, stateValue } from '../../../../types/workspace'
-import { formatPointValue } from '../../../../utils/pointValue'
 import PointIdentity from './PointIdentity.vue'
 import WorkspaceStatus from './WorkspaceStatus.vue'
 import DiagnosticTrigger from './DiagnosticTrigger.vue'
@@ -101,13 +100,11 @@ watch(columnCount,()=>{
   if(index >= 0)void nextTick(()=>scroll.value?.scrollTo(Math.floor(index/columnCount.value)*rowHeight.value))
 })
 onBeforeUnmount(()=>{resize?.disconnect();intersection?.disconnect();mutation?.disconnect();window.removeEventListener('resize',measure);emit('visible',[])})
-const pointValue = (point:PointRow) => point.latest && ('parsedData' in point.latest ? point.latest.parsedData : point.latest.parseData)
 const reading = (point: PointRow) => {
   const state = stateValue(objectDisplayState(point))
-  const empty = ['disabled', 'paused', 'stopped'].includes(state)
+  return ['disabled', 'paused', 'stopped'].includes(state)
     ? t(state === 'disabled' ? 'collectorWorkspace.disabled' : 'collectorRuntime.states.'+state)
     : state === 'collectionError' ? t('collectorRuntime.states.collectionError') : t('collectorWorkspace.noData')
-  return formatPointValue(pointValue(point), empty)
 }
 const unit = (point: PointRow) => point.latest ? point.unit || point.metadata?.dataType?.unit || '' : ''
 const timestamp = (point: PointRow) => point.latest?.timestamp ? dayjs(point.latest.timestamp).format('HH:mm:ss') : ''

@@ -2,8 +2,8 @@
   <section class="cw-diagnostic" :aria-label="$t('collectorWorkspace.diagnostics')">
     <div class="cw-between"><strong>{{ $t('collectorWorkspace.diagnostics') }}</strong><button class="cw-icon-button" :aria-label="$t('collectorWorkspace.close')" @click="$emit('close')"><AIcon type="CloseOutlined" /></button></div>
     <a-spin :spinning="state.loading">
-      <a-alert v-if="state.error" type="warning" :message="state.error" show-icon />
-      <p v-else-if="state.snapshot && !state.snapshot.available" class="cw-muted">{{ $t('collectorWorkspace.unavailable') }}</p>
+      <a-alert v-if="state.error" type="warning" :message="/^(network error|failed to fetch|load failed)$/i.test(state.error) ? $t('collectorWorkspace.streamDisconnected') : state.error" show-icon />
+      <p v-if="state.snapshot && !state.snapshot.available" class="cw-muted">{{ $t('collectorWorkspace.unavailable') }}</p>
       <template v-else-if="state.snapshot">
         <div class="cw-runtime-meta"><WorkspaceStatus :object="runtimeObject" /><small>{{ state.snapshot.serverId }}</small></div>
         <div v-if="metrics.length" class="cw-diagnostic-metrics"><div v-for="metric in metrics.slice(0,6)" :key="metric.id" :title="metric.description"><span><AIcon :type="metric.icon" />{{ metric.name || metric.id }}</span><strong>{{ metric.text }}</strong></div></div>

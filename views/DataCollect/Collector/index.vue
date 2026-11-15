@@ -18,9 +18,11 @@
   </j-page-container>
 </template>
 
-<script setup lang="ts" name="CollectorPage">
+<script setup lang="ts">
 import Tree from './Tree/index.vue';
 import Point from './Point/index.vue';
+
+defineOptions({ name: 'CollectorPage' })
 
 const data = ref();
 const spinning = ref(false);

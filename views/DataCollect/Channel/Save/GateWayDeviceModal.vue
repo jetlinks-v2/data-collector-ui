@@ -83,10 +83,12 @@
   </a-modal>
 </template>
 
-<script name="GateWayDevice" setup>
+<script setup>
 import imgUrl from '../../../../assets/device-card.png'
 import {query} from "../../../../api/others";
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'GateWayDevice' })
 
 const {t: $t} = useI18n();
 

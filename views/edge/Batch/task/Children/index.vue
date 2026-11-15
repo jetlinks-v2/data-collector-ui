@@ -229,7 +229,7 @@
   />
 </template>
 
-<script setup name="TaskChildren">
+<script setup>
 import {
   queryNoPagingPost,
   addDevice,
@@ -243,6 +243,8 @@ import DeviceDetail from "./DeviceDetail/index.vue";
 import EmptyChildImg from "../../../../../assets/edge/empty-child.png";
 import { useI18n } from "vue-i18n";
 import { Modal } from "ant-design-vue";
+
+defineOptions({ name: 'TaskChildren' })
 
 const { t: $t } = useI18n();
 

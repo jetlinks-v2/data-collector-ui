@@ -11,7 +11,7 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   const snapshot=shallowRef<RuntimeSnapshot>(),recording=shallowRef<RecordingSnapshot>()
   const definitions=shallowRef<MetricDefinition[]>([]),error=ref(''),loading=ref(false)
   const target=ref<{kind:EntityKind;id:string}>(),open=ref(false)
-  let subscription:{unsubscribe():void}|undefined,recordingSubscription:{unsubscribe():void}|undefined
+  let subscription:{unsubscribe():void}|undefined,recordingSubscription:{unsubscribe():void;readonly closed?:boolean}|undefined
   let revision=0,recordingRevision=0,active=true
   function cancelRecording() { ++recordingRevision;recordingSubscription?.unsubscribe();recordingSubscription=undefined }
   function cancel() { ++revision;subscription?.unsubscribe();subscription=undefined;cancelRecording();loading.value=false }
@@ -21,7 +21,7 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
     if(!active || !open.value || paused.value || document.hidden || !id || !serverId || !snapshot.value?.available || target.value?.kind === 'channel')return
     const token=recordingRevision
     recordingSubscription=observeLatestRecording(id,serverId).subscribe({
-      next:value=>{if(token === recordingRevision)recording.value=value},
+      next:value=>{if(token === recordingRevision){recording.value=value;error.value=''}},
       error:cause=>{if(token === recordingRevision)error.value=cause instanceof Error ? cause.message : String(cause)},
     })
   }
@@ -29,7 +29,8 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
     const changed=snapshot.value?.serverId !== value.serverId || snapshot.value?.available !== value.available
     snapshot.value=value;loading.value=false
     if(changed)recording.value=undefined
-    if(changed || !recordingSubscription)connectRecording()
+    // 复用现有状态刷新重连已断开的回放流，不增加逐点定时器。
+    if(changed || !recordingSubscription || recordingSubscription.closed)connectRecording()
   }
   function connect() {
     cancel()

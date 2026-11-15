@@ -7,12 +7,12 @@ import { DATA_COLLECTOR_SAVE_TYPE } from '../data'
 import type { CollectorObject, PluginConfiguration, PointCapabilities } from '../../../types/workspace'
 
 const resources = new Map<string, Promise<string | undefined>>()
-/** Preserve plugin injection and validation contracts while changing only its host. */
-export function usePointPlugin(model: CollectorObject, collector: CollectorObject, resolved?: CollectorObject) {
+/** The same injected model and metadata events serve single and batch configuration. */
+export function usePointPluginContext(model: CollectorObject, collector: CollectorObject, resolved?: CollectorObject) {
   const { t } = useI18n()
   // A restored draft may have changed protocol fields: reuse metadata only for the configuration it describes.
   const initial=resolved?.metadata && isEqual(model.configuration || {},resolved.configuration || {}) ? resolved.metadata : undefined
-  const source = ref(''), capabilities = ref<PointCapabilities>(initial || {}), error = ref(''), loading = ref(true)
+  const capabilities = ref<PointCapabilities>(initial || {}), error = ref(''), metadataLoading = ref(false)
   let metadataInput: {provider:string;properties:PluginConfiguration}|undefined = initial
     ? {provider:model.provider,properties:{configuration:cloneDeep(model.configuration || {})}} : undefined
   let disposed = false, metadataRevision = 0
@@ -23,11 +23,12 @@ export function usePointPlugin(model: CollectorObject, collector: CollectorObjec
   provide(DATA_COLLECTOR_SAVE_TYPE, 'point')
   provide('metadata-configuration', capabilities)
   async function loadMetadata(provider: string, configuration?: PluginConfiguration) {
-    if (!configuration) { ++metadataRevision;metadataInput=undefined;capabilities.value = {}; return }
+    if (!configuration) { ++metadataRevision;metadataInput=undefined;capabilities.value = {}; metadataLoading.value=false; return }
     const input={provider,properties:configuration}
     if(isEqual(input,metadataInput))return
     metadataInput=cloneDeep(input)
     const revision = ++metadataRevision
+    metadataLoading.value = true; error.value = ''
     try {
       const response = await queryPointMetadata(provider, configuration)
       if (!disposed && revision === metadataRevision && response.success) {
@@ -39,10 +40,20 @@ export function usePointPlugin(model: CollectorObject, collector: CollectorObjec
         }
         capabilities.value = metadata
       }
-      if(!disposed && revision === metadataRevision && !response.success)metadataInput=undefined
+      if(!disposed && revision === metadataRevision && !response.success){metadataInput=undefined;error.value=response.message || t('collectorWorkspace.loadFailed')}
     } catch (cause) { if (!disposed && revision === metadataRevision) {metadataInput=undefined;error.value = cause instanceof Error ? cause.message : String(cause)} }
+    finally { if (!disposed && revision === metadataRevision) metadataLoading.value=false }
   }
   provide('point-metadata-events', { pointMetadataEvents: loadMetadata })
+  onBeforeUnmount(() => { disposed = true; ++metadataRevision })
+  return { capabilities, error, metadataLoading, loadMetadata }
+}
+
+/** Source loading is needed only when the plugin component is not already supplied. */
+export function usePointPlugin(model: CollectorObject, collector: CollectorObject, resolved?: CollectorObject) {
+  const { t } = useI18n(), context = usePointPluginContext(model, collector, resolved)
+  const source = ref(''), loading = ref(true), error = context.error
+  let disposed = false
   async function load() {
     loading.value = true; error.value = ''
     if (!resources.has(model.provider)) resources.set(model.provider, devGetProtocol(model.provider, 'point'))
@@ -50,11 +61,11 @@ export function usePointPlugin(model: CollectorObject, collector: CollectorObjec
       const value = await resources.get(model.provider)
       if (disposed) return
       if (typeof value !== 'string' || !value.trim() || !/<(template|script)[\s>]/.test(value)) { resources.delete(model.provider); throw new Error(t('collectorWorkspace.pluginUnavailable')) }
-      source.value = value; void loadMetadata(model.provider, { configuration: model.configuration })
+      source.value = value; void context.loadMetadata(model.provider, { configuration: model.configuration })
     } catch (cause) { if (!disposed) error.value = cause instanceof Error ? cause.message : String(cause) }
     finally { if (!disposed) loading.value = false }
   }
   void load()
-  onBeforeUnmount(() => { disposed = true; ++metadataRevision })
-  return { source, capabilities, loading, error, retry: load }
+  onBeforeUnmount(() => { disposed = true })
+  return { source, capabilities: context.capabilities, loading, error, retry: load }
 }

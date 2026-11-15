@@ -1,0 +1,104 @@
+.collection-workspace {
+  .cw-object-configuration:not(.cw-compact-configuration) { border:1px solid var(--cw-line); border-radius:7px; overflow:hidden; }
+  .cw-object-configuration:not(.cw-compact-configuration)>.ant-form { padding:10px 12px; }
+  .cw-configuration-heading { display:flex; align-items:center; gap:8px; padding:7px 12px; border-bottom:1px solid var(--cw-line); background:var(--cw-soft); }
+  .cw-configuration-heading>small { margin-left:auto; }
+  .cw-configuration-heading>.cw-icon-button { width:24px; height:24px; }
+  .cw-object-identity { display:flex; align-items:flex-start; gap:6px; margin-bottom:5px; }
+  .cw-object-identity>.cw-icon-button { width:28px; height:28px; }
+  .cw-object-identity>.cw-name-field { margin-top:1px; }
+  .cw-object-identity>small { max-width:35%; padding-top:4px; overflow-wrap:anywhere; }
+  .cw-editor-heading { min-height:30px; margin-bottom:3px; }
+  .cw-point-identity { display:flex; align-items:center; gap:8px; }
+  .cw-point-identity .cw-name-field { width:auto; min-width:80px; }
+  .cw-point-identity .cw-identifier { flex:0 1 45%; max-width:190px; min-width:0; }
+  .cw-point-identity .cw-identifier .cw-row { gap:2px; }
+  .cw-point-identity .cw-identifier .ant-input { min-width:0; }
+  .cw-editor-heading .cw-has-note { color:var(--cw-blue); }
+  .cw-object-configuration .cw-point-remark { margin:0 0 8px; }
+  .cw-point-source { border-top:1px solid var(--cw-line); padding-top:9px; }
+  .cw-settings-title { color:var(--cw-ink); font-weight:500; margin-bottom:7px; }
+  .cw-settings-title .cw-link { margin-left:auto; padding:0 4px; height:24px; }
+  .cw-point-settings { padding-top:9px; }
+  .cw-draft-pending { color:var(--jet-theme-warning); }
+  .cw-scope-note { display:flex; align-items:flex-start; gap:5px; margin-top:7px; color:var(--jet-theme-warning); font-size:12px; }
+  .cw-scope-note>.anticon { margin-top:3px; }
+  .cw-content-defaults>.ant-collapse-item>.ant-collapse-header { padding:8px 0; font-size:12px; color:var(--cw-sub); }
+  .cw-content-defaults .ant-collapse-header-text>span { display:flex; align-items:center; flex-wrap:wrap; gap:4px 12px; }
+  .cw-content-defaults .ant-collapse-header-text small { margin-left:auto; font-size:11px; }
+  .cw-content-defaults>.ant-collapse-item>.ant-collapse-content>.ant-collapse-content-box { padding:6px 0 0; }
+  .cw-setup-device { padding-top:10px; border-top:1px solid var(--cw-line); margin-top:8px; }
+  .cw-editor .cw-editor-footer { position:sticky; bottom:-12px; z-index:1; background:var(--cw-panel); padding-block:8px; margin-top:8px; }
+  .cw-object-configuration>.cw-editor-footer { margin-top:0; padding:8px 12px; background:var(--cw-soft); }
+
+  // The plugin keeps its field groups and order. Only control chrome is shared.
+  .cw-content-fields {
+    min-width:0;
+    .ant-form-item { min-width:0; margin-bottom:6px; }
+    .ant-form-item-label { padding-bottom:3px; }
+    .ant-form-item-label>label { height:auto; min-height:24px; font-size:12px; color:var(--cw-sub); white-space:normal; }
+    .ant-form-item-control { min-width:0; }
+    .ant-form-item-control-input { min-height:28px; }
+    .ant-form-item-explain,.ant-form-item-extra { font-size:11px; line-height:18px; min-height:0; }
+    .ant-input,.ant-input-number,.ant-input-affix-wrapper,.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+      background:transparent; border-color:transparent; box-shadow:none; font-size:12px; border-radius:4px;
+    }
+    .ant-input-number { min-width:0; }
+    .ant-input,.ant-input-affix-wrapper { padding-inline:6px; }
+    .ant-input-number-input { padding-inline:6px; }
+    .ant-input-group-addon,.ant-input-number-group-addon { background:transparent; border-color:transparent; color:var(--cw-sub); padding-inline:5px; font-size:11px; }
+    .ant-input:hover,.ant-input-number:hover,.ant-input-affix-wrapper:hover,.ant-select:not(.ant-select-disabled):hover .ant-select-selector { background:var(--cw-soft); border-color:var(--cw-line); }
+    .ant-input:focus,.ant-input-number-focused,.ant-input-affix-wrapper-focused,.ant-select-focused:not(.ant-select-disabled) .ant-select-selector { background:var(--cw-panel); border-color:var(--cw-blue); box-shadow:0 0 0 2px var(--cw-soft); }
+    .ant-form-item-has-error .ant-input,.ant-form-item-has-error .ant-input-number,.ant-form-item-has-error .ant-select-selector { border-color:var(--jet-theme-error); }
+    .ant-collapse-ghost>.ant-collapse-item>.ant-collapse-header { padding-inline:0; font-size:12px; }
+    .ant-collapse-ghost>.ant-collapse-item>.ant-collapse-content>.ant-collapse-content-box { padding-inline:0; }
+  }
+  .cw-content-fields:not(.cw-source-fields) {
+    .ant-form-item-row { flex-direction:row; align-items:flex-start; gap:6px; }
+    .ant-form-item-label { flex:0 1 110px; text-align:start; padding:2px 0; }
+    .ant-form-item-control { flex:1 1 0; }
+  }
+  .cw-acquisition-fields {
+    .ant-form-item { margin-bottom:2px; }
+    .ant-form-item-label { flex-basis:78px!important; }
+    .ant-select { width:100%; }
+    .cw-decoding-fields { display:contents; }
+  }
+  .cw-period-value { display:flex; align-items:center; gap:4px; min-height:28px; color:var(--cw-sub); font-size:12px; }
+  .cw-period-value>.ant-input-number { width:64px; color:var(--cw-ink); }
+  .cw-period-value .ant-input-number-input { text-align:center; }
+  .cw-editor .cw-content-fields .ant-form-item-label { padding-bottom:0; }
+
+  // A visible value column keeps mixed plugin controls readable as one inspector.
+  .cw-editor {
+    --cw-field-bg:color-mix(in srgb,var(--cw-bg) 60%,var(--cw-panel));
+    .cw-content-fields {
+      .ant-form-item { margin-bottom:6px; }
+      .ant-form-item-label { overflow:visible; }
+      .ant-form-item-label>label.ant-form-item-required::before { position:absolute; inset-inline-start:-8px; margin:0; }
+      .ant-input,.ant-input-affix-wrapper { min-height:28px; padding-block:2px; }
+      .ant-input-number,.ant-input-affix-wrapper,.ant-select { vertical-align:top; }
+      .ant-input-number-input { height:26px; }
+      .ant-input,.ant-input-number,.ant-input-affix-wrapper,.ant-select:not(.ant-select-customize-input) .ant-select-selector { background:var(--cw-field-bg); border-color:var(--cw-line); }
+      .ant-input-affix-wrapper>.ant-input { background:transparent; border:0; min-height:0; padding:0; }
+      .ant-select-single .ant-select-selector { height:28px; }
+      .ant-select-single .ant-select-selection-item,.ant-select-single .ant-select-selection-placeholder { line-height:26px; }
+      .ant-select-single .ant-select-selection-search-input { height:26px; }
+      .ant-select-multiple { height:auto; }
+      .ant-select-multiple .ant-select-selector { height:auto; min-height:28px; padding-block:1px; }
+      .ant-input:focus,.ant-input-number-focused,.ant-input-affix-wrapper-focused,.ant-select-focused:not(.ant-select-disabled) .ant-select-selector { background:var(--cw-panel); border-color:var(--cw-blue); }
+      .ant-form-item-has-error .ant-input,.ant-form-item-has-error .ant-input-number,.ant-form-item-has-error .ant-select-selector { border-color:var(--jet-theme-error); }
+    }
+    .cw-period-value { padding-inline:8px; border:1px solid var(--cw-line); border-radius:4px; background:var(--cw-field-bg); }
+    .cw-period-value:focus-within { background:var(--cw-panel); border-color:var(--cw-blue); box-shadow:0 0 0 2px var(--cw-soft); }
+    .ant-form-item-has-error .cw-period-value { border-color:var(--jet-theme-error); }
+    .cw-period-value>.ant-input-number { flex:1; width:0; border:0; background:transparent; box-shadow:none; }
+    .cw-period-value .ant-input-number-input { height:26px; text-align:start; }
+    .cw-settings-title,.cw-processing-heading { min-height:24px; margin-bottom:6px; }
+    .cw-point-settings,.cw-processing { margin-top:6px; padding-top:8px; }
+    .cw-rule-empty { padding:6px 0; }
+  }
+}
+@container(min-width:520px) {
+  .collection-workspace .cw-acquisition-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:24px; }
+}

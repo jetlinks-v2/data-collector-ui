@@ -21,7 +21,7 @@
     </div>
     <div v-else-if="point && showRuntimeMetric(object,actual,['lastReceivedIntervalNanos'])" class="cw-interval" :title="intervalHint">
       <AIcon type="FieldTimeOutlined" />
-      <span class="cw-interval-label">{{ $t('collectorMonitoring.arrivalInterval') }}</span>
+      <span class="cw-interval-label">{{ $t('collectorMonitoring.averageArrivalInterval') }}</span>
       <span class="cw-interval-value" :class="{'is-empty':actual == null}">{{ actual == null ? $t(`collectorMonitoring.empty.${intervalEmpty}`) : milliseconds(actual) }}</span>
     </div>
     <div v-if="point && cadence && (!compact || stale || (cadence.count > 0 && cadence.quantityRatio != null))" class="cw-cadence-summary">
@@ -33,7 +33,7 @@
       <i v-for="item in segments" :key="item.id" :class="item.id" :style="{width:`${item.value/total*100}%`}" />
     </div>
     <div v-if="filtered || monitoring?.processing || (!sparse && hasOtherOutcomes)" class="cw-flow-summary">
-      <a-popover v-if="filtered" :trigger="['hover','focus','click']" placement="bottom" :destroy-tooltip-on-hide="true" overlay-class-name="cw-filter-overlay">
+      <a-popover v-if="filtered" :trigger="['hover','focus','click']" placement="bottom" :destroy-tooltip-on-hide="true" overlay-class-name="cw-workspace-popover cw-filter-overlay">
         <template #content><div class="cw-filter-details"><strong>{{ $t('collectorMonitoring.ignored') }}</strong><div v-for="item in filters" :key="item.id"><span><AIcon :type="item.icon" />{{ $t(`collectorMonitoring.filterReasons.${item.id}`) }}</span><b>{{ number(item.value) }}<small>{{ flowUnit }}</small></b></div><small>{{ $t(totals ? 'collectorMonitoring.filteredTotalHint' : 'collectorMonitoring.filterHint') }}</small></div></template>
         <button class="cw-flow-filter" :aria-label="$t('collectorMonitoring.ignored')" @click.stop><AIcon type="FilterOutlined" />{{ number(filtered) }}<small>{{ flowUnit }}</small><AIcon type="DownOutlined" /></button>
       </a-popover>
@@ -70,7 +70,7 @@ const flowUnit=computed(()=>totals.value ? '' : '/s')
 const filterValues=computed(()=>totals.value ? monitoring.value?.filterTotals : monitoring.value?.filterRates)
 const expected=computed(()=>cadence.value?.expectedMillis)
 const actual=computed(()=>{
-  const value=cadence.value ? cadence.value.intervalNanos : monitoring.value?.receivedIntervalNanos
+  const value=cadence.value ? cadence.value.intervalNanos : monitoring.value?.receivedAverageIntervalNanos
   return value == null ? undefined : value/1e6
 })
 const intervalEmpty=computed(()=>{
@@ -86,6 +86,7 @@ const milliseconds=(value?:number)=>{
   return `${display.value} ${display.unit}`
 }
 const intervalHint=computed(()=>{
+  if(!cadence.value)return t('collectorMonitoring.averageArrivalHint',{actual:milliseconds(actual.value),age:milliseconds(monitoring.value?.receivedAgeNanos == null ? undefined : monitoring.value.receivedAgeNanos/1e6)})
   if(cadence.value && actual.value == null)return `${t('collectorMonitoring.configured')} ${milliseconds(expected.value)} · ${t('collectorMonitoring.actual')} ${t(cadence.value.count ? 'collectorMonitoring.awaitingMore' : 'collectorMonitoring.awaitingFirst')}`
   return cadence.value ? t('collectorMonitoring.scheduledIntervalHint',{actual:milliseconds(actual.value),difference:`${actual.value! >= cadence.value.expectedMillis ? '+' : '−'}${milliseconds(Math.abs(actual.value!-cadence.value.expectedMillis))}`}) : t('collectorMonitoring.intervalHint',{expected:milliseconds(expected.value),actual:actual.value == null ? t(`collectorMonitoring.empty.${intervalEmpty.value}`) : milliseconds(actual.value),collection:milliseconds(monitoring.value?.collectionIntervalNanos == null ? undefined : monitoring.value.collectionIntervalNanos/1e6),output:milliseconds(monitoring.value?.outputIntervalNanos == null ? undefined : monitoring.value.outputIntervalNanos/1e6)})
 })

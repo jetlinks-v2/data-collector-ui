@@ -40,11 +40,13 @@
   </div>
 </template>
 
-<script setup name="TaskPlugin">
+<script setup>
 import { query } from '../../../../../api/edge/resource';
 import { pick } from 'lodash-es'
 import {useTemplateRowSelection} from "../../util";
 import { useI18n } from 'vue-i18n';
+
+defineOptions({ name: 'TaskPlugin' })
 
 const { t: $t } = useI18n();
 

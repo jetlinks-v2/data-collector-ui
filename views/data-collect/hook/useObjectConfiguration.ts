@@ -15,9 +15,9 @@ const templateKeys = ['accessModes', 'features', 'interval', 'managedConfigurati
 /** Host the existing plugin Vue form; dependent fields and validation stay with the plugin. */
 export function useObjectConfiguration(props: Options, saved: () => void) {
   const { t } = useI18n()
-  const model = reactive({ configuration: {}, managedConfiguration: {}, features: [], accessModes: ['read'], interval: 1000, ...cloneDeep(props.value) }) as CollectorObject
+  const model = reactive({ configuration: {}, managedConfiguration: {}, features: [], accessModes: ['read'], interval: 1000, ...cloneDeep(omit(props.value, ['runtime', 'monitoring'])) }) as CollectorObject
   const channel = reactive<Partial<CollectorObject>>({})
-  const capabilities = ref<PointCapabilities>({}), source = ref(''), loading = ref(false), saving = ref(false), error = ref(''), saveError = ref('')
+  const capabilities = ref<PointCapabilities>({}), source = ref(''), loading = ref(false), saving = ref(false), error = ref(''), saveError = ref(''), formRevision = ref(0)
   let revision = 0, metadataRevision = 0
   provide('plugin-form', model)
   provide('plugin-form-channel', channel)
@@ -26,13 +26,24 @@ export function useObjectConfiguration(props: Options, saved: () => void) {
   provide('old-collector', ref({}))
   provide(DATA_COLLECTOR_SAVE_TYPE, props.kind)
   const selectedChannel = computed(() => props.channels.find(item => item.id === model.channelId))
+  const providerLabel = computed(() => props.providers.find(item => item.id === model.provider)?.name || model.provider)
   if (props.kind === 'collector') Object.assign(model, cloneDeep(model.configuration.template || {}))
   const baseline = ref(cloneDeep(model))
   const dirty = computed(() => !isEqual(omit(model, ['channelName']), omit(baseline.value, ['channelName'])))
   function ready() { baseline.value = cloneDeep(model) }
+  // Recreate plugin-local field references after restoring the complete configuration draft.
+  function restore() {
+    if (saving.value || loading.value) return
+    for (const key of Object.keys(model)) Reflect.deleteProperty(model, key)
+    Object.assign(model, cloneDeep(baseline.value))
+    saveError.value = ''; ++formRevision.value
+  }
   watch(() => props.connection || selectedChannel.value, value => {
+    // Cached editors observe configuration changes, not each incoming monitoring frame.
+    const next = omit(value || {}, ['runtime', 'monitoring'])
+    if (isEqual(channel, next)) return
     for (const key of Object.keys(channel)) delete channel[key as keyof CollectorObject]
-    Object.assign(channel, value || {})
+    Object.assign(channel, cloneDeep(next))
     if (value?.provider) { model.provider = value.provider; model.channelName = value.name }
   }, { immediate: true })
   async function loadMetadata(provider: string, configuration?: Record<string, unknown>) {
@@ -73,10 +84,11 @@ export function useObjectConfiguration(props: Options, saved: () => void) {
         ? value.id ? await updateChannel(value.id, payload) : await saveChannel(payload)
         : value.id ? await updateCollector(value.id, payload) : await saveCollector(payload)
       if (!response.success) throw new Error(response.message || t('collectorWorkspace.saveFailed'))
+      baseline.value = value
       onlyMessage(t('collectorWorkspace.saved')); saved()
     } catch (cause) { if (cause instanceof Error) saveError.value = cause.message }
     finally { saving.value = false }
   }
   onBeforeUnmount(() => { ++revision; ++metadataRevision })
-  return { model, channel, capabilities, source, loading, saving, error, saveError, dirty, ready, loadPlugin, save }
+  return { model, channel, capabilities, source, loading, saving, error, saveError, dirty, ready, loadPlugin, save, restore, formRevision, providerLabel }
 }

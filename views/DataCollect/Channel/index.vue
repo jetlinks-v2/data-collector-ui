@@ -140,7 +140,7 @@
         
     </j-page-container>
 </template>
-<script lang="ts" setup name="DataCollectPage">
+<script lang="ts" setup>
 import { createReusableTemplate } from '@vueuse/core'
 
 import {
@@ -155,6 +155,8 @@ import Save from './Save/index.vue';
 import { cloneDeep } from 'lodash-es';
 import { useI18n } from 'vue-i18n';
 import {useCollectorProvider} from "@data-collector-ui/hooks";
+
+defineOptions({ name: 'DataCollectPage' })
 
 const {t: $t} = useI18n();
 const menuStory = useMenuStore();
