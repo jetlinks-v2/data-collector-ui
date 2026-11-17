@@ -72,6 +72,8 @@ export function useWorkspaceData() {
   }
   let generation = 0, pointGeneration = 0, active = true, streamRevision = 0
   let subscription:Subscription|undefined, indexSubscription:Subscription|undefined, indexRefresh:Subscription|undefined
+  let monitoringSubscription:Subscription|undefined, recordingSubscription:Subscription|undefined
+  let monitoringRevision=0, recordingRevision=0
   function stopIndexRefresh() { indexRefresh?.unsubscribe();indexRefresh=undefined }
   function scheduleIndexRefresh() {
     stopIndexRefresh()
@@ -162,13 +164,71 @@ export function useWorkspaceData() {
   function unavailable<T extends CollectorObject>(value:T):T {
     return {...value,runtime:{...value.runtime,id:value.id,serverId:value.runtime?.serverId || '',available:false}}
   }
-  function stopDetail() { ++streamRevision;subscription?.unsubscribe();subscription=undefined;flush.cancel();pending.clear();feedback('workspace') }
+  function stopDetail() { ++streamRevision;subscription?.unsubscribe();subscription=undefined;flush.cancel();pending.clear();feedback('points') }
+  function stopMonitoring() { ++monitoringRevision;monitoringSubscription?.unsubscribe();monitoringSubscription=undefined;feedback('monitoring') }
+  function stopRecording() { ++recordingRevision;recordingSubscription?.unsubscribe();recordingSubscription=undefined;feedback('recording') }
   function unsubscribe() {
-    stopDetail()
+    stopDetail();stopMonitoring();stopRecording()
     updateVisible.cancel()
   }
+  function objectSnapshots(object:CollectorObject|undefined) {
+    const snapshots=object?.monitoring?.nodes || (object?.runtime ? [object.runtime] : [])
+    return object?.runtime?.available === false ? snapshots.map(snapshot=>({...snapshot,available:false})) : snapshots
+  }
+  /** 摘要拥有采集器及通道状态，点位快照只补充点位，避免滚动重置摘要基线。 */
+  function publishObservation() {
+    const current=collector.value
+    if(!current){observation.value=undefined;return}
+    const snapshots=objectSnapshots(current),channelSnapshots=objectSnapshots(channel.value)
+    const nodes=new Map((previousObservation?.nodes || []).map(node=>[node.serverId,{...node,
+      collector:{id:current.id,serverId:node.serverId,available:false},channel:undefined,
+    } as CollectorObservation['nodes'][number]]))
+    for(const snapshot of snapshots)nodes.set(snapshot.serverId,{
+      serverId:snapshot.serverId,collector:snapshot,
+      channel:channelSnapshots.find(value=>value.serverId === snapshot.serverId),points:nodes.get(snapshot.serverId)?.points || [],
+    })
+    observation.value={timestamp:previousObservation?.timestamp || current.monitoring?.timestamp || 0,nodes:[...nodes.values()]}
+  }
+  function subscribeMonitoring() {
+    stopMonitoring()
+    if(!active || paused.value || document.hidden)return
+    const revision=monitoringRevision,rows=collectors.value,channelRows=channels.value
+    const query:CollectorWorkspaceQuery={monitoring:[]}
+    for(let offset=0;offset<Math.max(rows.length,channelRows.length);offset+=100)query.monitoring.push({
+      ids:rows.slice(offset,offset+100).map(row=>row.id),channelIds:channelRows.slice(offset,offset+100).map(row=>row.id),interval:2000,metrics:null,
+    })
+    if(!query.monitoring.length)return
+    const disconnected=(cause:unknown)=>{
+      if(revision !== monitoringRevision)return
+      feedback('monitoring',cause)
+      collectors.value=collectors.value.map(unavailable);channels.value=channels.value.map(unavailable)
+      if(collector.value)collector.value=unavailable(collector.value)
+      updateRuntimeOrder();publishObservation()
+    }
+    monitoringSubscription=observeContinuously(observeCollectionWorkspace(query),disconnected).subscribe({next:frame=>{
+      if(revision !== monitoringRevision || !frame.monitoring)return
+      feedback('monitoring')
+      const value=frame.monitoring,known=new Set(value.collectors.map(row=>row.id)),knownChannels=new Set(value.channels?.map(row=>row.id))
+      const updated=new Map(monitoredObjects(collectors.value.filter(row=>known.has(row.id)),{timestamp:value.timestamp,snapshots:value.collectors}).map(row=>[row.id,row]))
+      collectors.value=collectors.value.map(row=>updated.get(row.id) || row)
+      if(collector.value && updated.has(collector.value.id))collector.value=updated.get(collector.value.id)
+      const updatedChannels=new Map(monitoredObjects(channels.value.filter(row=>knownChannels.has(row.id)),{timestamp:value.timestamp,snapshots:value.channels || []},undefined,'channel').map(row=>[row.id,row]))
+      channels.value=channels.value.map(row=>updatedChannels.get(row.id) || row)
+      updateRuntimeOrder();publishObservation()
+    },error:disconnected})
+  }
+  function subscribeRecording() {
+    stopRecording()
+    const target=recordingTarget.value,revision=recordingRevision
+    if(!target || !active || paused.value || document.hidden)return
+    const disconnected=(cause:unknown)=>{if(revision === recordingRevision)feedback('recording',cause)}
+    recordingSubscription=observeContinuously(observeCollectionWorkspace({monitoring:[],recording:target}),disconnected).subscribe({
+      next:frame=>{if(revision === recordingRevision && recordingTarget.value === target && frame.recording){feedback('recording');recording.value=frame.recording}},
+      error:disconnected,
+    })
+  }
   function subscribe() {
-    unsubscribe()
+    stopDetail();updateVisible.cancel()
     const current=collector.value
     if(!active || paused.value || document.hidden)return
     const revision=streamRevision,catalogRevision=pointGeneration
@@ -182,55 +242,34 @@ export function useWorkspaceData() {
       return shallowReactive(configuration)
     })
     if(previousObservation)previousObservation={...previousObservation,nodes:previousObservation.nodes.map(node=>({...node,points:node.points.filter(point=>retained.has(point.id))}))}
-    observation.value=previousObservation
-    // A genuinely empty result still needs collector health; mounting visible rows does not need an empty stream first.
-    const includeObservation=!!current && (ids.length > 0 || !filteredPoints.value.length)
-    const rows=collectors.value.filter(row=>!includeObservation || row.id !== current?.id)
-    const channelRows=channels.value.filter(row=>!includeObservation || row.id !== current?.channelId)
-    const query:CollectorWorkspaceQuery={monitoring:[],recording:recordingTarget.value}
-    for(let offset=0;offset<Math.max(rows.length,channelRows.length);offset+=100)query.monitoring.push({
-      ids:rows.slice(offset,offset+100).map(row=>row.id),channelIds:channelRows.slice(offset,offset+100).map(row=>row.id),interval:2000,metrics:null,
-    })
-    if(includeObservation)query.observation={id:current!.id,pointIds:ids,interval:2000,pointMetrics:null,metrics:null,channelMetrics:null,includeData:true}
-    if(!query.monitoring.length && !query.observation && !query.recording)return
+    publishObservation()
+    if(!current || !ids.length)return
+    const query:CollectorWorkspaceQuery={monitoring:[],observation:{
+      id:current.id,pointIds:ids,interval:2000,pointMetrics:null,metrics:[],channelMetrics:[],includeData:true,
+    }}
     const disconnected=(cause:unknown)=>{
       if(revision !== streamRevision || catalogRevision !== pointGeneration)return
-      feedback('workspace',cause)
-      collectors.value=collectors.value.map(unavailable)
-      channels.value=channels.value.map(unavailable)
-      if(collector.value)collector.value=unavailable(collector.value)
+      feedback('points',cause)
       points.value=points.value.map(point=>retained.has(point.id) ? shallowReactive(unavailable(point)) : point)
+      if(previousObservation)previousObservation={...previousObservation,nodes:previousObservation.nodes.map(node=>({...node,
+        points:node.points.map(point=>({...point,runtime:{...point.runtime,available:false}})),
+      }))}
+      publishObservation()
       updateRuntimeOrder(points.value.filter(point=>retained.has(point.id)))
     }
     subscription=observeContinuously(observeCollectionWorkspace(query),disconnected).subscribe({next:frame=>{
       if(revision !== streamRevision || catalogRevision !== pointGeneration)return
-      feedback('workspace')
-      if(frame.recording){recording.value=frame.recording;return}
-      if(frame.monitoring){
-        const value=frame.monitoring,known=new Set(value.collectors.map(row=>row.id)),knownChannels=new Set(value.channels?.map(row=>row.id))
-        const updated=new Map(monitoredObjects(collectors.value.filter(row=>known.has(row.id)),{timestamp:value.timestamp,snapshots:value.collectors}).map(row=>[row.id,row]))
-        collectors.value=collectors.value.map(row=>updated.get(row.id) || row)
-        if(collector.value && updated.has(collector.value.id))collector.value=updated.get(collector.value.id)
-        const updatedChannels=new Map(monitoredObjects(channels.value.filter(row=>knownChannels.has(row.id)),{timestamp:value.timestamp,snapshots:value.channels || []},undefined,'channel').map(row=>[row.id,row]))
-        channels.value=channels.value.map(row=>updatedChannels.get(row.id) || row)
-        updateRuntimeOrder()
-        return
-      }
       const value=frame.observation
       if(!value || !current || collector.value?.id !== current.id)return
+      feedback('points')
       if(value.data){
         updateValues(value.data)
         return
       }
-      observation.value=value
       const updated=new Map(observedPoints(points.value.filter(point=>retained.has(point.id)),value,previousObservation).map(point=>[point.id,shallowReactive(point)]))
       points.value=points.value.map(point=>updated.get(point.id) || point)
-      const round=(sample:CollectorObservation)=>({timestamp:sample.timestamp,snapshots:sample.nodes.map(node=>node.collector)})
-      collector.value=monitoredObjects([collector.value!],round(value),previousObservation ? round(previousObservation) : undefined)[0]
-      collectors.value=collectors.value.map(item=>item.id === current.id ? collector.value! : item)
-      const channelRound=(sample:CollectorObservation)=>({timestamp:sample.timestamp,snapshots:sample.nodes.flatMap(node=>node.channel ? [node.channel] : [])})
-      channels.value=channels.value.map(item=>item.id === current.channelId ? monitoredObjects([item],channelRound(value),previousObservation ? channelRound(previousObservation) : undefined,'channel')[0] : item)
       previousObservation=value
+      publishObservation()
       updateRuntimeOrder([...updated.values()])
     },error:disconnected})
   }
@@ -268,7 +307,7 @@ export function useWorkspaceData() {
     })
   }
   async function loadCollectors(resumeMonitoring=true) {
-    unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false
+    stopMonitoring();stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false
     const revision=++generation;loading.value=true;error.value=''
     try {
       const response=await listWorkspaceCollectors({sorts:[{name:'id',order:'asc'}]})
@@ -277,13 +316,13 @@ export function useWorkspaceData() {
       collectors.value=response.result || []
       if(collector.value)collector.value=collectors.value.find(item=>item.id === collector.value?.id) || collector.value
       if(!collector.value)filterCollectors()
-      if(resumeMonitoring){subscribe();scheduleIndexRefresh()}
+      if(resumeMonitoring){subscribeMonitoring();scheduleIndexRefresh()}
     }catch(cause){if(revision === generation)error.value=describe(cause)}
     finally{if(revision === generation)loading.value=false}
   }
   async function loadPoints() {
     const current=collector.value,revision=++pointGeneration
-    unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false
+    stopDetail();stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false
     if(pointOwnerId !== (current?.id || '')) {
       cancelPointDetails();firstRange=true
       points.value=[];pointOrder.value=[];visibleIds=[];pointIndex.value=new Map()
@@ -312,7 +351,7 @@ export function useWorkspaceData() {
     if(results[1].status === 'fulfilled' && results[1].value.success)providers.value=results[1].value.result || []
     for(const result of [results[0],results[1]])if(result.status === 'rejected')error.value=describe(result.reason)
     else if(!result.value.success)error.value=t('collectorWorkspace.loadFailed')
-    subscribe();initializing.value=false
+    subscribeMonitoring();subscribe();initializing.value=false
   }
   function select(value?:CollectorObject, channelId='') {
     pointTrial.reset()
@@ -357,14 +396,15 @@ export function useWorkspaceData() {
     const current=collector.value
     return current ? pointTrial.run(current.id,point ? [point.id] : selectedIds || visibleIds, point ? 'point' : 'list') : Promise.resolve(undefined)
   }
-  const onVisibility=()=>{if(document.hidden){unsubscribe();stopIndexRefresh()}else{subscribe();scheduleIndexRefresh()}}
+  function resume() { subscribeMonitoring();subscribe();subscribeRecording();scheduleIndexRefresh() }
+  const onVisibility=()=>{if(document.hidden){unsubscribe();stopIndexRefresh()}else resume()}
   document.addEventListener('visibilitychange',onVisibility)
-  watch(paused,()=>{subscribe();scheduleIndexRefresh()})
+  watch(paused,()=>{if(paused.value){unsubscribe();stopIndexRefresh()}else resume()})
   watch(orderHeld,held=>{if(held)stopIndexRefresh();else{applyCollectorOrder();if(collector.value)refreshPointIndex(true)}})
-  watch(recordingTarget,()=>{recording.value=undefined;subscribe()})
+  watch(recordingTarget,()=>{recording.value=undefined;subscribeRecording()})
   watch(selectedPointId,()=>{void loadPointDetails();updateVisible.cancel();subscribe()})
   onDeactivated(()=>{pointTrial.reset();active=false;++pointGeneration;cancelPointDetails();unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();countSubscription?.unsubscribe();ordering.value=false})
-  onActivated(()=>{if(!active){active=true;subscribe();scheduleIndexRefresh();void loadPointDetails()}})
+  onActivated(()=>{if(!active){active=true;resume();void loadPointDetails()}})
   onBeforeUnmount(()=>{++generation;++pointGeneration;cancelPointDetails();unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();countSubscription?.unsubscribe();document.removeEventListener('visibilitychange',onVisibility)})
   return {trialState:pointTrial.state,stopTrial:pointTrial.stop,collectors,filteredCollectors,scopedCollectors,channels,providers,points,filteredPoints,unsavedPoints,observation,recording,recordingTarget,collector,channel,selectedChannelId,selectedPointId,selectedPoint,selectedLoading,selectedError,loadPointDetails,initializing,loading,pointLoading,ordering,orderHeld,indexTime,error,valueError,paused,total,pointTotal,search,pointSearch,pointState,collectorState,pointSort,collectorSort,stateCounts,loadStateCounts,initialize,loadCollectors,loadPoints,applyObject,applyPoint,select,trial,filterPoints,filterCollectors,setVisiblePoints}
 }

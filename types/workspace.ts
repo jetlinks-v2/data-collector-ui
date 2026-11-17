@@ -55,7 +55,7 @@ export interface CollectorMonitoringSnapshot { timestamp:number; collectors:Runt
 export interface WorkspaceRecordingTarget { collectorId:string; serverId:string; interval:number }
 export interface CollectorWorkspaceQuery {
   monitoring:Array<{ids:string[];channelIds:string[];interval:number;metrics:string[]|null}>
-  observation?:{id:string;pointIds:string[];interval:number;metrics:null;pointMetrics:null;channelMetrics:null;includeData:true}
+  observation?:{id:string;pointIds:string[];interval:number;metrics:string[]|null;pointMetrics:string[]|null;channelMetrics:string[]|null;includeData:boolean}
   recording?:WorkspaceRecordingTarget
 }
 export interface CollectorWorkspaceFrame { monitoring?:CollectorMonitoringSnapshot;observation?:CollectorObservation;recording?:RecordingSnapshot }

@@ -19,6 +19,7 @@ function loadUtility(path){
 }
 const workspaceList=loadUtility(fileURLToPath(new URL('../utils/workspaceList.ts',import.meta.url)))
 const {applyObservedValues}=loadUtility(fileURLToPath(new URL('../utils/workspaceObservation.ts',import.meta.url)))
+const runtimeMonitoring=loadUtility(fileURLToPath(new URL('../utils/runtimeMonitoring.ts',import.meta.url)))
 const source = readFileSync(new URL('../views/data-collect/hook/useWorkspaceData.ts', import.meta.url), 'utf8')
 const deferred = () => {
   let resolve
@@ -31,11 +32,12 @@ function combined(api,query) {
     const subscription=new Subscription()
     for(const item of query.monitoring)subscription.add(api.monitorCollectors(item.ids,item.interval,item.channelIds).subscribe({next:value=>observer.next({monitoring:value}),error:error=>observer.error(error)}))
     if(query.observation){const item=query.observation;subscription.add(api.observeWorkspace(item.id,item.pointIds).subscribe({next:value=>observer.next({observation:value}),error:error=>observer.error(error),complete:()=>observer.complete()}))}
+    if(query.recording)subscription.add(api.observeLatestRecording(query.recording).subscribe({next:value=>observer.next({recording:value}),error:error=>observer.error(error)}))
     return subscription
   })
 }
 
-test('initial queries run together and one stream paints the first snapshot immediately', async () => {
+test('initial queries run together and independent subscriptions paint the first snapshot immediately', async () => {
   const channels = deferred(), providers = deferred(), collectors = deferred()
   const calls = [], monitors = [], observations = [], closed = []
   const details = []
@@ -130,7 +132,7 @@ test('initial queries run together and one stream paints the first snapshot imme
     assert.equal(data.points.value[0].latest, undefined)
     assert.equal(directory[0].latest.timestamp, 204, 'canceling the old stream discards its pending trailing update')
     assert.equal(data.points.value[1].latest.parsedData, 0)
-    assert.ok(monitors.length >= 1)
+    assert.equal(monitors.length,1,'scrolling never replaces navigation monitoring')
     // An open editor retains exactly its selected point while other off-screen values are released.
     data.selectedPointId.value = 'second'
     await vue.nextTick()
@@ -186,11 +188,11 @@ test('initial queries run together and one stream paints the first snapshot imme
   }
 })
 
-async function reconnectingWorkspace(sorting = false) {
-  const observations=[],monitors=[],retries=[],unmount=[],queries=[],activated=[],deactivated=[]
+async function reconnectingWorkspace(sorting = false, realMonitoring = false) {
+  const observations=[],monitors=[],recordings=[],requests=[],retries=[],unmount=[],queries=[],activated=[],deactivated=[]
   let visibility
   const runtime=id=>({id,serverId:'server',available:true,state:'running'})
-  const snapshot=()=>({timestamp:Date.now(),nodes:[{collector:runtime('collector'),channel:runtime('channel'),points:[]}]})
+  const snapshot=()=>({timestamp:Date.now(),nodes:[{serverId:'server',collector:runtime('collector'),channel:runtime('channel'),points:[]}]})
   const api={
     listWorkspaceChannels:async()=>({success:true,result:[{id:'channel'}]}),
     listWorkspaceProviders:async()=>({success:true,result:[]}),
@@ -200,15 +202,16 @@ async function reconnectingWorkspace(sorting = false) {
     queryWorkspaceIndex:(rows,id)=>new Observable(observer=>{const query={rows,id,observer,closed:false};queries.push(query);return ()=>{query.closed=true}}),
     monitorCollectors:(ids)=>new Observable(observer=>{monitors.push({ids,observer})}),
     observeWorkspace:(id,pointIds)=>new Observable(observer=>{observations.push({id,pointIds,observer})}),
+    observeLatestRecording:target=>new Observable(observer=>{recordings.push({target,observer})}),
   }
-  api.observeCollectionWorkspace=query=>combined(api,query)
+  api.observeCollectionWorkspace=query=>{requests.push(query);return combined(api,query)}
   const module={exports:{}}
   new Function('require','module','exports',transformSync(source,{loader:'ts',format:'cjs'}).code)(id=>{
     if(id === 'vue')return {...vue,onActivated:callback=>activated.push(callback),onDeactivated:callback=>deactivated.push(callback),onBeforeUnmount:callback=>unmount.push(callback)}
     if(id === 'vue-i18n')return {useI18n:()=>({t:key=>key})}
     if(id === 'rxjs')return {...require(id),timer:delay=>{const signal=new Subject();retries.push({delay,signal});return signal}}
     if(id.endsWith('/api/data-collect/workspace'))return api
-    if(id.endsWith('/utils/runtimeMonitoring'))return {monitoredObjects:(values,round)=>values.map(value=>{const runtime=round.snapshots.find(item=>item.id === value.id);return {...value,runtime,monitoring:runtime?.summary}})}
+    if(id.endsWith('/utils/runtimeMonitoring'))return realMonitoring ? runtimeMonitoring : {monitoredObjects:(values,round)=>values.map(value=>{const runtime=round.snapshots.find(item=>item.id === value.id);return {...value,runtime,monitoring:runtime?.summary}})}
     if(id.endsWith('/utils/workspaceObservation'))return {applyObservedValues,observedPoints:(values,frame)=>sorting ? values.map(value=>{const runtime=frame.nodes.flatMap(node=>node.points).find(item=>item.id === value.id);return runtime ? {...value,runtime,monitoring:runtime.summary} : value}) : values}
     if(id === './usePointTrial')return {usePointTrial:()=>({state:vue.ref({running:false,ids:[],total:0,completed:0,error:'',cancelled:false}),run:async()=>0,reset(){},stop(){}})}
     if(id.endsWith('/api/data-collect/collector'))return {}
@@ -222,7 +225,7 @@ async function reconnectingWorkspace(sorting = false) {
   await data.initialize()
   data.select(data.collectors.value[0]);await new Promise(resolve=>setImmediate(resolve))
   data.setVisiblePoints(['first'])
-  return {data,api,observations,monitors,retries,snapshot,queries,activated,deactivated,visibility:()=>visibility(),
+  return {data,api,observations,monitors,recordings,requests,retries,snapshot,queries,activated,deactivated,visibility:()=>visibility(),
     reconnect(index){retries[index].signal.next(0);retries[index].signal.complete()},
     close(){unmount.forEach(callback=>callback());scope.stop();globalThis.document=oldDocument},
   }
@@ -322,18 +325,71 @@ test('scrolling cancels a failed range and its pending reconnect without carryin
   } finally {value.close()}
 })
 
-test('a transport failure cancels all ranges and reconnects the combined workspace once',async()=>{
+test('summary failure retries its subscription while point updates continue without hiding the error',async()=>{
   const value=await reconnectingWorkspace()
   try {
     value.observations[0].observer.next(value.snapshot())
     value.monitors.at(-1).observer.error(new TypeError('network error'))
     value.observations[0].observer.next(value.snapshot())
-    assert.equal(value.data.valueError.value,'network error','a cancelled point stream cannot hide the shared failure')
+    assert.equal(value.data.valueError.value,'network error','a healthy point stream cannot hide a summary failure')
+    assert.equal(value.observations[0].observer.closed,false)
     value.reconnect(0)
-    assert.deepEqual(value.monitors.at(-1).ids,['other'])
+    assert.deepEqual(value.monitors.at(-1).ids,['collector','other'])
     value.monitors.at(-1).observer.next({timestamp:Date.now(),collectors:[{id:'other',available:true}],channels:[]})
     assert.equal(value.data.valueError.value,'')
-    assert.equal(value.observations.length,2,'one reconnect restores summaries and visible points')
+    assert.equal(value.observations.length,1,'summary reconnect does not replace visible points')
+  } finally {value.close()}
+})
+
+test('scrolling and diagnostic changes preserve summary rates and isolate subscription cancellation',async()=>{
+  const value=await reconnectingWorkspace(false,true)
+  try {
+    const summary=value.monitors[0],point=value.observations[0]
+    const emit=(timestamp,count)=>summary.observer.next({timestamp,channels:[],collectors:[{
+      id:'collector',serverId:'server',available:true,state:'running',
+      metrics:{scope:'collector',instanceId:'instance',sampledAt:timestamp,values:{receivedSamples:{available:true,value:count}}},
+    }]})
+    emit(1000,100);emit(2000,120)
+    assert.equal(value.data.collector.value.monitoring.sampleRate,20)
+    value.data.recordingTarget.value={collectorId:'collector',serverId:'server',interval:1000};await vue.nextTick()
+    assert.equal(value.recordings.length,1)
+    assert.equal(point.observer.closed,false)
+    value.data.setVisiblePoints(['second'])
+    assert.equal(point.observer.closed,true)
+    assert.equal(summary.observer.closed,false)
+    assert.equal(value.recordings[0].observer.closed,false)
+    emit(3000,150)
+    assert.equal(value.data.collector.value.monitoring.sampleRate,30,'scrolling preserves the preceding summary baseline')
+    await new Promise(resolve=>setTimeout(resolve,160))
+    assert.equal(value.monitors.length,1)
+    assert.deepEqual(value.observations.at(-1).pointIds,['second'])
+    const request=value.requests.find(request=>request.observation)
+    assert.deepEqual(request.monitoring,[])
+    assert.deepEqual(request.observation.metrics,[])
+    assert.deepEqual(request.observation.channelMetrics,[])
+    value.data.recordingTarget.value=undefined;await vue.nextTick()
+    assert.equal(value.recordings[0].observer.closed,true)
+    assert.equal(summary.observer.closed,false)
+    assert.equal(value.observations.at(-1).observer.closed,false)
+  } finally {value.close()}
+  assert.equal(value.monitors[0].observer.closed,true)
+  assert.ok(value.observations.every(item=>item.observer.closed))
+})
+
+test('a point failure cannot interrupt summary or diagnostic updates or be hidden by them',async()=>{
+  const value=await reconnectingWorkspace()
+  try {
+    value.data.recordingTarget.value={collectorId:'collector',serverId:'server',interval:1000};await vue.nextTick()
+    value.observations[0].observer.error(new TypeError('point error'))
+    value.monitors[0].observer.next({timestamp:1,collectors:[{id:'collector',available:true}],channels:[]})
+    value.recordings[0].observer.next({collectorId:'collector',serverId:'server',active:true})
+    assert.equal(value.data.valueError.value,'point error')
+    assert.equal(value.data.collector.value.runtime.available,true)
+    assert.equal(value.data.recording.value.active,true)
+    assert.equal(value.monitors[0].observer.closed,false)
+    value.data.setVisiblePoints(['second'])
+    assert.equal(value.data.valueError.value,'')
+    assert.equal(value.retries[0].signal.observers.length,0)
   } finally {value.close()}
 })
 

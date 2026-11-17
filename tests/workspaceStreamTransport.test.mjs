@@ -6,7 +6,7 @@ import {transformSync} from 'esbuild'
 import {Observable,of} from 'rxjs'
 const require=createRequire(import.meta.url)
 
-test('workspace uses one shared platform subscription, cancels it, and retains the NDJSON transport',()=>{
+test('workspace uses the shared platform connection, cancels its business subscription, and retains NDJSON',()=>{
   const calls=[],closed=[],http=[],module={exports:{}}
   new Function('require','module','exports',transformSync(readFileSync(new URL('../api/data-collect/workspace.ts',import.meta.url),'utf8'),{loader:'ts',format:'cjs'}).code)(id=>{
     if(id==='@jetlinks-web/core')return {request:{},wsClient:{getWebSocket:(id,topic,query)=>new Observable(observer=>{
