@@ -6,6 +6,7 @@ import { useWorkspaceData } from './useWorkspaceData'
 import { useWorkspaceRuntime } from './useWorkspaceRuntime'
 import { usePointDraft } from './usePointDraft'
 import { useWorkspaceActions } from './useWorkspaceActions'
+import { useWorkspaceRoute } from './useWorkspaceRoute'
 import { COLLECTOR_DATA, COLLECTOR_TYPE, FOLD_TREE, REFRESH_HANDLER } from '../data'
 import type { CollectorObject, EntityKind, PointRow, ProviderDescriptor } from '../../../types/workspace'
 import type { ObjectConfigurationDraft } from './useObjectConfiguration'
@@ -74,17 +75,19 @@ export function useCollectionWorkspace() {
     return new Promise<boolean>(resolve => Modal.confirm({ title: t('collectorWorkspace.leaveDraft'), okText: t('collectorWorkspace.leave'), cancelText: t('collectorWorkspace.continueEditing'), onOk: () => resolve(true), onCancel: () => resolve(false) }))
   }
   let overviewScroll = 0
-  async function select(value?: CollectorObject, selectedChannel?:CollectorObject) {
+  const navigate = useWorkspaceRoute(data, applySelection, () => !batch.busy.value && confirmConfiguration())
+  function select(value?: CollectorObject, selectedChannel?:CollectorObject) {
     if (batch.busy.value || configurationSaving.value) return
-    // Selecting the current collector only dismisses navigation; keep its filters and draft.
-    if (value && value.id === data.collector.value?.id) { drawerOpen.value = false; return }
-    if (!await confirmConfiguration()) return
+    drawerOpen.value = false
+    if (value && value.id === data.collector.value?.id) return
+    return navigate(value, selectedChannel)
+  }
+  function applySelection(value?: CollectorObject, selectedChannel?:CollectorObject) {
     drawerOpen.value = false
     if (!data.collector.value) overviewScroll = main.value?.scrollTop || 0
     stashObject(); objectTarget.value=undefined; objectEditor.value=undefined
     closeDiagnostic(); data.select(value,selectedChannel?.id); editingId.value = ''; objectForm.value = undefined; choosingProvider.value = false; setupProvider.value = undefined
-    await nextTick()
-    if (main.value) main.value.scrollTop = value ? 0 : overviewScroll
+    void nextTick(() => { if (main.value) main.value.scrollTop = value ? 0 : overviewScroll })
   }
   async function cancelSetup() { if (await confirmConfiguration()) { setupProvider.value = undefined; choosingProvider.value = true } }
   function editObject(target?: ObjectEditorTarget, restoreFocus = true) {

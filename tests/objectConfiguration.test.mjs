@@ -86,6 +86,7 @@ test('folding and navigating preserve configuration drafts while only the curren
     'vue-router':{onBeforeRouteLeave:callback=>{leaveRoute=callback}},'ant-design-vue':{Modal:{confirm:options=>{confirmations++;leave?options.onOk():options.onCancel()}}},
     './useWorkspaceData':{useWorkspaceData:()=>data},'./useWorkspaceRuntime':{useWorkspaceRuntime:()=>({close(){}})},
     './usePointDraft':{usePointDraft:()=>({hasChanges:vue.ref(false),saving:vue.ref(false)})},'./useWorkspaceActions':{useWorkspaceActions:()=>batch},'../data':{},
+    './useWorkspaceRoute':{useWorkspaceRoute:(_data,apply,canSelect)=>async(...args)=>{if(await canSelect())apply(...args)}},
   })
   const previous=globalThis.window,previousDocument=globalThis.document
   globalThis.window={addEventListener(){},removeEventListener(){}}

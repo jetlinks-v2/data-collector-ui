@@ -177,6 +177,7 @@ const routeCodec = {
  encodeConditionFilterQuery: terms => terms.length ? JSON.stringify(terms) : '',
 }
 const routeMocks = {
+ './collectScopeRoute': load('hook/collectScopeRoute.ts'),
  '@jetlinks-web-core/components/ConditionFilter': routeCodec,
  '../components/Point/columns': {pointSearchFields: []},
 }
