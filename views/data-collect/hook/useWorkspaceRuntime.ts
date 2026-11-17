@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onDeactivated, onActivated, ref, shallowRef, watch, type Ref } from 'vue'
+import { computed, onBeforeUnmount, onDeactivated, onActivated, ref, shallowRef, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { observeRuntime } from '../../../api/data-collect/workspace'
 import { loadRuntimeMetricMetadata } from './useRuntimeMetricMetadata'
@@ -6,11 +6,18 @@ import { observedRuntime } from '../../../utils/workspaceObservation'
 import type { CollectorObject, CollectorObservation, EntityKind, MetricDefinition, RuntimeSnapshot, RecordingSnapshot, WorkspaceRecordingTarget } from '../../../types/workspace'
 
 /** 指标优先复用页面实时流；浮层只按需读取完整回放，不控制采集器录制策略。 */
-export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,paused:Ref<boolean>,observation:Ref<CollectorObservation|undefined>,sharedRecording:Ref<RecordingSnapshot|undefined>,recordingTarget:Ref<WorkspaceRecordingTarget|undefined>) {
+export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,paused:Ref<boolean>,observation:Ref<CollectorObservation|undefined>,sharedRecording:Ref<RecordingSnapshot|undefined>,recordingTarget:Ref<WorkspaceRecordingTarget|undefined>,summaries:{collectors:Ref<CollectorObject[]>;channels:Ref<CollectorObject[]>}) {
   const {t,locale}=useI18n()
   const snapshot=shallowRef<RuntimeSnapshot>(),recording=shallowRef<RecordingSnapshot>()
   const definitions=shallowRef<MetricDefinition[]>([]),error=ref(''),loading=ref(false)
   const target=ref<{kind:EntityKind;id:string}>(),open=ref(false)
+  const sharedSnapshot=computed(()=>{
+    const current=target.value
+    if(!current)return
+    if(current.kind === 'point')return observedRuntime(observation.value,current.kind,current.id)
+    const objects=current.kind === 'channel' ? summaries.channels.value : summaries.collectors.value
+    return objects.find(object=>object.id === current.id)?.runtime
+  })
   let subscription:{unsubscribe():void}|undefined
   let revision=0,active=true
   function cancelRecording() { if(recordingTarget.value)recordingTarget.value=undefined }
@@ -22,7 +29,7 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   }
   function accept(value:RuntimeSnapshot) {
     const changed=snapshot.value?.serverId !== value.serverId || snapshot.value?.available !== value.available
-    snapshot.value=value;loading.value=false
+    snapshot.value=value;loading.value=false;error.value=''
     if(changed)recording.value=undefined
     connectRecording()
   }
@@ -35,7 +42,7 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
     loadRuntimeMetricMetadata(current.kind,locale.value).then(properties=>{
       if(token === revision)definitions.value=properties
     }).catch(()=>{/* 定义暂不可用时仍显示原始指标标识。 */})
-    const shared=observedRuntime(observation.value,current.kind,current.id)
+    const shared=sharedSnapshot.value
     if(shared){accept(shared);return}
     // 当前可见范围没有此对象时只补一次，不另建第二条常驻连接。
     subscription=observeRuntime(current.kind,current.id,0).subscribe({
@@ -53,9 +60,8 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   watch(sharedRecording,value=>{
     if(open.value && value?.collectorId === collector.value?.id && value.serverId === snapshot.value?.serverId){recording.value=value;error.value=''}
   })
-  watch(observation,value=>{
+  watch(sharedSnapshot,shared=>{
     if(!open.value || !target.value || paused.value || !active || document.hidden)return
-    const shared=observedRuntime(value,target.value.kind,target.value.id)
     if(shared){subscription?.unsubscribe();subscription=undefined;accept(shared)}
   })
   watch(()=>collector.value?.id,()=>{close();recording.value=undefined;snapshot.value=undefined})

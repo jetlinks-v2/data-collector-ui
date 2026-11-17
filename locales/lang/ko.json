@@ -1,4 +1,9 @@
 {
+  "WritePoint.index.769007-0": "장치에 쓰기",
+  "WritePoint.index.769007-13": "장치에 쓰기",
+  "collectorWrite.hint": "입력한 값을 장치에 씁니다. 포인트 설정은 변경되지 않습니다. 이력 저장 여부는 포인트 또는 수집기 설정을 따릅니다.",
+  "collectorWrite.completed": "쓰기 요청이 완료되었습니다. 읽기로 실제 값을 확인하세요.",
+  "collectorWrite.failed": "쓰기에 실패했습니다. 연결과 쓰기 권한을 확인하세요.",
   "collectorTrial": {
     "latest": "최신",
     "title": "테스트 읽기",

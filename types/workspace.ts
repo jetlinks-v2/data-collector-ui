@@ -55,7 +55,7 @@ export interface CollectorMonitoringSnapshot { timestamp:number; collectors:Runt
 export interface WorkspaceRecordingTarget { collectorId:string; serverId:string; interval:number }
 export interface CollectorWorkspaceQuery {
   monitoring:Array<{ids:string[];channelIds:string[];interval:number;metrics:string[]|null}>
-  observation?:{id:string;pointIds:string[];interval:number;metrics:string[]|null;pointMetrics:string[]|null;channelMetrics:string[]|null;includeData:boolean}
+  observation?:{id:string;pointIds:string[];interval:number;metrics:string[]|null;pointMetrics:string[]|null;channelMetrics:string[]|null;includeData:boolean;includeObjects?:boolean}
   recording?:WorkspaceRecordingTarget
 }
 export interface CollectorWorkspaceFrame { monitoring?:CollectorMonitoringSnapshot;observation?:CollectorObservation;recording?:RecordingSnapshot }
@@ -96,7 +96,7 @@ export interface CollectorObservation {
   timestamp:number
   /** 数据增量不构成完整统计轮，不改变状态或速率基线。 */
   data?:PointValueData[]
-  nodes:Array<{ serverId:string; collector:RuntimeSnapshot; channel?:RuntimeSnapshot; points:Array<{id:string;runtime:RuntimeSnapshot;lastData?:PointValueData}> }>
+  nodes:Array<{ serverId:string; collector?:RuntimeSnapshot|null; channel?:RuntimeSnapshot|null; points:Array<{id:string;runtime:RuntimeSnapshot;lastData?:PointValueData}> }>
 }
 export interface PointRow extends CollectorObject { latest?: PointValueData }
 export interface PointCapabilities {

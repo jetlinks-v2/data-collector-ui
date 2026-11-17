@@ -1,4 +1,7 @@
 {
+  "collectorWrite.hint": "Write the value to the device without changing the point configuration. History storage follows the point or collector settings.",
+  "collectorWrite.completed": "Write request completed. Read the point to verify its value.",
+  "collectorWrite.failed": "Write failed. Check the connection and write permissions.",
   "collectorTrial": {
     "latest": "Latest",
     "title": "Test read",
@@ -1115,7 +1118,7 @@
   "BatchUpdate.index.4001419-15": "Cancel",
   "BatchUpdate.index.4001419-16": "Confirm",
   "BatchUpdate.index.4001419-17": "data type",
-  "WritePoint.index.769007-0": "write in",
+  "WritePoint.index.769007-0": "Write to device",
   "WritePoint.index.769007-1": "Please enter {0}",
   "WritePoint.index.769007-2": "Please enter",
   "WritePoint.index.769007-3": "yes",
@@ -1128,7 +1131,7 @@
   "WritePoint.index.769007-10": "·When multiple controllers or systems attempt to write to the same point, higher priority write requests will overwrite lower priority write requests",
   "WritePoint.index.769007-11": "·If a high priority write request fails, the system will automatically restore the next highest priority write value, and so on until a valid write request is found",
   "WritePoint.index.769007-12": "Cancel",
-  "WritePoint.index.769007-13": "Confirm",
+  "WritePoint.index.769007-13": "Write to device",
   "WritePoint.index.769007-14": "Please enter hexadecimal",
   "WritePoint.index.769007-15": "Please enter {0}",
   "components.Card.772454-0": "Point data volume",

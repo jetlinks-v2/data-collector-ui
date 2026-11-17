@@ -16,6 +16,7 @@ test('global index requests are finite, value-free, and limited to two batches o
   const module={exports:{}}
   new Function('require','module','exports',transformSync(source,{loader:'ts',format:'cjs'}).code)(id=>{
     if(id === '@jetlinks-web/core')return {request:{}}
+    if(id === '@jetlinks-web-core/utils/ndjson-precision')return {postRuntimeNdJson:()=>{throw new Error('index queries must not read sample values')}}
     if(id === '@jetlinks-web-core/utils/ndjson')return {createRuntimeNdJson:()=>({post:(url,body)=>new Observable(subscriber=>{
       calls.push(body);active++;maximum=Math.max(maximum,active)
       const timer=setTimeout(()=>{
@@ -38,6 +39,7 @@ test('global index requests are finite, value-free, and limited to two batches o
   for(const call of calls){
     assert.equal(call.interval,0)
     assert.equal(call.includeData,false)
+    assert.equal(call.includeObjects,false)
     assert.equal(call.includeRawData,false)
     assert.ok(call.pointIds.length <= 200)
     assert.deepEqual(call.metrics,[])

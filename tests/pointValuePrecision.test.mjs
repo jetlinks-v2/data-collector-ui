@@ -10,7 +10,7 @@ import axios from 'axios'
 
 const require = createRequire(import.meta.url)
 const moduleRoot = resolve(import.meta.dirname, '..')
-const coreRoot = resolve(moduleRoot, '../../jetlinks-web-core')
+const coreRoot = process.env.JETLINKS_WEB_CORE_ROOT || resolve(moduleRoot, '../../jetlinks-web-core')
 const coreRequire = createRequire(resolve(coreRoot, 'package.json'))
 const lodash = await import('lodash-es')
 const uint64 = '18446744073709551615'
@@ -21,7 +21,7 @@ const loadCode = (source, mocks = {}) => {
   const { code } = transformSync(source, { loader: 'ts', format: 'cjs' })
   new Function('require', 'module', 'exports', 'window', 'navigator', 'setTimeout', code)(
     id => id in mocks ? mocks[id] : id === 'lodash-es' ? lodash : require(id),
-    module, module.exports, { addEventListener() {} }, { onLine: true }, () => 0,
+    module, module.exports, { addEventListener() {}, navigator: { onLine: true }, setTimeout: () => 0, clearTimeout() {} }, { onLine: true }, () => 0,
   )
   return module.exports
 }
@@ -82,6 +82,7 @@ const createApi = (response) => {
 test('actual HTTP APIs parse before Axios rounds values, with opt-in limited to point data', async () => {
   const { api, configs } = createApi(() => `{"status":200,"result":[{"parsedData":${uint64},"parseData":${uint64},"value":0.1234567890123456789,"numberValue":${uint64}}]}`)
   for (const call of [() => api.readPoint('collector', ['point']),
+    () => api.writePoint('collector', [{pointId:'point',value:uint64}]),
     () => api.queryPointHistory('collector', { pageSize: 10 }),
     () => api.queryPointAggregation('collector', { columns: [] })]) {
     const result = await call()
@@ -181,8 +182,8 @@ test('actual ValueItem renders live, structured and manual-read values, includin
     'vue-i18n': { useI18n: () => ({ t: () => missing }) },
     './WritePoint.vue': { default: {} },
   }).default
-  for (const live of [{ parsedData: uint64, dataType: 'ULong' },
-    { parseData: [uint64, false, 0], dataType: 'Array' }, undefined]) {
+  for (const live of [{ parsedData: uint64, dataType: 'ULong', timestamp: 1793097242592 },
+    { parseData: [uint64, false, 0], dataType: 'Array', timestamp: 1793097242592 }, undefined]) {
     const container = { children: [] }
     const app = renderer.createApp(ValueItem, { value: live, data: { collectorId: 'collector', id: 'point' }, type: 'detail' })
     const passthrough = { setup: (_, { slots }) => () => vue.h('span', slots.default?.()) }

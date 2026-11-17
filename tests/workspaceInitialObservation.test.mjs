@@ -367,6 +367,7 @@ test('scrolling and diagnostic changes preserve summary rates and isolate subscr
     assert.deepEqual(request.monitoring,[])
     assert.deepEqual(request.observation.metrics,[])
     assert.deepEqual(request.observation.channelMetrics,[])
+    assert.equal(request.observation.includeObjects,false)
     value.data.recordingTarget.value=undefined;await vue.nextTick()
     assert.equal(value.recordings[0].observer.closed,true)
     assert.equal(summary.observer.closed,false)

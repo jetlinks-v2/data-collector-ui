@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
 import {createRequire} from 'node:module'
 import {transformSync} from 'esbuild'
-import {Observable,of} from 'rxjs'
+import {Observable,of,lastValueFrom} from 'rxjs'
 const require=createRequire(import.meta.url)
 
 test('workspace uses the shared platform connection, cancels its business subscription, and retains NDJSON',()=>{
@@ -31,4 +31,24 @@ test('workspace uses the shared platform connection, cancels its business subscr
   module.exports.observeCollectionWorkspace(query,'ndjson').subscribe()
   assert.equal(http[0].url,'/data-collect/collector/_workspace')
   assert.equal(http[0].query,query)
+})
+
+test('point index batches explicitly omit object summaries while legacy observations keep them',async()=>{
+  const calls=[],module={exports:{}}
+  new Function('require','module','exports',transformSync(readFileSync(new URL('../api/data-collect/workspace.ts',import.meta.url),'utf8'),{loader:'ts',format:'cjs'}).code)(id=>{
+    if(id==='@jetlinks-web/core')return {request:{},wsClient:{}}
+    if(id==='@jetlinks-web-core/utils/ndjson')return {createRuntimeNdJson:()=>({post:(url,query)=>{calls.push({url,query});return of({timestamp:1,nodes:[]})}})}
+    if(id==='@jetlinks-web-core/utils/ndjson-precision')return {postRuntimeNdJson:()=>of({})}
+    if(id.endsWith('/workspaceObservation'))return {observedPoints:rows=>rows}
+    if(id.endsWith('/workspaceList'))return {workspaceRuntimeIndex:row=>({id:row.id})}
+    if(id.startsWith('../../utils/'))return {}
+    return require(id)
+  },module,module.exports)
+  const rows=Array.from({length:10000},(_,index)=>({id:`p${index}`}))
+  const index=await lastValueFrom(module.exports.queryWorkspaceIndex(rows,'collector'))
+  assert.equal(index.size,10000)
+  assert.equal(calls.length,50)
+  assert.ok(calls.every(({query})=>query.includeObjects===false && query.includeData===false && query.interval===0 && query.pointIds.length===200))
+  module.exports.observeWorkspace('collector',[]).subscribe()
+  assert.equal(calls.at(-1).query.includeObjects,true)
 })

@@ -1,4 +1,9 @@
 {
+  "WritePoint.index.769007-0": "寫入設備",
+  "WritePoint.index.769007-13": "寫入設備",
+  "collectorWrite.hint": "將填寫的值寫入設備，不修改點位設定。採集值是否儲存歷史，由點位或採集器的「歷史儲存」設定決定。",
+  "collectorWrite.completed": "寫入請求已完成，可試讀核對實際值",
+  "collectorWrite.failed": "寫入失敗，請檢查設備連線及寫入權限",
   "collectorTrial": {
     "latest": "最新",
     "title": "本次試讀",

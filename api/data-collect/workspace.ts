@@ -40,8 +40,8 @@ export const observeCollectionWorkspace=(query:CollectorWorkspaceQuery,transport
   : defer(()=>wsClient.getWebSocket(`collector-workspace:${++workspaceSubscriptionId}`,'/collector-workspace/observe',query))
       // 平台连接恢复后也校验订阅是否恢复；只设工作区级超时，不为点位创建计时器。
       .pipe(map(message=>message.payload as CollectorWorkspaceFrame),timeout({each:Math.max(15000,...query.monitoring.map(item=>item.interval*3),(query.observation?.interval || 0)*3,(query.recording?.interval || 0)*3)}))
-export const observeWorkspace = (id:string,pointIds:string[],interval=2000,pointMetrics:string[]|null=null,metrics:string[]|null=null,includeRawData=false,includeData=true) => createRuntimeNdJson().post<CollectorObservation>(
-  `/data-collect/collector/${encodeURIComponent(id)}/_observe`, {pointIds,interval,pointMetrics,metrics,channelMetrics:metrics,includeRawData,includeData},
+export const observeWorkspace = (id:string,pointIds:string[],interval=2000,pointMetrics:string[]|null=null,metrics:string[]|null=null,includeRawData=false,includeData=true,includeObjects=true) => createRuntimeNdJson().post<CollectorObservation>(
+  `/data-collect/collector/${encodeURIComponent(id)}/_observe`, {pointIds,interval,pointMetrics,metrics,channelMetrics:metrics,includeRawData,includeData,includeObjects},
 )
 
 /** Global filtering uses finite snapshots: two concurrent requests, 200 points each, no sample values. */
@@ -50,7 +50,7 @@ export function queryWorkspaceIndex(objects:CollectorObject[],collectorId?:strin
   const batches:CollectorObject[][]=[]
   for(let offset=0;offset<objects.length;offset+=size)batches.push(objects.slice(offset,offset+size))
   return from(batches).pipe(mergeMap(rows=>collectorId
-    ? observeWorkspace(collectorId,rows.map(row=>row.id),0,pointIndexMetrics,[],false,false).pipe(map(frame=>observedPoints(rows,frame)))
+    ? observeWorkspace(collectorId,rows.map(row=>row.id),0,pointIndexMetrics,[],false,false,false).pipe(map(frame=>observedPoints(rows,frame)))
     : monitorCollectors(rows.map(row=>row.id),0,[],collectorIndexMetrics).pipe(map(frame=>monitoredObjects(rows,{timestamp:frame.timestamp,snapshots:frame.collectors}))),2),
     reduce((index,rows)=>{for(const row of rows)index.set(row.id,workspaceRuntimeIndex(row));return index},new Map<string,WorkspaceRuntimeIndex>()))
 }
@@ -62,7 +62,7 @@ export function observePointValues(points:PointRow[],interval=2000,includeRawDat
     const group=groups.get(point.collectorId) || []
     group.push(point);groups.set(point.collectorId,group)
   }
-  const streams=[...groups].map(([id,rows])=>observeWorkspace(id,rows.map(point=>point.id),interval,[],[],includeRawData).pipe(
+  const streams=[...groups].map(([id,rows])=>observeWorkspace(id,rows.map(point=>point.id),interval,[],[],includeRawData,true,false).pipe(
     map(frame=>frame.data || observedPoints(rows,frame).filter(point=>point.latest).map(point=>({...point.latest!,pointId:point.id}))),
   ))
   return streams.length ? merge(...streams) : EMPTY

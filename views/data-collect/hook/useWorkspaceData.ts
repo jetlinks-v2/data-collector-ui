@@ -245,7 +245,7 @@ export function useWorkspaceData() {
     publishObservation()
     if(!current || !ids.length)return
     const query:CollectorWorkspaceQuery={monitoring:[],observation:{
-      id:current.id,pointIds:ids,interval:2000,pointMetrics:null,metrics:[],channelMetrics:[],includeData:true,
+      id:current.id,pointIds:ids,interval:2000,pointMetrics:null,metrics:[],channelMetrics:[],includeData:true,includeObjects:false,
     }}
     const disconnected=(cause:unknown)=>{
       if(revision !== streamRevision || catalogRevision !== pointGeneration)return

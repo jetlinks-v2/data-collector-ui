@@ -1,4 +1,7 @@
 {
+  "collectorWrite.hint": "入力値をデバイスに書き込みます。ポイント設定は変更されません。履歴の保存はポイントまたはコレクターの設定に従います。",
+  "collectorWrite.completed": "書き込み要求が完了しました。読み取りで実際の値を確認できます。",
+  "collectorWrite.failed": "書き込みに失敗しました。接続と書き込み権限を確認してください。",
   "collectorTrial": {
     "latest": "最新",
     "title": "テスト読み取り",
@@ -1014,7 +1017,7 @@
   "BatchUpdate.index.4001419-15": "キャンセル",
   "BatchUpdate.index.4001419-16": "確認",
   "BatchUpdate.index.4001419-17": "データタイプ",
-  "WritePoint.index.769007-0": "書き込み",
+  "WritePoint.index.769007-0": "デバイスへ書き込み",
   "WritePoint.index.769007-1": "{0}を入力してください",
   "WritePoint.index.769007-2": "入力してください",
   "WritePoint.index.769007-3": "はい",
@@ -1027,7 +1030,7 @@
   "WritePoint.index.769007-10": "・複数のコントローラーまたはシステムが同じポイントに書き込もうとした場合、優先度の高い書き込みリクエストが優先度の低い書き込みリクエストを上書きします",
   "WritePoint.index.769007-11": "・優先度の高い書き込みリクエストが無効になると、システムは次に優先度の高い書き込み値を自動的に復元し、有効な書き込みリクエストが見つかるまで順に繰り返します",
   "WritePoint.index.769007-12": "キャンセル",
-  "WritePoint.index.769007-13": "確認",
+  "WritePoint.index.769007-13": "デバイスへ書き込み",
   "WritePoint.index.769007-14": "16進数を入力してください",
   "WritePoint.index.769007-15": "{0}を入力してください",
   "components.Card.772454-0": "ポイントデータ量",

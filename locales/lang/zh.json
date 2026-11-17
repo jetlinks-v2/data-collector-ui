@@ -1,4 +1,7 @@
 {
+  "collectorWrite.hint": "将填写的值写入设备，不修改点位配置。采集值是否保存历史，由点位或采集器的“历史保存”设置决定。",
+  "collectorWrite.completed": "写入请求已完成，可试读核对实际值",
+  "collectorWrite.failed": "写入失败，请检查设备连接和写入权限",
   "collectorTrial": {
     "latest": "最新",
     "title": "本次试读",
@@ -1115,7 +1118,7 @@
   "BatchUpdate.index.4001419-15": "取消",
   "BatchUpdate.index.4001419-16": "确认",
   "BatchUpdate.index.4001419-17": "数据类型",
-  "WritePoint.index.769007-0": "写入",
+  "WritePoint.index.769007-0": "写入设备",
   "WritePoint.index.769007-1": "请输入{0}",
   "WritePoint.index.769007-2": "请输入",
   "WritePoint.index.769007-3": "是",
@@ -1128,7 +1131,7 @@
   "WritePoint.index.769007-10": "·当多个控制器或系统尝试写入同一个点位时，较高优先级的写入请求会覆盖较低优先级的写入请求",
   "WritePoint.index.769007-11": "·如果高优先级的写入请求失效，系统会自动恢复次高优先级的写入值，依次类推直至找到有效的写入请求",
   "WritePoint.index.769007-12": "取消",
-  "WritePoint.index.769007-13": "确认",
+  "WritePoint.index.769007-13": "写入设备",
   "WritePoint.index.769007-14": "请输入16进制",
   "WritePoint.index.769007-15": "请输入{0}",
   "components.Card.772454-0": "点位数据量",

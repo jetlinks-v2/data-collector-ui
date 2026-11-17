@@ -92,8 +92,9 @@ export const removePoint = (id: string) =>
 export const readPoint = (collectorId: string, data: string[]): Promise<AxiosResponseRewrite<PointValueData[]>> =>
     request.post(`/data-collect/collector/${collectorId}/points/_read`, data, pointValueResponse);
 
-export const writePoint = (collectorId: string, data: string[]) =>
-    request.post(`/data-collect/collector/${collectorId}/points/_write`, data);
+export interface PointWriteRequest { pointId: string; value: unknown; others?: Record<string, unknown> }
+export const writePoint = (collectorId: string, data: PointWriteRequest[]): Promise<AxiosResponseRewrite<PointValueData[]>> =>
+    request.post(`/data-collect/collector/${collectorId}/points/_write`, data, pointValueResponse);
 
 export const queryPointNoPaging = (data: any) =>
     request.post(`/data-collect/point/_query/no-paging`, data);

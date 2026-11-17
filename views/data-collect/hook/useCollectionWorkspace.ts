@@ -16,7 +16,7 @@ interface ObjectEditorHandle { dirty:boolean; saving:boolean; prepared:boolean; 
 
 /** Layout and selection have one owner; Teleport moves the existing plugin form. */
 export function useCollectionWorkspace() {
-  const data = useWorkspaceData(), runtime = useWorkspaceRuntime(data.collector, data.paused, data.observation, data.recording, data.recordingTarget)
+  const data = useWorkspaceData(), runtime = useWorkspaceRuntime(data.collector, data.paused, data.observation, data.recording, data.recordingTarget, data)
   const draft = usePointDraft(data.selectedPoint, data.collector, async (oldId, value) => {
     if (value?.id) {
       data.applyPoint(oldId,value)
