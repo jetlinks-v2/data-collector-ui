@@ -1,5 +1,5 @@
 {
-  "collectorWrite.hint": "Write the value to the device without changing the point configuration. History storage follows the point or collector settings.",
+  "collectorWrite.hint": "Write the value to the device without changing the point configuration. Collected values are retained only when history storage is enabled for the point.",
   "collectorWrite.completed": "Write request completed. Read the point to verify its value.",
   "collectorWrite.failed": "Write failed. Check the connection and write permissions.",
   "collectorTrial": {

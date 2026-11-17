@@ -1,5 +1,5 @@
 {
-  "collectorWrite.hint": "将填写的值写入设备，不修改点位配置。采集值是否保存历史，由点位或采集器的“历史保存”设置决定。",
+  "collectorWrite.hint": "将填写的值写入设备，不修改点位配置。采集值仅在点位开启“历史保存”后按设置留存。",
   "collectorWrite.completed": "写入请求已完成，可试读核对实际值",
   "collectorWrite.failed": "写入失败，请检查设备连接和写入权限",
   "collectorTrial": {
