@@ -1,13 +1,38 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { formatMetricQuantity, formatRuntimeMetric, metricPriority, actionTone, recordingChoices, runtimeMetricRows } from '../utils/runtimePresentation.ts'
+import { formatMetricQuantity, formatRuntimeMetric, metricPriority, actionTone, recordingChoices, runtimeMetricRows, runtimeFailureNotice } from '../utils/runtimePresentation.ts'
 
 const time = value => `time:${value}`
 const t = value => value.split('.').at(-1)
 
+test('runtime details keep the latest failure across nodes after recovery and prefer ongoing failures',()=>{
+  const failure=timestamp=>({timestamp,reason:'Read failed',stage:'read',code:1})
+  const old=failure(100),recent=failure(300),ongoing=failure(200)
+  const object={runtime:{available:true,lastFailure:old},monitoring:{nodes:[{available:true,lastFailure:old},{available:true,lastFailure:recent}]}}
+  assert.deepEqual(runtimeFailureNotice(object),{failure:recent,active:false})
+  object.monitoring.nodes.push({available:true,currentFailure:ongoing})
+  assert.deepEqual(runtimeFailureNotice(object),{failure:ongoing,active:true})
+  object.monitoring.nodes.at(-1).available=false
+  assert.deepEqual(runtimeFailureNotice(object),{failure:recent,active:false})
+  assert.deepEqual(runtimeFailureNotice({runtime:{available:false,currentFailure:old}}),{failure:old,active:false})
+  assert.equal(runtimeFailureNotice({}),undefined)
+})
+
 test('boolean observations use readable localized values',()=>{
   assert.equal(formatRuntimeMetric(true,undefined,time,t),'yes')
   assert.equal(formatRuntimeMetric(false,undefined,time,t),'no')
+})
+
+test('summaries hide settled history while details preserve it across all nodes',()=>{
+  const old={timestamp:1,reason:'old failure'}, newer={timestamp:2,reason:'new failure'}
+  const object={monitoring:{nodes:[{available:true,lastFailure:old,currentFailure:null,failureSettled:true}]}}
+  assert.equal(runtimeFailureNotice(object,false),undefined)
+  assert.deepEqual(runtimeFailureNotice(object),{failure:old,active:false})
+  object.monitoring.nodes.push({available:true,lastFailure:newer,currentFailure:null})
+  assert.deepEqual(runtimeFailureNotice(object,false),{failure:newer,active:false})
+  object.monitoring.nodes[1].currentFailure=newer
+  object.monitoring.nodes[1].failureSettled=true
+  assert.deepEqual(runtimeFailureNotice(object,false),{failure:newer,active:true})
 })
 
 test('known traffic and duration units scale without losing their original values or changing custom units',()=>{

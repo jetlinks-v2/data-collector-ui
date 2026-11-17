@@ -1,7 +1,21 @@
-import type { MetricDefinition, MetricSnapshot, RecordedAction, RecordingSnapshot, RuntimeSnapshot, RuntimeMetric } from '../types/workspace'
+import type { CollectorObject, FailureSnapshot, MetricDefinition, MetricSnapshot, RecordedAction, RecordingSnapshot, RuntimeSnapshot, RuntimeMetric } from '../types/workspace'
 
 type Translate = (key: string) => string
 export type RuntimeMetricGroup = 'current' | 'duration' | 'counter' | 'activity' | 'other'
+
+/** Show an ongoing failure first, otherwise the latest failure reported across the cluster. */
+export function runtimeFailureNotice(object: CollectorObject, includeSettled = true) {
+  let current: FailureSnapshot | undefined, recent: FailureSnapshot | undefined
+  const nodes = object.monitoring?.nodes || (object.runtime ? [object.runtime] : [])
+  for (const node of nodes) {
+    if (node.available && node.currentFailure && (!current || node.currentFailure.timestamp > current.timestamp)) current = node.currentFailure
+    for (const failure of [includeSettled || !node.failureSettled ? node.lastFailure : undefined, node.currentFailure]) {
+      if (failure && (!recent || failure.timestamp > recent.timestamp)) recent = failure
+    }
+  }
+  const failure = current || recent
+  return failure ? { failure, active: !!current } : undefined
+}
 
 /** 后端保留有界的最近执行、最近异常及在途执行；以语义入口替代不停变化的记录编号。 */
 export function recordingChoices(executions:RecordingSnapshot['executions']) {

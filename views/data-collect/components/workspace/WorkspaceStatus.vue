@@ -13,7 +13,7 @@ const text = computed(() => objectStateText(props.object, value => {
   return te(key) ? t(key) : undefined
 }) || t('collectorWorkspace.unknown'))
 const title = computed(() => {
-  const failure = props.object.runtime?.currentFailure || props.object.runtime?.lastFailure
+  const failure = props.object.runtime?.currentFailure || (!props.object.runtime?.failureSettled ? props.object.runtime?.lastFailure : undefined)
   if (!failure) return undefined
   const key = `collectorRuntime.errors.${failure.reason}`
   return `${te(key) ? t(key) : failure.reason} · 0x${(failure.code >>> 0).toString(16).toUpperCase()}`

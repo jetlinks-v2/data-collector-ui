@@ -1,10 +1,7 @@
 <template>
-  <a-select v-bind="$attrs" :options="displayOptions" :field-names="undefined" :list-item-height="48" :list-height="288" option-label-prop="display" option-filter-prop="label" popup-class-name="collector-config-options">
+  <a-select size="small" v-bind="$attrs" :options="displayOptions" :field-names="undefined" :list-item-height="48" :list-height="288" option-label-prop="display" option-filter-prop="label" :popup-class-name="['collector-config-options',popupClassName].filter(Boolean).join(' ')">
     <template #option="option">
-      <span class="collector-config-option">
-        <AIcon :type="option.icon || 'UnorderedListOutlined'" class="collector-config-option-icon" />
-        <span class="collector-config-option-copy"><span>{{ option.label }}</span><small v-if="option.description" :title="option.description">{{ option.description }}</small></span>
-      </span>
+      <slot name="option" v-bind="option"><SelectOption :label="option.label" :icon="option.icon || 'UnorderedListOutlined'" :description="option.description" :title="option.description" /></slot>
     </template>
     <!-- Saved labels do not add options missing from the current candidate catalog. -->
     <template v-if="kind === 'access'" #tagRender="{value,label,closable,onClose}">
@@ -15,12 +12,14 @@
 <script setup lang="ts" generic="ValueKey extends string = 'value'">
 import { computed, h, isVNode, resolveComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { SelectOption } from '@jetlinks-web-core/components'
 import { codecOption, byteOrderOption, accessOption, sortCodecOptions } from '../utils/configOptions'
 defineOptions({ inheritAttrs: false })
 const props = defineProps<{
-  options: Array<{ value?: string | number | null; label?: string; icon?: string; description?: string; [key: string]: unknown } & Partial<Record<ValueKey, string | number | null>>>
+  options: Array<{ value?: string | number | null; label?: string; icon?: string; description?: string; [key: string]: unknown } & Partial<Record<NoInfer<ValueKey>, string | number | null>>>
   fieldNames?: { label?: string; value?: ValueKey }
   kind?: 'codec' | 'byteOrder' | 'access'
+  popupClassName?: string
 }>()
 const Icon = resolveComponent('AIcon')
 const { t } = useI18n()
@@ -53,4 +52,9 @@ const displayOptions = computed(() => {
 .collector-config-selection .anticon { flex:none; color:var(--text-color-secondary,var(--ant-color-text-secondary,#595959)); }
 .collector-config-access-tag { margin-inline-end:4px; line-height:16px; }
 .collector-config-options { min-width:260px !important; max-width:calc(100vw - 24px); }
+.collector-config-options .select-option { min-width:0; max-width:100%; padding:0; }
+.collector-config-options .select-option__text { overflow:hidden; }
+.collector-config-options .select-option__text small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.collector-config-options .ant-select-item-option-disabled .select-option__icon,
+.collector-config-options .ant-select-item-option-disabled .select-option__text small { color:inherit; }
 </style>

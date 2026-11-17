@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch, type Ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, shallowReactive, shallowRef, watch, type Ref } from 'vue'
 import { cloneDeep, isEqual } from 'lodash-es'
 import { useI18n } from 'vue-i18n'
 import { onlyMessage } from '@jetlinks-web/utils'
@@ -21,26 +21,32 @@ export function usePointDraft(point: Ref<PointRow | undefined>, collector: Ref<C
     result.configuration ||= {}; result.managedConfiguration ||= {}
     return result
   }
-  const drafts = new Map<string, { model: CollectorObject; baseline: CollectorObject }>()
+  const drafts = shallowReactive(new Map<string, { model: CollectorObject; baseline: CollectorObject }>())
   const model = shallowRef<CollectorObject>(), baseline = shallowRef<CollectorObject>()
   const saving = ref(false), error = ref(''), revision = ref(0)
   const dirty = computed(() => !!model.value && (!isEqual(model.value, baseline.value) || processingPending(model.value)))
-  const draftCount = ref(0), hasChanges = computed(() => dirty.value || draftCount.value > 0)
+  const hasChanges = computed(() => dirty.value || drafts.size > 0)
+  // Batch operations belong to the current collector; leaving the page protects every draft.
+  const hasCurrentChanges = computed(() => {
+    const id = collector.value?.id
+    return !!id && (dirty.value && model.value?.collectorId === id || [...drafts.values()].some(draft => draft.model.collectorId === id))
+  })
   watch([() => point.value?.id, () => stateValue(point.value?.state)], () => {
     const value = point.value
     if (model.value && baseline.value) {
       if (dirty.value) drafts.set(model.value.id, { model: model.value, baseline: baseline.value })
       else drafts.delete(model.value.id)
-      draftCount.value = drafts.size
     }
     const draft = value && drafts.get(value.id)
+    // The active model owns its edits; the cache holds inactive drafts only.
+    if (value) drafts.delete(value.id)
     baseline.value = value ? draft?.baseline || editable(value) : undefined
     model.value = value ? draft?.model || reactive(editable(value)) : undefined
     error.value = ''
   }, { immediate: true })
   function restore() {
     if (!baseline.value) return
-    drafts.delete(baseline.value.id); draftCount.value = drafts.size; model.value = reactive(cloneDeep(baseline.value)); ++revision.value; error.value = ''
+    drafts.delete(baseline.value.id); model.value = reactive(cloneDeep(baseline.value)); ++revision.value; error.value = ''
   }
   async function apply(validate: () => Promise<unknown>) {
     const current = model.value
@@ -52,9 +58,8 @@ export function usePointDraft(point: Ref<PointRow | undefined>, collector: Ref<C
       const response = current.id.startsWith('_new:') ? await savePoint({ ...payload, id: undefined }) : await updatePoint(current.id, payload)
       if (!response.success) throw new Error(response.message || t('collectorWorkspace.saveFailed'))
       drafts.delete(current.id)
-      draftCount.value = drafts.size
       if (model.value === current) baseline.value = cloneDeep(current)
-      await saved(current.id, response.result)
+      await saved(current.id, { ...payload, ...(response.result && typeof response.result === 'object' ? response.result : {}) })
       onlyMessage(t('collectorWorkspace.saved'))
     } catch (cause) {
       if (cause instanceof Error) error.value = cause.message
@@ -71,5 +76,5 @@ export function usePointDraft(point: Ref<PointRow | undefined>, collector: Ref<C
   const preventLoss = (event: BeforeUnloadEvent) => { if (dirty.value || drafts.size) { event.preventDefault(); event.returnValue = '' } }
   window.addEventListener('beforeunload', preventLoss)
   onBeforeUnmount(() => window.removeEventListener('beforeunload', preventLoss))
-  return { model, dirty, hasChanges, saving, error, revision, restore, apply, add }
+  return { model, dirty, hasChanges, hasCurrentChanges, saving, error, revision, restore, apply, add }
 }

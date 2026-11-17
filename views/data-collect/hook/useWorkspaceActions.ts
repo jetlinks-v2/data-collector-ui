@@ -9,7 +9,7 @@ export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, h
   const { t } = useI18n()
   const keys = ref<string[]>([]), selecting = ref(false), busy = ref(false), feedback = ref(''), failed = ref(false)
   const ids = computed(() => savedPointIds(data.filteredPoints.value))
-  const state = computed(() => ({ selecting: selecting.value, keys: keys.value, total: ids.value.length, busy: busy.value, blocked: hasDraft.value, feedback: feedback.value, failed: failed.value }))
+  const state = computed(() => ({ selecting: selecting.value, keys: keys.value, total: ids.value.length, busy: busy.value || data.trialState.value.running, blocked: hasDraft.value, feedback: feedback.value, failed: failed.value }))
   function start() { if (!busy.value && !hasDraft.value && ids.value.length) selecting.value = true }
   function clear() { if (!busy.value) { selecting.value = false; keys.value = []; feedback.value = '' } }
   function check(value: string[]) {
@@ -24,16 +24,14 @@ export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, h
   watch([data.pointSort, data.pointState, data.pointSearch], clear)
   async function run(action: PointBatchAction) {
     const collectorId = data.collector.value?.id
-    if (!collectorId || busy.value || hasDraft.value || !keys.value.length) return
+    if (!collectorId || busy.value || data.trialState.value.running || hasDraft.value || !keys.value.length) return
     const targets = batchTargets(data.points.value, keys.value, action)
     if (!targets.length) { failed.value = false; feedback.value = t('collectorList.noChange'); return }
     busy.value = true; feedback.value = ''; failed.value = false
     try {
       if (action === 'read') {
-        const count = await data.trial(undefined, targets)
-        if (count == null) throw new Error(data.valueError.value || t('collectorWorkspace.loadFailed'))
-        failed.value = count !== targets.length
-        feedback.value = t(failed.value ? 'collectorList.readPartial' : 'collectorList.readDone', { count, total: targets.length })
+        // The shared trial feedback owns progress, partial results, cancellation and errors.
+        await data.trial(undefined, targets)
       } else {
         const response = await (action === 'enable' ? enablePoints : disablePoints)(pointBatchQuery(collectorId, targets))
         if (!response.success) throw new Error(response.message || t('collectorWorkspace.saveFailed'))

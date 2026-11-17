@@ -46,11 +46,19 @@ export interface RuntimeSnapshot {
   metrics?: MetricSnapshot
   lastFailure?: FailureSnapshot
   currentFailure?: FailureSnapshot | null
+  failureSettled?: boolean
   protectionState?: 'open' | 'retrying' | 'halfOpen' | null
   pointSummary?: PointRuntimeSummary
 }
 export interface PointRuntimeSummary { total:number; available:number; states:Record<string,number>; scheduled?:number; awaitingFirst?:number; longGap?:number }
 export interface CollectorMonitoringSnapshot { timestamp:number; collectors:RuntimeSnapshot[]; channels?:RuntimeSnapshot[] }
+export interface WorkspaceRecordingTarget { collectorId:string; serverId:string; interval:number }
+export interface CollectorWorkspaceQuery {
+  monitoring:Array<{ids:string[];channelIds:string[];interval:number;metrics:string[]|null}>
+  observation?:{id:string;pointIds:string[];interval:number;metrics:null;pointMetrics:null;channelMetrics:null;includeData:true}
+  recording?:WorkspaceRecordingTarget
+}
+export interface CollectorWorkspaceFrame { monitoring?:CollectorMonitoringSnapshot;observation?:CollectorObservation;recording?:RecordingSnapshot }
 export interface RuntimeMonitoring {
   timestamp:number; nodeCount:number; pointSummary?:PointRuntimeSummary
   nodes?:RuntimeSnapshot[]
@@ -108,7 +116,7 @@ export function objectDisplayState(object: CollectorObject): StateValue | undefi
   if (object.runtime?.currentFailure) return 'collectionError'
   const state = object.runtime?.runtimeState || object.runningState
   if (stateValue(state) && stateValue(state) !== 'running') return state
-  if (object.runtime?.lastFailure) return 'currentFailure' in object.runtime ? 'recovered' : 'recentError'
+  if (object.runtime?.lastFailure && !object.runtime.failureSettled) return 'currentFailure' in object.runtime ? 'recovered' : 'recentError'
   return state
 }
 export function objectTone(object: CollectorObject): 'ok' | 'warn' | 'bad' | 'gray' {

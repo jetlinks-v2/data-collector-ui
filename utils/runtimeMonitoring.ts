@@ -27,6 +27,8 @@ export function runtimeMetricEmptyState(object:CollectorObject, ids:string[]) {
   const coverage=active.map(node=>ids.every(id=>hasMetric(node,id)))
   if(coverage.some(value=>!value))return coverage.some(Boolean) ? 'incomplete' : 'notProvided'
   if(active.some(node=>ids.some(id=>!hasMetric(node,id)?.available)))return 'unavailable'
+  // 已完成快照中的空值表示尚无样本，不是等待 HTTP 或速率基线。
+  if(active.some(node=>ids.some(id=>hasMetric(node,id)?.value == null)))return 'noSamples'
   return 'calculating'
 }
 

@@ -1,10 +1,10 @@
 <template>
   <section class="cw-diagnostic" :aria-label="$t('collectorWorkspace.diagnostics')">
-    <div class="cw-between"><strong>{{ $t('collectorWorkspace.diagnostics') }}</strong><button class="cw-icon-button" :aria-label="$t('collectorWorkspace.close')" @click="$emit('close')"><AIcon type="CloseOutlined" /></button></div>
+    <div v-if="!embedded" class="cw-between"><strong>{{ $t('collectorWorkspace.diagnostics') }}</strong><button class="cw-icon-button" :aria-label="$t('collectorWorkspace.close')" @click="$emit('close')"><AIcon type="CloseOutlined" /></button></div>
     <a-spin :spinning="state.loading">
       <a-alert v-if="state.error" type="warning" :message="/^(network error|failed to fetch|load failed)$/i.test(state.error) ? $t('collectorWorkspace.streamDisconnected') : state.error" show-icon />
       <p v-if="state.snapshot && !state.snapshot.available" class="cw-muted">{{ $t('collectorWorkspace.unavailable') }}</p>
-      <template v-else-if="state.snapshot">
+      <template v-else-if="state.snapshot && !embedded">
         <div class="cw-runtime-meta"><WorkspaceStatus :object="runtimeObject" /><small>{{ state.snapshot.serverId }}</small></div>
         <div v-if="metrics.length" class="cw-diagnostic-metrics"><div v-for="metric in metrics.slice(0,6)" :key="metric.id" :title="metric.description"><span><AIcon :type="metric.icon" />{{ metric.name || metric.id }}</span><strong>{{ metric.text }}</strong></div></div>
         <a-collapse v-if="metrics.length > 6" ghost><a-collapse-panel key="metrics" :header="$t('collectorWorkspace.moreMetrics')"><div class="cw-diagnostic-metrics"><div v-for="metric in metrics.slice(6)" :key="metric.id" :title="metric.description"><span>{{ metric.name || metric.id }}</span><strong>{{ metric.text }}</strong></div></div></a-collapse-panel></a-collapse>
@@ -42,7 +42,7 @@ import WorkspaceStatus from './WorkspaceStatus.vue'
 import { actionTone, runtimeMetricRows, recordingChoices } from '../../../../utils/runtimePresentation'
 import { recordingTimeline, timelineNumber } from '../../../../utils/recordingTimeline'
 import type { MetricDefinition, RecordedAction, RecordingSnapshot, RuntimeSnapshot } from '../../../../types/workspace'
-const props = defineProps<{ state: { loading: boolean; error: string; snapshot?: RuntimeSnapshot; definitions: MetricDefinition[]; recording?: RecordingSnapshot } }>()
+const props = defineProps<{ state: { loading: boolean; error: string; snapshot?: RuntimeSnapshot; definitions: MetricDefinition[]; recording?: RecordingSnapshot }; embedded?: boolean }>()
 defineEmits<{ close: [] }>()
 const { t, te } = useI18n()
 const reason = (value: string) => te(`collectorRuntime.errors.${value}`) ? t(`collectorRuntime.errors.${value}`) : te(value) ? t(value) : value

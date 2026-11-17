@@ -24,7 +24,7 @@ test('selection is explicit, stable across telemetry, scoped to filtered points 
     '../../../utils/workspaceList': { batchTargets, pointBatchQuery, savedPointIds },
   })
   const points = vue.ref([{ id: 'a', state: 'disabled' }, { id: 'b', state: 'disabled' }, { id: '_new:1' }])
-  const data = { filteredPoints: points, points, collector: vue.ref({ id: 'collector' }), pointSort: vue.ref('name'), pointState: vue.ref(''), pointSearch: vue.ref(''), loadPoints: async () => {} }
+  const data = { trialState:vue.ref({running:false,error:''}), filteredPoints: points, points, collector: vue.ref({ id: 'collector' }), pointSort: vue.ref('name'), pointState: vue.ref(''), pointSearch: vue.ref(''), loadPoints: async () => {} }
   const dirty = vue.ref(false), scope = vue.effectScope()
   const batch = scope.run(() => useWorkspaceActions(data, dirty))
   try {
@@ -55,7 +55,7 @@ test('selection is explicit, stable across telemetry, scoped to filtered points 
 test('point clicks browse normally and select in batch mode without opening or replacing the editor', async () => {
   const selecting = vue.ref(false), toggled = []
   const batch = { busy: vue.ref(false), state: vue.computed(() => ({ selecting: selecting.value })), start: () => { selecting.value = true }, toggle: id => toggled.push(id) }
-  const data = { collector: vue.ref(), points: vue.ref([]), selectedPointId: vue.ref(''), selectedPoint: vue.ref(), paused: vue.ref(false), observation: vue.ref() }
+  const data = { orderHeld: vue.ref(false), collector: vue.ref(), points: vue.ref([]), selectedPointId: vue.ref(''), selectedPoint: vue.ref(), paused: vue.ref(false), observation: vue.ref() }
   const lifecycle = { ...vue, provide() {}, onMounted() {}, onBeforeUnmount() {} }
   const { useCollectionWorkspace } = load('useCollectionWorkspace', {
     vue: lifecycle, 'vue-i18n': translations, 'vue-router': { onBeforeRouteLeave() {} }, 'ant-design-vue': { Modal: {} },
@@ -67,6 +67,10 @@ test('point clicks browse normally and select in batch mode without opening or r
   const scope = vue.effectScope()
   try {
     const workspace = scope.run(() => useCollectionWorkspace())
+    workspace.selectPoint('a')
+    assert.equal(workspace.editingId.value, 'a')
+    workspace.selectPoint('a')
+    assert.equal(workspace.editingId.value, '', 'wide-screen cards toggle the same inline editor')
     workspace.selectPoint('a')
     assert.equal(workspace.editingId.value, 'a')
     workspace.startBatch()

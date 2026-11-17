@@ -49,3 +49,14 @@ test('native protection overrides running and errors, while explicit pause remai
   }
   assert.equal(objectDisplayState({...point,runtime:{id:point.id,serverId:'local',available:true,state:'running',runtimeState:'failed'}}), 'failed')
 })
+
+test('stable recovery removes historical emphasis without hiding current faults or lifecycle states', () => {
+  const failure={timestamp:1,stage:'read',code:1,reason:'timeout'}
+  const runtime={id:point.id,serverId:'local',available:true,state:'running',runtimeState:'running',lastFailure:failure,currentFailure:null,failureSettled:true}
+  assert.equal(objectDisplayState({...point,runtime}),'running')
+  assert.equal(objectTone({...point,runtime}),'ok')
+  assert.equal(objectDisplayState({...point,runtime:{...runtime,failureSettled:false}}),'recovered')
+  for(const [extra,state] of [[{currentFailure:failure},'collectionError'],[{protectionState:'retrying'},'retrying'],[{available:false},'unavailable'],[{state:'paused'},'paused'],[{runtimeState:'failed'},'failed']]) {
+    assert.equal(objectDisplayState({...point,runtime:{...runtime,...extra}}),state)
+  }
+})

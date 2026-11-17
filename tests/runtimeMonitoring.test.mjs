@@ -115,6 +115,16 @@ test('point cards take the newest data independently from the worst state and ag
   assert.equal(item.monitoring.durationNanos,3e6)
 })
 
+test('stable recovery is per instance and cannot mask a fault elsewhere in the cluster',()=>{
+  const failure={timestamp:1,stage:'read',code:1,reason:'timeout'}
+  const settled={lastFailure:failure,currentFailure:null,failureSettled:true}
+  const normal=monitoredObjects([object],{timestamp:1000,snapshots:[snapshot('a',1,1000,settled),snapshot('b',1,1000,settled)]})[0]
+  assert.equal(objectDisplayState(normal),'running')
+  const faulty=monitoredObjects([normal],{timestamp:2000,snapshots:[snapshot('a',2,2000,settled),snapshot('b',2,2000,{...settled,currentFailure:failure,failureSettled:false})]})[0]
+  assert.equal(faulty.runtime.serverId,'b')
+  assert.equal(objectDisplayState(faulty),'collectionError')
+})
+
 function measured(counts,at=1000,instanceId='a'){
   const base=snapshot('a',1,at)
   base.metrics.instanceId=instanceId

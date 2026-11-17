@@ -14,7 +14,7 @@
         <p v-else-if="failed" class="cw-value-note">{{ $t('collectorWorkspace.loadFailed') }}</p>
         <p v-else-if="bytes == null" class="cw-value-note">{{ $t('collectorValue.noRaw') }}</p>
         <PointValueGrid v-else :values="bytes" :mode="mode" />
-        <footer v-if="mode !== 'value' || Array.isArray(value)"><small>{{ mode === 'value' ? $t('collectorValue.elements',{count:Array.isArray(value)?value.length:1}) : $t('collectorValue.rawBytes',{count:raw?.rawByteLength ?? bytes?.length ?? 0}) }}<template v-if="mode === 'bits'"> · b7 → b0</template></small></footer>
+        <footer v-if="mode === 'value' ? Array.isArray(value) : !loading && !failed && bytes != null"><small>{{ mode === 'value' ? $t('collectorValue.elements',{count:Array.isArray(value)?value.length:1}) : $t('collectorValue.rawBytes',{count:raw?.rawByteLength ?? bytes?.length ?? 0}) }}<template v-if="mode === 'bits'"> · b7 → b0</template></small></footer>
         <small v-if="mode !== 'value' && raw?.rawByteLength && bytes && raw.rawByteLength > bytes.length" class="cw-value-note">{{ $t('collectorValue.previewLimit',{count:bytes.length}) }}</small>
       </section>
     </template>

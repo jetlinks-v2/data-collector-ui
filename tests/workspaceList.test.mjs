@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { workspaceSorts, workspaceOrder, workspaceRuntimeIndex, batchTargets, pointBatchQuery, savedPointIds } from '../utils/workspaceList.ts'
+import { workspaceSorts, workspaceOrder, workspaceRuntimeIndex, workspaceStateCounts, batchTargets, pointBatchQuery, savedPointIds } from '../utils/workspaceList.ts'
 
 const points = [{ id: 'a', state: { value: 'enabled' } }, { id: 'b', state: 'disabled' }, { id: '_new:1', state: 'disabled' }]
+test('state counts equal the searched filter scope and do not guess unloaded runtime',()=>{
+  const rows=Array.from({length:1200},(_,i)=>({id:String(i),name:`Area ${i%2}`,state:i%3 ? 'enabled' : 'disabled'}))
+  const index=new Map(rows.map((row,i)=>[row.id,{state:i%7===0 ? 'open' : i%11===0 ? 'unavailable' : 'running',priority:i%7===0 ? 0 : 3}]))
+  const counts=workspaceStateCounts(rows,'Area 1',index)
+  for(const [state,count] of Object.entries(counts))assert.equal(count,workspaceOrder(rows,'name','Area 1',state,index).length)
+  assert.equal(counts[''],600)
+  assert.deepEqual(Object.keys(workspaceStateCounts(rows,'',new Map())).sort(),['','disabled','enabled'])
+  assert.equal(workspaceStateCounts([],'',new Map()).protection,0)
+})
 test('every server sort has an ID tie-breaker', () => {
   for (const sort of ['newest', 'name', 'pointKey']) {
     assert.equal(workspaceSorts(sort).at(-1).name, 'id')

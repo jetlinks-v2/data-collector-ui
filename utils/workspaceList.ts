@@ -9,6 +9,32 @@ export const collectorIndexMetrics = ['lastTaskTimeNanos', 'pending', ...pointIn
 export const runtimeSort = (sort: WorkspaceSort) => ['attention', 'duration', 'gap', 'filtered'].includes(sort)
 export const runtimeFilter = (state: string) => !!state && !['enabled', 'disabled'].includes(state)
 
+function matchesState(object:CollectorObject, state:string, index:Map<string,WorkspaceRuntimeIndex>) {
+  if(!state || object.id.startsWith('_new:'))return true
+  if(!runtimeFilter(state))return stateValue(object.state) === state
+  const value=index.get(object.id)
+  if(!value)return false
+  if(state === 'attention')return value.priority <= 1
+  if(state === 'running')return ['running','recovered'].includes(value.state)
+  if(state === 'protection')return ['open','retrying','halfOpen'].includes(value.state)
+  return value.state === state
+}
+
+function matchesSearch(object:CollectorObject, text:string) {
+  return !text || [object.name,object.pointKey,object.address].some(value=>value?.toLocaleLowerCase().includes(text))
+}
+
+/** 数量与实际筛选共用规则；目录尚未观测完整时不把未知数量显示为零。 */
+export function workspaceStateCounts(objects:CollectorObject[],search:string,index:Map<string,WorkspaceRuntimeIndex>) {
+  const rows=objects.filter(object=>object.id.startsWith('_new:') || matchesSearch(object,search.trim().toLocaleLowerCase()))
+  const counts:Record<string,number>={}
+  const complete=rows.every(object=>object.id.startsWith('_new:') || index.has(object.id))
+  for(const state of ['', 'enabled', 'disabled', ...(complete ? ['attention','running','protection','unavailable'] : [])]) {
+    counts[state]=rows.reduce((count,object)=>count+Number(matchesState(object,state,index)),0)
+  }
+  return counts
+}
+
 export function workspaceRuntimeIndex(object: CollectorObject): WorkspaceRuntimeIndex {
   const monitoring = object.monitoring
   const interval = monitoring?.receivedIntervalNanos
@@ -28,15 +54,7 @@ export function workspaceOrder(objects: CollectorObject[], sort: WorkspaceSort, 
   const text = search.trim().toLocaleLowerCase()
   const visible = objects.filter(object => {
     if (object.id.startsWith('_new:')) return true
-    if (text && ![object.name, object.pointKey, object.address].some(value => value?.toLocaleLowerCase().includes(text))) return false
-    if (!state) return true
-    if (!runtimeFilter(state)) return stateValue(object.state) === state
-    const value = index.get(object.id)
-    if (!value) return false
-    if (state === 'attention') return value.priority <= 1
-    if (state === 'running') return ['running', 'recovered'].includes(value.state)
-    if (state === 'protection') return ['open', 'retrying', 'halfOpen'].includes(value.state)
-    return value.state === state
+    return matchesSearch(object,text) && matchesState(object,state,index)
   })
   const numeric = (a: number | undefined, b: number | undefined, ascending = false) => a == null ? b == null ? 0 : 1 : b == null ? -1 : ascending ? a - b : b - a
   return visible.sort((a, b) => {

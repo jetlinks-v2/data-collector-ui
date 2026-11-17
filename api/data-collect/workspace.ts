@@ -1,12 +1,19 @@
-import { request } from '@jetlinks-web/core'
-import type { CollectorObject, CollectorObservation, CollectorMonitoringSnapshot, EntityKind, MetricDefinition, ProviderDescriptor, RuntimeSnapshot, RecordingSnapshot } from '../../types/workspace'
+import { request, wsClient } from '@jetlinks-web/core'
+import type { CollectorObject, CollectorObservation, CollectorMonitoringSnapshot, CollectorWorkspaceQuery, CollectorWorkspaceFrame, EntityKind, MetricDefinition, ProviderDescriptor, RuntimeSnapshot, RecordingSnapshot } from '../../types/workspace'
 import { createRuntimeNdJson } from '@jetlinks-web-core/utils/ndjson'
+import { postRuntimeNdJson } from '@jetlinks-web-core/utils/ndjson-precision'
 import type { AxiosResponseRewrite } from '@jetlinks-web/types'
-import { EMPTY, from, lastValueFrom, map, merge, mergeMap, reduce, toArray } from 'rxjs'
+import { EMPTY, defer, from, lastValueFrom, map, merge, mergeMap, reduce, timeout, toArray } from 'rxjs'
 import { collectorIndexMetrics, pointIndexMetrics, workspaceRuntimeIndex, type WorkspaceRuntimeIndex } from '../../utils/workspaceList'
 import { monitoredObjects } from '../../utils/runtimeMonitoring'
 import { observedPoints } from '../../utils/workspaceObservation'
 import type { PointRow } from '../../types/workspace'
+import type { PointValueData } from '../../utils/pointValue'
+
+/** 手动试读复用原有权限和采集路径；逐条刷新，取消时关闭reader，不自动重试采集。 */
+export const readWorkspacePoints=(collectorId:string,ids:string[])=>postRuntimeNdJson<PointValueData>(
+  `/data-collect/collector/${encodeURIComponent(collectorId)}/points/_read`,ids,
+)
 
 export interface Page<T> { data: T[]; total: number; pageIndex?: number; pageSize?: number }
 type Response<T> = Promise<AxiosResponseRewrite<T>>
@@ -26,6 +33,13 @@ export const observeRuntime = (kind: EntityKind, id: string, interval = 2000) =>
   createRuntimeNdJson().post<RuntimeSnapshot>(`/data-collect/${kind}/${encodeURIComponent(id)}/_runtime`, {interval})
 export const monitorCollectors = (ids:string[],interval=2000,channelIds:string[]=[],metrics:string[]|null=null) =>
   createRuntimeNdJson().post<CollectorMonitoringSnapshot>('/data-collect/collector/_monitor',{ids,channelIds,interval,metrics})
+let workspaceSubscriptionId=0
+/** 页面复用平台 WebSocket；保留 NDJSON 供独立调用，两者使用同一帧契约。 */
+export const observeCollectionWorkspace=(query:CollectorWorkspaceQuery,transport:'websocket'|'ndjson'='websocket')=>transport === 'ndjson'
+  ? createRuntimeNdJson().post<CollectorWorkspaceFrame>('/data-collect/collector/_workspace',query)
+  : defer(()=>wsClient.getWebSocket(`collector-workspace:${++workspaceSubscriptionId}`,'/collector-workspace/observe',query))
+      // 平台连接恢复后也校验订阅是否恢复；只设工作区级超时，不为点位创建计时器。
+      .pipe(map(message=>message.payload as CollectorWorkspaceFrame),timeout({each:Math.max(15000,...query.monitoring.map(item=>item.interval*3),(query.observation?.interval || 0)*3,(query.recording?.interval || 0)*3)}))
 export const observeWorkspace = (id:string,pointIds:string[],interval=2000,pointMetrics:string[]|null=null,metrics:string[]|null=null,includeRawData=false,includeData=true) => createRuntimeNdJson().post<CollectorObservation>(
   `/data-collect/collector/${encodeURIComponent(id)}/_observe`, {pointIds,interval,pointMetrics,metrics,channelMetrics:metrics,includeRawData,includeData},
 )

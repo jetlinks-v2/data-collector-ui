@@ -1,36 +1,30 @@
 import { onBeforeUnmount, onDeactivated, onActivated, ref, shallowRef, watch, type Ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { observeRuntime, observeLatestRecording } from '../../../api/data-collect/workspace'
+import { observeRuntime } from '../../../api/data-collect/workspace'
 import { loadRuntimeMetricMetadata } from './useRuntimeMetricMetadata'
 import { observedRuntime } from '../../../utils/workspaceObservation'
-import type { CollectorObject, CollectorObservation, EntityKind, MetricDefinition, RuntimeSnapshot, RecordingSnapshot } from '../../../types/workspace'
+import type { CollectorObject, CollectorObservation, EntityKind, MetricDefinition, RuntimeSnapshot, RecordingSnapshot, WorkspaceRecordingTarget } from '../../../types/workspace'
 
 /** 指标优先复用页面实时流；浮层只按需读取完整回放，不控制采集器录制策略。 */
-export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,paused:Ref<boolean>,observation:Ref<CollectorObservation|undefined>) {
+export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,paused:Ref<boolean>,observation:Ref<CollectorObservation|undefined>,sharedRecording:Ref<RecordingSnapshot|undefined>,recordingTarget:Ref<WorkspaceRecordingTarget|undefined>) {
   const {t,locale}=useI18n()
   const snapshot=shallowRef<RuntimeSnapshot>(),recording=shallowRef<RecordingSnapshot>()
   const definitions=shallowRef<MetricDefinition[]>([]),error=ref(''),loading=ref(false)
   const target=ref<{kind:EntityKind;id:string}>(),open=ref(false)
-  let subscription:{unsubscribe():void}|undefined,recordingSubscription:{unsubscribe():void;readonly closed?:boolean}|undefined
-  let revision=0,recordingRevision=0,active=true
-  function cancelRecording() { ++recordingRevision;recordingSubscription?.unsubscribe();recordingSubscription=undefined }
+  let subscription:{unsubscribe():void}|undefined
+  let revision=0,active=true
+  function cancelRecording() { if(recordingTarget.value)recordingTarget.value=undefined }
   function cancel() { ++revision;subscription?.unsubscribe();subscription=undefined;cancelRecording();loading.value=false }
   function connectRecording() {
-    cancelRecording()
     const id=collector.value?.id,serverId=snapshot.value?.serverId
-    if(!active || !open.value || paused.value || document.hidden || !id || !serverId || !snapshot.value?.available || target.value?.kind === 'channel')return
-    const token=recordingRevision
-    recordingSubscription=observeLatestRecording(id,serverId).subscribe({
-      next:value=>{if(token === recordingRevision){recording.value=value;error.value=''}},
-      error:cause=>{if(token === recordingRevision)error.value=cause instanceof Error ? cause.message : String(cause)},
-    })
+    if(!active || !open.value || paused.value || document.hidden || !id || !serverId || !snapshot.value?.available || target.value?.kind === 'channel'){cancelRecording();return}
+    if(recordingTarget.value?.collectorId !== id || recordingTarget.value.serverId !== serverId)recordingTarget.value={collectorId:id,serverId,interval:1000}
   }
   function accept(value:RuntimeSnapshot) {
     const changed=snapshot.value?.serverId !== value.serverId || snapshot.value?.available !== value.available
     snapshot.value=value;loading.value=false
     if(changed)recording.value=undefined
-    // 复用现有状态刷新重连已断开的回放流，不增加逐点定时器。
-    if(changed || !recordingSubscription || recordingSubscription.closed)connectRecording()
+    connectRecording()
   }
   function connect() {
     cancel()
@@ -43,10 +37,11 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
     }).catch(()=>{/* 定义暂不可用时仍显示原始指标标识。 */})
     const shared=observedRuntime(observation.value,current.kind,current.id)
     if(shared){accept(shared);return}
-    subscription=observeRuntime(current.kind,current.id).subscribe({
+    // 当前可见范围没有此对象时只补一次，不另建第二条常驻连接。
+    subscription=observeRuntime(current.kind,current.id,0).subscribe({
       next:value=>{if(token === revision)accept(value)},
       error:cause=>{if(token === revision){error.value=cause instanceof Error ? cause.message : String(cause);loading.value=false}},
-      complete:()=>{if(token === revision){loading.value=false;error.value=t('collectorWorkspace.streamEnded')}},
+      complete:()=>{if(token === revision)loading.value=false},
     })
   }
   function inspect(kind:EntityKind,id:string) {
@@ -55,6 +50,9 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   }
   function close(){open.value=false;cancel()}
   watch([target,open,paused,locale],connect)
+  watch(sharedRecording,value=>{
+    if(open.value && value?.collectorId === collector.value?.id && value.serverId === snapshot.value?.serverId){recording.value=value;error.value=''}
+  })
   watch(observation,value=>{
     if(!open.value || !target.value || paused.value || !active || document.hidden)return
     const shared=observedRuntime(value,target.value.kind,target.value.id)

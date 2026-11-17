@@ -5,6 +5,8 @@
     <div class="cw-metric-browser">
       <div class="cw-monitoring-meta"><span v-if="object.monitoring"><AIcon type="ClusterOutlined" /> {{ object.monitoring.nodeCount }} {{ $t('collectorMonitoring.nodes') }}</span><time>{{ sampledAt }}</time></div>
       <RuntimePointSummary v-if="kind === 'collector'" :summary="object.monitoring?.pointSummary" />
+      <RuntimeFailureNotice :object="object" />
+      <a-collapse v-if="$slots.diagnostic" ghost :destroy-inactive-panel="true" class="cw-monitoring-diagnostics" @change="diagnosticsChanged"><a-collapse-panel key="diagnostic" :header="$t('collectorRuntimeNotice.recentRead')"><slot name="diagnostic" /></a-collapse-panel></a-collapse>
       <div class="cw-metric-overview">
         <div v-if="rates.length" class="cw-metric-key-rates"><div v-for="item in rates" :key="item.key"><span><AIcon :type="item.icon" />{{ $t(item.label) }}</span><strong v-if="item.value != null" :title="`${item.value} ${item.unit}`">{{ item.display.value }}<small>{{ item.display.unit }}</small></strong><a-tooltip v-else :title="$t('collectorMonitoring.empty.calculating')"><a-skeleton-input class="cw-metric-skeleton" active size="small" :aria-label="$t('collectorMonitoring.empty.calculating')" /></a-tooltip></div></div>
         <RuntimeDataFlow v-if="kind !== 'channel'" :object="object" :point="kind === 'point'" />
@@ -24,7 +26,7 @@
           <div v-if="nodes.length > 1 || !node.available" class="cw-metric-node-heading"><AIcon type="ClusterOutlined" /><strong>{{ node.serverId }}</strong><span v-if="!node.available">{{ $t('collectorMonitoring.empty.unavailable') }}</span></div>
           <section v-for="group in node.groups" :key="group.id" class="cw-metric-group">
             <h3><AIcon :type="groupIcons[group.id]" />{{ $t(`collectorMonitoring.metricGroups.${group.id}`) }}<small>{{ group.rows.length }}</small></h3>
-            <div class="cw-metric-grid"><RuntimeMetricVisual v-for="item in group.rows" :key="item.key" :row="item" :trend="trends.get(metricTrendKey(node.serverId,item.id))" :node-available="node.available" /></div>
+            <div class="cw-metric-grid"><RuntimeMetricVisual v-for="item in group.rows" :key="item.id" :row="item" :trend="trends.get(metricTrendKey(node.serverId,item.id))" :node-available="node.available" /></div>
           </section>
         </section>
       </a-spin>
@@ -47,9 +49,11 @@ import RuntimeDataFlow from './RuntimeDataFlow.vue'
 import RuntimePointSummary from './RuntimePointSummary.vue'
 import WorkspaceStatus from './WorkspaceStatus.vue'
 import WorkspaceIcon from './WorkspaceIcon.vue'
+import RuntimeFailureNotice from './RuntimeFailureNotice.vue'
 
 const props=defineProps<{open:boolean;object:CollectorObject;kind:EntityKind;nodes:Array<{serverId:string;available:boolean;rows:ReturnType<typeof runtimeMetricRows>}>;loading:boolean;metadataError:boolean}>()
-defineEmits<{close:[]}>()
+const emit=defineEmits<{close:[];diagnosticVisibility:[visible:boolean]}>()
+function diagnosticsChanged(keys:string|number|Array<string|number>) { emit('diagnosticVisibility',Array.isArray(keys) ? keys.includes('diagnostic') : keys === 'diagnostic') }
 const {t,locale}=useI18n()
 const query=ref(''),nodeId=ref('')
 const showMissing=ref(false)

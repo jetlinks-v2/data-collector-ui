@@ -1,4 +1,4 @@
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, shallowReactive, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Modal } from 'ant-design-vue'
@@ -8,37 +8,54 @@ import { usePointDraft } from './usePointDraft'
 import { useWorkspaceActions } from './useWorkspaceActions'
 import { COLLECTOR_DATA, COLLECTOR_TYPE, FOLD_TREE, REFRESH_HANDLER } from '../data'
 import type { CollectorObject, EntityKind, PointRow, ProviderDescriptor } from '../../../types/workspace'
+import type { ObjectConfigurationDraft } from './useObjectConfiguration'
+
+interface ObjectEditorTarget { kind:'channel'|'collector'; object:CollectorObject; anchor:HTMLElement; surface:'card'|'header'|'channel'; trigger?:HTMLElement }
+interface ObjectEditorHandle { dirty:boolean; saving:boolean; prepared:boolean; snapshot:()=>ObjectConfigurationDraft }
 
 /** Layout and selection have one owner; Teleport moves the existing plugin form. */
 export function useCollectionWorkspace() {
-  const data = useWorkspaceData(), runtime = useWorkspaceRuntime(data.collector, data.paused, data.observation)
+  const data = useWorkspaceData(), runtime = useWorkspaceRuntime(data.collector, data.paused, data.observation, data.recording, data.recordingTarget)
   const draft = usePointDraft(data.selectedPoint, data.collector, async (oldId, value) => {
-    data.unsavedPoints.value = data.unsavedPoints.value.filter(point => point.id !== oldId)
     if (value?.id) {
+      data.applyPoint(oldId,value)
       if (editingId.value === oldId) editingId.value = value.id
-      data.selectedPointId.value = value.id
     }
     await data.loadPoints()
   })
-  const batch = useWorkspaceActions(data, draft.hasChanges)
-  const root = ref<HTMLElement>(), main = ref<HTMLElement>(), sidebar = ref<HTMLElement>(), drawerHost = ref<HTMLElement>(), editorHost = ref<HTMLElement>()
+  const batch = useWorkspaceActions(data, draft.hasCurrentChanges)
+  const root = ref<HTMLElement>(), main = ref<HTMLElement>(), sidebar = ref<HTMLElement>(), drawerHost = ref<HTMLElement>()
   const navigationTarget = ref<HTMLElement>(), editorTarget = ref<HTMLElement>()
   const drawerOpen = ref(false), folded = ref(false), narrow = ref(false), inline = ref(false)
-  const navigationInDrawer = computed(() => narrow.value || folded.value || drawerOpen.value)
-  function openNavigation() { if(!narrow.value)folded.value=true;drawerOpen.value = true }
+  const navigationInDrawer = computed(() => narrow.value || folded.value)
+  function openNavigation() {
+    if (narrow.value) drawerOpen.value = true
+    else expandNavigation()
+  }
   function expandNavigation() { folded.value = false; drawerOpen.value = false }
   const view = ref<'cards' | 'table'>('cards'), editingId = ref(''), advanced = ref(false)
   const objectForm = ref<'channel' | 'collector'>(), diagnosticId = ref('')
   const configurationEditor = ref<{ dirty: boolean; saving: boolean }>()
-  // At most two editors live with the selected collector. Folding them keeps plugin state and drafts.
-  const objectEditorKinds = ref<Array<'channel' | 'collector'>>([])
-  const objectEditors = shallowReactive<Partial<Record<'channel' | 'collector', { dirty: boolean; saving: boolean }>>>({})
-  function registerObjectEditor(kind: 'channel' | 'collector', editor: unknown) {
-    if (editor) objectEditors[kind] = editor as { dirty: boolean; saving: boolean }
-    else delete objectEditors[kind]
+  watch([editingId,objectForm,configurationEditor,()=>batch.state.value.selecting],()=>{
+    data.orderHeld.value=!!editingId.value || !!objectForm.value || !!configurationEditor.value || batch.state.value.selecting
+  },{flush:'sync'})
+  const objectTarget = shallowRef<ObjectEditorTarget>(), objectEditor = shallowRef<ObjectEditorHandle>()
+  const objectDrafts = shallowReactive(new Map<string,ObjectConfigurationDraft>())
+  const objectKey = computed(() => objectTarget.value ? `${objectTarget.value.kind}:${objectTarget.value.object.id}` : '')
+  const objectValue = computed(() => {
+    const target=objectTarget.value
+    return target && (target.kind === 'channel' ? data.channels.value : data.collectors.value).find(item=>item.id === target.object.id) || target?.object
+  })
+  const objectDraft = computed(() => objectDrafts.get(objectKey.value))
+  const sharedCount = computed(() => objectTarget.value?.kind === 'channel' ? objectValue.value?.collectorNumber ?? data.collectors.value.filter(item=>item.channelId === objectTarget.value?.object.id).length : 0)
+  const configurationDirty = computed(() => !!configurationEditor.value?.dirty || !!objectEditor.value?.dirty || objectDrafts.size > 0)
+  const configurationSaving = computed(() => !!configurationEditor.value?.saving || !!objectEditor.value?.saving)
+  function stashObject() {
+    if (!objectKey.value || !objectEditor.value) return
+    if (objectEditor.value.dirty) objectDrafts.set(objectKey.value,objectEditor.value.snapshot())
+    else objectDrafts.delete(objectKey.value)
   }
-  const configurationDirty = computed(() => !!configurationEditor.value?.dirty || Object.values(objectEditors).some(editor => editor?.dirty))
-  const configurationSaving = computed(() => !!configurationEditor.value?.saving || Object.values(objectEditors).some(editor => editor?.saving))
+  watch(() => objectEditor.value?.dirty, dirty => { if(dirty === false)objectDrafts.delete(objectKey.value) })
   const choosingProvider = ref(false), setupProvider = ref<ProviderDescriptor>()
   const { t } = useI18n()
   provide(COLLECTOR_DATA, computed(() => data.collector.value || {}))
@@ -50,30 +67,37 @@ export function useCollectionWorkspace() {
   async function refresh() { if (batch.busy.value) return; await data.initialize(); if (data.collector.value) await data.loadPoints() }
   async function confirmConfiguration() {
     if (configurationSaving.value) return false
-    if (!configurationDirty.value) return true
+    if (!configurationEditor.value?.dirty) return true
     return confirmDiscard()
   }
   function confirmDiscard() {
     return new Promise<boolean>(resolve => Modal.confirm({ title: t('collectorWorkspace.leaveDraft'), okText: t('collectorWorkspace.leave'), cancelText: t('collectorWorkspace.continueEditing'), onOk: () => resolve(true), onCancel: () => resolve(false) }))
   }
   let overviewScroll = 0
-  async function select(value?: CollectorObject) {
+  async function select(value?: CollectorObject, selectedChannel?:CollectorObject) {
     if (batch.busy.value || configurationSaving.value) return
     // Selecting the current collector only dismisses navigation; keep its filters and draft.
     if (value && value.id === data.collector.value?.id) { drawerOpen.value = false; return }
     if (!await confirmConfiguration()) return
     drawerOpen.value = false
     if (!data.collector.value) overviewScroll = main.value?.scrollTop || 0
-    closeDiagnostic(); data.select(value); editingId.value = ''; objectForm.value = undefined; choosingProvider.value = false; setupProvider.value = undefined
-    objectEditorKinds.value = []
+    stashObject(); objectTarget.value=undefined; objectEditor.value=undefined
+    closeDiagnostic(); data.select(value,selectedChannel?.id); editingId.value = ''; objectForm.value = undefined; choosingProvider.value = false; setupProvider.value = undefined
     await nextTick()
     if (main.value) main.value.scrollTop = value ? 0 : overviewScroll
   }
   async function cancelSetup() { if (await confirmConfiguration()) { setupProvider.value = undefined; choosingProvider.value = true } }
-  function editObject(kind?: 'channel' | 'collector') {
+  function editObject(target?: ObjectEditorTarget, restoreFocus = true) {
     if (configurationSaving.value || batch.busy.value || draft.saving.value) return
-    if (kind && !objectEditorKinds.value.includes(kind)) objectEditorKinds.value.push(kind)
-    objectForm.value = kind
+    if (!target) { const trigger=objectTarget.value?.trigger; objectForm.value=undefined; if(restoreFocus)void nextTick(()=>trigger?.focus({preventScroll:true})); return }
+    const nextKey=`${target.kind}:${target.object.id}`
+    if(nextKey !== objectKey.value) { stashObject(); objectEditor.value=undefined }
+    closePoint(); closeDiagnostic(); objectTarget.value=target; objectForm.value=target.kind
+  }
+  function objectSaved(value:CollectorObject) {
+    if(!objectTarget.value)return
+    objectDrafts.delete(objectKey.value)
+    data.applyObject(objectTarget.value.kind,value)
   }
   function selectPoint(id: string) {
     if (batch.busy.value || configurationSaving.value) return
@@ -81,18 +105,18 @@ export function useCollectionWorkspace() {
     if (batch.state.value.selecting) { batch.toggle(id); return }
     const settingsOpen = !!objectForm.value
     objectForm.value = undefined
-    editingId.value = !settingsOpen && inline.value && editingId.value === id ? '' : id; data.selectedPointId.value = id
+    editingId.value = !settingsOpen && editingId.value === id ? '' : id; data.selectedPointId.value = id
   }
   function startBatch() {
     batch.start()
     if (batch.state.value.selecting) { closePoint(); closeDiagnostic() }
   }
-  function closePoint() {
+  function closePoint(restoreFocus = true) {
     if (draft.saving.value || batch.busy.value) return
     const trigger = root.value?.querySelector<HTMLButtonElement>('.cw-point-select[aria-current="true"]')
     // Hide the editor without changing the selected model or discarding its draft.
     editingId.value = ''
-    void nextTick(() => trigger?.focus({ preventScroll: true }))
+    if(restoreFocus)void nextTick(() => trigger?.focus({ preventScroll: true }))
   }
   function addPoint() { if (batch.busy.value || configurationSaving.value) return; objectForm.value = undefined; const point = draft.add(); if (point) { data.unsavedPoints.value = [point, ...data.unsavedPoints.value]; data.points.value = [point, ...data.points.value]; data.filterPoints(); data.selectedPointId.value = point.id; editingId.value = point.id } }
   function diagnose(kind: EntityKind, object: CollectorObject) { diagnosticId.value = object.id; runtime.inspect(kind, object.id) }
@@ -101,7 +125,6 @@ export function useCollectionWorkspace() {
   async function relocate() {
     await nextTick()
     navigationTarget.value = navigationInDrawer.value ? drawerHost.value : sidebar.value
-    editorTarget.value = inline.value && editingId.value ? document.getElementById(`cw-editor-${editingId.value}`) || undefined : editorHost.value
   }
   let observer: ResizeObserver | undefined
   onMounted(() => {
@@ -128,5 +151,5 @@ export function useCollectionWorkspace() {
   window.addEventListener('beforeunload', preventLoss)
   onBeforeUnmount(() => { observer?.disconnect(); window.removeEventListener('beforeunload', preventLoss) })
   function visiblePoints(ids:string[]) { data.setVisiblePoints(ids);void relocate() }
-  return { data, runtime, draft, batch, root, main, sidebar, drawerHost, editorHost, navigationTarget, navigationInDrawer, openNavigation, expandNavigation, editorTarget, configurationEditor, objectEditorKinds, registerObjectEditor, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, startBatch, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic, visiblePoints }
+  return { data, runtime, draft, batch, root, main, sidebar, drawerHost, navigationTarget, navigationInDrawer, openNavigation, expandNavigation, editorTarget, configurationEditor, objectTarget, objectKey, objectValue, objectDraft, objectEditor, sharedCount, objectSaved, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, startBatch, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic, visiblePoints }
 }

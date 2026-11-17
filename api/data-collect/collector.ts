@@ -5,6 +5,13 @@ import type { PointValueData } from '@data-collector-ui/utils/pointValue';
 import type { AxiosResponseRewrite } from '@jetlinks-web/types';
 
 import type { ExpressionFunction } from '@jetlinks-web-core/components/Expression';
+import type { ProcessorDocumentation } from '../../types/processorDocumentation';
+
+export const getProcessorDocumentations = (provider:string,signal:AbortSignal) =>
+    request.get<Record<string,ProcessorDocumentation>>(
+        '/data-collect/point/processor/' + encodeURIComponent(provider) + '/documentation',
+        undefined, {signal,hiddenError:true},
+    );
 
 export async function getCollectorExpressionFunctions():Promise<ExpressionFunction[]> {
     const response = await request.get('/data-collect/point/expression/functions', undefined, { hiddenError:true });

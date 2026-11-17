@@ -6,18 +6,18 @@
       <button class="cw-icon-button" :aria-label="$t(drawer ? 'collectorWorkspace.close' : 'collectorWorkspace.collapse')" :title="$t(drawer ? 'collectorWorkspace.close' : 'collectorWorkspace.collapse')" @click="drawer ? $emit('close') : $emit('collapse')"><AIcon :type="drawer ? 'CloseOutlined' : 'MenuFoldOutlined'" /></button>
     </div>
     <a-input v-model:value="keyword" allow-clear class="cw-navigation-search" :placeholder="$t('collectorWorkspace.searchCollectors')"><template #prefix><AIcon type="SearchOutlined" /></template></a-input>
-    <button class="cw-nav-item" :aria-current="!selected" @click="$emit('select')"><WorkspaceIcon name="grid" :size="16" /><span>{{ $t('collectorWorkspace.allCollectors') }}</span><small v-if="!loading && total != null">{{ total }}</small></button>
+    <button class="cw-nav-item" :aria-current="!selected && !selectedChannel" @click="$emit('select')"><WorkspaceIcon name="grid" :size="16" /><span>{{ $t('collectorWorkspace.allCollectors') }}</span><small v-if="!loading && total != null">{{ total }}</small></button>
     <WorkspaceSkeleton v-if="loading" kind="navigation" />
     <template v-else><section v-for="group in groups" :key="group.id" :class="view === 'collector' ? 'cw-nav-flat' : 'cw-nav-group'">
       <div v-if="view !== 'collector'" class="cw-nav-group-heading">
-      <button class="cw-nav-group-toggle" :class="{ current: group.items.some(item => item.id === selected) }" :aria-expanded="!collapsed.has(group.id)" @click="toggle(group.id)">
-        <AIcon type="DownOutlined" :class="{ folded: collapsed.has(group.id) }" /><span>{{ group.name }}</span><small>{{ group.items.length }}</small>
-      </button>
+      <div class="cw-nav-group-toggle" :class="{ current: group.id === selectedChannel || group.items.some(item => item.id === selected) }">
+        <button class="cw-nav-group-fold" :aria-label="$t(collapsed.has(group.id) ? 'collectorWorkspace.expandNavigation' : 'collectorWorkspace.collapse')" :aria-expanded="!collapsed.has(group.id)" @click="toggle(group.id)"><AIcon type="DownOutlined" :class="{ folded: collapsed.has(group.id) }" /></button><button class="cw-nav-group-name" :aria-current="group.id === selectedChannel" @click="group.channel ? $emit('selectChannel', group.channel) : toggle(group.id)"><span>{{ group.name }}</span><small>{{ group.items.length }}</small></button>
+      </div>
       <RuntimeCardMetrics v-if="group.channel" :object="group.channel" kind="channel" variant="group" />
       </div>
       <div v-if="!collapsed.has(group.id)" class="cw-nav-children" role="group" :aria-label="group.name">
         <div v-for="item in group.items" :key="item.id" class="cw-nav-child" :class="{selected:item.id === selected}" @click="$emit('select', item)">
-          <button class="cw-nav-select" :aria-current="item.id === selected"><WorkspaceIcon :object="item" :size="16" /><span class="cw-nav-name" :title="item.name">{{ item.name }}</span></button>
+          <button class="cw-nav-select" :aria-current="item.id === selected"><WorkspaceIcon :object="item" :size="16" /><span class="cw-nav-name" :title="item.name">{{ item.name }}</span><small v-if="item.pointNumber != null" class="cw-nav-point-count" :title="$t('collectorWorkspace.pointCount', { count: item.pointNumber })" :aria-label="$t('collectorWorkspace.pointCount', { count: item.pointNumber })"><WorkspaceIcon name="grid" :size="12" />{{ item.pointNumber }}</small></button>
           <RuntimeCardMetrics :object="item" kind="collector" variant="navigation" />
         </div>
       </div>
@@ -31,8 +31,8 @@ import type { CollectorObject } from '../../../../types/workspace'
 import WorkspaceIcon from './WorkspaceIcon.vue'
 import RuntimeCardMetrics from './RuntimeCardMetrics.vue'
 import WorkspaceSkeleton from './WorkspaceSkeleton.vue'
-const props = defineProps<{ collectors: CollectorObject[]; channels: CollectorObject[]; selected?: string; total?: number; loading?: boolean; drawer?: boolean; expandable?: boolean; spaces?: Array<{ id: string; name: string; collectorIds: string[] }> }>()
-defineEmits<{ select: [value?: CollectorObject]; close: []; collapse: []; expand: [] }>()
+const props = defineProps<{ collectors: CollectorObject[]; channels: CollectorObject[]; selected?: string; selectedChannel?: string; total?: number; loading?: boolean; drawer?: boolean; expandable?: boolean; spaces?: Array<{ id: string; name: string; collectorIds: string[] }> }>()
+defineEmits<{ select: [value?: CollectorObject]; selectChannel: [value: CollectorObject]; close: []; collapse: []; expand: [] }>()
 const { t } = useI18n(), view = ref<'collector' | 'space' | 'channel'>('collector'), collapsed = ref(new Set<string>()), keyword = ref('')
 const viewOptions = computed(() => [
   {value:'collector',payload:{icon:'ApartmentOutlined',title:t('collectorWorkspace.collector')}},

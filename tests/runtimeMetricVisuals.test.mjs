@@ -105,6 +105,15 @@ test('missing values distinguish waiting, unavailable, unsupported, partial cove
   assert.equal(runtimeMetricEmptyState(object,['wire.bytes']),'calculating')
 })
 
+test('nullable duration in a completed snapshot is not an endless rate warm-up',()=>{
+  const object={runtime:{available:true,metrics:{values:{lastCollectionTimeNanos:{available:true,value:null},receivedSamples:{available:true,value:10}}}}}
+  assert.equal(runtimeMetricEmptyState(object,['lastCollectionTimeNanos']),'noSamples')
+  assert.equal(showRuntimeMetric(object,undefined,['lastCollectionTimeNanos']),false)
+  assert.equal(runtimeMetricEmptyState(object,['receivedSamples']),'calculating')
+  object.runtime.metrics.values.lastCollectionTimeNanos.value=0
+  assert.equal(showRuntimeMetric(object,0,['lastCollectionTimeNanos']),true)
+})
+
 test('missing metric visibility preserves real zero and shares the search and node scope',()=>{
   const zero=rows({pending:0},[definition('pending')])[0]
   const missing={...zero,id:'missing',name:'Missing',available:false}

@@ -15,7 +15,7 @@
       </a-tooltip>
     </template>
     <a-button v-if="state.selecting" class="cw-batch-exit" size="small" type="text" :disabled="state.busy" @click="$emit('clear')"><AIcon type="CloseOutlined" />{{ $t('collectorWorkspace.exitSelection') }}</a-button>
-    <span v-if="state.busy" class="cw-muted" role="status"><AIcon type="LoadingOutlined" /> {{ $t('collectorList.working') }}</span>
+    <span v-if="state.busy && state.selecting" class="cw-muted" role="status"><AIcon type="LoadingOutlined" /> {{ $t('collectorList.working') }}</span>
     <span v-else-if="state.feedback" class="cw-batch-feedback" :class="{failed: state.failed}" role="status"><AIcon :type="state.failed ? 'ExclamationCircleOutlined' : 'CheckCircleOutlined'" />{{ state.feedback }}</span>
   </div>
 </template>

@@ -27,6 +27,64 @@ function load(path) {
 const { useProcessingRules } = load(fileURLToPath(new URL('../views/data-collect/hook/useProcessingRules.ts', import.meta.url)))
 const point = () => reactive({ id:'point', name:'point', provider:'modbus-tcp', configuration:{} })
 
+test('stateful cleaning is configured before conversion and validated independently from smoothing',async t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
+  rules.add('outlier');rules.add('converter');rules.add('processor')
+  rules.cleaningAction.value='hampel'
+  assert.equal(model.managedConfiguration.outlier.provider,'signal')
+  assert.equal(model.managedConfiguration.outlier.configuration.window,7)
+  assert.equal(rules.cleaningAction.value,'hampel')
+  assert.equal(model.managedConfiguration.processor.configuration.algorithm,'ema')
+  assert.equal(rules.visibleGroups.value[0].key,'cleaning')
+  await assert.doesNotReject(rules.validate())
+  model.managedConfiguration.outlier.configuration.window=4
+  await assert.rejects(rules.validate(),/collectorSignal.invalid/)
+  rules.cleaningAction.value='max-rate'
+  model.managedConfiguration.outlier.configuration.limit='2'
+  await assert.doesNotReject(rules.validate())
+  assert.equal(rules.cleaningOptions.value.some(item=>item.value === 'hampel'),true)
+})
+
+test('algorithm switching initializes compatible parameters instead of retaining an invalid window',async t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
+  rules.add('processor');rules.signalAlgorithm.value='moving-average'
+  assert.equal(model.managedConfiguration.processor.configuration.window,8)
+  rules.signalAlgorithm.value='median'
+  assert.equal(model.managedConfiguration.processor.configuration.window,3)
+  await assert.doesNotReject(rules.validate())
+})
+
+test('invalid-value cleaning keeps range drafts and validates markers without changing precision',async t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
+  rules.add('outlier');rules.add('converter')
+  model.managedConfiguration.outlier.configuration.min='9007199254740993'
+  model.managedConfiguration.outlier.configuration.max='9007199254740994'
+  rules.cleaningAction.value='valid-number'
+  assert.equal(model.managedConfiguration.outlier.provider,'valid-number')
+  assert.equal(rules.visibleGroups.value[0].key,'cleaning')
+  model.managedConfiguration.outlier.configuration.invalidValues=['9007199254740993','-9999']
+  await assert.doesNotReject(rules.validate())
+  rules.cleaningAction.value='clamp'
+  assert.equal(model.managedConfiguration.outlier.configuration.min,'9007199254740993')
+  rules.cleaningAction.value='valid-number'
+  assert.deepEqual(model.managedConfiguration.outlier.configuration.invalidValues,['9007199254740993','-9999'])
+  model.managedConfiguration.outlier.configuration.invalidValues=['NaN']
+  await assert.rejects(rules.validate(),/invalidMarkers/)
+})
+
+test('numeric and text states use backend-declared confirmation capabilities',async t=>{
+  const capabilities=reactive({dataType:{id:'int'}}),model=point()
+  const rules=createRules(t,()=>model,()=>capabilities,algorithm=>algorithm === 'debounce' ? ['number','boolean','string','enum'] : ['number'])
+  rules.add('processor');rules.signalAlgorithm.value='debounce'
+  assert.equal(rules.signalOptions.value.find(item=>item.value === 'debounce').disabled,false)
+  await assert.doesNotReject(rules.validate())
+  capabilities.dataType.id='string'
+  assert.equal(rules.signalOptions.value.find(item=>item.value === 'debounce').disabled,false)
+  assert.equal(rules.signalOptions.value.find(item=>item.value === 'ema').disabled,true)
+  rules.signalAlgorithm.value='ema'
+  await assert.rejects(rules.validate(),/collectorSignal.invalid/)
+})
+
 test('new range cleaning uses a switchable action before conversion without formula controls', t => {
   const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
   rules.add('outlier');rules.add('converter')
@@ -53,11 +111,50 @@ test('conversion formulas accept null as ignore and arithmetic reset is explicit
   assert.equal(formula.simple.value,true)
   assert.equal(formula.steps.value[0].value,'1')
 })
-function createRules(t, getModel, capabilities = () => ({})) {
+function createRules(t, getModel, capabilities = () => ({}), inputTypes = () => undefined) {
   const scope = effectScope()
   t.after(() => scope.stop())
-  return scope.run(() => useProcessingRules(getModel, capabilities))
+  return scope.run(() => useProcessingRules(getModel, capabilities, inputTypes))
 }
+
+test('signal processing is optional, follows conversion and retains parameters in the local draft',async t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
+  assert.equal(model.managedConfiguration,undefined)
+  rules.add('converter');rules.add('processor')
+  assert.equal(model.managedConfiguration.processor.configuration.algorithm,'ema')
+  assert.deepEqual(rules.visibleGroups.value.find(group=>group.key === 'calculation').rules.map(rule=>rule.key),['converter','processor'])
+  model.managedConfiguration.processor.configuration.timeMillis=10
+  rules.signalAlgorithm.value='median'
+  assert.equal(model.managedConfiguration.processor.configuration.window,3)
+  rules.signalAlgorithm.value='ema'
+  rules.remove('processor');rules.add('processor')
+  assert.equal(model.managedConfiguration.processor.configuration.timeMillis,10)
+  await assert.doesNotReject(rules.validate())
+  model.managedConfiguration.processor.configuration.timeMillis=0
+  await assert.rejects(rules.validate(),/collectorSignal.invalid/)
+})
+
+test('Boolean points start with debounce and engineering span must be explicitly entered',async t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'boolean'}}))
+  rules.add('processor');assert.equal(model.managedConfiguration.processor.configuration.algorithm,'debounce')
+  assert.equal(rules.pushModes.value.find(mode=>mode.value === 'spanPercent').disabled,true)
+  const numericModel=point(),numericRules=createRules(t,()=>numericModel,()=>({dataType:{id:'double'}}))
+  numericRules.add('deadband');numericRules.pushMode.value='spanPercent'
+  assert.equal(numericModel.managedConfiguration.deadband.configuration.high,undefined)
+  await assert.rejects(numericRules.validate(),/collectorSignal.invalid/)
+  Object.assign(numericModel.managedConfiguration.deadband.configuration,{low:'0',high:'200',threshold:'1'})
+  await assert.doesNotReject(numericRules.validate())
+  numericRules.pushMode.value='formula'
+  assert.equal(numericModel.managedConfiguration.deadband.configuration.expression.root.value,true)
+})
+
+test('hysteresis changes the push condition context to Boolean without changing the input schema',t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
+  rules.add('processor');rules.add('deadband');rules.add('outlier')
+  model.managedConfiguration.processor.configuration={algorithm:'hysteresis',lower:10,upper:20}
+  assert.equal(rules.formulas.deadband.context.value.references[0].schema.type,'boolean')
+  assert.equal(rules.formulas.outlier.context.value.references[0].schema.type,'double')
+})
 
 test('reading rules does not dirty the draft and follows a replaced draft', t => {
   const current = ref(point()), rules = createRules(t, () => current.value)
