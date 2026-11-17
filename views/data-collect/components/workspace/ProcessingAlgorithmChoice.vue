@@ -1,5 +1,5 @@
 <template>
-  <ConfigSelect :value="value" :options="options" size="small" class="cw-inline-mode" :bordered="false" :virtual="false" :dropdown-match-select-width="384" popup-class-name="cw-algorithm-options" :loading="menuOpen && guide?.loading" :aria-label="label" @update:value="$emit('update:value',$event)" @dropdown-visible-change="menuOpen=$event">
+  <ConfigSelect :value="value" :options="options" size="small" class="cw-inline-mode" :bordered="false" :virtual="false" :dropdown-match-select-width="384" :dropdown-render="context ? renderMenu : undefined" popup-class-name="cw-algorithm-options" :loading="menuOpen && guide?.loading" :aria-label="label" @update:value="$emit('update:value',$event)" @dropdown-visible-change="menuOpen=$event">
     <template #option="option"><SelectOption :label="option.label" :icon="option.icon" :title="option.disabledReason || option.description">
       <template #description><span>{{ option.disabledReason || option.description }}</span><LatexView v-if="option.formula" :latex="option.formula" /></template>
     </SelectOption></template>
@@ -10,13 +10,14 @@
   </a-popover>
 </template>
 <script setup lang="ts">
-import { defineAsyncComponent, ref, watch } from 'vue'
+import { defineAsyncComponent, h, ref, watch, type VNode } from 'vue'
 import { SelectOption } from '@jetlinks-web-core/components'
 import { LatexView } from '@jetlinks-web-core/components/Expression'
 import type { ProcessorDocumentation } from '../../../../types/processorDocumentation'
 import ConfigSelect from '../../../../components/ConfigSelect.vue'
 const ProcessingAlgorithmGuide=defineAsyncComponent(()=>import('./ProcessingAlgorithmGuide.vue'))
-defineProps<{value:string;label:string;options:Array<{value:string;label:string;[key:string]:unknown}>;guide?:{documentation?:ProcessorDocumentation;loading:boolean;error:boolean}}>()
+const props=defineProps<{value:string;label:string;options:Array<{value:string;label:string;[key:string]:unknown}>;context?:string;guide?:{documentation?:ProcessorDocumentation;loading:boolean;error:boolean}}>()
+const renderMenu=({menuNode}:{menuNode:VNode})=>h('div',[h('p',{class:'cw-algorithm-context'},props.context),menuNode])
 const emit=defineEmits<{'update:value':[value:string];active:[value:boolean];retry:[]}>()
 const menuOpen=ref(false),guideOpen=ref(false)
 watch(()=>menuOpen.value || guideOpen.value,value=>emit('active',value))

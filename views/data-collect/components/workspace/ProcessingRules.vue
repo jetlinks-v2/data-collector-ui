@@ -14,13 +14,13 @@
     </div>
     <div class="cw-processing-stages">
     <div v-for="group in visibleGroups" :key="group.key" class="cw-processing-stage">
-      <div v-if="visibleGroups.length > 1" class="cw-processing-stage-title">{{ group.title }}</div>
+      <div class="cw-processing-stage-title"><span>{{ group.title }}</span><a-tooltip :title="group.description"><span tabindex="0" :aria-label="group.description"><AIcon type="InfoCircleOutlined" /></span></a-tooltip></div>
       <ProcessingRuleLine v-for="rule in group.rules" :key="rule.key" :rule="rule" :error="errors[rule.key]" @remove="remove(rule.key)">
         <template v-if="rule.key === 'outlier' && ['range','valid-number','signal'].includes(managed.outlier.provider)" #label>
-          <ProcessingAlgorithmChoice v-model:value="cleaningAction" :options="documentedCleaningOptions" :label="$t('collectorProcessing.cleaningAction')" :guide="managed.outlier.provider === 'signal' ? guideFor(cleaningAction) : undefined" @active="cleaningMenuOpen=$event" @retry="signalDocumentation.retry" />
+          <ProcessingAlgorithmChoice v-model:value="cleaningAction" :options="documentedCleaningOptions" :label="$t('collectorProcessing.cleaningAction')" :context="group.description" :guide="managed.outlier.provider === 'signal' ? guideFor(cleaningAction) : undefined" @active="cleaningMenuOpen=$event" @retry="signalDocumentation.retry" />
         </template>
         <template v-else-if="rule.key === 'processor' && managed.processor.provider === 'signal'" #label>
-          <ProcessingAlgorithmChoice v-model:value="signalAlgorithm" :options="documentedSignalOptions" :label="$t('collectorSignal.title')" :guide="guideFor(signalAlgorithm)" @active="signalMenuOpen=$event" @retry="signalDocumentation.retry" />
+          <ProcessingAlgorithmChoice v-model:value="signalAlgorithm" :options="documentedSignalOptions" :label="$t('collectorSignal.title')" :context="group.description" :guide="guideFor(signalAlgorithm)" @active="signalMenuOpen=$event" @retry="signalDocumentation.retry" />
         </template>
         <template v-else-if="rule.key === 'deadband'" #label>
           <ConfigSelect v-model:value="pushMode" :options="pushModes" size="small" class="cw-inline-mode" :bordered="false" :aria-label="$t('collectorProcessing.conditions')" />
@@ -112,4 +112,5 @@ defineExpose({ validate })
 .cw-algorithm-options .latex-view { font-size:12px; }
 .cw-algorithm-options .select-option__text small > span { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:12px; line-height:18px; }
 .cw-algorithm-options .latex-view { max-width:100%; overflow-x:auto; }
+.cw-algorithm-options .cw-algorithm-context { margin:0 8px 4px; padding:4px 0 8px; border-bottom:1px solid var(--line,var(--jet-theme-border-color-split)); color:var(--jet-theme-text-secondary,var(--text-color-secondary)); font-size:12px; line-height:18px; white-space:normal; }
 </style>

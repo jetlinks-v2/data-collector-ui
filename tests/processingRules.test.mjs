@@ -27,6 +27,43 @@ function load(path) {
 const { useProcessingRules } = load(fileURLToPath(new URL('../views/data-collect/hook/useProcessingRules.ts', import.meta.url)))
 const point = () => reactive({ id:'point', name:'point', provider:'modbus-tcp', configuration:{} })
 
+test('stage presentation separates cleaning, conversion, filtering, output conditions and actions without changing drafts',t=>{
+  const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
+  for(const key of ['outlier','converter','processor','changedOnly','deadband','storage','handler']) rules.add(key)
+  const before=JSON.stringify(model)
+  assert.deepEqual(rules.visibleGroups.value.map(group=>group.rules.map(rule=>rule.key)),[
+    ['outlier'],['converter'],['processor'],['changedOnly','deadband'],['storage','handler'],
+  ])
+  assert.equal(rules.visibleGroups.value[0].description,'collectorProcessing.cleaningSourceHint')
+  assert.equal(rules.visibleGroups.value[2].description,'collectorProcessing.processingConvertedHint')
+  assert.equal(JSON.stringify(model),before)
+  rules.remove('converter')
+  assert.equal(rules.visibleGroups.value.find(group=>group.key === 'signal').description,'collectorProcessing.processingSourceHint')
+  for(const algorithm of ['spike','hampel','max-step','max-rate']) {
+    assert.ok(rules.signalOptions.value.some(option=>option.value === algorithm))
+    assert.ok(rules.cleaningOptions.value.some(option=>option.value === algorithm))
+  }
+})
+
+test('legacy cleaning stays after conversion and before filtering, including disabled rules and conversion-free configurations',t=>{
+  const model=point(),rules=createRules(t,()=>model)
+  model.managedConfiguration={
+    converter:{enabled:true,provider:'scale',configuration:{factor:0.1}},
+    outlier:{enabled:true,provider:'range',configuration:{min:0,max:100}},
+    processor:{enabled:true,provider:'signal',configuration:{algorithm:'median',window:3}},
+  }
+  const before=JSON.stringify(model)
+  assert.deepEqual(rules.visibleGroups.value.map(group=>group.key),['calculation','cleaning','signal'])
+  assert.equal(rules.visibleGroups.value[1].description,'collectorProcessing.cleaningConvertedHint')
+  assert.equal(JSON.stringify(model),before)
+  rules.remove('outlier')
+  assert.deepEqual(rules.groups.value.slice(0,3).map(group=>group.key),['cleaning','calculation','signal'])
+  assert.deepEqual(rules.visibleGroups.value.map(group=>group.key),['calculation','signal'])
+  rules.add('outlier');rules.remove('converter')
+  assert.deepEqual(rules.visibleGroups.value.map(group=>group.key),['cleaning','signal'])
+  assert.equal(rules.visibleGroups.value[0].description,'collectorProcessing.cleaningSourceHint')
+})
+
 test('stateful cleaning is configured before conversion and validated independently from smoothing',async t=>{
   const model=point(),rules=createRules(t,()=>model,()=>({dataType:{id:'double'}}))
   rules.add('outlier');rules.add('converter');rules.add('processor')
@@ -122,7 +159,7 @@ test('signal processing is optional, follows conversion and retains parameters i
   assert.equal(model.managedConfiguration,undefined)
   rules.add('converter');rules.add('processor')
   assert.equal(model.managedConfiguration.processor.configuration.algorithm,'ema')
-  assert.deepEqual(rules.visibleGroups.value.find(group=>group.key === 'calculation').rules.map(rule=>rule.key),['converter','processor'])
+  assert.deepEqual(rules.visibleGroups.value.flatMap(group=>group.rules.map(rule=>rule.key)),['converter','processor'])
   model.managedConfiguration.processor.configuration.timeMillis=10
   rules.signalAlgorithm.value='median'
   assert.equal(model.managedConfiguration.processor.configuration.window,3)

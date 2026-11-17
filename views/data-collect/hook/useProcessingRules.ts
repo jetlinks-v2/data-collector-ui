@@ -98,13 +98,16 @@ export function useProcessingRules(getModel: () => CollectorObject, getCapabilit
     { key:'handler', title:t('collectorProcessing.alarm'), icon:'AlertOutlined', color:'orange', description:t('collectorProcessing.alarmHint') },
   ])
   const groups = computed(() => {
+    const convertedCleaning = enabled('outlier') && !!managed.value.outlier?.provider && !['expression','valid-number','signal'].includes(managed.value.outlier.provider) && !managed.value.outlier.configuration?.beforeConversion && enabled('converter')
     const stages=[
-    { key:'cleaning', title:t('collectorProcessing.cleaning'), rules:rules.value.filter(rule => rule.key === 'outlier') },
-    { key:'calculation', title:t('collectorProcessing.conversion'), rules:rules.value.filter(rule => rule.key === 'converter' || rule.key === 'processor') },
-    { key:'processing', title:t('collectorProcessing.handling'), rules:rules.value.filter(rule => ['changedOnly','deadband','storage','handler'].includes(rule.key)) },
+    { key:'cleaning', title:t('collectorProcessing.cleaning'), description:t(convertedCleaning ? 'collectorProcessing.cleaningConvertedHint' : 'collectorProcessing.cleaningSourceHint'), rules:rules.value.filter(rule => rule.key === 'outlier') },
+    { key:'calculation', title:t('collectorProcessing.conversion'), description:t('collectorProcessing.conversionStageHint'), rules:rules.value.filter(rule => rule.key === 'converter') },
+    { key:'signal', title:t('collectorSignal.title'), description:t(enabled('converter') ? 'collectorProcessing.processingConvertedHint' : 'collectorProcessing.processingSourceHint'), rules:rules.value.filter(rule => rule.key === 'processor') },
+    { key:'output', title:t('collectorProcessing.outputConditions'), description:t('collectorProcessing.outputConditionsHint'), rules:rules.value.filter(rule => ['changedOnly','deadband'].includes(rule.key)) },
+    { key:'actions', title:t('collectorProcessing.storageAndAlarm'), description:t('collectorProcessing.storageAndAlarmHint'), rules:rules.value.filter(rule => ['storage','handler'].includes(rule.key)) },
     ]
-    // 旧清洗器仍判断计算后的值，确认改为公式后才切换至原始值，避免改变现有阈值口径。
-    if (managed.value.outlier?.provider && !['expression','valid-number','signal'].includes(managed.value.outlier.provider) && !managed.value.outlier.configuration?.beforeConversion && enabled('converter')) [stages[0],stages[1]]=[stages[1],stages[0]]
+    // 旧配置只交换清洗与换算，后续滤波仍在清洗后；展示顺序不改写已保存的配置。
+    if (convertedCleaning) [stages[0],stages[1]]=[stages[1],stages[0]]
     return stages
   })
   const visibleGroups = computed(() => groups.value.map(group => ({ ...group, rules:group.rules.filter(rule => enabled(rule.key)) })).filter(group => group.rules.length))
