@@ -1,4 +1,15 @@
 {
+  "CollectorDocumentHelp": {
+    "page": "Data collection",
+    "channelEditor": "Channel configuration",
+    "collectorEditor": "Collector configuration",
+    "pointEditor": "Point configuration",
+    "collectionSettings": "Collection settings",
+    "gateway": "Collection channel and gateway device",
+    "channel": "Collector channel",
+    "collector": "Point collector",
+    "interval": "Collection interval"
+  },
   "Channel.index.290640-0": "Add channel",
   "Channel.index.290640-1": "agreement",
   "Channel.index.290640-2": "Description",

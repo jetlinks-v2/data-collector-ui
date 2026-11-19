@@ -27,9 +27,10 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item :label="$t('DataCollect.index.400151-4')" name="channelId" :rules="[
+              <a-form-item name="channelId" :rules="[
                   { required: true, message: i18n.global.t('Collector.data.400141-26') }
               ]">
+                <template #label>{{ $t('DataCollect.index.400151-4') }} <DocumentHelp code="data-collect" help-key="collector.channel" /></template>
                 <a-input
                     v-model:value="formData.channelName"
                     :disabled="true"
@@ -87,6 +88,7 @@
 </template>
 
 <script setup>
+import DocumentHelp from '@jetlinks-web-core/components/DocumentHelp';
 import ResultProcessing from "@data-collector-ui/views/data-collect/components/Config/ResultProcessing.vue";
 import DataConversion from "@data-collector-ui/views/data-collect/components/Config/DataConversion.vue";
 import DeadZone from "@data-collector-ui/views/data-collect/components/Config/DeadZone.vue";

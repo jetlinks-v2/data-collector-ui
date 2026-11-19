@@ -46,7 +46,6 @@
       </a-col>
       <a-col :span="12">
         <a-form-item
-            :label="$t('Save.SaveModBus.4001413-30')"
             name="interval"
             :rules="[
         {
@@ -59,6 +58,7 @@
         },
     ]"
         >
+          <template #label>{{ $t('Save.SaveModBus.4001413-30') }} <DocumentHelp code="data-collect" help-key="collection.interval" /></template>
           <a-input-number
               style="width: 100%"
               :placeholder="$t('Save.SaveModBus.4001413-31')"
@@ -83,6 +83,7 @@
 </template>
 
 <script setup>
+import DocumentHelp from '@jetlinks-web-core/components/DocumentHelp';
 import Collapsible from "./Collapsible/index.vue";
 import {useI18n} from "vue-i18n";
 import {inject} from "vue";
