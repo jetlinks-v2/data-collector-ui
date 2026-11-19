@@ -20,8 +20,8 @@
         v-if="props.provider === 'COLLECTOR_GATEWAY'"
         :name="['configuration', 'deviceId']"
         :rules="[{ required: true, message: $t('Save.index.290643-15') }]"
-        :label="$t('Save.index.290643-16')"
       >
+        <template #label>{{ $t('Save.index.290643-16') }} <DocumentHelp code="data-collect" help-key="channel.gateway" /></template>
         <GateWayFormItem
           v-model:name="formData.configuration.deviceName"
           v-model:value="formData.configuration.deviceId"
@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import DocumentHelp from '@jetlinks-web-core/components/DocumentHelp';
 import { PropType } from "vue";
 import { save, update } from "@data-collector-ui/api/data-collect/channel";
 import { devGetProtocol } from "@data-collector-ui/utils/utils";

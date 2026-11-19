@@ -1,4 +1,15 @@
 {
+  "CollectorDocumentHelp": {
+    "page": "データ収集",
+    "channelEditor": "チャネル設定",
+    "collectorEditor": "コレクター設定",
+    "pointEditor": "収集ポイント設定",
+    "collectionSettings": "収集設定",
+    "gateway": "収集チャネルとゲートウェイデバイス",
+    "channel": "コレクターの所属チャネル",
+    "collector": "収集ポイントの所属コレクター",
+    "interval": "収集周期"
+  },
   "Channel.index.290640-0": "チャンネルを追加",
   "Channel.index.290640-1": "プロトコル",
   "Channel.index.290640-2": "説明",

@@ -2,6 +2,7 @@ import {moduleRegistry} from '@jetlinks-web-core/utils/module-registry'
 import i18n from "@jetlinks-web-core/locales";
 import registerSetting from './register'
 import {name} from './package.json'
+import { registerCollectorHelpPoints } from './documentHelpPoints'
 
 const routerModules = import.meta.glob('./views/**/index.vue')
 
@@ -55,6 +56,7 @@ const getExtraRoutesMap = () => {
 
 const register = () => {
     moduleRegistry.register(name, registerSetting)
+    registerCollectorHelpPoints()
 }
 
 // 点位新增与扫描页共用连续白底面板，避免壳层重复叠加一层内边距。

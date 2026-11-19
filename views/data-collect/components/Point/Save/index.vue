@@ -19,7 +19,8 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item :label="$t('DataCollect.index.400151-27')" name="collectorId" :disabled="true">
+              <a-form-item name="collectorId" :disabled="true">
+                <template #label>{{ $t('DataCollect.index.400151-27') }} <DocumentHelp code="data-collect" help-key="point.collector" /></template>
                 <a-input
                     :placeholder="$t('DataCollect.index.400151-28')"
                     v-model:value="formData.collectorName"
@@ -65,6 +66,7 @@
 </template>
 
 <script setup>
+import DocumentHelp from '@jetlinks-web-core/components/DocumentHelp';
 import DataParsing from "../../Config/DataParsing.vue";
 import CollectionConfiguration from "../../Config/CollectionConfiguration.vue";
 import DataConversion from "../../Config/DataConversion.vue";

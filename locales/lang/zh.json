@@ -1,4 +1,15 @@
 {
+  "CollectorDocumentHelp": {
+    "page": "数据采集",
+    "channelEditor": "通道配置",
+    "collectorEditor": "采集器配置",
+    "pointEditor": "采集点配置",
+    "collectionSettings": "采集设置",
+    "gateway": "采集通道与网关设备",
+    "channel": "采集器所属通道",
+    "collector": "采集点所属采集器",
+    "interval": "采集周期"
+  },
   "Channel.index.290640-0": "新增通道",
   "Channel.index.290640-1": "协议",
   "Channel.index.290640-2": "说明",
