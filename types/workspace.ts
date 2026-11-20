@@ -98,7 +98,12 @@ export interface CollectorObservation {
   data?:PointValueData[]
   nodes:Array<{ serverId:string; collector?:RuntimeSnapshot|null; channel?:RuntimeSnapshot|null; points:Array<{id:string;runtime:RuntimeSnapshot;lastData?:PointValueData}> }>
 }
-export interface PointRow extends CollectorObject { latest?: PointValueData }
+export interface PointRow extends CollectorObject {
+  latest?: PointValueData
+  inheritBreaker?: boolean
+  circuitBreaker?: Record<string, unknown>
+  priority?: number
+}
 export interface PointCapabilities {
   autoCodec?: boolean; dataType?: { id?: string; type?: string; unit?: string }
   accessModes?: Array<{ value: string; text?: string }>; supportCodecs?: Array<{ id: string; name?: string }>

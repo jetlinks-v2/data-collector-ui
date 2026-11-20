@@ -1,4 +1,29 @@
 {
+  "collectorPointLookup": {
+    "title": "ポイントを検索",
+    "placeholder": "名前、識別子、または完全な ID",
+    "hint": "すべてのコレクターから検索",
+    "empty": "一致するポイントがありません。別の語句をお試しください。",
+    "more": "全 {total} 件のうち {count} 件を表示。検索語を追加してください。",
+    "notFound": "ポイントが変更されたかアクセスできません。再検索してください。"
+  },
+  "collectorBatchEfficiency": {
+    "search": "名前・識別子・アドレスを検索",
+    "all": "すべて",
+    "changed": "変更あり",
+    "issues": "要修正",
+    "columns": "表示列",
+    "columnsHint": "非表示の列の設定は保持されます。見出しのない貼り付けは表示列の順序に従います。",
+    "useTemplate": "「{name}」の設定を使用",
+    "namePrefix": "名前の接頭辞",
+    "keyPrefix": "識別子の接頭辞",
+    "pluginDefault": "既定の命名を使用",
+    "numberStart": "開始番号（例：001）",
+    "preview": "生成例",
+    "invalidNumbering": "開始番号は非負の整数にしてください。生成番号は安全な整数範囲内に収めてください。",
+    "templateMissing": "テンプレート行が削除されました。再選択してください。",
+    "saved": "{count} 件の変更を保存しました"
+  },
   "collectorWrite.hint": "入力値をデバイスに書き込みます。ポイント設定は変更されません。収集値はポイントの履歴保存を有効にした場合に設定に従って保存されます。",
   "collectorWrite.completed": "書き込み要求が完了しました。読み取りで実際の値を確認できます。",
   "collectorWrite.failed": "書き込みに失敗しました。接続と書き込み権限を確認してください。",

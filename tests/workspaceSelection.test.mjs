@@ -60,7 +60,7 @@ test('point clicks browse normally and select in batch mode without opening or r
   const { useCollectionWorkspace } = load('useCollectionWorkspace', {
     vue: lifecycle, 'vue-i18n': translations, 'vue-router': { onBeforeRouteLeave() {} }, 'ant-design-vue': { Modal: {} },
     './useWorkspaceData': { useWorkspaceData: () => data }, './useWorkspaceRuntime': { useWorkspaceRuntime: () => ({ close() {} }) },
-    './usePointDraft': { usePointDraft: () => ({ hasChanges: vue.ref(false), saving: vue.ref(false) }) }, './useWorkspaceActions': { useWorkspaceActions: () => batch }, '../data': {},
+    './usePointDraft': { usePointDraft: () => ({ hasChanges: vue.ref(false), saving: vue.ref(false), model: vue.ref(), dirty: vue.ref(false) }) }, './useWorkspaceActions': { useWorkspaceActions: () => batch }, '../data': {},
     './useWorkspaceRoute': { useWorkspaceRoute: (_data, apply, canSelect) => async (...args) => { if (await canSelect()) apply(...args) } },
   })
   const previous = globalThis.window

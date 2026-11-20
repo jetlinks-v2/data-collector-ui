@@ -1,7 +1,7 @@
 <template>
   <section class="cw-batch-editor" :aria-label="$t('collectorBatch.title')" :aria-busy="state.loading.value || state.saving.value">
     <div class="cw-batch-head">
-      <div class="cw-batch-title"><AIcon type="EditOutlined" /><strong>{{ $t('collectorBatch.title') }}</strong><small>{{ $t('collectorBatch.localDraft') }}</small></div>
+      <div class="cw-batch-title"><AIcon type="EditOutlined" /><strong>{{ state.scopeLabel.value || $t('collectorBatch.title') }}</strong><small>{{ $t('collectorBatch.localDraft') }}</small></div>
       <a-tooltip :title="exitHint"><a-button size="small" type="text" :disabled="state.saving.value" @click="controls.close"><AIcon type="CloseOutlined" />{{ $t('collectorBatch.exit') }}</a-button></a-tooltip>
     </div>
     <div class="cw-batch-tools" role="toolbar" :aria-label="$t('collectorBatch.title')">
@@ -9,12 +9,7 @@
       <a-tooltip :title="state.adapter.value ? $t('collectorBatch.addHint') : $t('collectorBatch.addressReadOnly')"><span><j-permission-button size="small" type="link" hasPermission="data-collect:add" :disabled="!state.adapter.value || state.loading.value || state.saving.value" @click="controls.add"><AIcon type="PlusOutlined" />{{ $t('collectorBatch.addRow') }}</j-permission-button></span></a-tooltip>
       <a-popover v-if="state.adapter.value?.generate" v-model:open="rangeOpen" trigger="click" placement="bottomLeft" overlay-class-name="cw-workspace-popover">
         <a-button size="small" type="text" :disabled="state.loading.value || state.saving.value" :title="$t('collectorBatch.rangeHint')"><AIcon type="NodeIndexOutlined" />{{ $t('collectorBatch.range') }}</a-button>
-        <template #content><div class="cw-batch-tool-panel">
-          <label>{{ $t('collectorBatch.startAddress') }}<a-input v-model:value="start" size="small" :placeholder="$t('collectorBatch.startAddress')" /></label>
-          <div class="cw-batch-tool-pair"><label>{{ $t('collectorBatch.pointCount') }}<a-input-number v-model:value="count" size="small" :min="1" :max="10000" :precision="0" /></label><label>{{ $t('collectorBatch.step') }}<a-input-number v-model:value="step" size="small" :min="1" :precision="0" :placeholder="$t('collectorBatch.automatic')" /></label></div>
-          <label>{{ $t('collectorBatch.field.codec') }}<ConfigSelect v-model:value="codec" size="small" kind="codec" :options="controls.codecOptions.value" allow-clear show-search :placeholder="$t('collectorBatch.fromTemplate')" /></label>
-          <small>{{ $t('collectorBatch.rangeHint') }}</small><a-button size="small" type="primary" :disabled="!start || !count" @click="controls.generate">{{ $t('collectorBatch.previewRange') }}</a-button>
-        </div></template>
+        <template #content><PointBatchRange :controls="controls" /></template>
       </a-popover>
       <a-tooltip :title="$t('collectorBatch.pasteHint')"><a-button size="small" type="text" :disabled="state.loading.value || state.saving.value" @click="controls.paste"><AIcon type="SnippetsOutlined" />{{ $t('collectorBatch.paste') }}</a-button></a-tooltip>
       <a-tooltip :title="$t('collectorBatch.importHint')"><a-button size="small" type="text" :disabled="state.loading.value || state.saving.value" :aria-label="$t('collectorBatch.importFile')" @click="importOpen = true"><AIcon type="ImportOutlined" /><span class="cw-batch-secondary-label">{{ $t('collectorBatch.importFile') }}</span></a-button></a-tooltip>
@@ -30,6 +25,7 @@
       </div>
       <small class="cw-batch-keyboard-hint">{{ $t('collectorBatch.keyboardHint') }}</small>
     </div>
+    <PointBatchQuery :state="state" />
     <a-alert v-if="state.error.value" type="error" show-icon :message="state.error.value" closable @close="state.error.value = ''" />
     <a-alert v-if="state.storage.failed.value || !state.storage.available.value" type="warning" show-icon :message="$t(state.storage.failed.value ? 'collectorBatch.storageFailed' : 'collectorBatch.storageUnavailable')" />
     <a-alert v-if="state.storage.recoveryFailed.value" type="warning" show-icon :message="$t('collectorBatch.recoveryFailed')" />
@@ -51,6 +47,8 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ConfigSelect from '../../../../components/ConfigSelect.vue'
 import PointBatchGrid from './PointBatchGrid.vue'
+import PointBatchQuery from './PointBatchQuery.vue'
+import PointBatchRange from './PointBatchRange.vue'
 import PointBatchCellEditor from './PointBatchCellEditor.vue'
 import { usePointBatchControls } from '../../hook/usePointBatchControls'
 import { accessOption, byteOrderOption, codecOption } from '../../../../utils/configOptions'
@@ -59,7 +57,7 @@ import type { PointBatchEditorState } from '../../hook/usePointBatchEditor'
 const props = defineProps<{ state: PointBatchEditorState }>()
 const { t } = useI18n(), controls = usePointBatchControls(props.state)
 const exitHint = computed(() => t(props.state.storage.failed.value ? 'collectorBatch.storageFailed' : !props.state.storage.available.value ? 'collectorBatch.storageUnavailable' : 'collectorBatch.exitHint'))
-const { grid, rangeOpen, fillOpen, fillField, fillValue, fillText, fillEditor, modes, start, count, codec, step, importOpen, importing, importError, filename, sheets, sheetIndex } = controls
+const { grid, rangeOpen, fillOpen, fillField, fillValue, fillText, fillEditor, modes, importOpen, importing, importError, filename, sheets, sheetIndex } = controls
 const modeOptions = computed(() => props.state.accessModes.value.map(value => accessOption(value, undefined, t)))
 const fillOptions=computed(()=>props.state.columns.value.filter(column=>column.key!=='name' && column.key!=='pointKey').map(column=>({value:column.key,label:column.title,icon:column.key==='interval'?'FieldTimeOutlined':column.plugin?'SettingOutlined':column.key==='codec'?'FieldBinaryOutlined':'SwapOutlined',description:t('collectorBatch.onlySelected')})))
 const fillCodecOptions=computed(()=>controls.fillDecoding.codecs.value.map(codec=>codecOption(codec,t)))
@@ -72,7 +70,8 @@ defineExpose({ dirty: computed(() => props.state.dirty.value && (props.state.sto
 .cw-batch-head,.cw-batch-title,.cw-batch-tools,.cw-batch-summary,.cw-batch-primary-tools,.cw-batch-context-tools { display:flex; align-items:center; gap:8px; min-width:0; }
 .cw-batch-head { justify-content:space-between; }
 .cw-batch-title { font-size:13px; }
-.cw-batch-title small { color:var(--ant-color-text-tertiary,#8c8c8c); font-weight:400; }
+.cw-batch-title strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cw-batch-title small { color:var(--ant-color-text-tertiary,#8c8c8c); font-weight:400; white-space:nowrap; }
 .cw-batch-tools { flex-wrap:wrap; gap:6px 12px; min-height:28px; }
 .cw-batch-primary-tools { flex:0 0 auto; gap:2px; }
 .cw-batch-context-tools { flex:0 0 auto; flex-wrap:nowrap; gap:4px; padding:2px 6px; border-radius:var(--ant-border-radius-sm,4px); background:var(--ant-color-primary-bg,#e6f4ff); }

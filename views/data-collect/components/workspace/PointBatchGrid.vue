@@ -10,13 +10,13 @@
       </tr></thead>
       <tbody>
         <tr v-if="grid.top.value" aria-hidden="true"><td :colspan="columns.length + 4" :style="{height:grid.top.value+'px',padding:0,border:0}" /></tr>
-        <tr v-for="(row,offset) in grid.window.value" :key="row.key" :aria-rowindex="grid.start.value + offset + 2" :class="{'cw-batch-row-selected':grid.selected.value.has(row.key),'cw-batch-row-invalid':state.issues.value.get(row.key)?.length,'cw-batch-row-deleted':row.deleted}" :data-row-key="row.key">
+        <tr v-for="(row,offset) in grid.window.value" :key="row.key" tabindex="-1" :aria-rowindex="grid.start.value + offset + 2" :class="{'cw-batch-row-selected':grid.selected.value.has(row.key),'cw-batch-row-invalid':state.issues.value.get(row.key)?.length,'cw-batch-row-deleted':row.deleted}" :data-row-key="row.key">
           <td class="cw-batch-check"><a-checkbox :checked="grid.selected.value.has(row.key)" :disabled="state.saving.value" :aria-label="$t('collectorBatch.selectRow',{name:row.point.name || grid.start.value + offset + 1})" @change="state.toggle(row.key)" /></td>
           <td class="cw-batch-identity">
             <span v-if="grid.active.value?.key === row.key && ['name','pointKey'].includes(grid.active.value.field)" data-batch-editor><a-input :key="grid.active.value.field" v-model:value="grid.input.value" size="small" :data-batch-field="grid.active.value.field" :aria-label="controlsTitle(grid.active.value.field)" @blur="grid.blurCommon($event,row.key)" /></span>
             <div v-else class="cw-batch-name"><button :disabled="state.saving.value || row.deleted" :title="row.point.name || $t('collectorBatch.emptyField')" @click="grid.activate(row,'name')">{{ row.point.name || $t('collectorBatch.emptyField') }}</button><button class="cw-batch-key" :disabled="state.saving.value || row.deleted" :title="$t('collectorBatch.field.pointKey')" @click="grid.activate(row,'pointKey')">{{ row.point.pointKey || $t('collectorBatch.emptyKey') }}</button></div>
           </td>
-          <td v-for="column in columns" :key="column.key" :class="{'cw-batch-cell-invalid':row.fieldErrors?.[column.key] || row.ruleErrors?.[column.key]}" :aria-invalid="!!(row.fieldErrors?.[column.key] || row.ruleErrors?.[column.key])">
+          <td v-for="column in columns" :key="column.key" :data-batch-field="column.key" :class="{'cw-batch-cell-invalid':row.fieldErrors?.[column.key] || row.ruleErrors?.[column.key]}" :aria-invalid="!!(row.fieldErrors?.[column.key] || row.ruleErrors?.[column.key])">
             <PointBatchCellEditor v-if="column.plugin && grid.active.value?.key === row.key && grid.active.value.field === column.key" :ref="(value:unknown)=>grid.setPluginEditor(value,row.key,column.key)" v-model:value="grid.pluginInput.value" :column="column.plugin" :record="row.point" :collector="state.collector.value" @commit="grid.commit(row.key,column.key)" />
             <span v-else-if="grid.active.value?.key === row.key && grid.active.value.field === column.key" data-batch-editor>
               <a-tooltip v-if="column.field === 'codec' || column.field === 'byteLayout'" :title="grid.decoding.error.value ? state.message(grid.decoding.error.value) : undefined">
@@ -53,7 +53,7 @@ import type { BatchCellKey, BatchFilterColumn, PointBatchGridColumn, PointBatchR
 const props=defineProps<{state:PointBatchEditorState}>()
 const {t}=useI18n(),grid=usePointBatchGrid(props.state)
 const {viewport}=grid
-const columns=computed(()=>props.state.columns.value.filter(column=>column.key!=='name' && column.key!=='pointKey'))
+const columns=computed(()=>props.state.displayColumns.value.filter(column=>column.key!=='name' && column.key!=='pointKey'))
 const tableWidth=computed(()=>36+196+42+36+columns.value.reduce((total,column)=>total+column.width,0))
 const codecOptions=computed(()=>props.state.codecCatalog.codecs.value.map(codec=>codecOption(codec,t)))
 const activeCodecOptions=computed(()=>grid.decoding.codecs.value.map(codec=>codecOption(codec,t)))

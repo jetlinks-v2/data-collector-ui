@@ -1,6 +1,6 @@
 import { cloneDeep, isEqual } from 'lodash-es'
 import { accessValues, stateValue, type CollectorObject, type PointRow } from '../types/workspace'
-import type { BatchField, PointBatchAdapter, PointBatchRow } from '../types/pointBatch'
+import type { BatchCellKey, BatchField, PointBatchAdapter, PointBatchRow } from '../types/pointBatch'
 
 export const batchFields: BatchField[] = ['name', 'pointKey', 'address', 'codec', 'accessModes', 'interval']
 
@@ -86,6 +86,10 @@ export function batchIssues(rows: PointBatchRow[], directory: PointRow[], adapte
     if (row.saveError) errors.push(row.saveError)
     return [row.key, errors]
   }))
+}
+export function batchIssueField(row: PointBatchRow, issues: string[]): BatchCellKey | undefined {
+  const fields: Record<string, BatchCellKey> = { nameRequired:'name', keyRequired:'pointKey', duplicateKey:'pointKey', invalidInterval:'interval', invalidAccess:'accessModes', addressRequired:'address' }
+  return fields[issues[0]] || Object.keys({ ...row.fieldErrors, ...row.ruleErrors }).find(key => row.fieldErrors?.[key] || row.ruleErrors?.[key]) as BatchCellKey | undefined
 }
 /** Send explicit editable data only. Persistent identities and every untouched plugin field survive. */
 export function batchPayload(row: PointBatchRow): PointRow {

@@ -1,4 +1,29 @@
 {
+  "collectorPointLookup": {
+    "title": "查找點位",
+    "placeholder": "輸入點位名稱、識別碼或完整 ID",
+    "hint": "查找所有採集器中的點位",
+    "empty": "沒有符合的點位，試試其他關鍵字",
+    "more": "顯示 {total} 個結果中的前 {count} 個，請補充關鍵字縮小範圍",
+    "notFound": "點位已變更或無法存取，請重新查找"
+  },
+  "collectorBatchEfficiency": {
+    "search": "搜尋名稱、識別碼或位址",
+    "all": "全部",
+    "changed": "已修改",
+    "issues": "待修正",
+    "columns": "顯示欄位",
+    "columnsHint": "隱藏欄位保留設定。無表頭貼上依目前顯示欄位的順序填入。",
+    "useTemplate": "沿用「{name}」的設定",
+    "namePrefix": "名稱前綴",
+    "keyPrefix": "識別碼前綴",
+    "pluginDefault": "使用預設命名",
+    "numberStart": "起始編號（如 001）",
+    "preview": "產生範例",
+    "invalidNumbering": "起始編號應為非負整數，產生後的編號不能超過安全整數範圍",
+    "templateMissing": "所選範本列已移除，請重新選擇",
+    "saved": "已儲存 {count} 項變更"
+  },
   "WritePoint.index.769007-0": "寫入設備",
   "WritePoint.index.769007-13": "寫入設備",
   "collectorWrite.hint": "將填寫的值寫入設備，不修改點位設定。採集值僅在點位啟用「歷史儲存」後依設定保留。",

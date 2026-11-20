@@ -63,6 +63,66 @@ test('batch entry defaults to every directory point, while an explicit filtered 
   state.close();await state.start(['p2','p7']);assert.deepEqual(state.rows.value.map(row=>row.key),['p2','p7'])
   state.close();await state.start([]);assert.equal(state.rows.value.length,0)
 })
+test('search and review filters keep hidden changes in the save scope',async()=>{
+  const {state,current,calls}=environment()
+  for(const id of ['a','b','c'])current.set(id,point(id))
+  await state.start(['a','b','c'],'Selected · 3')
+  assert.equal(state.scopeLabel.value,'Selected · 3')
+  state.change(state.rows.value[0],'name','Pump temperature')
+  state.change(state.rows.value[1],'interval','invalid')
+  state.updateFilters({review:'changed'});assert.equal(state.visibleRows.value.length,2)
+  state.updateFilters({review:'issues'});assert.deepEqual(state.visibleRows.value.map(row=>row.key),['b'])
+  state.change(state.rows.value[1],'interval','200');assert.equal(state.visibleRows.value.length,0)
+  state.updateFilters({review:'all',search:'pump'});assert.deepEqual(state.visibleRows.value.map(row=>row.key),['a'])
+  await state.confirmSave();assert.equal(calls[0].length,2);assert.equal(current.get('b').interval,200)
+  assert.equal(state.filters.value.search,'pump');assert.match(state.notice.value,/saved/)
+})
+test('visible column order governs headerless paste and keyboard; headers can still update hidden columns',async()=>{
+  const oldWindow=globalThis.window;globalThis.window={addEventListener(){},removeEventListener(){}}
+  try {
+    const {state,current,load}=environment();current.set('a',point('a'));await state.start(['a'])
+    for(const field of ['codec','byteLayout','accessModes'])state.toggleColumn(field)
+    assert.deepEqual(state.parseClipboard('40009\t250','address').fields,['address','interval'])
+    state.paste('40009\t250',0,'address')
+    const row=state.rows.value[0];assert.equal(row.point.interval,250);assert.equal(row.point.managedConfiguration.codec,'int16');assert.deepEqual(row.point.accessModes,['read'])
+    assert.deepEqual(state.parseClipboard('codec\tinterval\nint16\t400').fields,['codec','interval'])
+    assert.ok(state.parseClipboard('int16\tAB','codec',true).fields.includes('byteLayout'))
+    const grid=load('views/data-collect/hook/usePointBatchGrid.ts').usePointBatchGrid(state)
+    await grid.activate(row,'address');grid.keyboard({key:'Tab',preventDefault(){},stopPropagation(){}});assert.equal(grid.active.value.field,'interval')
+    grid.commit();state.toggleColumn('interval');state.change(row,'interval','bad');state.updateFilters({search:'no match'})
+    await grid.firstError();assert.equal(state.filters.value.search,'');assert.equal(state.hiddenColumns.value.includes('interval'),false);assert.equal(grid.active.value.field,'interval')
+  } finally {globalThis.window=oldWindow}
+})
+test('range preview and insertion share template settings and zero-padded numbering without copying identity',async()=>{
+  const {state,current,calls}=environment()
+  current.set('a',{...point('a'),interval:250,description:'Plant 1',inheritBreaker:false,circuitBreaker:{threshold:3},managedConfiguration:{codec:'ieee754_float32'},runtime:{available:true}})
+  await state.start(['a'])
+  const generate=state.adapter.value.generate
+  state.adapter.value.generate=(options,template)=>generate(options,template).map(value=>({...value,configuration:{...template.configuration,...value.configuration}}))
+  const options={start:'40010',count:4,templateKey:'a',namePrefix:'Temperature ',keyPrefix:'temp_',numberStart:'009'}
+  const preview=state.rangeRows(options,true);assert.equal(preview.length,3);assert.equal(state.rows.value.length,1)
+  const row=state.generate(options);assert.equal(state.rows.value.length,5);assert.equal(calls.length,0)
+  assert.deepEqual(state.rows.value.slice(1).map(row=>row.point.pointKey),['temp_009','temp_010','temp_011','temp_012'])
+  assert.equal(row.point.name,preview[0].point.name);assert.equal(row.address,preview[0].address)
+  assert.equal(row.point.interval,250);assert.equal(row.point.configuration.custom,'keep');assert.equal(row.point.description,'Plant 1');assert.deepEqual(row.point.circuitBreaker,{threshold:3})
+  assert.equal(row.point.managedConfiguration.codec,'ieee754_float32');assert.equal(row.point.configuration.quantity,2)
+  assert.equal(row.point.runtime,undefined);assert.notEqual(row.point.id,'a');assert.equal(row.point.collectorId,'c');assert.equal(row.baseline,undefined)
+  row.point.circuitBreaker.threshold=8;assert.equal(state.rows.value[0].point.circuitBreaker.threshold,3)
+  const before=state.rows.value.length;assert.equal(state.generate({...options,numberStart:'1.5'}),undefined);assert.equal(state.rows.value.length,before)
+  assert.match(state.error.value,/invalidNumbering/)
+})
+test('twelve thousand draft rows keep a bounded viewport and searchable plugin addresses',async()=>{
+  const oldWindow=globalThis.window;globalThis.window={addEventListener(){},removeEventListener(){}}
+  try {
+    const {state,current,load}=environment()
+    for(let index=0;index<12000;index++)current.set(String(index),{...point(String(index)),name:`Temperature ${index}`,configuration:{address:String(40001+index),quantity:1}})
+    await state.start([...current.keys()]);const grid=load('views/data-collect/hook/usePointBatchGrid.ts').usePointBatchGrid(state)
+    assert.ok(grid.window.value.length<30)
+    state.updateFilters({search:'Temperature 11999'});assert.deepEqual(state.visibleRows.value.map(row=>row.key),['11999'])
+    state.updateFilters({search:'52000'});assert.deepEqual(state.visibleRows.value.map(row=>row.key),['11999'])
+    grid.viewport.value={scrollTop:1000000,clientHeight:420};grid.scroll();state.clearFilters();await vue.nextTick();assert.ok(grid.window.value.length<30);assert.ok(grid.window.value.length>0)
+  } finally {globalThis.window=oldWindow}
+})
 test('row removal is local, reversible for saved points, and skips validation of deleted drafts',async()=>{
   const {state,current,calls,deletions}=environment();current.set('existing',point());await state.start(['existing'])
   const row=state.rows.value[0],added=state.add()
@@ -154,7 +214,7 @@ test('a 1200-row local draft mounts a bounded row window and retains the last ac
     const {state,load}=environment();await state.start()
     for(let index=0;index<1200;index++){const row=state.add();row.point.name=`Point ${index}`}
     const grid=load('views/data-collect/hook/usePointBatchGrid.ts').usePointBatchGrid(state)
-    grid.viewport.value={scrollTop:0,clientHeight:420,querySelector:()=>({focus(){}})}
+    grid.viewport.value={scrollTop:0,clientHeight:420,querySelector:()=>({focus(){}}),querySelectorAll:()=>[]}
     assert.ok(grid.window.value.length<=22)
     grid.viewport.value.scrollTop=18000;grid.scroll();assert.ok(grid.start.value>400);assert.ok(grid.window.value.length<=22)
     await grid.activate(state.rows.value[500],'name');grid.input.value='最后输入'
@@ -226,7 +286,7 @@ test('filtered keyboard order, pending-cell commit and hidden-error navigation p
     for(const [id,name] of [['a','Keep A'],['b','Hidden B'],['c','Keep C']])current.set(id,{...point(id),name})
     await state.start(['a','b','c']);state.updateFilters({identity:'keep'})
     const grid=load('views/data-collect/hook/usePointBatchGrid.ts').usePointBatchGrid(state)
-    grid.viewport.value={scrollTop:500,clientHeight:100,querySelector:()=>({focus(){}})};state.commitInput.value=grid.commit
+    grid.viewport.value={scrollTop:500,clientHeight:100,querySelector:()=>({focus(){}}),querySelectorAll:()=>[]};state.commitInput.value=grid.commit
     await grid.activate(state.visibleRows.value[0],'interval');grid.input.value='333';grid.keyboard({key:'Tab',preventDefault(){}})
     assert.equal(grid.active.value.key,'c');assert.equal(grid.active.value.field,'name');assert.equal(state.rows.value[0].point.interval,333)
     grid.input.value='Keep Changed';state.updateFilters({address:'40001'})

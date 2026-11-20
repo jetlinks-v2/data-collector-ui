@@ -1,4 +1,29 @@
 {
+  "collectorPointLookup": {
+    "title": "查找点位",
+    "placeholder": "输入点位名称、标识或完整 ID",
+    "hint": "查找所有采集器中的点位",
+    "empty": "没有匹配的点位，试试其他关键词",
+    "more": "显示 {total} 个结果中的前 {count} 个，请补充关键词缩小范围",
+    "notFound": "点位已变更或无法访问，请重新查找"
+  },
+  "collectorBatchEfficiency": {
+    "search": "搜索名称、标识或地址",
+    "all": "全部",
+    "changed": "已修改",
+    "issues": "待修正",
+    "columns": "显示列",
+    "columnsHint": "隐藏列保留配置。无表头粘贴按当前显示的列顺序填入。",
+    "useTemplate": "沿用“{name}”的配置",
+    "namePrefix": "名称前缀",
+    "keyPrefix": "标识前缀",
+    "pluginDefault": "使用默认命名",
+    "numberStart": "起始编号（如 001）",
+    "preview": "生成示例",
+    "invalidNumbering": "起始编号应为非负整数，生成后的编号不能超过安全整数范围",
+    "templateMissing": "所选模板行已移除，请重新选择",
+    "saved": "已保存 {count} 项更改"
+  },
   "collectorWrite.hint": "将填写的值写入设备，不修改点位配置。采集值仅在点位开启“历史保存”后按设置留存。",
   "collectorWrite.completed": "写入请求已完成，可试读核对实际值",
   "collectorWrite.failed": "写入失败，请检查设备连接和写入权限",

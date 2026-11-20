@@ -33,7 +33,7 @@ const aliases: Record<BatchField, string[]> = {
   interval: ['interval', 'intervalms', 'interval(ms)', '周期', '周期(ms)', '采集周期', '采集周期(ms)', '采集间隔', '采集间隔(ms)'],
 }
 const normalizeHeader = (text: string) => text.toLowerCase().trim().replace(/[\s_\-]/g, '').replace(/（/g, '(').replace(/）/g, ')')
-export function mapPointClipboard(text: string, start: BatchCellKey = 'name', columns?: PointBatchGridColumn[]): { fields: BatchCellKey[]; rows: string[][]; header: boolean } {
+export function mapPointClipboard(text: string, start: BatchCellKey = 'name', columns?: PointBatchGridColumn[], displayed = columns): { fields: BatchCellKey[]; rows: string[][]; header: boolean } {
   const rows = readPointClipboard(text)
   if (!rows.length) return { fields: [], rows: [], header: false }
   const available:PointBatchGridColumn[] = columns || batchFields.map(field=>({key:field,field,title:field,width:0}))
@@ -48,8 +48,9 @@ export function mapPointClipboard(text: string, start: BatchCellKey = 'name', co
     if (mapped.some(field => !field) || new Set(mapped).size !== mapped.length) throw new Error('clipboardColumns')
     return { fields: mapped.filter((field):field is BatchCellKey=>!!field), rows: rows.slice(1), header: true }
   }
-  const position=available.findIndex(column=>column.key===start)
-  const fields = available.slice(position < 0 ? 0 : position).map(column=>column.key)
+  const order = displayed || available
+  const position=order.findIndex(column=>column.key===start)
+  const fields = order.slice(position < 0 ? 0 : position).map(column=>column.key)
   if (rows.some(row => row.length > fields.length)) throw new Error('clipboardColumns')
   return { fields, rows, header: false }
 }

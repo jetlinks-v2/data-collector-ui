@@ -137,6 +137,24 @@ watch([()=>props.selected,editorReady,columnCount,width,height,cards],async ([id
   await nextTick()
   updateEditor()
 },{flush:'post'})
+function getPosition() {
+  const top=scroll.value?.getScrollTop() || 0,index=Math.floor(top/rowHeight.value)*columnCount.value
+  return { id:props.points[index]?.id,offset:top%rowHeight.value,top }
+}
+async function restorePosition(position:ReturnType<typeof getPosition>) {
+  await nextTick()
+  const index=props.points.findIndex(point=>point.id === position.id)
+  scroll.value?.scrollTo(index<0 ? position.top : Math.floor(index/columnCount.value)*rowHeight.value+position.offset)
+}
+async function reveal(id:string) {
+  const index=props.points.findIndex(point=>point.id === id)
+  if(index<0)return false
+  scroll.value?.scrollTo(Math.floor(index/columnCount.value)*rowHeight.value)
+  await nextTick()
+  Array.from(root.value?.querySelectorAll<HTMLElement>('[data-point-id]') || []).find(element=>element.dataset.pointId === id)?.querySelector<HTMLButtonElement>('.cw-point-select')?.focus({preventScroll:true})
+  return true
+}
+defineExpose({reveal,getPosition,restorePosition})
 onBeforeUnmount(()=>{resize?.disconnect();intersection?.disconnect();mutation?.disconnect();window.removeEventListener('resize',measure);emit('visible',[])})
 const reading = (point: PointRow) => {
   const state = stateValue(objectDisplayState(point))

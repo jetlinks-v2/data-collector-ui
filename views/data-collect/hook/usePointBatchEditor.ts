@@ -8,7 +8,7 @@ import { batchFilterActive, emptyBatchFilters, matchesBatchFilters } from '../..
 import { pointBatchGridColumns } from '../../../utils/pointBatchColumns'
 import { finishPointBatchRow, setPointBatchCell } from '../../../utils/pointBatchCell'
 import type { CollectorObject, PointRow } from '../../../types/workspace'
-import type { BatchCellKey, BatchFilterColumn, PointBatchAdapter, PointBatchFilters, PointBatchRow } from '../../../types/pointBatch'
+import type { BatchCellKey, BatchFilterColumn, PointBatchAdapter, PointBatchFilters, PointBatchRange, PointBatchRow } from '../../../types/pointBatch'
 import { useBatchDraftStorage } from './useBatchDraftStorage'
 import { usePointCodecs } from './usePointCodecs'
 
@@ -18,13 +18,16 @@ export function usePointBatchEditor(collector: Ref<CollectorObject | undefined>,
   const rows = ref<PointBatchRow[]>([]), selected = ref<string[]>([]), accessModes = ref<string[]>(['read'])
   const commitInput = ref<() => void>()
   const filters = ref(emptyBatchFilters()), filterRevision = ref(0), notice = ref('')
+  const hiddenColumns = ref<BatchCellKey[]>([]), scopeLabel = ref('')
   const columns=computed(()=>{
     const points=rows.value.length?rows.value.map(row=>row.point):collector.value?[newBatchPoint(collector.value,'')]:[]
     return pointBatchGridColumns(adapter.value,t,!points.length || points.some(point=>!adapter.value?.isAutoCodec?.(point)))
   })
   const filterColumns: BatchFilterColumn[] = ['identity', 'address', 'codec', 'byteLayout', 'accessModes', 'interval']
-  const filtered = computed(() => filterColumns.some(column => batchFilterActive(filters.value, column)) || Object.values(filters.value.plugins).some(value=>!!value.trim()))
-  const visibleRows = computed(() => filtered.value ? rows.value.filter(row => matchesBatchFilters(row, filters.value, adapter.value)) : rows.value)
+  const displayColumns = computed(() => columns.value.filter(column => ['name','pointKey'].includes(column.key) || !hiddenColumns.value.includes(column.key)))
+  function toggleColumn(key: BatchCellKey) { commitInput.value?.(); hiddenColumns.value = hiddenColumns.value.includes(key) ? hiddenColumns.value.filter(value => value !== key) : [...hiddenColumns.value, key] }
+  const filtered = computed(() => !!filters.value.search.trim() || filters.value.review !== 'all' || filterColumns.some(column => batchFilterActive(filters.value, column)) || Object.values(filters.value.plugins).some(value=>!!value.trim()))
+  const visibleRows = computed(() => filtered.value ? rows.value.filter(row => (filters.value.review !== 'changed' || changedBatchRow(row)) && (filters.value.review !== 'issues' || !!issues.value.get(row.key)?.length) && matchesBatchFilters(row, filters.value, adapter.value)) : rows.value)
   function updateFilters(patch: Partial<PointBatchFilters>) { commitInput.value?.(); filters.value = { ...filters.value, ...patch, plugins:{...filters.value.plugins,...patch.plugins} }; selected.value = []; notice.value = ''; ++filterRevision.value }
   function clearFilters() { commitInput.value?.();filters.value=emptyBatchFilters();selected.value=[];notice.value='';++filterRevision.value }
   function clearFilter(column: BatchFilterColumn) {
@@ -42,6 +45,7 @@ export function usePointBatchEditor(collector: Ref<CollectorObject | undefined>,
     if (key === 'keyRequired') return t('collectorBatchKeyRequired')
     if(key==='objectClipboard')return t('collectorBatchObjectClipboard')
     if(key==='invalidByteLayout')return t('collectorBatchInvalidByteLayout')
+    if(['invalidNumbering','templateMissing'].includes(key))return t(`collectorBatchEfficiency.${key}`)
     if (['clipboardPermission', 'importFormat', 'importColumns'].includes(key)) return t(`collectorBatchFiles.${key}`)
     const translation = `collectorBatch.${key}`
     return te(translation) ? t(translation) : key
@@ -56,7 +60,7 @@ export function usePointBatchEditor(collector: Ref<CollectorObject | undefined>,
     }).finally(()=>validations.delete(pending))
     validations.add(pending)
   }
-  const parseClipboard=(text:string,start:BatchCellKey='name')=>mapPointClipboard(text,start,columns.value)
+  const parseClipboard=(text:string,start:BatchCellKey='name',allColumns=false)=>mapPointClipboard(text,start,columns.value,allColumns ? columns.value : displayColumns.value)
   async function loadCapabilities(point?: PointRow) {
     if (!point || capabilitiesLoaded) return
     capabilitiesLoaded = true
@@ -79,9 +83,10 @@ export function usePointBatchEditor(collector: Ref<CollectorObject | undefined>,
     }
     return result
   }
-  async function start(ids: string[] = directory.value.filter(point => !point.id.startsWith('_new:')).map(point => point.id)) {
+  async function start(ids: string[] = directory.value.filter(point => !point.id.startsWith('_new:')).map(point => point.id), label = '') {
     if (saving.value || !collector.value) return
     const token = ++revision
+    scopeLabel.value = label
     cellVersions.clear();validations.clear();localValidationFailure=false
     capabilitiesLoaded = false
     loading.value = true; error.value = ''; selected.value = []; rows.value = []; filters.value = emptyBatchFilters(); notice.value = ''; ++filterRevision.value
@@ -145,28 +150,49 @@ export function usePointBatchEditor(collector: Ref<CollectorObject | undefined>,
     } catch (cause) { error.value = message(cause) }
     finally { loading.value = false; storage.flush() }
   }
-  function generate(options: { start: string; count: number; codec?: string; step?: number }) {
-    error.value = ''
-    if (!collector.value || !adapter.value?.generate) return
-    try {
-      const generated = adapter.value.generate(options, newBatchPoint(collector.value, id()))
-      const keys = new Set([...directory.value, ...rows.value.map(row => row.point)].map(point => point.pointKey))
-      const base = rows.value.length
-      const additions = generated.map((point, index) => {
-        const value = { ...newBatchPoint(collector.value!, id()), ...point, id: id() }
-        value.name ||= t('collectorBatch.generatedName', { index: base + index + 1 })
+  function rangeRows(options: PointBatchRange, preview = false): PointBatchRow[] {
+    if (!collector.value || !adapter.value?.generate) return []
+    const template = newBatchPoint(collector.value, id())
+    template.pointKey = ''
+    if (options.templateKey) {
+      const source = rows.value.find(row => row.key === options.templateKey && !row.deleted)
+      if (!source) throw new Error('templateMissing')
+      // Copy configuration only; a template never transfers identity, ownership or runtime state.
+      for (const field of ['configuration','managedConfiguration','interval','accessModes','features','description','icon','inheritBreaker','circuitBreaker','priority'] as const) {
+        if (source.point[field] !== undefined) Object.assign(template, { [field]: cloneDeep(source.point[field]) })
+      }
+    }
+    const numberStart = options.numberStart || '1', first = Number(numberStart)
+    if (!/^\d+$/.test(numberStart) || !Number.isSafeInteger(first + options.count - 1)) throw new Error('invalidNumbering')
+    const generated = adapter.value.generate({ start:options.start, count:preview ? Math.min(3,options.count) : options.count, step:options.step, codec:options.codec ?? template.managedConfiguration?.codec }, template)
+    const keys = new Set([...directory.value, ...rows.value.map(row => row.point)].map(point => point.pointKey))
+    const base = rows.value.length
+    return generated.map((point, index) => {
+      const identity = id(), value = { ...newBatchPoint(collector.value!, identity), ...point, id:identity }
+      const number = String(first + index).padStart(numberStart.length, '0')
+      if (options.namePrefix) value.name = options.namePrefix + number
+      if (options.keyPrefix) value.pointKey = options.keyPrefix + number
+      value.name ||= t('collectorBatch.generatedName', { index: base + index + 1 })
+      if (!value.pointKey) {
         let counter = base + index + 1
         while (keys.has(`point_${counter}`)) counter++
-        value.pointKey ||= `point_${counter}`; keys.add(value.pointKey)
-        return batchRow(value, adapter.value, false)
-      })
+        value.pointKey = `point_${counter}`
+      }
+      keys.add(value.pointKey)
+      return batchRow(value, adapter.value, false)
+    })
+  }
+  function generate(options: PointBatchRange) {
+    error.value = ''
+    try {
+      const additions = rangeRows(options), base = rows.value.length
       rows.value.push(...additions); void loadCapabilities(additions[0]?.point); return rows.value[base]
     } catch (cause) { error.value = message(cause) }
   }
-  function paste(text: string, rowIndex = rows.value.length, start: BatchCellKey = 'name', targetKeys?: string[]) {
+  function paste(text: string, rowIndex = rows.value.length, start: BatchCellKey = 'name', targetKeys?: string[], allColumns = false) {
     error.value = ''
     try {
-      const parsed = parseClipboard(text, start)
+      const parsed = parseClipboard(text, start, allColumns)
       if (!adapter.value?.setAddress && parsed.fields.includes('address') && parsed.rows.some(values => values[parsed.fields.indexOf('address')])) throw new Error('addressReadOnly')
       if (parsed.rows.some(values => values.length > parsed.fields.length)) throw new Error('clipboardColumns')
       const startIndex = rowIndex
@@ -263,12 +289,13 @@ export function usePointBatchEditor(collector: Ref<CollectorObject | undefined>,
         } catch (cause) { for (const row of chunk) row.saveError = message(cause); throw cause }
       }
       await saved()
+      notice.value = t('collectorBatchEfficiency.saved', { count: changed.length })
     } catch (cause) { error.value = message(cause) }
     finally { saving.value = false; storage.flush() }
   }
   watch(() => collector.value?.id, () => { commitInput.value?.(); storage.flush(); open.value = false; rows.value = []; selected.value = []; ++revision })
   watch(() => visibleRows.value.map(row => row.key).join(','), () => { const allowed = new Set(visibleRows.value.map(row => row.key)); selected.value = selected.value.filter(key => allowed.has(key)) })
   watch(()=>counts.value.errors,count=>{if(!count && localValidationFailure){if(error.value===message(new Error('fixErrors')))error.value='';localValidationFailure=false}})
-  return { collector, columns, open, rows, visibleRows, filters, filterRevision, filtered, notice, updateFilters, clearFilters, clearFilter, selected, loading, saving, error, dirty, counts, issues, adapter, accessModes, codecCatalog, storage, commitInput, trackValidation, parseClipboard, message, start, close, add, change, fill, toggle, toggleAll, remove, undoRemove, restoreSelected, generate, paste, confirmSave }
+  return { collector, columns, displayColumns, hiddenColumns, toggleColumn, scopeLabel, open, rows, visibleRows, filters, filterRevision, filtered, notice, updateFilters, clearFilters, clearFilter, selected, loading, saving, error, dirty, counts, issues, adapter, accessModes, codecCatalog, storage, commitInput, trackValidation, parseClipboard, message, start, close, add, change, fill, toggle, toggleAll, remove, undoRemove, restoreSelected, rangeRows, generate, paste, confirmSave }
 }
 export type PointBatchEditorState = ReturnType<typeof usePointBatchEditor>

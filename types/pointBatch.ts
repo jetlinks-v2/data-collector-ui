@@ -44,6 +44,8 @@ export interface PointBatchRow {
 }
 export type BatchFilterColumn = 'identity' | 'address' | 'codec' | 'byteLayout' | 'accessModes' | 'interval' | `plugin:${string}`
 export interface PointBatchFilters {
+  search: string
+  review: 'all' | 'changed' | 'issues'
   identity: string
   address: string
   plugins: Record<string, string>
@@ -52,4 +54,14 @@ export interface PointBatchFilters {
   accessModes: string[]
   minimum?: number
   maximum?: number
+}
+export interface PointBatchRange {
+  start: string
+  count: number
+  codec?: string
+  step?: number
+  templateKey?: string
+  namePrefix?: string
+  keyPrefix?: string
+  numberStart?: string
 }

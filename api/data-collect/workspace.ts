@@ -17,6 +17,15 @@ export const readWorkspacePoints=(collectorId:string,ids:string[])=>postRuntimeN
 
 export interface Page<T> { data: T[]; total: number; pageIndex?: number; pageSize?: number }
 type Response<T> = Promise<AxiosResponseRewrite<T>>
+/** Bounded, permission-filtered lookup; addresses are resolved by the owning plugin. */
+export const findWorkspacePoints = (keyword:string,signal:AbortSignal):Response<Page<PointRow>> => request.post(
+  '/data-collect/point/convert/_query',
+  {pageIndex:0,pageSize:20,sorts:[{name:'name',order:'asc'},{name:'id',order:'asc'}],terms:[{terms:[
+    {column:'name',termType:'like',value:`%${keyword}%`},
+    {column:'pointKey',termType:'like',value:`%${keyword}%`,type:'or'},
+    {column:'id',value:keyword,type:'or'},
+  ]}]}, {signal,hiddenError:true},
+)
 export const listWorkspaceCollectors = (data: object): Response<CollectorObject[]> => request.post('/data-collect/collector/_detail/no-paging', { ...data, paging: false })
 export const listWorkspaceChannels = (data: object): Response<CollectorObject[]> => request.post('/data-collect/channel/_query/no-paging', { ...data, paging: false })
 export const listWorkspacePoints = (data: object): Response<PointRow[]> => request.post('/data-collect/point/directory/_query/no-paging', { ...data, paging: false })

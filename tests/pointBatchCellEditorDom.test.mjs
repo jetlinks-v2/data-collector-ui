@@ -20,6 +20,7 @@ const Switch=require('ant-design-vue/lib/switch').default
 const TextArea=require('ant-design-vue/lib/input/TextArea').default
 const Select=require('ant-design-vue/lib/select').default,Tag=require('ant-design-vue/lib/tag').default
 const Form=require('ant-design-vue/lib/form').default,FormItem=require('ant-design-vue/lib/form/FormItem').default
+const Modal=require('ant-design-vue/lib/modal').default
 const moduleRoot=resolve(import.meta.dirname,'..'),words=JSON.parse(readFileSync(resolve(moduleRoot,'locales/lang/zh.json'),'utf8'))
 const t=key=>key.split('.').reduce((value,name)=>value?.[name],words) || key
 const passthrough={setup:(_, {slots})=>()=>vue.h('span',slots.default?.())}
@@ -34,6 +35,7 @@ function loader(overrides={}) {
     new Function('require','module','exports',transformSync(source,{loader:'ts',format:'cjs'}).code)(name=>{
       if(name==='vue')return vue
       if(name==='vue-i18n')return {useI18n:()=>({t})}
+      if(name==='@jetlinks-web-core/components')return {SelectOption:load('../../jetlinks-web-core/src/components/SelectOption/index.vue').default}
       if(Object.hasOwn(overrides,name))return overrides[name]
       if(name.startsWith('.')){let path=resolve(dirname(filename),name);if(!existsSync(path))path+='.ts';return load(path)}
       return require(name)
@@ -53,6 +55,19 @@ function mount(component,components={}) {
 }
 function mouse(target,type){target.dispatchEvent(new dom.window.MouseEvent(type,{bubbles:true,composed:true}))}
 const settle=async()=>{await Promise.resolve();await vue.nextTick()}
+
+test('point lookup waits for the actual Ant modal close callback before moving focus',async()=>{
+  const Lookup=loader()('views/data-collect/components/workspace/WorkspacePointLookup.vue').default
+  let completed=0
+  const state={open:vue.ref(true),keyword:vue.ref(''),loading:vue.ref(false),locating:vue.ref(false),error:vue.ref(''),total:vue.ref(0),results:vue.ref([]),collectorNames:vue.ref(new Map()),destination:vue.ref('target'),search(){},choose(){},finishLocate(){completed++}}
+  const NoMotionModal={inheritAttrs:false,setup:(_,{attrs,slots})=>()=>vue.h(Modal,{...attrs,transitionName:'',maskTransitionName:''},slots)}
+  const page=mount({setup:()=>()=>vue.h(Lookup,{state})},{'a-modal':NoMotionModal,'a-input-search':passthrough,'a-spin':passthrough})
+  try {
+    await settle();assert.equal(completed,0)
+    state.open.value=false;await settle();await new Promise(resolve=>setTimeout(resolve,50));await settle()
+    assert.equal(completed,1)
+  } finally {page.close()}
+})
 
 test('the real AntSwitch survives mouseup blur until click, then commits both true and false on exit',async()=>{
   const CellEditor=loader()('views/data-collect/components/workspace/PointBatchCellEditor.vue').default
@@ -84,6 +99,7 @@ test('grid summaries distinguish default, missing and inapplicable settings whil
   const load=loader({'../../hook/usePointBatchGrid':{usePointBatchGrid:()=>grid},'../../../../components/ConfigSelect.vue':stub,'./PointBatchColumnFilter.vue':stub,'./PointBatchCellEditor.vue':stub})
   const {pointBatchGridColumns}=load('utils/pointBatchColumns.ts')
   const state={rows,visibleRows:rows,columns:vue.ref(pointBatchGridColumns(undefined,t)),adapter:vue.ref(),codecCatalog:{codecs:vue.ref([])},accessModes:vue.ref(['read']),issues:vue.ref(new Map([['p',[]]])),filters:vue.ref({}),saving:vue.ref(false),message:error=>'error: '+error}
+  state.displayColumns=state.columns
   const Grid=load('views/data-collect/components/workspace/PointBatchGrid.vue').default,page=mount({setup:()=>()=>vue.h(Grid,{state})})
   try {
     const cells=[...page.container.querySelectorAll('tbody .cw-batch-cell')]
@@ -140,6 +156,8 @@ test('the actual point editor translates a saved subscription absent from candid
   const stub={__esModule:true,default:passthrough},capabilities=vue.ref({autoCodec:true,accessModes:[{value:'read'}]})
   const load=loader({
     '@jetlinks-web-core/components/IconValue':{IconValueEditor:passthrough},
+    './EditorIconPicker.vue':stub,
+    './RuntimeCardMetrics.vue':stub,'./PointValueDisplay.vue':stub,'./PointReadFeedback.vue':stub,
     '../../hook/usePointPlugin':{usePointPlugin:()=>({loading:vue.ref(false),error:vue.ref(''),source:vue.ref(),capabilities})},
     '../../../../components/RenderComponents':stub,'./PointDecoding.vue':stub,'./ProcessingRules.vue':stub,'./WorkspaceIcon.vue':stub,
     '../../../../api/data-collect/collector':{_validateField:async()=>({success:true})},
@@ -199,7 +217,7 @@ test('the actual workspace context keeps the same plugin tools and adapter while
   const open=vue.ref(false),pointTools=vue.ref(),adapter=vue.markRaw({getAddress:()=>''});let mounts=0,unmounts=0
   const Tools={setup(_,{expose}){expose({batchAdapter:adapter});vue.onMounted(()=>mounts++);vue.onBeforeUnmount(()=>unmounts++);return ()=>vue.h('span',{'data-tools':true},'Tools')}}
   const Action={inheritAttrs:false,setup:(_,{attrs,slots})=>()=>vue.h('button',attrs,slots.default?.())}
-  const page=mount({setup:()=>({collector:vue.ref({id:'collector',name:'Collector',channelName:'Channel'}),channel:vue.ref(),batchEditor:{open},pointTools,inline:true,batchBusy:false,saving:false,pointLoading:false,ordering:false,batchEntryLabel:'编辑全部 · 17',draft:{hasChanges:vue.ref(false)},data:{loadPoints(){},trial(){}},enterBatch:()=>{open.value=true},addPoint(){}}),render:module.exports.render},{WorkspacePointTools:Tools,RuntimeCardMetrics:passthrough,WorkspaceStatus:passthrough,'j-permission-button':Action})
+  const page=mount({setup:()=>({collector:vue.ref({id:'collector',name:'Collector',channelName:'Channel'}),channel:vue.ref(),batchEditor:{open},pointTools,inline:true,batchBusy:false,saving:false,pointLoading:false,ordering:false,batchEntryLabel:'编辑全部 · 17',draft:{hasCurrentChanges:vue.ref(false)},data:{loadPoints(){},trial(){}},enterBatch:()=>{open.value=true},addPoint(){}}),render:module.exports.render},{WorkspacePointTools:Tools,RuntimeCardMetrics:passthrough,WorkspaceStatus:passthrough,'j-permission-button':Action})
   try {
     await settle()
     const tools=page.container.querySelector('[data-tools]'),instance=pointTools.value

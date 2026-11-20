@@ -1,4 +1,29 @@
 {
+  "collectorPointLookup": {
+    "title": "Find a point",
+    "placeholder": "Point name, key or full ID",
+    "hint": "Find points across all collectors",
+    "empty": "No matching points. Try another keyword.",
+    "more": "Showing {count} of {total} results. Refine your search.",
+    "notFound": "The point changed or is no longer accessible. Search again."
+  },
+  "collectorBatchEfficiency": {
+    "search": "Search name, key or address",
+    "all": "All",
+    "changed": "Changed",
+    "issues": "Needs fixing",
+    "columns": "Columns",
+    "columnsHint": "Hidden columns keep their settings. Headerless paste follows the visible column order.",
+    "useTemplate": "Use settings from “{name}”",
+    "namePrefix": "Name prefix",
+    "keyPrefix": "Key prefix",
+    "pluginDefault": "Use default names",
+    "numberStart": "First number (e.g. 001)",
+    "preview": "Generated examples",
+    "invalidNumbering": "Use a non-negative integer. Generated numbers must stay within the safe integer range.",
+    "templateMissing": "The template row was removed. Select it again.",
+    "saved": "Saved {count} changes"
+  },
   "collectorWrite.hint": "Write the value to the device without changing the point configuration. Collected values are retained only when history storage is enabled for the point.",
   "collectorWrite.completed": "Write request completed. Read the point to verify its value.",
   "collectorWrite.failed": "Write failed. Check the connection and write permissions.",

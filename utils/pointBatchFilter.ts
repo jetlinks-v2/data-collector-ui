@@ -2,7 +2,7 @@ import { accessValues } from '../types/workspace'
 import type { BatchFilterColumn, PointBatchAdapter, PointBatchFilters, PointBatchRow } from '../types/pointBatch'
 import { pointBatchColumnText } from './pointBatchColumns'
 
-export function emptyBatchFilters(): PointBatchFilters { return { identity: '', address: '', plugins:{}, byteLayout:'', codecs: [], accessModes: [], minimum: undefined, maximum: undefined } }
+export function emptyBatchFilters(): PointBatchFilters { return { search:'', review:'all', identity: '', address: '', plugins:{}, byteLayout:'', codecs: [], accessModes: [], minimum: undefined, maximum: undefined } }
 export function batchFilterActive(filters: PointBatchFilters, column: BatchFilterColumn): boolean {
   if (column === 'codec') return !!filters.codecs.length
   if (column === 'accessModes') return !!filters.accessModes.length
@@ -15,6 +15,11 @@ export function batchCodecKey(row: PointBatchRow, adapter?: PointBatchAdapter): 
 }
 /** Local display filters never discard drafts or alter their persistent identities. */
 export function matchesBatchFilters(row: PointBatchRow, filters: PointBatchFilters, adapter?: PointBatchAdapter): boolean {
+  const search = filters.search?.trim().toLocaleLowerCase()
+  if (search) {
+    const includes = (value:unknown) => String(value ?? '').toLocaleLowerCase().includes(search)
+    if (![row.point.name, row.point.pointKey, row.address].some(includes) && !Object.values(row.inputs || {}).some(includes) && !adapter?.columns?.some(column => includes(pointBatchColumnText(column, row.point)))) return false
+  }
   const identity = filters.identity.trim().toLocaleLowerCase(), address = filters.address.trim().toLocaleLowerCase()
   if (identity && ![row.point.name, row.point.pointKey].some(value => value?.toLocaleLowerCase().includes(identity))) return false
   if (address) {

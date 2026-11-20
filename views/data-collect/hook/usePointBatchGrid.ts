@@ -1,6 +1,6 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { cloneDeep, isEqual } from 'lodash-es'
-import { batchFieldValue } from '../../../utils/pointBatchDraft'
+import { batchFieldValue, batchIssueField } from '../../../utils/pointBatchDraft'
 import { pointBatchColumnInput } from '../../../utils/pointBatchColumns'
 import type { BatchCellKey, PointBatchRow } from '../../../types/pointBatch'
 import type { PointBatchEditorState } from './usePointBatchEditor'
@@ -71,6 +71,13 @@ export function usePointBatchGrid(state: PointBatchEditorState) {
     initialValue=cloneDeep(column.plugin?pluginInput.value:input.value)
     if(key==='codec' || key==='byteLayout')void decoding.load(row.point)
     focusRow(index);await nextTick()
+    const cell = Array.from(viewport.value?.querySelectorAll<HTMLElement>('[data-row-key]') || []).find(element => element.dataset.rowKey === row.key)
+    const target = Array.from(cell?.querySelectorAll<HTMLElement>('[data-batch-field]') || []).find(element => element.dataset.batchField === key)
+    if (target && viewport.value && !['name','pointKey'].includes(key)) {
+      const left = target.getBoundingClientRect().left - viewport.value.getBoundingClientRect().left, right = left + target.offsetWidth
+      if (left < 232) viewport.value.scrollLeft += left - 232
+      else if (right > viewport.value.clientWidth - 36) viewport.value.scrollLeft += right - viewport.value.clientWidth + 36
+    }
     viewport.value?.querySelector<HTMLInputElement>('[data-batch-editor] input,[data-batch-editor] button,[data-batch-editor] [tabindex="0"]')?.focus({preventScroll:true})
   }
   function commit(expectedKey?:string,expectedField?:BatchCellKey) {
@@ -88,7 +95,7 @@ export function usePointBatchGrid(state: PointBatchEditorState) {
     if(event.key==='Escape'){event.stopPropagation();active.value=undefined;return}
     if(!active.value || !['Enter','Tab'].includes(event.key))return
     event.preventDefault()
-    const order=[...state.visibleRows.value],columns=[...state.columns.value],current=active.value,index=order.findIndex(row=>row.key===current.key)
+    const order=[...state.visibleRows.value],columns=[...state.displayColumns.value],current=active.value,index=order.findIndex(row=>row.key===current.key)
     let offset=index*columns.length+columns.findIndex(column=>column.key===current.field)
     commit()
     const direction=event.shiftKey?-1:1,allowed=new Set(state.visibleRows.value.map(row=>row.key))
@@ -98,22 +105,29 @@ export function usePointBatchGrid(state: PointBatchEditorState) {
   function paste(event:ClipboardEvent) {
     const text=event.clipboardData?.getData('text/plain') || '',target=event.target as HTMLElement|null
     if(!text || !/[\t\n]/.test(text) && !!target?.closest('[data-batch-editor]'))return
-    event.preventDefault();pasteText(text)
+    event.preventDefault();const index=pasteText(text);if(index!=null)void nextTick(()=>focusRow(index))
   }
   function pasteText(text:string) {
     const current=active.value || anchor,order=state.visibleRows.value.filter(row=>!row.deleted),selectedIndex=order.findIndex(row=>selected.value.has(row.key))
     const index=current?order.findIndex(row=>row.key===current.key):selectedIndex>=0?selectedIndex:order.length,position=index>=0?index:order.length,targets=order.slice(position).map(row=>row.key)
     commit()
     const absolute=targets.length?state.rows.value.findIndex(row=>row.key===targets[0]):state.rows.value.length,result=state.paste(text,absolute,current?.field || 'name',targets)
-    return result==null?undefined:position
+    if(result==null)return
+    const row=targets.length?state.rows.value.find(row=>row.key === targets[0]):state.rows.value[result]
+    if(row && !state.visibleRows.value.includes(row))state.clearFilters()
+    return row?state.visibleRows.value.indexOf(row):position
   }
   function scroll(){scrollTop.value=viewport.value?.scrollTop || 0;if(active.value && !window.value.some(row=>row.key===active.value!.key))commit()}
-  async function firstError() {
+  async function firstError(key?: string) {
     commit()
-    const row=state.rows.value.find(row=>state.issues.value.get(row.key)?.length)
+    const row=state.rows.value.find(row=>(!key || row.key === key) && state.issues.value.get(row.key)?.length)
     if(!row)return
     if(!state.visibleRows.value.some(value=>value.key===row.key))state.clearFilters()
+    const field = batchIssueField(row,state.issues.value.get(row.key) || [])
+    if(field && state.hiddenColumns.value.includes(field))state.toggleColumn(field)
     await nextTick();focusRow(state.visibleRows.value.findIndex(value=>value.key===row.key))
+    if(field && editable(field,row)) await activate(row,field)
+    else await nextTick(() => Array.from(viewport.value?.querySelectorAll<HTMLElement>('[data-row-key]') || []).find(element => element.dataset.rowKey === row.key)?.focus({preventScroll:true}))
   }
   return {viewport,active,input,pluginInput,pluginEditor,setPluginEditor,blurCommon,pending,decoding,modes,selected,allVisible,someVisible,window,top,bottom,start,activate,commit,keyboard,paste,pasteText,scroll,firstError,focusRow,editable}
 }
