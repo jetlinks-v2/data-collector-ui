@@ -11,7 +11,7 @@ export function recordingTimeline(actions: RecordedAction[]) {
   const unit = divisor === 1e9 ? 's' : divisor === 1e6 ? 'ms' : 'μs'
   const depths = new Map<number, number>(), ends = new Map<number, number>()
   const rows = actions.map(action => {
-    const start = starts.get(action.id), depth = Math.min(3, action.parentId < 0 ? 0 : (depths.get(action.parentId) ?? 0) + 1)
+    const start = starts.get(action.id), depth = Math.min(3, (depths.get(action.parentId) ?? -1) + 1)
     depths.set(action.id, depth)
     const previousEnd = ends.get(action.parentId) ?? starts.get(action.parentId) ?? 0
     const gap = start == null ? 0 : Math.max(0, start - previousEnd)

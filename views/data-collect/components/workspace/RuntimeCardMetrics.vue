@@ -75,7 +75,7 @@ watch(detailsOpen,visible=>{if(!visible)setDiagnosticVisible(false)})
 onBeforeUnmount(()=>setDiagnosticVisible(false))
 const indicators=computed(()=>runtimeIndicators(props.object,props.kind))
 const tone=computed(()=>!props.object.runtime ? 'gray' : indicators.value.some(item=>item.tone === 'bad') ? 'bad' : indicators.value.some(item=>item.tone === 'warn') ? 'warn' : objectTone(props.object))
-const stateText=computed(()=>!props.object.runtime ? t('collectorMonitoring.waiting') : !props.object.runtime.available ? t('collectorWorkspace.unavailable') : objectStateText(props.object,state=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined))
+const stateText=computed(()=>!props.object.runtime ? t('collectorRuntime.states.pending') : !props.object.runtime.available ? t('collectorWorkspace.unavailable') : objectStateText(props.object,state=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined))
 const label=computed(()=>[t('collectorMonitoring.monitoring'),...indicators.value.map(item=>item.id === 'state'
   ? objectStateText(props.object,state=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined)
   : t(item.id === 'disconnected' ? 'collectorMonitoring.disconnected' : `collectorMonitoring.attention.${item.id}`,{count:item.count}))].join(' · '))

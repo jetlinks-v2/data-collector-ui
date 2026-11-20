@@ -3,6 +3,38 @@ import type { CollectorObject, FailureSnapshot, MetricDefinition, MetricSnapshot
 type Translate = (key: string) => string
 export type RuntimeMetricGroup = 'current' | 'duration' | 'counter' | 'activity' | 'other'
 
+/** 公共状态码使用自然语言，未知状态仍可通过相邻的错误码定位。 */
+export function runtimeFailureReason(value: string | undefined, t: Translate, te: (key: string) => boolean) {
+  const key = `collectorRuntime.errors.${value}`
+  if (value && te(key)) return t(key)
+  if (value && te(value)) return t(value)
+  return !value || /^(Bad|Uncertain|Good)_/.test(value) ? t('collectorRuntime.errors.unknown') : value
+}
+
+/** 批量执行可含多个点位；只投影本点位步骤，采集器级合并摘要不冒充点位记录。 */
+export function pointRecording(snapshot: RecordingSnapshot | undefined, pointId: string): RecordingSnapshot | undefined {
+  if (!snapshot) return
+  const executions: RecordingSnapshot['executions'] = []
+  for (const execution of snapshot.executions) {
+    const byId = new Map(execution.actions.map(action => [action.id, action]))
+    const owners = new Map<number, unknown>()
+    function owner(action: RecordedAction): unknown {
+      if (owners.has(action.id)) return owners.get(action.id)
+      const parent = byId.get(action.parentId)
+      const id = action.tags?.pointId ?? (parent ? owner(parent) : undefined)
+      owners.set(action.id, id)
+      return id
+    }
+    const actions = execution.actions.filter(action => owner(action) === pointId)
+    if (!actions.length) continue
+    const failure = execution.failure?.pointId === pointId ? execution.failure : undefined
+    const status = failure || actions.some(action => actionTone(action) === 'bad') ? 'failed'
+      : actions.find(action => action.status !== 'completed')?.status || 'completed'
+    executions.push({...execution, actions, failure, status})
+  }
+  return {...snapshot, executions}
+}
+
 /** Show an ongoing failure first, otherwise the latest failure reported across the cluster. */
 export function runtimeFailureNotice(object: CollectorObject, includeSettled = true) {
   let current: FailureSnapshot | undefined, recent: FailureSnapshot | undefined
@@ -19,7 +51,8 @@ export function runtimeFailureNotice(object: CollectorObject, includeSettled = t
 
 /** 后端保留有界的最近执行、最近异常及在途执行；以语义入口替代不停变化的记录编号。 */
 export function recordingChoices(executions:RecordingSnapshot['executions']) {
-  return {latest:executions.at(-1),failed:executions.findLast(item=>item.failure || item.status === 'failed')}
+  return {latest:executions.at(-1),failed:executions.findLast(item=>item.failure || item.status === 'failed'
+    || item.actions.some(action=>action.attributes?.decision === 'slow'))}
 }
 
 /** 所有运行指标沿统一元数据解释；没有定义时仍保留原始标识与不可用值。 */

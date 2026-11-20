@@ -305,9 +305,13 @@
     "noRecentFailure": "暫無異常",
     "diagnosticsEnabled": "自動記錄",
     "diagnosticsDisabled": "記錄已關閉",
-    "waitingExecution": "等待下一次採集",
+    "waitingExecution": "暫無取樣記錄",
     "diagnosticsSettingHint": "可在採集器設定中開啟",
-    "diagnosticsMemoryHint": "僅保留最近執行與最近異常"
+    "diagnosticsMemoryHint": "僅保留最近執行與最近異常",
+    "summaryOnly": "僅保留摘要，本次未記錄完整步驟",
+    "occurrences": "已合併 {count} 次同類摘要",
+    "slowExecution": "採集耗時偏長",
+    "durationBudget": "參考上限"
   },
   "collectorMonitoring": {
     "path": {
@@ -481,14 +485,22 @@
       "initializing": "初始化",
       "starting": "啟動中",
       "shutdown": "已關閉",
-      "connectionClosed": "連線已中斷"
+      "connectionClosed": "連線已中斷",
+      "pending": "等待執行資訊"
     },
     "errors": {
       "Bad_Timeout": "裝置回應逾時",
       "Bad_ConnectionLost": "裝置連線已中斷",
       "Bad_InvalidAddress": "裝置位址無效",
       "Bad_DecodingError": "通訊資料解析失敗",
-      "Bad_DecoderError": "資料解析或轉換失敗"
+      "Bad_DecoderError": "資料解析或轉換失敗",
+      "Bad_ConnectionError": "裝置連線失敗，請檢查連線設定",
+      "Bad_ConnectionRefused": "裝置拒絕連線，請檢查位址、連接埠及服務狀態",
+      "Bad_ServerNotConnected": "尚未連線至裝置",
+      "Bad_ReadTimeout": "讀取裝置逾時",
+      "Bad_WriteTimeout": "寫入裝置逾時",
+      "Bad_ConfigurationError": "裝置設定有誤，請檢查點位和連線設定",
+      "unknown": "操作失敗，請參照狀態碼排查"
     },
     "stages": {"signal":"處理採集訊號",
       "execution": "執行本輪採集",

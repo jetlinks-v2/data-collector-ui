@@ -11,14 +11,11 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import type { CollectorObject } from '../../../../types/workspace'
-import { runtimeFailureNotice } from '../../../../utils/runtimePresentation'
+import { runtimeFailureNotice, runtimeFailureReason } from '../../../../utils/runtimePresentation'
 const props = defineProps<{ object: CollectorObject; attentionOnly?:boolean }>()
 const { t, te } = useI18n()
 const notice = computed(() => runtimeFailureNotice(props.object,!props.attentionOnly))
-const reason = computed(() => {
-  const value = notice.value?.failure.reason || '', key = `collectorRuntime.errors.${value}`
-  return te(key) ? t(key) : value
-})
+const reason = computed(() => runtimeFailureReason(notice.value?.failure.reason, t, te))
 const stage = computed(() => {
   const key = `collectorRuntime.stages.${notice.value?.failure.stage}`
   return te(key) ? t(key) : ''

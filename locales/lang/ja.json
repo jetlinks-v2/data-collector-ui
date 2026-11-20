@@ -297,9 +297,13 @@
     "latestExecution":"直近の実行","latestFailure":"直近の異常","noRecentFailure":"異常なし",
     "diagnosticsEnabled": "自動記録",
     "diagnosticsDisabled": "記録は無効",
-    "waitingExecution": "次の収集を待機中",
+    "waitingExecution": "サンプリング記録はまだありません",
     "diagnosticsSettingHint": "コレクター設定で有効にできます",
-    "diagnosticsMemoryHint": "直近の実行と直近の異常のみ保持"
+    "diagnosticsMemoryHint": "直近の実行と直近の異常のみ保持",
+    "summaryOnly": "概要のみ。今回の詳細な手順は記録されていません",
+    "occurrences": "同種の概要 {count} 件を集約",
+    "slowExecution": "収集に時間がかかっています",
+    "durationBudget": "所要時間の目安"
   },
   "collectorMonitoring": {
     "path": {"label": "受信、出力と除外", "received": "受信", "filtered": "除外", "executions": "収集実行", "runsPerSecond": "回/s", "read": "読取", "process": "処理", "output": "出力", "every": "設定 {time} ごと", "previousRead": "前回の読取", "currentRead": "今回の読取"},
@@ -415,8 +419,8 @@
   "collectorRuntimeNotice": {"current":"現在の異常","recent":"直近の異常","recentRead":"直近の読み取り"},
   "collectorRuntime": {
     "units": {"task":"タスク","sample":"サンプル","event":"回","operation":"回","count":"件"},
-    "states": {"running":"実行中","partialError":"一部エラー","failed":"実行エラー","stopped":"停止","unknown":"不明","created":"待機中","completed":"完了","cancelled":"キャンセル","paused":"一時停止","collectionError":"収集エラー","recentError":"最近のエラーあり","recovered":"復旧済み","open":"サーキット遮断中","retrying":"低頻度で再試行","halfOpen":"復旧を試行中","initializing":"初期化中","starting":"起動中","shutdown":"終了","connectionClosed":"接続切断"},
-    "errors": {"Bad_Timeout":"機器応答がタイムアウト","Bad_ConnectionLost":"機器接続が切断されました","Bad_InvalidAddress":"機器アドレスが無効です","Bad_DecodingError":"通信データの解析に失敗","Bad_DecoderError":"データの解析または変換に失敗"},
+    "states": {"running":"実行中","partialError":"一部エラー","failed":"実行エラー","stopped":"停止","unknown":"不明","created":"待機中","completed":"完了","cancelled":"キャンセル","paused":"一時停止","collectionError":"収集エラー","recentError":"最近のエラーあり","recovered":"復旧済み","open":"サーキット遮断中","retrying":"低頻度で再試行","halfOpen":"復旧を試行中","initializing":"初期化中","starting":"起動中","shutdown":"終了","connectionClosed":"接続切断","pending": "稼働情報を待機中"},
+    "errors": {"Bad_Timeout":"機器応答がタイムアウト","Bad_ConnectionLost":"機器接続が切断されました","Bad_InvalidAddress":"機器アドレスが無効です","Bad_DecodingError":"通信データの解析に失敗","Bad_DecoderError":"データの解析または変換に失敗","Bad_ConnectionError": "機器への接続に失敗しました。接続設定を確認してください","Bad_ConnectionRefused": "接続が拒否されました。アドレス、ポート、機器のサービスを確認してください","Bad_ServerNotConnected": "機器に接続されていません","Bad_ReadTimeout": "機器の読み取りがタイムアウトしました","Bad_WriteTimeout": "機器への書き込みがタイムアウトしました","Bad_ConfigurationError": "機器設定が無効です。ポイントと接続設定を確認してください","unknown": "操作に失敗しました。状態コードを確認してください"},
     "stages": {"signal":"収集信号を処理","execution":"今回の収集を実行","load":"収集設定を読み込み","subscribe":"機器データを購読","collect":"機器データを読み取り","request":"要求を送信し応答を待機","response":"機器の応答を受信","point":"ポイントデータを処理","decode":"生データを解析","convert":"収集値を変換","outlier":"クレンジング条件を確認","deadband":"送信条件を確認","changedOnly":"データの変化を確認","output":"収集結果を配信","schedule":"収集タスクを予約"},
     "decisions": {"accepted":"キュー登録済み","queueFull":"キュー満杯","duplicate":"重複タスク統合","queueRejected":"キュー拒否","queueUnavailable":"キュー未準備","collectorInactive":"収集器停止中","channelInactive":"チャネル停止中","circuitOpen":"遮断保護中","noReadablePoints":"読取可能ポイントなし","filtered":"除外済み","passed":"通過","unmatched":"要求に一致しない応答","ignored":"無視済み"}
   },

@@ -9,7 +9,7 @@
         <div v-if="metrics.length" class="cw-diagnostic-metrics"><div v-for="metric in metrics.slice(0,6)" :key="metric.id" :title="metric.description"><span><AIcon :type="metric.icon" />{{ metric.name || metric.id }}</span><strong>{{ metric.text }}</strong></div></div>
         <a-collapse v-if="metrics.length > 6" ghost><a-collapse-panel key="metrics" :header="$t('collectorWorkspace.moreMetrics')"><div class="cw-diagnostic-metrics"><div v-for="metric in metrics.slice(6)" :key="metric.id" :title="metric.description"><span>{{ metric.name || metric.id }}</span><strong>{{ metric.text }}</strong></div></div></a-collapse-panel></a-collapse>
         <div v-if="failure" class="cw-failure-summary">
-          <AIcon type="WarningOutlined" /><div><strong>{{ $t(state.snapshot.currentFailure ? 'collectorRuntime.states.collectionError' : 'collectorWorkspace.lastFailure') }}</strong><span>{{ time(failure.timestamp) }} · {{ translated('stages', failure.stage) }} · {{ code(failure.code) }}</span><p>{{ reason(failure.reason) }}</p></div>
+          <AIcon type="WarningOutlined" /><div><strong>{{ $t(state.snapshot.currentFailure ? 'collectorRuntime.states.collectionError' : 'collectorWorkspace.lastFailure') }}</strong><span>{{ time(failure.timestamp) }} · {{ translated('stages', failure.stage) }} · {{ code(failure.code) }}</span><p>{{ failureReason(failure.reason) }}</p></div>
         </div>
       </template>
       <div v-if="state.recording" class="cw-recording">
@@ -21,7 +21,14 @@
         </div>
         <small v-if="!state.recording.executions.length" class="cw-muted">{{ $t(state.recording.active ? 'collectorProcessing.waitingExecution' : 'collectorProcessing.diagnosticsSettingHint') }}</small>
         <template v-for="execution in selectedExecutions" :key="execution.id">
-          <div class="cw-execution-title"><span>{{ execution.actions.length ? time(execution.actions[0].timestamp) : '—' }}</span><span :class="{ 'cw-error': !!execution.failure }">{{ execution.failure ? reason(execution.failure.reason) : translated('states', execution.status) }}</span></div>
+          <div class="cw-execution-title"><span>{{ execution.actions.length ? time(execution.actions[0].timestamp) : '—' }}</span><span :class="{ 'cw-error': !!execution.failure }">{{ execution.failure ? failureReason(execution.failure.reason) : execution.actions.some(action => action.attributes?.decision === 'slow') ? $t('collectorProcessing.slowExecution') : translated('states', execution.status) }}</span></div>
+          <div v-if="summaryAction" class="cw-recording-summary">
+            <p class="cw-muted">{{ $t('collectorProcessing.summaryOnly') }}</p>
+            <span>{{ $t('collectorProcessing.occurrences', {count:summaryAction.attributes?.occurrences ?? 1}) }}</span>
+            <span v-if="summaryAction.useNanos > 0">{{ $t('collectorMonitoring.duration') }} {{ duration(summaryAction.useNanos) }}</span>
+            <span v-if="summaryAction.attributes?.thresholdNanos">{{ $t('collectorProcessing.durationBudget') }} {{ duration(Number(summaryAction.attributes?.thresholdNanos)) }}</span>
+          </div>
+          <template v-else>
           <div class="cw-timeline-scale"><small :title="$t('collectorProcessing.relativeTimeHint')">{{ $t('collectorProcessing.relativeTime') }}<span v-if="!timeline.precise" :title="$t('collectorProcessing.approximateTimeHint')"> ≈</span></small><div><span v-for="(tick,index) in timeline.ticks" :key="index">{{ timelineNumber(tick,timeline.divisor) }}<small v-if="index === 2"> {{ timeline.unit }}</small></span></div></div>
           <ol class="cw-timeline"><li v-for="row in timeline.rows" :key="row.action.id" :class="actionTone(row.action)">
             <div class="cw-timeline-step" :style="{paddingLeft:`${row.depth * 8}px`}"><AIcon :type="actionIcons[actionTone(row.action)]" /><strong>{{ translated('stages', row.action.action) }}</strong></div>
@@ -29,6 +36,7 @@
             <p v-if="actionSummary(row.action) || row.action.errorMessage" class="cw-action-summary">{{ [actionSummary(row.action),row.action.errorMessage ? reason(row.action.errorMessage) : ''].filter(Boolean).join(' · ') }}</p>
           </li></ol>
           <small v-if="execution.truncated" class="cw-muted">{{ $t('collectorWorkspace.truncated') }}</small>
+          </template>
         </template>
       </div>
     </a-spin>
@@ -39,12 +47,13 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import WorkspaceStatus from './WorkspaceStatus.vue'
-import { actionTone, runtimeMetricRows, recordingChoices } from '../../../../utils/runtimePresentation'
+import { actionTone, formatMetricQuantity, runtimeMetricRows, recordingChoices, runtimeFailureReason } from '../../../../utils/runtimePresentation'
 import { recordingTimeline, timelineNumber } from '../../../../utils/recordingTimeline'
 import type { MetricDefinition, RecordedAction, RecordingSnapshot, RuntimeSnapshot } from '../../../../types/workspace'
 const props = defineProps<{ state: { loading: boolean; error: string; snapshot?: RuntimeSnapshot; definitions: MetricDefinition[]; recording?: RecordingSnapshot }; embedded?: boolean }>()
 defineEmits<{ close: [] }>()
 const { t, te } = useI18n()
+const failureReason = (value?: string) => runtimeFailureReason(value, t, te)
 const reason = (value: string) => te(`collectorRuntime.errors.${value}`) ? t(`collectorRuntime.errors.${value}`) : te(value) ? t(value) : value
 const code = (value: number) => `0x${(value >>> 0).toString(16).toUpperCase()}`
 const runtimeObject = computed(() => ({id:props.state.snapshot?.id || '',name:'',provider:'',configuration:{},runtime:props.state.snapshot,runningState:props.state.snapshot?.state}))
@@ -61,6 +70,8 @@ const selectedExecutions = computed(() => {
   return selected ? [selected] : []
 })
 const timeline = computed(() => recordingTimeline(selectedExecutions.value[0]?.actions || []))
+const summaryAction = computed(() => selectedExecutions.value[0]?.actions.find(action => action.attributes?.summary === true))
+const duration = (nanos:number) => { const value = formatMetricQuantity(nanos,'nanoseconds')!; return `${value.value} ${value.unit}` }
 function timingHint(row: ReturnType<typeof recordingTimeline>['rows'][number]) {
   if (row.start == null) return translated('states',row.action.status)
   const format = (value: number) => `${timelineNumber(value,timeline.value.divisor)} ${timeline.value.unit}`

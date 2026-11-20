@@ -53,7 +53,7 @@ export interface RuntimeSnapshot {
 export interface PointRuntimeSummary { total:number; available:number; states:Record<string,number>; scheduled?:number; awaitingFirst?:number; longGap?:number }
 export interface CollectorMonitoringSnapshot { timestamp:number; collectors:RuntimeSnapshot[]; channels?:RuntimeSnapshot[] }
 export interface WorkspaceRecordingTarget { collectorId:string; serverId:string; interval:number }
-export interface CollectorWorkspaceQuery {
+export type CollectorWorkspaceQuery = {
   monitoring:Array<{ids:string[];channelIds:string[];interval:number;metrics:string[]|null}>
   observation?:{id:string;pointIds:string[];interval:number;metrics:string[]|null;pointMetrics:string[]|null;channelMetrics:string[]|null;includeData:boolean;includeObjects?:boolean}
   recording?:WorkspaceRecordingTarget
@@ -116,6 +116,8 @@ export function objectDisplayState(object: CollectorObject): StateValue | undefi
   const managed = object.runtime?.state || stateValue(object.state)
   if (['disabled', 'stopped', 'paused'].includes(stateValue(object.state))) return object.state
   if (['stopped', 'paused'].includes(managed)) return managed
+  // 目录中的运行态可能来自上次启动；当前状态必须等实时快照确认。
+  if (!object.runtime) return 'pending'
   if (object.runtime?.available === false) return 'unavailable'
   if (object.runtime?.protectionState) return object.runtime.protectionState
   if (object.runtime?.currentFailure) return 'collectionError'
@@ -126,7 +128,11 @@ export function objectDisplayState(object: CollectorObject): StateValue | undefi
 }
 export function objectTone(object: CollectorObject): 'ok' | 'warn' | 'bad' | 'gray' {
   if (object.runtime?.available === false) return 'gray'
-  const state = stateValue(objectDisplayState(object))
+  return stateTone(objectDisplayState(object))
+}
+/** 状态汇总已来自实时快照，无需伪造对象来解释颜色。 */
+export function stateTone(value?: StateValue): 'ok' | 'warn' | 'bad' | 'gray' {
+  const state = stateValue(value)
   if (['failed', 'allError', 'collectionError', 'open'].includes(state)) return 'bad'
   if (['partialError', 'partError', 'retrying', 'halfOpen', 'recentError'].includes(state)) return 'warn'
   return ['running', 'recovered'].includes(state) ? 'ok' : 'gray'

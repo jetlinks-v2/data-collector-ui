@@ -13,6 +13,11 @@ test('millisecond-only starts are explicitly approximate',()=>{
  const t=recordingTimeline([{...action(0,-1,undefined,300000),timestamp:100},{...action(1,-1,undefined,200000),timestamp:102}])
  assert.equal(t.precise,false);assert.equal(t.rows[1].start,2000000);assert.equal(t.unit,'ms')
 })
+test('point projections start at the first retained step without a missing-parent indent',()=>{
+ const t=recordingTimeline([action(2,1,2000,4000),action(3,2,3000,1000)])
+ assert.equal(t.rows[0].depth,0);assert.equal(t.rows[1].depth,1)
+ assert.equal(t.rows[0].start,0)
+})
 test('unstarted actions have no timing bar and empty recordings have no invented duration',()=>{
  const t=recordingTimeline([{...action(0,-1,null,0),timestamp:0,status:'created'}])
  assert.equal(t.total,0);assert.equal(t.rows[0].start,undefined);assert.equal(t.rows[0].width,0)

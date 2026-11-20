@@ -18,6 +18,7 @@ function loadUtility(path){
   return module.exports
 }
 const workspaceList=loadUtility(fileURLToPath(new URL('../utils/workspaceList.ts',import.meta.url)))
+const {objectDisplayState}=loadUtility(fileURLToPath(new URL('../types/workspace.ts',import.meta.url)))
 const {applyObservedValues}=loadUtility(fileURLToPath(new URL('../utils/workspaceObservation.ts',import.meta.url)))
 const runtimeMonitoring=loadUtility(fileURLToPath(new URL('../utils/runtimeMonitoring.ts',import.meta.url)))
 const source = readFileSync(new URL('../views/data-collect/hook/useWorkspaceData.ts', import.meta.url), 'utf8')
@@ -302,6 +303,35 @@ test('a newly saved draft replaces its temporary identity without duplicating or
     assert.equal(data.selectedPoint.value.id,'saved-id')
     assert.equal(data.selectedPoint.value.configuration.address,3)
     assert.deepEqual(data.unsavedPoints.value,[])
+  } finally {value.close()}
+})
+
+test('scrolling waits for actual point snapshots instead of reviving persisted running states',async()=>{
+  const value=await reconnectingWorkspace({sorting:true})
+  try {
+    const {data}=value
+    data.points.value=data.points.value.map(row=>({...row,runningState:'running'}))
+    const row=id=>data.points.value.find(point=>point.id === id)
+    const push=(id,available)=>{
+      const frame=value.snapshot()
+      frame.nodes[0].points=[{id,serverId:'server',available,state:'enabled',runtimeState:'running'}]
+      value.observations.at(-1).observer.next(frame)
+    }
+    assert.equal(objectDisplayState(row('first')),'pending')
+    push('first',true)
+    assert.equal(objectDisplayState(row('first')),'running')
+    data.setVisiblePoints(['second'])
+    assert.equal(objectDisplayState(row('second')),'pending')
+    await new Promise(resolve=>setTimeout(resolve,160))
+    assert.equal(objectDisplayState(row('second')),'pending')
+    push('second',false)
+    assert.equal(objectDisplayState(row('second')),'unavailable')
+    data.setVisiblePoints(['first'])
+    assert.equal(objectDisplayState(row('first')),'pending','released offscreen snapshots never fall back to stored health')
+    await new Promise(resolve=>setTimeout(resolve,160))
+    push('first',true)
+    assert.equal(objectDisplayState(row('first')),'running')
+    assert.equal(value.monitors.length,1,'range changes keep the summary subscription')
   } finally {value.close()}
 })
 

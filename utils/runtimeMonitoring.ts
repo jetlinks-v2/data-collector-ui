@@ -1,4 +1,4 @@
-import { objectTone } from '../types/workspace'
+import { objectTone, stateTone } from '../types/workspace'
 import type { RuntimeMonitoring, CollectorObject, PointRuntimeSummary, RuntimeSnapshot, MetricSnapshot, EntityKind } from '../types/workspace'
 
 export interface RuntimeMonitoringRound { timestamp:number; snapshots:RuntimeSnapshot[] }
@@ -47,7 +47,7 @@ export function runtimeIndicators(object:CollectorObject,kind:EntityKind):Runtim
   if(kind === 'collector'){
     const counts={bad:0,warn:0}
     for(const [state,count] of Object.entries(object.monitoring?.pointSummary?.states || {})){
-      const tone=objectTone({id:'',name:'',provider:'',configuration:{},runningState:state})
+      const tone=stateTone(state)
       if(tone === 'bad' || tone === 'warn')counts[tone]+=count
     }
     if(counts.bad)indicators.push({id:'errors',icon:'CloseCircleOutlined',tone:'bad',count:counts.bad})

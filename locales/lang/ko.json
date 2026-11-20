@@ -299,9 +299,13 @@
     "latestExecution":"최근 실행","latestFailure":"최근 오류","noRecentFailure":"최근 오류 없음",
     "diagnosticsEnabled": "자동 기록",
     "diagnosticsDisabled": "기록 꺼짐",
-    "waitingExecution": "다음 수집 대기 중",
+    "waitingExecution": "아직 샘플링 기록이 없습니다",
     "diagnosticsSettingHint": "수집기 설정에서 켤 수 있습니다",
-    "diagnosticsMemoryHint": "최근 실행과 최근 오류만 보관"
+    "diagnosticsMemoryHint": "최근 실행과 최근 오류만 보관",
+    "summaryOnly": "요약만 보관되며 이번 실행의 상세 단계는 기록되지 않았습니다",
+    "occurrences": "같은 유형의 요약 {count}건 병합",
+    "slowExecution": "수집 지연",
+    "durationBudget": "소요 시간 기준"
   },
   "collectorMonitoring": {
     "path": {"label": "수신, 출력 및 필터링", "received": "수신", "filtered": "필터링", "executions": "수집 실행", "runsPerSecond": "회/s", "read": "읽기", "process": "처리", "output": "출력", "every": "설정: {time}마다", "previousRead": "이전 읽기", "currentRead": "최근 읽기"},
@@ -417,8 +421,8 @@
   "collectorRuntimeNotice": {"current":"현재 오류","recent":"최근 오류","recentRead":"최근 읽기"},
   "collectorRuntime": {
     "units": {"task":"작업","sample":"샘플","event":"회","operation":"회","count":"개"},
-    "states": {"running":"실행 중","partialError":"일부 오류","failed":"실행 오류","stopped":"중지됨","unknown":"알 수 없음","created":"대기 중","completed":"완료됨","cancelled":"취소됨","paused":"일시 중지","collectionError":"수집 오류","recentError":"최근 오류 있음","recovered":"복구됨","open":"회로 차단","retrying":"낮은 빈도로 재시도","halfOpen":"복구 확인 중","initializing":"초기화 중","starting":"시작 중","shutdown":"종료됨","connectionClosed":"연결 끊김"},
-    "errors": {"Bad_Timeout":"장치 응답 시간 초과","Bad_ConnectionLost":"장치 연결 끊김","Bad_InvalidAddress":"유효하지 않은 장치 주소","Bad_DecodingError":"통신 데이터 해석 실패","Bad_DecoderError":"데이터 해석 또는 변환 실패"},
+    "states": {"running":"실행 중","partialError":"일부 오류","failed":"실행 오류","stopped":"중지됨","unknown":"알 수 없음","created":"대기 중","completed":"완료됨","cancelled":"취소됨","paused":"일시 중지","collectionError":"수집 오류","recentError":"최근 오류 있음","recovered":"복구됨","open":"회로 차단","retrying":"낮은 빈도로 재시도","halfOpen":"복구 확인 중","initializing":"초기화 중","starting":"시작 중","shutdown":"종료됨","connectionClosed":"연결 끊김","pending": "실행 정보 대기 중"},
+    "errors": {"Bad_Timeout":"장치 응답 시간 초과","Bad_ConnectionLost":"장치 연결 끊김","Bad_InvalidAddress":"유효하지 않은 장치 주소","Bad_DecodingError":"통신 데이터 해석 실패","Bad_DecoderError":"데이터 해석 또는 변환 실패","Bad_ConnectionError": "장치 연결에 실패했습니다. 연결 설정을 확인하세요","Bad_ConnectionRefused": "연결이 거부되었습니다. 주소, 포트 및 장치 서비스를 확인하세요","Bad_ServerNotConnected": "장치에 연결되지 않았습니다","Bad_ReadTimeout": "장치 읽기 시간 초과","Bad_WriteTimeout": "장치 쓰기 시간 초과","Bad_ConfigurationError": "장치 설정이 잘못되었습니다. 포인트와 연결 설정을 확인하세요","unknown": "작업이 실패했습니다. 상태 코드를 확인하세요"},
     "stages": {"signal":"수집 신호 처리","execution":"이번 수집 주기 실행","load":"수집 설정 로드","subscribe":"장치 데이터 구독","collect":"장치 데이터 읽기","request":"요청 전송 및 응답 대기","response":"장치 응답 수신","point":"포인트 데이터 처리","decode":"원시 데이터 해석","convert":"수집 값 변환","outlier":"정제 조건 확인","deadband":"전송 조건 확인","changedOnly":"데이터 변경 확인","output":"수집 결과 전송","schedule":"수집 작업 예약"},
     "decisions": {"accepted":"대기열 등록됨","queueFull":"대기열 가득 참","duplicate":"중복 작업 병합됨","queueRejected":"대기열 거부됨","queueUnavailable":"대기열 준비 안 됨","collectorInactive":"수집기 비활성","channelInactive":"채널 비활성","circuitOpen":"회로 차단 보호 중","noReadablePoints":"읽을 수 있는 포인트 없음","filtered":"필터링됨","passed":"통과됨","unmatched":"요청과 일치하지 않는 응답","ignored":"무시됨"}
   },

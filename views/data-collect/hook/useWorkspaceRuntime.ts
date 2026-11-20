@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { observeRuntime } from '../../../api/data-collect/workspace'
 import { loadRuntimeMetricMetadata } from './useRuntimeMetricMetadata'
 import { observedRuntime } from '../../../utils/workspaceObservation'
+import { pointRecording } from '../../../utils/runtimePresentation'
 import type { CollectorObject, CollectorObservation, EntityKind, MetricDefinition, RuntimeSnapshot, RecordingSnapshot, WorkspaceRecordingTarget } from '../../../types/workspace'
 
 /** 指标优先复用页面实时流；浮层只按需读取完整回放，不控制采集器录制策略。 */
@@ -58,7 +59,7 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   function close(){open.value=false;cancel()}
   watch([target,open,paused,locale],connect)
   watch(sharedRecording,value=>{
-    if(open.value && value?.collectorId === collector.value?.id && value.serverId === snapshot.value?.serverId){recording.value=value;error.value=''}
+    if(open.value && value && value.collectorId === collector.value?.id && value.serverId === snapshot.value?.serverId){recording.value=value;error.value=''}
   })
   watch(sharedSnapshot,shared=>{
     if(!open.value || !target.value || paused.value || !active || document.hidden)return
@@ -70,5 +71,6 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   onDeactivated(()=>{active=false;cancel()})
   onActivated(()=>{if(!active){active=true;connect()}})
   onBeforeUnmount(()=>{cancel();document.removeEventListener('visibilitychange',visibility)})
-  return {snapshot,recording,definitions,error,loading,open,target,inspect,close}
+  const scopedRecording=computed(()=>target.value?.kind === 'point' ? pointRecording(recording.value,target.value.id) : recording.value)
+  return {snapshot,recording:scopedRecording,definitions,error,loading,open,target,inspect,close}
 }

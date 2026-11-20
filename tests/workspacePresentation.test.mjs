@@ -4,18 +4,30 @@ import { objectDisplayState, objectStateText, objectTone, pointAddress } from '.
 
 const point = { id:'point-1', name:'Temperature', provider:'plugin', configuration:{} }
 const translate = value => ({ running:'运行中', failed:'已熔断', disabled:'已停用', stopped:'已停止' })[value]
+const runtime={id:point.id,serverId:'node',available:true}
 
 test('enum text and raw runtime states share one localized presentation', () => {
-  assert.equal(objectStateText({...point,runningState:'running'},translate), '运行中')
-  assert.equal(objectStateText({...point,runningState:{value:'running',text:'Provider state'}},translate), 'Provider state')
-  assert.equal(objectStateText({...point,runningState:{value:'failed'}},translate), '已熔断')
+  assert.equal(objectStateText({...point,runtime,runningState:'running'},translate), '运行中')
+  assert.equal(objectStateText({...point,runtime,runningState:{value:'running',text:'Provider state'}},translate), 'Provider state')
+  assert.equal(objectStateText({...point,runtime,runningState:{value:'failed'}},translate), '已熔断')
   for (const state of ['disabled','stopped']) {
     const value={...point,state,runningState:'running'}
     assert.equal(objectStateText(value,translate), translate(state))
     assert.equal(objectTone(value), 'gray')
   }
-  assert.equal(objectStateText({...point,runningState:'plugin-state'},translate), 'plugin-state')
-  assert.equal(objectStateText(point,translate), '')
+  assert.equal(objectStateText({...point,runtime,runningState:'plugin-state'},translate), 'plugin-state')
+  assert.equal(objectDisplayState(point), 'pending')
+})
+
+test('unobserved directory states never claim live health before a snapshot arrives',()=>{
+  for(const runningState of ['running','failed',{value:'running',text:'Provider state'}]){
+    const row={...point,state:'enabled',runningState}
+    assert.equal(objectDisplayState(row),'pending')
+    assert.equal(objectTone(row),'gray')
+    assert.equal(objectDisplayState({...row,runtime:{...runtime,available:false}}),'unavailable')
+    assert.equal(objectDisplayState({...row,runtime:{...runtime,runtimeState:'running'}}),'running')
+    assert.equal(objectDisplayState({...row,state:'disabled'}),'disabled')
+  }
 })
 
 test('point labels preserve provider-formatted addresses without reading configuration', () => {

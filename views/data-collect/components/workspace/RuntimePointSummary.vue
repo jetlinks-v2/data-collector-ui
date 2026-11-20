@@ -13,13 +13,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { objectTone, type PointRuntimeSummary } from '../../../../types/workspace'
+import { stateTone, type PointRuntimeSummary } from '../../../../types/workspace'
 const props=defineProps<{summary?:PointRuntimeSummary;compact?:boolean}>()
 const {t,te}=useI18n()
 const stateText=(state:string)=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : state === 'unavailable' ? t('collectorWorkspace.unavailable') : state
 const icons={ok:'CheckCircleOutlined',bad:'CloseCircleOutlined',warn:'ClockCircleOutlined',gray:'PauseCircleOutlined'}
 const rank={bad:0,warn:1,ok:2,gray:3}
-const counts=computed(()=>Object.entries(props.summary?.states || {}).filter(([,count])=>count > 0).map(([state,count])=>({state,count,tone:objectTone({id:'',name:'',provider:'',configuration:{},runningState:state})})).sort((a,b)=>rank[a.tone]-rank[b.tone]))
+const counts=computed(()=>Object.entries(props.summary?.states || {}).filter(([,count])=>count > 0).map(([state,count])=>({state,count,tone:stateTone(state)})).sort((a,b)=>rank[a.tone]-rank[b.tone]))
 </script>
 <style scoped>
 .cw-summary-notice{flex-basis:100%;margin:2px 0 0;font-size:12px;line-height:20px;color:var(--text-color-secondary)}

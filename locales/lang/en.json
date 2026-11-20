@@ -303,9 +303,13 @@
     "noRecentFailure": "No recent failures",
     "diagnosticsEnabled": "Auto recording",
     "diagnosticsDisabled": "Recording off",
-    "waitingExecution": "Waiting for the next collection",
+    "waitingExecution": "No sampled execution yet",
     "diagnosticsSettingHint": "Enable in collector settings",
-    "diagnosticsMemoryHint": "Retain the latest execution and latest failure only"
+    "diagnosticsMemoryHint": "Retain the latest execution and latest failure only",
+    "summaryOnly": "Summary only; detailed steps were not recorded",
+    "occurrences": "{count} similar summaries merged",
+    "slowExecution": "Slow collection",
+    "durationBudget": "Time budget"
   },
   "collectorMonitoring": {
     "path": {
@@ -479,14 +483,22 @@
       "initializing": "Initializing",
       "starting": "Starting",
       "shutdown": "Closed",
-      "connectionClosed": "Connection closed"
+      "connectionClosed": "Connection closed",
+      "pending": "Waiting for runtime information"
     },
     "errors": {
       "Bad_Timeout": "Device response timed out",
       "Bad_ConnectionLost": "Device connection lost",
       "Bad_InvalidAddress": "Invalid device address",
       "Bad_DecodingError": "Communication data decoding failed",
-      "Bad_DecoderError": "Data decoding or conversion failed"
+      "Bad_DecoderError": "Data decoding or conversion failed",
+      "Bad_ConnectionError": "Device connection failed; check the connection settings",
+      "Bad_ConnectionRefused": "Connection refused; check the address, port and device service",
+      "Bad_ServerNotConnected": "Not connected to the device",
+      "Bad_ReadTimeout": "Device read timed out",
+      "Bad_WriteTimeout": "Device write timed out",
+      "Bad_ConfigurationError": "Invalid device configuration; check the point and connection settings",
+      "unknown": "Operation failed; check the status code for details"
     },
     "stages": {"signal":"Process collected signal",
       "execution": "Run collection cycle",

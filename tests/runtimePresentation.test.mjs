@@ -1,9 +1,50 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { formatMetricQuantity, formatRuntimeMetric, metricPriority, actionTone, recordingChoices, runtimeMetricRows, runtimeFailureNotice } from '../utils/runtimePresentation.ts'
+import { formatMetricQuantity, formatRuntimeMetric, metricPriority, actionTone, recordingChoices, runtimeMetricRows, runtimeFailureNotice, runtimeFailureReason, pointRecording } from '../utils/runtimePresentation.ts'
 
 const time = value => `time:${value}`
 const t = value => value.split('.').at(-1)
+
+test('failure descriptions translate public codes, preserve human messages and explain missing reasons',()=>{
+  const words={'collectorRuntime.errors.Bad_ConnectionRefused':'设备拒绝连接','collectorRuntime.errors.unknown':'请结合状态码排查','plugin.failure':'设备暂时无法读取'}
+  const translate=key=>words[key],exists=key=>key in words
+  assert.equal(runtimeFailureReason('Bad_ConnectionRefused',translate,exists),'设备拒绝连接')
+  assert.equal(runtimeFailureReason('Bad_VendorStatus',translate,exists),'请结合状态码排查')
+  assert.equal(runtimeFailureReason(undefined,translate,exists),'请结合状态码排查')
+  assert.equal(runtimeFailureReason('',translate,exists),'请结合状态码排查')
+  assert.equal(runtimeFailureReason('plugin.failure',translate,exists),'设备暂时无法读取')
+  assert.equal(runtimeFailureReason('设备正在维护',translate,exists),'设备正在维护')
+})
+
+test('point replay separates batch branches and inherits point ownership without changing shared recordings',()=>{
+  const action=(id,parentId,pointId,status='completed')=>({id,parentId,tags:pointId ? {pointId} : {},status,attributes:{}})
+  const failure={pointId:'other',reason:'Bad_Timeout'}
+  const snapshot={collectorId:'collector',executions:[
+    {id:1,status:'failed',failure,actions:[action(0,-1,undefined,'failed'),action(1,0,'point'),action(2,1),action(3,0,'other','failed'),action(4,3)]},
+    {id:2,status:'completed',actions:[action(0,-1,'other')]},
+    {id:3,status:'failed',failure:{...failure,pointId:'point'},actions:[{...action(0,-1),attributes:{summary:true,occurrences:20}}]},
+  ]}
+  const result=pointRecording(snapshot,'point')
+  assert.deepEqual(result.executions.map(item=>item.id),[1])
+  assert.deepEqual(result.executions[0].actions.map(item=>item.id),[1,2])
+  assert.equal(result.executions[0].status,'completed')
+  assert.equal(result.executions[0].failure,undefined)
+  assert.equal(snapshot.executions[0].actions.length,5)
+  assert.equal(snapshot.executions[0].failure,failure)
+  assert.equal(pointRecording(snapshot,'other').executions[0].failure,failure)
+  assert.deepEqual(pointRecording(snapshot,'missing').executions,[])
+  assert.equal(pointRecording(undefined,'point'),undefined)
+})
+
+test('point replay retains its own failure and pending steps even when batch status differs',()=>{
+  const failure={pointId:'point',reason:'Bad_Timeout'}
+  const actions=[{id:1,parentId:-1,tags:{pointId:'point'},status:'completed',attributes:{code:0x800A0000}}]
+  assert.equal(pointRecording({executions:[{id:1,status:'completed',actions}]},'point').executions[0].status,'failed')
+  const own=pointRecording({executions:[{id:1,status:'failed',actions,failure}]},'point')
+  assert.equal(own.executions[0].failure,failure)
+  const pending=[{id:2,parentId:1,status:'running'}, {...actions[0],attributes:{}}]
+  assert.equal(pointRecording({executions:[{id:1,status:'failed',actions:pending}]},'point').executions[0].status,'running')
+})
 
 test('runtime details keep the latest failure across nodes after recovery and prefer ongoing failures',()=>{
   const failure=timestamp=>({timestamp,reason:'Read failed',stage:'read',code:1})
@@ -65,6 +106,9 @@ test('latest recording follows new executions while the latest abnormal recordin
   assert.equal(choices.failed,failed)
   assert.equal(recordingChoices([recovered]).failed,undefined)
   assert.equal(recordingChoices([]).latest,undefined)
+  const slow={id:4,status:'completed',actions:[{attributes:{decision:'slow',summary:true}}]}
+  assert.equal(recordingChoices([failed,recovered,slow]).failed,slow)
+  assert.equal(recordingChoices([slow,running]).failed,slow)
 })
 test('formats real platform unit objects and timestamp semantics', () => {
   assert.equal(formatRuntimeMetric(1500000, { valueType: { unit: { id:'nanoseconds', symbol:'ns' } } }, time, t), '1.5 ms')

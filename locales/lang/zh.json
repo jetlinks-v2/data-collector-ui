@@ -303,9 +303,13 @@
     "noRecentFailure": "暂无异常",
     "diagnosticsEnabled": "自动记录",
     "diagnosticsDisabled": "记录已关闭",
-    "waitingExecution": "等待下一次采集",
+    "waitingExecution": "暂无采样记录",
     "diagnosticsSettingHint": "可在采集器配置中开启",
-    "diagnosticsMemoryHint": "仅保留最近执行和最近异常"
+    "diagnosticsMemoryHint": "仅保留最近执行和最近异常",
+    "summaryOnly": "仅保留摘要，本次未记录完整步骤",
+    "occurrences": "已合并 {count} 次同类摘要",
+    "slowExecution": "采集耗时偏长",
+    "durationBudget": "参考上限"
   },
   "collectorMonitoring": {
     "path": {
@@ -479,14 +483,22 @@
       "initializing": "初始化",
       "starting": "启动中",
       "shutdown": "已关闭",
-      "connectionClosed": "连接已断开"
+      "connectionClosed": "连接已断开",
+      "pending": "等待运行信息"
     },
     "errors": {
       "Bad_Timeout": "设备响应超时",
       "Bad_ConnectionLost": "设备连接已断开",
       "Bad_InvalidAddress": "设备地址无效",
       "Bad_DecodingError": "通信数据解析失败",
-      "Bad_DecoderError": "数据解析或转换失败"
+      "Bad_DecoderError": "数据解析或转换失败",
+      "Bad_ConnectionError": "设备连接失败，请检查连接设置",
+      "Bad_ConnectionRefused": "设备拒绝连接，请检查地址、端口及服务状态",
+      "Bad_ServerNotConnected": "尚未连接到设备",
+      "Bad_ReadTimeout": "读取设备超时",
+      "Bad_WriteTimeout": "写入设备超时",
+      "Bad_ConfigurationError": "设备配置有误，请检查点位和连接设置",
+      "unknown": "操作失败，请结合状态码排查"
     },
     "stages": {"signal":"处理采集信号",
       "execution": "执行本轮采集",
