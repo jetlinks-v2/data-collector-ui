@@ -1,11 +1,13 @@
 <template>
-  <a-modal :title="$t('WritePoint.index.769007-0')" :open="true" width="500px" @cancel="handleCancel">
+  <a-modal :title="$t('WritePoint.index.769007-0')" :open="true" width="500px" :keyboard="!loading" :mask-closable="!loading" @cancel="handleCancel">
+    <p class="write-point-hint">{{ $t('collectorWrite.hint') }}</p>
     <a-form
         class="form"
         layout="vertical"
         :model="formData"
         name="basic"
         autocomplete="off"
+        :disabled="loading"
         ref="formRef"
     >
       <a-form-item
@@ -260,12 +262,14 @@
         </a-select>
       </a-form-item>
     </a-form>
+    <a-alert v-if="writeError" type="error" show-icon :message="writeError" />
     <template #footer>
-      <a-button key="back" @click="handleCancel">{{ $t('WritePoint.index.769007-12') }}</a-button>
+      <a-button key="back" :disabled="loading" @click="handleCancel">{{ $t('WritePoint.index.769007-12') }}</a-button>
       <j-permission-button
           key="submit"
           type="primary"
           :loading="loading"
+          hasPermission="data-collect:update"
           @click="handleOk"
           style="margin-left: 8px"
       >
@@ -279,6 +283,7 @@ import type {FormInstance} from 'ant-design-vue';
 import type {Dayjs} from 'dayjs';
 import {writePoint} from '@data-collector-ui/api/data-collect/collector';
 import {useI18n} from 'vue-i18n';
+import {onlyMessage} from '@jetlinks-web/utils';
 
 const {t: $t} = useI18n();
 
@@ -339,6 +344,7 @@ const s7Type = [
 
 const emit = defineEmits(['save', 'close']);
 const loading = ref(false);
+const writeError = ref('');
 const formRef = ref<FormInstance>();
 const priority = new Array(16);
 const formData = ref({
@@ -375,23 +381,29 @@ const onChange = (value: Dayjs, dateString: string, index?: number) => {
 };
 
 const handleOk = async () => {
-  const data: any = await formRef.value?.validate();
-  if (props.data.provider === 'OPC_UA') {
-    data.value = data.value.length === 1 ? data.value[0] : data.value
-  }
-  const params: any = {
-    ...data,
-    pointId,
-  };
+  if (loading.value) return;
+  writeError.value = '';
   loading.value = true;
-  const response = await writePoint(collectorId, [params]).catch(() => {
-  });
-  emit('save');
-  loading.value = false;
+  try {
+    const data = await formRef.value?.validate();
+    if (!data) return;
+    const value = props.data.provider === 'OPC_UA' && data.value.length === 1 ? data.value[0] : data.value;
+    const response = await writePoint(collectorId, [{ ...data, value, pointId }]);
+    if (!response.success) throw new Error(response.message || $t('collectorWrite.failed'));
+    onlyMessage($t('collectorWrite.completed'));
+    emit('save');
+  } catch (error) {
+    // 表单校验由字段原位提示；请求失败时保留输入，不触发完成与关闭。
+    if (!error || typeof error !== 'object' || !('errorFields' in error)) {
+      writeError.value = error instanceof Error ? error.message : $t('collectorWrite.failed');
+    }
+  } finally {
+    loading.value = false;
+  }
 };
 
 const handleCancel = () => {
-  emit('close');
+  if (!loading.value) emit('close');
 };
 
 const filterOption = (input: string, option: any) => {
@@ -406,4 +418,6 @@ const convertHexToDecimal = (value: any) => {
 };
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.write-point-hint { color: var(--text-color-secondary); font-size: 12px; margin: 0 0 12px; }
+</style>

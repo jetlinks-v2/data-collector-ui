@@ -4,6 +4,21 @@ import { parseJsonResponseWithPrecision } from '@jetlinks-web-core/utils/json';
 import type { PointValueData } from '@data-collector-ui/utils/pointValue';
 import type { AxiosResponseRewrite } from '@jetlinks-web/types';
 
+import type { ExpressionFunction } from '@jetlinks-web-core/components/Expression';
+import type { ProcessorDocumentation } from '../../types/processorDocumentation';
+
+export const getProcessorDocumentations = (provider:string,signal:AbortSignal) =>
+    request.get<Record<string,ProcessorDocumentation>>(
+        '/data-collect/point/processor/' + encodeURIComponent(provider) + '/documentation',
+        undefined, {signal,hiddenError:true},
+    );
+
+export async function getCollectorExpressionFunctions():Promise<ExpressionFunction[]> {
+    const response = await request.get('/data-collect/point/expression/functions', undefined, { hiddenError:true });
+    if (!response.success) throw new Error(response.message || 'Expression functions unavailable');
+    return response.result || [];
+}
+
 // 在默认 JSON.parse 之前处理点位数值，避免后续展示读取到已经舍入的 Number。
 const pointValueResponse = { transformResponse: [parseJsonResponseWithPrecision] };
 
@@ -77,8 +92,9 @@ export const removePoint = (id: string) =>
 export const readPoint = (collectorId: string, data: string[]): Promise<AxiosResponseRewrite<PointValueData[]>> =>
     request.post(`/data-collect/collector/${collectorId}/points/_read`, data, pointValueResponse);
 
-export const writePoint = (collectorId: string, data: string[]) =>
-    request.post(`/data-collect/collector/${collectorId}/points/_write`, data);
+export interface PointWriteRequest { pointId: string; value: unknown; others?: Record<string, unknown> }
+export const writePoint = (collectorId: string, data: PointWriteRequest[]): Promise<AxiosResponseRewrite<PointValueData[]>> =>
+    request.post(`/data-collect/collector/${collectorId}/points/_write`, data, pointValueResponse);
 
 export const queryPointNoPaging = (data: any) =>
     request.post(`/data-collect/point/_query/no-paging`, data);

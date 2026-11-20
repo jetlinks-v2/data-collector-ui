@@ -10,12 +10,14 @@
     </div>
     <div :class="{'actions': type !== 'detail'}">
       <a-space>
-        <a
-            v-if="getAccessModes(data).includes('write')"
+        <a-tooltip v-if="getAccessModes(data).includes('write')" :title="$t('WritePoint.index.769007-0')"><button
+            type="button"
+            class="value-write"
+            :aria-label="$t('WritePoint.index.769007-0')"
             @click.stop="clickEdit"
         >
-          <AIcon type="EditOutlined"/>
-        </a>
+          <AIcon type="UploadOutlined"/>
+        </button></a-tooltip>
         <a
             v-if="getAccessModes(data).includes('read')"
             @click.stop="clickRead"
@@ -55,7 +57,7 @@ const emits = defineEmits(['refresh'])
 const visible = ref(false)
 const historyData = ref<PointValueData>()
 const formattedValue = computed(() => formatPointData(
-  props.value?.dataType ? props.value : historyData.value,
+  props.value?.timestamp != null ? props.value : historyData.value,
   $t('comm.table.empty-2'),
 ))
 const clickEdit = async () => {
@@ -81,6 +83,7 @@ const onSave = () => {
 </script>
 
 <style lang="less" scoped>
+.value-write { border: 0; padding: 0; background: none; color: var(--ant-primary-color); cursor: pointer; }
 .header-cell-title {
   display: flex;
   align-items: center;
