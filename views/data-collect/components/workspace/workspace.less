@@ -214,14 +214,13 @@
   .cw-point-title>.cw-point-note { flex:0 1 auto; max-width:45%; }
   .cw-point-note>.anticon { margin-right:3px; }
   .cw-point-name small { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:var(--cw-sub); font-size:11px; line-height:16px; font-weight:400; }
-  .cw-point-select>.anticon { margin-left: auto; color: var(--cw-sub); font-size: 12px; }
+  .cw-point-select>.anticon { display:inline-flex; align-items:center; justify-content:center; flex:none; width:24px; height:24px; margin-left:auto; color:var(--cw-sub); font-size:12px; }
   .cw-point-reading { display: flex; align-items: center; gap:12px; min-width: 0; min-height:28px; }
   .cw-point-status { display:inline-flex; align-items:center; gap:4px; min-width:0; }
   .cw-point-status:has(.cw-runtime-status) { gap:0; padding:0 2px; border-radius:4px; background:color-mix(in srgb,var(--cw-sub) 5%,transparent); }
   .cw-point-status .cw-runtime-status { padding:2px 4px; gap:5px; }
   .cw-point-status .cw-runtime-status>.cw-badge { background:none; padding:0; }
   .cw-point-status .cw-runtime-status>.anticon { color:var(--cw-sub); font-size:11px; }
-  .cw-point-status>.cw-icon-button { width:24px; height:24px; font-size:14px; }
   .cw-inline .cw-point:not(.selected):not(:hover):not(:focus-within) .cw-diagnostic-trigger:not(.cw-attention):not([aria-expanded=true]) { opacity:0; pointer-events:none; }
   .cw-inline .cw-point .cw-value-expand { opacity:.3; }
   .cw-inline .cw-point .cw-value-trigger:is(:hover,:focus-visible) .cw-value-expand { opacity:1; }
@@ -500,12 +499,12 @@
 .cw-point-card-editor.cw-point-card-motion-enter { visibility:visible; animation:cw-point-card-open 160ms ease-out both; }
 .cw-point-card-motion-leave { animation:cw-point-card-close 140ms ease-in both; }
 @keyframes cw-point-card-open {
-  from { max-height:var(--cw-source-height,120px); }
-  to { max-height:var(--cw-panel-height); }
+  from { clip-path:inset(0 0 max(0px,calc(100% - var(--cw-source-height,120px))) 0); }
+  to { clip-path:inset(0); }
 }
 @keyframes cw-point-card-close {
-  from { visibility:visible; max-height:var(--cw-panel-height); }
-  to { visibility:hidden; max-height:var(--cw-source-height,120px); }
+  from { visibility:visible; clip-path:inset(0); }
+  to { visibility:hidden; clip-path:inset(0 0 max(0px,calc(100% - var(--cw-source-height,120px))) 0); }
 }
 @media (prefers-reduced-motion:reduce) {
   .cw-point-card-editor.cw-point-card-motion-enter,.cw-point-card-motion-leave { animation:none; }

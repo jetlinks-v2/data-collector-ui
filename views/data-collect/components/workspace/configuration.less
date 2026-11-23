@@ -31,7 +31,9 @@
   .cw-channel-link { padding:0; border:0; background:transparent; color:var(--cw-sub); text-align:left; }
   .cw-channel-link:hover { color:var(--cw-blue); }
   .cw-object-edit-heading { position:sticky; top:-12px; z-index:2; margin:-12px -12px 8px; padding:12px 12px 4px; background:var(--cw-panel); }
-  .cw-object-edit-heading .cw-object-identity>.cw-icon-button { width:24px; height:28px; }
+  .cw-object-collapse { position:var(--cw-object-action-position,static); left:var(--cw-object-action-left); top:var(--cw-object-action-top); display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:none; width:var(--cw-object-action-width,32px); height:var(--cw-object-action-height,28px); padding-inline:8px; color:var(--cw-blue); background:var(--cw-soft); font-size:12px; }
+  .cw-object-collapse>.anticon { font-size:14px; }
+  .cw-object-collapse>.anticon+span { margin-inline-start:0; }
   .cw-object-edit-heading .cw-object-title { flex:0 1 var(--cw-object-name-width,auto); width:var(--cw-object-name-width,auto); }
   .cw-object-edit-summary { display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; min-height:22px; padding-left:32px; color:var(--cw-sub); }
   .cw-object-edit-summary>small { font-size:11px; }
@@ -39,6 +41,8 @@
   .cw-object-configuration.cw-object-inline-configuration { container-type:inline-size; display:flex; flex-direction:column; max-height:var(--cw-panel-height); margin:0; border:0; border-radius:0; }
   .cw-object-configuration.cw-object-inline-configuration>.ant-form { min-height:0; padding-top:12px; overflow:auto; overscroll-behavior:contain; }
   .cw-object-inline-configuration>.cw-editor-footer { flex:none; background:var(--cw-panel); }
+  &.cw-object-editor-channel .cw-object-inline-configuration>.ant-form { padding-top:0; }
+  &.cw-object-editor-channel .cw-object-edit-heading { top:0; margin-top:0; padding-top:0; }
   .cw-channel-overview { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; margin:0 0 10px; color:var(--cw-sub); }
   .cw-channel-overview>.cw-collector-data { flex-basis:100%; }
   .cw-editor-heading { position:sticky; top:0; z-index:2; min-height:36px; gap:8px; margin:-12px -12px 0; padding:12px 12px 6px; background:var(--cw-panel); line-height:21px; }
@@ -61,19 +65,21 @@
   .cw-point-identity :is(.cw-name-field,.cw-identifier) { font-size:inherit; line-height:inherit; }
   .cw-point-identity :is(.cw-name-field,.cw-identifier) .ant-form-item-control-input { min-height:0; }
   .cw-point-identity :is(.cw-name-field,.cw-identifier) .ant-form-item-control-input-content { display:flex; min-width:0; }
-  .cw-point-identity .cw-editor-collapse { width:12px; height:24px; padding:0; font-size:12px; }
+  .cw-point-identity .cw-editor-collapse { flex:none; width:24px; height:24px; padding:0; font-size:12px; }
+  .cw-editor-collapse>.anticon { transform:rotate(180deg); }
   .cw-point-icon-edit { position:relative; flex:none; width:16px; height:24px; padding:0; }
   .cw-point-icon-preview { display:flex; align-items:center; justify-content:center; width:16px; height:16px; line-height:0; }
   .cw-point-icon-edit .cw-icon-edit-mark { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--cw-sub); opacity:0; pointer-events:none; }
   .cw-point-icon-edit:is(:hover,:focus-visible)>.cw-point-icon-preview { visibility:hidden; }
   .cw-point-icon-edit:is(:hover,:focus-visible) .cw-icon-edit-mark { color:var(--cw-blue); opacity:1; }
-  .cw-editor-heading .cw-has-note { color:var(--cw-blue); }
+  .cw-editor-reading .cw-has-note { color:var(--cw-blue); }
   .cw-editor-reading { display:flex; align-items:center; gap:8px; min-height:26px; margin-bottom:6px; color:var(--cw-sub); }
   .cw-editor-reading>small { font-size:11px; white-space:nowrap; }
   .cw-editor-reading .cw-reading { color:var(--cw-sub); font-size:14px; font-weight:400; }
   .cw-editor-reading .cw-value-trigger { min-height:24px; }
   .cw-editor-reading .cw-value-expand { opacity:.3; }
   .cw-editor-reading>.cw-runtime-indicators { margin-left:auto; }
+  .cw-editor-reading>.cw-icon-button { flex:none; width:24px; height:24px; font-size:14px; }
   .cw-object-configuration .cw-point-remark { margin:0 0 8px; }
   .cw-point-source { border-top:1px solid var(--cw-line); padding-top:9px; }
   .cw-settings-title { color:var(--cw-ink); font-weight:500; margin-bottom:7px; }
