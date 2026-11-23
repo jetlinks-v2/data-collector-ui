@@ -33,6 +33,22 @@ function objectEditor(kind='channel', update=async()=>({success:true}), draft) {
   return {editor,scope,calls,injections,saved:()=>saved}
 }
 
+test('saving configuration never replays the opening lifecycle state',async()=>{
+  for (const kind of ['channel','collector']) {
+    const state=objectEditor(kind)
+    try {
+      await settle(); state.editor.ready()
+      state.editor.model.state='enabled';state.editor.model.runningState='running'
+      state.editor.model.name='Changed'
+      await state.editor.save(async()=>{})
+      assert.equal(state.calls.length,1)
+      assert.equal(state.calls[0].payload.name,'Changed')
+      assert.equal('state' in state.calls[0].payload,false)
+      assert.equal('runningState' in state.calls[0].payload,false)
+    } finally {state.scope.stop()}
+  }
+})
+
 test('restoring a configuration keeps its injected model and resets plugin-local field references',async()=>{
   const state=objectEditor()
   try {
@@ -85,7 +101,7 @@ test('folding and navigating preserve configuration drafts while only the curren
     vue:{...vue,provide(){},onMounted(){},onBeforeUnmount(){}},'vue-i18n':translations,
     'vue-router':{onBeforeRouteLeave:callback=>{leaveRoute=callback}},'ant-design-vue':{Modal:{confirm:options=>{confirmations++;leave?options.onOk():options.onCancel()}}},
     './useWorkspaceData':{useWorkspaceData:()=>data},'./useWorkspaceRuntime':{useWorkspaceRuntime:()=>({close(){}})},
-    './usePointDraft':{usePointDraft:()=>({hasChanges:vue.ref(false),saving:vue.ref(false)})},'./useWorkspaceActions':{useWorkspaceActions:()=>batch},'../data':{},
+    './usePointDraft':{usePointDraft:()=>({hasChanges:vue.ref(false),saving:vue.ref(false),model:vue.ref(),dirty:vue.ref(false)})},'./useWorkspaceActions':{useWorkspaceActions:()=>batch},'../data':{},
     './useWorkspaceRoute':{useWorkspaceRoute:(_data,apply,canSelect)=>async(...args)=>{if(await canSelect())apply(...args)}},
   })
   const previous=globalThis.window,previousDocument=globalThis.document

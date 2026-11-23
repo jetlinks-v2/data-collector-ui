@@ -15,6 +15,9 @@
             <j-permission-button v-if="!batchEditor.open.value && !choosingProvider" hasPermission="data-collect:view" size="small" type="text" :disabled="batchBusy || saving" :title="$t('collectorPointLookup.title')" @click="pointLookup.open.value = true"><AIcon type="SearchOutlined" /><span>{{ $t('collectorPointLookup.title') }}</span></j-permission-button>
             <j-permission-button v-if="!collector && !choosingProvider && !setupProvider" hasPermission="data-collect:add" size="small" type="primary" @click="choosingProvider = true"><AIcon type="PlusOutlined" />{{ $t('collectorWorkspace.newCollection') }}</j-permission-button>
             <DiagnosticTrigger v-if="headingObject" :open="diagnosticId === headingObject.id" :label="$t('collectorWorkspace.diagnostics')" @visibility="visible => visible ? diagnose(collector ? 'collector' : 'channel', headingObject!) : closeDiagnostic()"><DiagnosticContent :state="diagnosticState" @close="closeDiagnostic" /></DiagnosticTrigger>
+            <a-popconfirm v-if="headingObject && objectState.available.value && !batchEditor.open.value" :title="$t('Channel.index.290640-14', [objectState.label.value])" :description="collector ? headingObject.name : `${headingObject.name} · ${$t('collectorEditing.sharedCount', {count:data.scopedCollectors.value.length})}`" :disabled="objectState.busy.value || batchBusy || saving" @confirm="objectState.toggle">
+              <j-permission-button hasPermission="data-collect:update" type="text" size="small" :loading="objectState.busy.value" :disabled="batchBusy || saving"><AIcon v-if="!objectState.busy.value" :type="objectState.state.value === 'enabled' ? 'StopOutlined' : 'PlayCircleOutlined'" />{{ objectState.label.value }}</j-permission-button>
+            </a-popconfirm>
             <j-permission-button v-if="headingObject && !batchEditor.open.value" type="text" size="small" hasPermission="data-collect:update" :aria-label="$t(collector ? 'collectorWorkspace.collectorSettings' : 'collectorWorkspace.connection')" :title="$t(collector ? 'collectorWorkspace.collectorSettings' : 'collectorWorkspace.connection')" :aria-expanded="objectForm === (collector ? 'collector' : 'channel')" @click="openSettings(collector ? 'collector' : 'channel', $event)"><AIcon :type="objectForm === (collector ? 'collector' : 'channel') && !objectEditor?.prepared ? 'LoadingOutlined' : 'SettingOutlined'" /></j-permission-button>
             <a-popover v-if="!batchEditor.open.value" v-model:open="moreOpen" trigger="click" placement="bottomRight" overlay-class-name="cw-workspace-popover cw-actions-overlay">
               <button ref="moreTrigger" type="button" class="cw-icon-button" :aria-label="$t('collectorWorkspace.more')" :title="$t('collectorWorkspace.more')" :aria-expanded="moreOpen" @keydown.tab="focusMore" @keydown.down="focusMore" @keydown.esc.stop="closeMore"><AIcon type="MoreOutlined" /></button>
@@ -31,6 +34,7 @@
             </a-popover>
           </div>
         </header>
+        <a-alert v-if="objectState.error.value" type="error" show-icon :message="objectState.error.value" />
         <ProviderChooser v-if="choosingProvider" :providers="providers" @cancel="choosingProvider = false" @select="provider => { setupProvider = provider; choosingProvider = false }" />
         <CollectionSetup v-else-if="setupProvider" ref="configurationEditor" :key="setupProvider.id" :provider="setupProvider" :channels="channels" @cancel="cancelSetup" @navigation="openNavigation" @saved="onCollectionCreated" />
         <template v-else>
@@ -100,6 +104,7 @@ import { useI18n } from 'vue-i18n'
 import { useCollectionWorkspace } from './hook/useCollectionWorkspace'
 import { usePointBatchEditor } from './hook/usePointBatchEditor'
 import { useWorkspacePointLookup } from './hook/useWorkspacePointLookup'
+import { useObjectState } from './hook/useObjectState'
 import ObjectNavigation from './components/workspace/ObjectNavigation.vue'
 import CollectorOverview from './components/workspace/CollectorOverview.vue'
 import RuntimeCardMetrics from './components/workspace/RuntimeCardMetrics.vue'
@@ -133,6 +138,7 @@ const headingAnchor=ref<HTMLElement>(),channelAnchor=ref<HTMLElement>()
 const pointCollection=ref<InstanceType<typeof PointCollection>>()
 const pointLookup=useWorkspacePointLookup(data,select,pointCollection)
 const headingObject=computed(()=>collector.value || (selectedChannelId.value ? channel.value : undefined))
+const objectState=useObjectState(data)
 function openSettings(kind:'channel'|'collector',event:MouseEvent) {
   const object=kind === 'collector' ? collector.value : channel.value,anchor=kind === 'channel' && collector.value ? channelAnchor.value : headingAnchor.value
   if(!object || !anchor)return

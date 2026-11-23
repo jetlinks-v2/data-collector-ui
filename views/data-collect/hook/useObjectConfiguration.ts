@@ -81,10 +81,12 @@ export function useObjectConfiguration(props: Options, saved: (value: CollectorO
     try {
       await validate()
       const value = cloneDeep(model)
+      // Enablement is owned by lifecycle actions, not the configuration draft's opening snapshot.
+      const settings = omit(value, ['state', 'runningState'])
       const payload = props.kind === 'collector' ? {
-        ...omit(value, templateKeys),
-        configuration: { ...value.configuration, template: pick(value, templateKeys) },
-      } : value
+        ...omit(settings, templateKeys),
+        configuration: { ...settings.configuration, template: pick(settings, templateKeys) },
+      } : settings
       const response = props.kind === 'channel'
         ? value.id ? await updateChannel(value.id, payload) : await saveChannel(payload)
         : value.id ? await updateCollector(value.id, payload) : await saveCollector(payload)
