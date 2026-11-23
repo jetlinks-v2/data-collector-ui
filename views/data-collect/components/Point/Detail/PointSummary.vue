@@ -4,8 +4,8 @@
     <div class="point-summary__body">
       <div class="point-summary__heading">
         <InputEditable :value="info.name" :max-length="64" :text-style="{ fontSize: 'var(--fs-18)', fontWeight: 600 }" @change="(value: string) => emit('save-field', 'name', value)" />
-        <StatusTag :status="info.state?.value === 'disabled' ? 'disabled' : info.runningState?.value === 'running' ? 'success' : 'default'"
-          :text="info.state?.value === 'disabled' ? info.state?.text : info.runningState?.text" />
+        <StatusTag :status="info.state?.value === 'disabled' ? 'disabled' : runningState?.value === 'running' ? 'success' : 'default'"
+          :text="info.state?.value === 'disabled' ? info.state?.text : runningState?.text" />
         <span class="point-summary__id">{{ info.identifier || info.id }}</span>
       </div>
       <div class="point-summary__meta">
@@ -26,11 +26,13 @@
   </ContentPanel>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import StatusTag from '@jetlinks-web-core/components/StatusTag/index.vue'
 import ValueList from './ValueList.vue'
 import type { CollectRecord } from '../../../hook/context'
-defineProps<{ info: CollectRecord; editing: boolean; onDelete: () => Promise<void> }>()
+const props = defineProps<{ info: CollectRecord; editing: boolean; onDelete: () => Promise<void> }>()
+const runningState = computed(() => props.info.effectiveRunningState ?? props.info.runningState)
 const emit = defineEmits<{ 'save-field': [name: string, value: unknown]; edit: [] }>()
 const { t: $t } = useI18n()
 </script>

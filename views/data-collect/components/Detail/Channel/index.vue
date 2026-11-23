@@ -8,8 +8,8 @@
             :maxLength="64"
         />
         <j-badge-status
-            :status="getState(info).value"
-            :text="getState(info).text"
+            :status="state.value"
+            :text="state.text"
             :statusNames="ChannelState"
         />
       </div>
@@ -89,6 +89,8 @@ const activeKey = ref('Info')
 const countList = ref([])
 const info = ref({})
 const loading = ref(false)
+const statusSource = computed(() => props.data.id ? props.data : info.value)
+const state = computed(() => getState(statusSource.value))
 
 provide('channel-info', info)
 
@@ -104,7 +106,7 @@ const tabsList = [
 ]
 
 const getActions = () => {
-  return getChannelActions(info.value, onActions).filter(item => !['add-collector', 'update'].includes(item.key))
+  return getChannelActions(statusSource.value, onActions).filter(item => !['add-collector', 'update'].includes(item.key))
 }
 
 const queryInfo = async (id) => {

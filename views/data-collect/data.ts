@@ -1,4 +1,3 @@
-import i18n from '@jetlinks-web-core/locales'
 import type { BadgeProps } from 'ant-design-vue'
 export const COLLECTOR_TYPE = 'data-collector-type'
 export const COLLECTOR_DATA = 'data-collector-data'
@@ -19,18 +18,7 @@ export const ChannelState: Record<string, NonNullable<BadgeProps['status']>> = {
     stopped: 'default',
 };
 
-// 获取通道状态
-export const getState = (record: Partial<Record<string, any>>) => {
-    if (record) {
-        if (record?.state?.value === 'enabled') {
-            return {...record?.runningState};
-        } else {
-            return {
-                text: i18n.global.t('Channel.index.290640-7'),
-                value: 'disabled',
-            };
-        }
-    } else {
-        return {};
-    }
-};
+export const getState = (record: Partial<Record<string, any>>) =>
+    record?.state?.value === 'disabled'
+        ? record.state
+        : record?.effectiveRunningState ?? record?.runningState ?? {};

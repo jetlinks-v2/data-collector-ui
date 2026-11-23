@@ -15,19 +15,25 @@ import Right from './Right.vue'
 import { COLLECTOR_DATA, COLLECTOR_TYPE, REFRESH_HANDLER } from './data'
 import { COLLECT_LIST, type CollectRecord, type ScopeType } from './hook/context'
 import { useCollectRouteState } from './hook/useCollectRouteState'
+import { useCollectStateChanges } from './hook/useCollectStateChanges'
 
 const state = useCollectRouteState()
 const current = ref<CollectRecord>({})
 const ready = ref(false)
 const leftRef = ref<InstanceType<typeof Left>>()
 const rightRef = ref<InstanceType<typeof Right>>()
-const refreshAll = async () => {
+const reloadWorkspace = async () => {
   await leftRef.value?.loadAllData()
   await rightRef.value?.refresh()
 }
+const notifyStateChange = useCollectStateChanges(reloadWorkspace)
+const refreshAll = async () => {
+  notifyStateChange()
+  await reloadWorkspace()
+}
 let activated = false
 onActivated(() => {
-  if (activated) void refreshAll()
+  if (activated) void reloadWorkspace()
   activated = true
 })
 provide(COLLECT_LIST, { state, current, ready, refreshAll })

@@ -22,12 +22,13 @@ import dayjs from 'dayjs'
 import ValueItem from '../components/ValueItem.vue'
 import { formatPointValue } from '@data-collector-ui/utils/pointValue'
 import { usePointValues } from '../usePointValues'
+import { isPointStopped } from '../data'
 import type { CollectRecord } from '../../../hook/context'
 const { t: $t } = useI18n()
 const info = inject<Ref<CollectRecord>>('point-info', ref({}))
 const refreshFn = inject<{ refresh: () => Promise<void> }>('point-refresh')
 const values = usePointValues(computed(() => info.value.id ? [info.value] : []))
-const value = computed(() => values.value.get(info.value.id || '') || {})
+const value = computed(() => isPointStopped(info.value) ? {} : values.value.get(info.value.id || '') || {})
 const onRefresh = () => refreshFn?.refresh()
 </script>
 <style lang="less" scoped>

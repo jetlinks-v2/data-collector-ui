@@ -174,7 +174,7 @@ test('actual ValueItem renders live, structured and manual-read values, includin
   const { descriptor } = parse(readFileSync(filename, 'utf8'))
   const { content } = compileScript(descriptor, { id: 'precision-value', inlineTemplate: true })
   const ValueItem = loadCode(content, {
-    '@data-collector-ui/views/data-collect/components/Point/data': { getAccessModes: () => ['read'] },
+    '../data': loadFile(resolve(moduleRoot, 'views/data-collect/components/Point/data.ts')),
     '@data-collector-ui/api/data-collect/collector': api,
     '@data-collector-ui/utils/pointValue': values,
     '@jetlinks-web/utils': { onlyMessage() {} },
@@ -184,7 +184,8 @@ test('actual ValueItem renders live, structured and manual-read values, includin
   for (const live of [{ parsedData: uint64, dataType: 'ULong' },
     { parseData: [uint64, false, 0], dataType: 'Array' }, undefined]) {
     const container = { children: [] }
-    const app = renderer.createApp(ValueItem, { value: live, data: { collectorId: 'collector', id: 'point' }, type: 'detail' })
+    const data = vue.ref({ collectorId: 'collector', id: 'point', accessModes: [{ value: 'read' }] })
+    const app = renderer.createApp({ setup: () => () => vue.h(ValueItem, { value: live, data: data.value, type: 'detail' }) })
     const passthrough = { setup: (_, { slots }) => () => vue.h('span', slots.default?.()) }
     app.component('j-ellipsis', passthrough).component('a-space', passthrough).component('AIcon', { render: () => null })
     app.mount(container)
@@ -199,6 +200,10 @@ test('actual ValueItem renders live, structured and manual-read values, includin
           assert.ok(textOf(container).includes(`${raw}(ULong)`))
         }
       }
+      data.value = { ...data.value, effectiveRunningState: { value: 'stopped' } }
+      await vue.nextTick()
+      assert.equal(textOf(container), missing)
+      assert.equal(findRead(container), undefined)
     } finally { app.unmount() }
   }
 })

@@ -16,6 +16,7 @@ export interface CollectRecord {
   collectorName?: string
   state?: EnumValue
   runningState?: EnumValue
+  effectiveRunningState?: EnumValue
   accessModes?: EnumValue[]
   features?: EnumValue[]
   modifyTime?: number
