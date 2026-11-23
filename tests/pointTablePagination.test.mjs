@@ -17,7 +17,7 @@ const fixture = request => { const scope=effectScope(); return { scope, state: s
 test('requests zero-based server pages and replaces rows without appending', async () => {
   const calls=[]; const { scope,state }=fixture(async (index,size)=>{calls.push([index,size]);return page(index*size, size, 100)})
   try {
-    await state.load(); await state.load(2,10); assert.deepEqual(calls,[[0,10],[1,10]])
+    await state.load(); await state.load(2,10); assert.deepEqual(calls,[[0,12],[1,10]])
     assert.equal(state.rows.value.length,10); assert.equal(state.rows.value[0].id,'10');assert.equal(state.total.value,100)
     await state.load(1,20);assert.equal(state.pageSize.value,20);assert.equal(state.rows.value.length,20)
   }finally{scope.stop()}

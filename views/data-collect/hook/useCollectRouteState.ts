@@ -20,7 +20,7 @@ export function readCollectRoute(query: LocationQuery): CollectListState {
     pointType: ['running', 'stopped'].includes(text(query.pointState)) ? query.pointState as 'running' | 'stopped' : 'total',
     terms: decodeConditionFilterQuery(query.q, pointSearchFields),
     page: Math.max(1, Math.floor(Number(query.page) || 1)),
-    pageSize: [10, 20, 50, 100].includes(Number(query.pageSize)) ? Number(query.pageSize) : 10,
+    pageSize: [12, 24, 48, 96, 10, 20, 50, 100].includes(Number(query.pageSize)) ? Number(query.pageSize) : 12,
     sort: ['name', 'modifyTime', 'interval'].includes(text(query.sort)) ? text(query.sort) : '',
     order: query.order === 'asc' ? 'asc' : 'desc',
     treeSearch: text(query.treeSearch), filters,
@@ -33,7 +33,7 @@ export function collectRouteQuery(state: CollectListState) {
     pointState: state.pointType === 'total' ? undefined : state.pointType,
     q: encodeConditionFilterQuery(state.terms, pointSearchFields) || undefined,
     page: state.page > 1 ? String(state.page) : undefined,
-    pageSize: state.pageSize === 10 ? undefined : String(state.pageSize),
+    pageSize: state.pageSize === 12 ? undefined : String(state.pageSize),
     sort: state.sort || undefined, order: state.sort ? state.order : undefined,
     treeSearch: state.treeSearch || undefined,
   }

@@ -79,9 +79,7 @@
         <a-button type="link" size="small" @click="toggleAll">{{ $t(all ? 'PointTable.index.40014110-0' : 'PointTable.index.40014110-1') }}</a-button>
       </div>
       <div class="point-workspace__pagination">
-        <span>{{ $t('PointWorkspace.total', { total }) }}</span>
-        <a-pagination :current="current" :page-size="pageSize" :total="total" show-size-changer show-less-items
-          :page-size-options="['10', '20', '50', '100']" @change="changePage" />
+        <CorePagination :current="current" :page-size="pageSize" :total="total" @change="changePage" />
       </div>
     </footer>
   </section>
@@ -99,6 +97,7 @@
   <RenderComponents v-if="actions.jsonData.value" :value="actions.jsonData.value" />
 </template>
 <script setup lang="ts">
+import CorePagination from '@jetlinks-web-core/components/CorePagination'
 import { computed, ref } from 'vue'
 import dayjs from 'dayjs'
 import { useI18n } from 'vue-i18n'

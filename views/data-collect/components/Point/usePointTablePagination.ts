@@ -9,7 +9,7 @@ export function usePointTablePagination<Row extends { id: string }>(
   request: (pageIndex: number, pageSize: number) => Promise<PointPage<Row>>,
 ) {
   const rows = shallowRef<Row[]>([])
-  const total = ref(0), current = ref(1), pageSize = ref(10)
+  const total = ref(0), current = ref(1), pageSize = ref(12)
   const loading = ref(false), failed = ref(false)
   let revision = 0
   const load = async (page = current.value, size = pageSize.value): Promise<void> => {
