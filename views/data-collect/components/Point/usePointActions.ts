@@ -120,8 +120,10 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
     const provider = scope.value.provider === 'COLLECTOR_GATEWAY' ? scope.value.configuration?.collectorProvider : scope.value.provider
     const result = await exportPoint(scope.value.id || '', provider || '')
     if (!result) return
-    const url = URL.createObjectURL(new Blob([result as unknown as BlobPart], { type: 'xlsx' }))
-    try { downloadFileByUrl(url, $t('Point.index.400149-16', [scope.value.name])) }
+    const url = URL.createObjectURL(new Blob([result as unknown as BlobPart], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }))
+    try { downloadFileByUrl(url, $t('Point.index.400149-16', [scope.value.name]), 'xlsx') }
     finally { URL.revokeObjectURL(url) }
   }
   onScopeDispose(() => { version++; editVersion++ })
