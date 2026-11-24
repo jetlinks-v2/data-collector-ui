@@ -2,35 +2,49 @@ import { computed, inject, onBeforeUnmount, ref, unref, watch, type MaybeRef } f
 import { useSystemStore } from '@jetlinks-web-core/store'
 import axios from 'axios'
 import { getResourceLangFile } from '../api/data-collect/channel'
+import { useI18n } from 'vue-i18n'
+
+type Messages = Record<string, string>
+
+// Raw resource responses may carry the host interceptor's boolean success flag.
+function dictionary(value: unknown): Messages | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return
+    const entries = Object.entries(value)
+    if (entries.some(([key, item]) => typeof item !== 'string' && !(key === 'success' && item === true))) return
+    const messages = Object.fromEntries(entries.filter(([, item]) => typeof item === 'string'))
+    return Object.keys(messages).length ? messages : undefined
+}
 
 /** Resolve plugin translations beside the installed editor, with language fallback. */
 export const useLocales = (namespace: string) => {
     const systemStore = useSystemStore()
+    const { rt } = useI18n({ useScope: 'global' })
     const form = inject<MaybeRef<{ provider?: string }>>('plugin-form', {})
     const collector = inject<MaybeRef<{ provider?: string }>>('collector-data', {})
     const provider = computed(() => unref(form)?.provider || unref(collector)?.provider || namespace)
-    const langJson = ref<Record<string, string>>({})
+    const langJson = ref<Messages>({})
     let revision = 0
-    // The platform request interceptor appends a boolean success flag to raw JSON resources.
-    const dictionary = (value: unknown): value is Record<string, string> => !!value && typeof value === 'object' && !Array.isArray(value) && Object.entries(value).every(([key, item]) => key === 'success' || typeof item === 'string')
     watch([provider, () => systemStore.language], async () => {
         const identity = ++revision
+        const currentProvider = provider.value
         const language = systemStore.language || 'zh'
         const languages = [...new Set([language, language.split(/[-_]/)[0], 'en'])]
-        for (const locale of languages) {
-            try {
-                const value = await getResourceLangFile(provider.value, locale)
-                if (identity !== revision) return
-                if (dictionary(value)) { langJson.value = value; return }
-            } catch { /* Try the bundled resource or parent language. */ }
-            try {
-                const response = await axios.get(`/protocol/${namespace}/lang/${locale}.json`)
-                if (identity !== revision) return
-                if (dictionary(response.data)) { langJson.value = response.data; return }
-            } catch { /* Try the next supported language. */ }
+        langJson.value = {}
+        const load = (read: (locale: string) => Promise<unknown>) => Promise.all(languages.map(async locale => {
+            try { return dictionary(await read(locale)) }
+            catch { return undefined }
+        }))
+        let catalogs = await load(locale => getResourceLangFile(currentProvider, locale))
+        if (identity !== revision) return
+        // An installed plugin owns its entire fallback chain; bundled files may be a different version.
+        if (!catalogs.some(Boolean)) {
+            catalogs = await load(async locale => (await axios.get(`/protocol/${namespace}/lang/${locale}.json`)).data)
         }
-        if (identity === revision) langJson.value = {}
+        if (identity === revision) langJson.value = Object.assign({}, ...catalogs.reverse().filter(Boolean))
     }, { immediate: true })
     onBeforeUnmount(() => { ++revision })
-    return { $lang: (key: string) => langJson.value[key] || key }
+    return { $lang: (key: string, params?: Record<string, unknown>) => {
+        const message = langJson.value[key] ?? key
+        return params ? rt(message, params) : message
+    } }
 }
