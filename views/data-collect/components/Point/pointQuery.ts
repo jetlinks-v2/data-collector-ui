@@ -3,6 +3,10 @@ import { buildAllChannelTerm, buildPointQueryFilterTerms } from '../../utils'
 import { pointSearchFields } from './columns'
 import type { CollectListState } from '../../hook/context'
 
+export function pointStateTerm(state: 'running' | 'stopped') {
+  return { column: 'id', termType: 'point-effective-state', value: state, type: 'and' }
+}
+
 /** 表格、计数和条件批量操作共用查询范围，防止“全部选择”遗漏通道或状态条件。 */
 export async function buildPointListQuery(state: CollectListState, includeStatus = true) {
   const terms: any[] = [
@@ -18,7 +22,7 @@ export async function buildPointListQuery(state: CollectListState, includeStatus
     terms.push({ column: state.scopeType === 'channel' ? 'channelId' : 'collectorId', value: state.scopeId, type: 'and' })
   }
   if (includeStatus && state.pointType !== 'total') {
-    terms.push({ column: 'runningState', value: 'running', termType: state.pointType === 'running' ? 'eq' : 'not', type: 'and' })
+    terms.push(pointStateTerm(state.pointType))
   }
   return {
     terms,

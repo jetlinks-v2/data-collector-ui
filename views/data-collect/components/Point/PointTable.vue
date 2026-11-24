@@ -53,8 +53,8 @@
         </template>
         <template #runningState="record">
           <a-badge class="point-workspace__status"
-            :status="ChannelState[record.state?.value === 'disabled' ? 'stopped' : record.runningState?.value] || 'default'"
-            :text="record.state?.value === 'disabled' ? record.state?.text : record.runningState?.text" />
+            :status="ChannelState[record.state?.value === 'disabled' ? 'stopped' : (record.effectiveRunningState ?? record.runningState)?.value] || 'default'"
+            :text="record.state?.value === 'disabled' ? record.state?.text : (record.effectiveRunningState ?? record.runningState)?.text" />
         </template>
         <template #value="record"><div class="point-workspace__value"><ValueItem :value="propertyValue.get(record.id)" :data="record" /></div></template>
         <template #modifyTime="record">{{ record.modifyTime != null ? dayjs(record.modifyTime).format('YYYY-MM-DD HH:mm:ss') : '—' }}</template>

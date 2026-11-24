@@ -9,8 +9,8 @@
             :maxLength="64"
         />
         <j-badge-status
-            :status="info?.runningState?.value"
-            :text="info?.runningState?.text"
+            :status="state.value"
+            :text="state.text"
             :statusNames="ChannelState"
         />
       </div>
@@ -73,7 +73,7 @@
 </template>
 
 <script setup>
-import {ChannelState, DATA_COLLECTOR_SAVE_TYPE} from "@data-collector-ui/views/data-collect/data";
+import {ChannelState, DATA_COLLECTOR_SAVE_TYPE, getState} from "@data-collector-ui/views/data-collect/data";
 import {tabs} from "./asyncComponent";
 import {
   getCollectorActions,
@@ -104,6 +104,8 @@ const info = ref({})
 const loading = ref(false)
 const defaultKeys = ['accessModes', 'features', 'interval', 'managedConfiguration']
 const componentsRef = ref()
+const statusSource = computed(() => props.data.id ? props.data : info.value)
+const state = computed(() => getState(statusSource.value))
 
 provide('point-template-error-list', errorList)
 provide('collector-info', info)
@@ -124,7 +126,7 @@ const tabsList = [
 ]
 
 const getActions = () => {
-  return getCollectorActions(info.value, onActions).filter(item => !['update'].includes(item.key))
+  return getCollectorActions(statusSource.value, onActions).filter(item => !['update'].includes(item.key))
 }
 
 const queryInfo = async (id) => {

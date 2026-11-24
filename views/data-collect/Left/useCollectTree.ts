@@ -1,5 +1,6 @@
 import type { EventDataNode } from 'ant-design-vue/es/tree'
 import { computed, onScopeDispose, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { queryNoPaging } from '@data-collector-ui/api/data-collect/channel'
 import { queryCollectorTree } from '@data-collector-ui/api/data-collect/collector'
 import { useCollectContext, type CollectRecord, type ScopeType } from '../hook/context'
@@ -8,7 +9,8 @@ import { getChannelActions, getCollectorActions } from '../utils'
 export interface CollectNode extends CollectRecord { id: string; key: string; name: string; isChannel: boolean; children?: CollectNode[] }
 /** 树维护真实对象与选择映射，搜索结果由原始节点派生，不能修改原始 children。 */
 export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => void) {
-  const { state, ready } = useCollectContext()
+  const { state, ready, refreshAll } = useCollectContext()
+  const { t } = useI18n()
   const channels = ref<CollectNode[]>([]), collectors = ref<CollectNode[]>([])
   const loading = ref(false), failed = ref(false)
   const expandedKeys = ref<string[]>([])
@@ -23,6 +25,9 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
     }), { running: 0, stopped: 0 }),
     children: collectors.value.filter(item => item.channelId === channel.id).map(item => ({
       ...item, key: item.id, isChannel: false, channelName: channel.name, isLeaf: true,
+      effectiveRunningState: channel.state?.value === 'disabled'
+        ? { value: 'stopped', text: t('DataCollect.index.400150-9') }
+        : item.effectiveRunningState,
     })),
   })))
   const filteredTree = computed(() => {
@@ -45,8 +50,8 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
   const displayTree = computed(() => [{ id: 'all', key: 'all', isLeaf: true }, ...filteredTree.value])
   const selectedKeys = computed(() => [state.scopeId || 'all'])
   function restoreSelection() {
-    const row = state.scopeType === 'channel' ? channels.value.find(item => item.id === state.scopeId)
-      : state.scopeType === 'collector' ? collectors.value.find(item => item.id === state.scopeId) : undefined
+    const row = state.scopeType === 'channel' ? tree.value.find(item => item.id === state.scopeId)
+      : state.scopeType === 'collector' ? tree.value.flatMap(item => item.children).find(item => item.id === state.scopeId) : undefined
     if (row) {
       if (row.channelId && !expandedKeys.value.includes(row.channelId)) expandedKeys.value.push(row.channelId)
       emit(state.scopeType, row)
@@ -92,14 +97,14 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
     currentChannel.value = node
     if (key === 'update') saveChannelVisible.value = true
     else if (key === 'add-collector') { currentCollector.value = {}; saveCollectorVisible.value = true }
-    else void loadAllData()
+    else return refreshAll()
   }
   function collectorAction(key: string, node: CollectRecord) {
     if (key === 'update') {
       currentCollector.value = node
       currentChannel.value = channels.value.find(item => item.id === node.channelId) || {}
       saveCollectorVisible.value = true
-    } else void loadAllData()
+    } else return refreshAll()
   }
   watch(() => [state.scopeType, state.scopeId], () => { if (ready.value && !loading.value) restoreSelection() })
   watch(() => state.treeSearch, () => { if (state.treeSearch) expandedKeys.value = filteredTree.value.map(item => item.id) })
@@ -108,7 +113,7 @@ export function useCollectTree(emit: (type: ScopeType, node: CollectRecord) => v
   return {
     state, channels, loading, failed, expandedKeys, selectedKeys, filteredTree, displayTree, totalPoints,
     saveChannelVisible, saveCollectorVisible, currentChannel, currentCollector,
-    loadAllData, select, treeSelect, addChannel,
+    loadAllData, refreshAll, select, treeSelect, addChannel,
     channelActions: (node: CollectRecord) => getChannelActions(node, channelAction),
     collectorActions: (node: CollectRecord) => getCollectorActions(node, collectorAction),
   }

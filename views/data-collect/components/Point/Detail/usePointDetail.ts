@@ -1,16 +1,18 @@
-import { computed, onBeforeUnmount, provide, ref, watch } from 'vue'
+import { computed, onActivated, onBeforeUnmount, provide, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { Modal } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
-import { cloneDeep, omit, set } from 'lodash-es'
+import { cloneDeep, omit, pick, set } from 'lodash-es'
 import { useMenuStore } from '@jetlinks-web-core/store'
 import { onlyMessage } from '@jetlinks-web/utils'
 import { pointDetail, updatePoint, removePoint, detail } from '@data-collector-ui/api/data-collect/collector'
 import { DATA_COLLECTOR_SAVE_TYPE } from '../../../data'
 import type { CollectRecord } from '../../../hook/context'
+import { useCollectStateChanges } from '../../../hook/useCollectStateChanges'
 import { POINT_PERSISTENCE, type PointEditor } from './detailContext'
 import { pointReturnLocation } from './pointDetailNavigation'
 
+const runtimeFields = ['state', 'runningState', 'effectiveRunningState'] as const
 const tabKeys = ['Info', 'AdvancedConfiguration', 'HistoryData', 'RelatedDevice', 'PointLogs', 'Alarm']
 export function usePointDetail() {
   const { t: $t } = useI18n()
@@ -36,6 +38,7 @@ export function usePointDetail() {
     { key: 'Alarm', label: $t('DataCollect.index.400151-35') },
   ])
   let generation = 0
+  let statusRevision = 0
   let saveSequence = Promise.resolve(true)
   let queuedSaves = 0
   let bypassLeave = false
@@ -71,13 +74,20 @@ export function usePointDetail() {
       // 前一项可能在排队期间失败；执行时合并，避免后续成功保存清掉失败草稿。
       const draft = { ...pending.value, ...requested }
       try {
-        const body = omit({ ...info.value, ...draft }, ['runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime'])
+        const body = omit({ ...info.value, ...draft }, ['effectiveRunningState', 'runningState', 'modifierId', 'modifyTime', 'state', 'creatorId', 'createTime'])
         const response = await updatePoint(id, body)
         if (token !== generation) return false
         if (!response.success) throw new Error('Point save failed')
+        const revision = ++statusRevision
         const fresh = await pointDetail(id)
         if (token !== generation) return false
-        info.value = fresh.success ? fresh.result : { ...info.value, ...draft }
+        if (fresh.success) {
+          info.value = revision === statusRevision
+            ? fresh.result
+            : { ...fresh.result, ...pick(info.value, runtimeFields) }
+        } else {
+          info.value = { ...info.value, ...draft }
+        }
         pending.value = undefined
         saveFailed.value = false
         return true
@@ -130,6 +140,7 @@ export function usePointDetail() {
     const response = await removePoint(info.value.id || '')
     if (!response.success) return
     bypassLeave = true
+    notifyStateChange()
     onlyMessage($t('Point.index.400149-14'))
     await backToList()
   }
@@ -148,11 +159,20 @@ export function usePointDetail() {
   }
   async function refresh() {
     const id = info.value.id
+    if (!id || id !== String(route.params.id || '')) return
     const token = generation
-    if (!id) return
-    const response = await pointDetail(id)
-    if (token === generation && response.success) info.value = response.result
+    const revision = ++statusRevision
+    try {
+      const response = await pointDetail(id)
+      if (token === generation && revision === statusRevision && response.success) {
+        Object.assign(info.value, pick(response.result, runtimeFields))
+      }
+    } catch {
+      // 状态刷新失败时保留已打开的详情和编辑草稿。
+    }
   }
+  const notifyStateChange = useCollectStateChanges(refresh)
+  onActivated(() => { void refresh() })
   provide(DATA_COLLECTOR_SAVE_TYPE, 'collector')
   provide('point-info', info)
   provide('point-info-error-list', errors)

@@ -12,7 +12,7 @@ import {
 import i18n from "@jetlinks-web-core/locales";
 import {queryCount} from "@data-collector-ui/api/data-collect/dashboard";
 
-export const getChannelActions = (data: Partial<Record<string, any>>, onAction: (id: string, data: Partial<Record<string, any>>) => void): any[] => {
+export const getChannelActions = (data: Partial<Record<string, any>>, onAction: (id: string, data: Partial<Record<string, any>>) => void | Promise<void>): any[] => {
     const state = data.state?.value;
     const stateText = state === "enabled" ? i18n.global.t('Channel.index.290640-7') : i18n.global.t('Channel.index.290640-12');
     return [
@@ -55,7 +55,7 @@ export const getChannelActions = (data: Partial<Record<string, any>>, onAction: 
                     const res = await updateChannel(data.id, updateStatus[state]);
                     if (res.success) {
                         onlyMessage(i18n.global.t('DataCollect.index.400150-28'), "success");
-                        onAction('action', data);
+                        await onAction('action', data);
                     }
                 },
             },
@@ -87,7 +87,7 @@ export const getChannelActions = (data: Partial<Record<string, any>>, onAction: 
     ]
 }
 
-export const getCollectorActions = (data: Partial<Record<string, any>>, onAction: (id: string, data: Partial<Record<string, any>>) => void): any[] => {
+export const getCollectorActions = (data: Partial<Record<string, any>>, onAction: (id: string, data: Partial<Record<string, any>>) => void | Promise<void>): any[] => {
     const state = data.state?.value;
     const runningState = data.runningState?.value;
     const stateText =
@@ -124,7 +124,7 @@ export const getCollectorActions = (data: Partial<Record<string, any>>, onAction
                     });
                     if (res.success) {
                         onlyMessage(i18n.global.t('DataCollect.index.400150-28'), "success");
-                        onAction('action', data);
+                        await onAction('action', data);
                     }
                 },
             },

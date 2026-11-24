@@ -28,9 +28,9 @@
     </footer>
   </section>
   <SaveChannel v-if="saveChannelVisible" :data="currentChannel" @close="saveChannelVisible = false"
-    @save-success="saveChannelVisible = false; loadAllData()" />
+    @save-success="saveChannelVisible = false; refreshAll()" />
   <SaveCollector v-if="saveCollectorVisible" :channel="currentChannel" :data="currentCollector"
-    @close="saveCollectorVisible = false" @save="loadAllData" />
+    @close="saveCollectorVisible = false" @save="refreshAll" />
 </template>
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
@@ -45,7 +45,7 @@ const { t: $t } = useI18n()
 const {
   state, channels, loading, failed, expandedKeys, selectedKeys, filteredTree, displayTree, totalPoints,
   saveChannelVisible, saveCollectorVisible, currentChannel, currentCollector,
-  loadAllData, treeSelect, addChannel, channelActions, collectorActions,
+  loadAllData, refreshAll, treeSelect, addChannel, channelActions, collectorActions,
 } = useCollectTree((type, node) => emit('change', type, node))
 defineExpose({ loadAllData })
 </script>
