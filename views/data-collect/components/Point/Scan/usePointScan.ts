@@ -82,7 +82,7 @@ export function usePointScan(collector: Ref<CollectorPointSummary>, onSaved: () 
 
   provide('plugin-scan-point', scanSetting)
   provide('collector-data', collector)
-  watch(() => [collector.value.id, collector.value.provider], load, { immediate: true })
+  watch([() => collector.value.id, () => collector.value.provider], load, { immediate: true })
   onBeforeUnmount(() => { requestVersion++ })
 
   return {

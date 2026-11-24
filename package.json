@@ -22,6 +22,10 @@
   },
   "homepage": "https://github.com/jetlinks-v2/data-collector-ui#readme",
   "dependencies": {
+    "exceljs": "^4.4.0",
     "vue3-sfc-loader": "^0.9.5"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
   }
 }

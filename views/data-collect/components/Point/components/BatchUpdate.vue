@@ -10,6 +10,7 @@
     <div class="sizeText">
       <span v-if="isAllSelected">{{ $t('BatchUpdate.index.4001419-2', [labelName.join(',')]) }}</span>
       <span v-else>{{$t('BatchUpdate.index.4001419-1', [data.length, labelName.join(',')])}}</span>
+      <small>{{ $t('collectorWorkspace.batchKeepUnchanged') }}</small>
     </div>
     <a-form
         class="form"
@@ -65,7 +66,8 @@
         <a-input-number
             style="width: 100%"
             :placeholder="$t('BatchUpdate.index.4001419-12')"
-            v-model:value="formData.interval"
+            :value="formData.interval"
+            @change="changeInterval"
             addon-after="ms"
             :max="2147483648"
             :min="0"
@@ -101,10 +103,10 @@
 <script lang="ts" setup>
 import {
   savePointBatch,
-  getBacnetValueType,
   updatePoints
 } from '@data-collector-ui/api/data-collect/collector';
-import {cloneDeep, isObject, map} from 'lodash-es';
+import {map} from 'lodash-es';
+import {applyBatchPointPatch, buildBatchPointPatch} from '@data-collector-ui/utils/batchPointPatch';
 import {useI18n} from 'vue-i18n';
 import {regOnlyNumber} from "@data-collector-ui/views/DataCollect/Channel/data";
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
@@ -137,12 +139,13 @@ const loading = ref(false);
 const formRef = ref();
 
 const formData = ref({
-  accessModes: [],
-  interval: undefined,
-  features: [],
-  valueType: undefined,
-  pushControl: false,
+  accessModes: [] as string[],
+  interval: undefined as number | undefined,
 });
+// InputNumber emits null when cleared; an empty batch field means unchanged, never zero.
+const changeInterval = (value: number | string | null | undefined) => {
+  formData.value.interval = value == null || value === '' ? undefined : Number(value);
+};
 const configuration = ref({})
 
 // const bacnetValueType = ref<string[]>([]);
@@ -169,51 +172,14 @@ const options = computed(() => {
 })
 
 const handleOk = async () => {
-  const data = cloneDeep(formData.value);
-  const {accessModes, features, interval, valueType, pushControl} = data;
-  const ischange =
-      accessModes.length !== 0 ||
-      pushControl ||
-      Number(interval) === 0 ||
-      !!interval ||
-      !!valueType;
-  if (ischange) {
-    const params = cloneDeep(props.data);
-    params.forEach((i: any) => {
-      if (accessModes.length !== 0) {
-        i.accessModes = data.accessModes;
-      } else {
-        if (isObject(i.accessModes)) {
-          i.accessModes = i.accessModes.map(
-              (item: any) => item.value,
-          );
-        }
-      }
-      if (pushControl) {
-        if (features.length !== 0) {
-          i.features = data.features;
-        } else {
-          i.features = [];
-        }
-      }
-
-      if (!!interval || Number(interval) === 0) {
-        i.interval = data.interval;
-        i.configuration = {
-          ...i.configuration,
-          interval: data.interval,
-        };
-      }
-      if (data.valueType) {
-        i.configuration = {
-          ...i.configuration,
-          valueType: data.valueType,
-        };
-      }
-    });
+  if (loading.value) return;
+  await formRef.value?.validate();
+  const patch = buildBatchPointPatch(formData.value);
+  if (Object.keys(patch).length) {
+    const params = props.data.map((point: any) => applyBatchPointPatch(point, patch));
     loading.value = true;
     const response = props.isAllSelected 
-    ? await updatePoints({query: props.getBatchParams(), point: {accessModes: data.accessModes, interval: data.interval, configuration: {interval: data.interval}}}).finally(() => {
+    ? await updatePoints({query: props.getBatchParams(), point: patch}).finally(() => {
       loading.value = false;
     })
     : await savePointBatch(params).finally(() => {
@@ -250,17 +216,8 @@ const labelName = computed(() => {
   if (formData.value.accessModes.length) {
     arr.push($t('BatchUpdate.index.4001419-5'));
   }
-  if (!!formData.value.interval) {
+  if (formData.value.interval != null) {
     arr.push($t('BatchUpdate.index.4001419-10'));
-  }
-  if (formData.value.features.length) {
-    arr.push($t('BatchUpdate.index.4001419-14'));
-  }
-  if (formData.value.type) {
-    arr.push($t('BatchUpdate.index.4001419-17'));
-  }
-  if (formData.value.valueType) {
-    arr.push($t('BatchUpdate.index.4001419-3'));
   }
   return arr;
 });
@@ -270,4 +227,5 @@ const labelName = computed(() => {
 .sizeText {
   margin-bottom: 20px;
 }
+.sizeText small { display:block; margin-top:4px; color:var(--ant-color-text-tertiary,#8c8c8c); }
 </style>

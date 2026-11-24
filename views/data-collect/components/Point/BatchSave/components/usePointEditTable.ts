@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
 import type { Component } from 'vue'
+import type { Rule } from 'ant-design-vue/es/form'
 import { useI18n } from 'vue-i18n'
 import { debounce, get, set } from 'lodash-es'
 import type { PropertyPath } from 'lodash-es'
@@ -14,22 +15,22 @@ export interface PointBatchRow {
   [key: string]: unknown
 }
 
-export interface PointBatchColumn {
+export interface PointBatchColumn<TRecord = PointBatchRow> {
   title?: string
   key?: string
   dataIndex: string
   width?: number
   fixed?: string
   ellipsis?: boolean
-  form?: { name?: PropertyPath; required?: boolean; [key: string]: unknown }
+  form?: { name?: PropertyPath; required?: boolean; rules?: Rule | Rule[]; [key: string]: unknown }
   template?: {
     components?: string | Component
     props?: Record<string, unknown>
     check?: boolean
     getValue?: (value: unknown) => unknown
-    getOptions?: (record: PointBatchRow, previous?: PointBatchRow) => void
-    handleChange?: (value: unknown, index: number) => unknown
-    handleOptions?: (record: PointBatchRow) => void
+    getOptions?: (record: TRecord, previous?: TRecord) => void
+    handleChange?: (value: unknown, index: number, record?: TRecord) => unknown
+    handleOptions?: (record: TRecord) => void
   }
 }
 
@@ -99,7 +100,7 @@ export function usePointEditTable(props: PointEditTableProps, emit: TableEmit) {
   const onFieldChange = (value: unknown, column: PointBatchColumn, record: PointBatchRow) => {
     const input = value as { target?: { value?: unknown } } | null
     let fieldValue = input?.target ? input.target.value : value
-    if (column.template?.handleChange) fieldValue = column.template.handleChange(value, record.__dataIndex)
+    if (column.template?.handleChange) fieldValue = column.template.handleChange(value, record.__dataIndex, record)
     const formName = column.form?.name || [column.dataIndex]
     set(dataSource.value[record.__dataIndex], formName, fieldValue)
     sameValue(record.__dataIndex, formName, column.dataIndex, fieldValue)

@@ -2,7 +2,8 @@ import { reactive, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter, type LocationQuery } from 'vue-router'
 import { decodeConditionFilterQuery, encodeConditionFilterQuery } from '@jetlinks-web-core/components/ConditionFilter'
 import { pointSearchFields } from '../components/Point/columns'
-import type { CollectFilters, CollectListState, ScopeType } from './context'
+import type { CollectFilters, CollectListState } from './context'
+import { collectScopeQuery, readCollectScope } from './collectScopeRoute'
 
 const retiredKeys = ['view', 'provider', 'runningState', 'state', 'collectorState'] as const
 const boolKeys = ['channel', 'collector', 'point'] as const
@@ -15,8 +16,7 @@ export function readCollectRoute(query: LocationQuery): CollectListState {
   // 旧视图与侧栏筛选已移除；旧链接只恢复仍有可见入口的条件，避免隐藏过滤。
   boolKeys.forEach(key => { filters[key] = query['error-' + key] === '1' })
   return {
-    scopeType: ['channel', 'collector'].includes(text(query.scopeType)) ? query.scopeType as ScopeType : 'all',
-    scopeId: text(query.scopeId),
+    ...readCollectScope(query),
     pointType: ['running', 'stopped'].includes(text(query.pointState)) ? query.pointState as 'running' | 'stopped' : 'total',
     terms: decodeConditionFilterQuery(query.q, pointSearchFields),
     page: Math.max(1, Math.floor(Number(query.page) || 1)),
@@ -28,8 +28,7 @@ export function readCollectRoute(query: LocationQuery): CollectListState {
 }
 export function collectRouteQuery(state: CollectListState) {
   const query: Record<string, string | string[] | undefined> = {
-    scopeType: state.scopeType === 'all' ? undefined : state.scopeType,
-    scopeId: state.scopeType === 'all' ? undefined : state.scopeId,
+    ...collectScopeQuery(state),
     pointState: state.pointType === 'total' ? undefined : state.pointType,
     q: encodeConditionFilterQuery(state.terms, pointSearchFields) || undefined,
     page: state.page > 1 ? String(state.page) : undefined,
