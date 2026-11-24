@@ -19,6 +19,11 @@ export function usePointList() {
     const query = await buildPointListQuery(snapshot)
     if (!query) return { success: true, result: { data: [], total: 0 } }
     const response = await queryPoint({ ...query, pageIndex, pageSize })
+    // 后端尚未支持有效状态时，不能将可能忽略筛选条件的查询用于条件批量操作。
+    if (snapshot.pointType !== 'total' && response.success &&
+        response.result?.data?.some((point: PointRecord) => !point.effectiveRunningState)) {
+      throw new Error('Point effective state filter unavailable')
+    }
     // 可选计数兼容不返回 total 的转换查询接口。
     if (response.success && response.result?.total == null) {
       const count = await queryPointCount(query)

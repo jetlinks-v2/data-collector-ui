@@ -10,14 +10,14 @@
     </a-menu>
   </DefineMenu>
   <a-dropdown :trigger="['contextmenu']">
-    <div class="collect-node" :class="{ 'collect-node--disabled': node.state?.value === 'disabled' }">
+    <div class="collect-node" :class="{ 'collect-node--disabled': stopped }">
       <AIcon class="collect-node__icon" :type="node.isChannel ? 'ApartmentOutlined' : 'DatabaseOutlined'" />
       <span class="collect-node__name"><j-ellipsis>{{ node.name }}</j-ellipsis></span>
       <a-tooltip v-if="!node.isChannel" :title="$t('PointWorkspace.pointCounts', { running: node.pointStateCount?.running || 0, stopped: node.pointStateCount?.stopped || 0 })">
         <span class="collect-node__counts"><span>{{ node.pointStateCount?.running || 0 }}</span> / {{ node.pointStateCount?.stopped || 0 }}</span>
       </a-tooltip>
-      <a-tooltip :title="node.state?.value === 'disabled' ? node.state?.text : node.runningState?.text">
-        <a-badge class="collect-node__state" :status="node.state?.value === 'disabled' ? 'default' : node.runningState?.value === 'running' ? 'success' : 'error'" />
+      <a-tooltip :title="state.text">
+        <a-badge class="collect-node__state" :status="stopped ? 'default' : state.value === 'running' ? 'success' : 'error'" />
       </a-tooltip>
       <a-dropdown :trigger="['click']">
         <a-button class="collect-node__more" type="text" size="small" :title="$t('PointWorkspace.more')" @click.stop><AIcon type="MoreOutlined" /></a-button>
@@ -28,10 +28,14 @@
   </a-dropdown>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
 import { createReusableTemplate } from '@vueuse/core'
 import { useI18n } from 'vue-i18n'
+import { getState } from '../../data'
 import type { CollectRecord } from '../../hook/context'
-defineProps<{ node: CollectRecord; actions: (node: CollectRecord) => any[] }>()
+const props = defineProps<{ node: CollectRecord; actions: (node: CollectRecord) => any[] }>()
+const state = computed(() => getState(props.node))
+const stopped = computed(() => ['disabled', 'stopped'].includes(state.value.value))
 const { t: $t } = useI18n()
 const [DefineMenu, NodeMenu] = createReusableTemplate()
 </script>

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { cloneDeep } from 'lodash-es'
 import { onlyMessage, downloadFileByUrl } from '@jetlinks-web/utils'
 import { useMenuStore } from '@jetlinks-web-core/store'
-import { detail, pointDetail, removePoint, batchDeletePoint, savePointBatch, enablePoints, disablePoints, deletePoints,
+import { detail, pointDetail, removePoint, batchDeletePoint, enablePoints, disablePoints, deletePoints,
   exportPoint, exportTemplate, pointImport, queryCodecProvider } from '@data-collector-ui/api/data-collect/collector'
 import { devGetProtocol } from '@data-collector-ui/utils/utils'
 import { useCollectContext, type CollectRecord, type PointRecord } from '../../hook/context'
@@ -81,11 +81,17 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
     }
     busy.value = true
     try {
-      const response = selection.all.value
-        ? await ({ enable: enablePoints, disable: disablePoints, delete: deletePoints }[action])(getBatchParams())
-        : action === 'delete'
-          ? await batchDeletePoint(selection.selectedKeys.value)
-          : await savePointBatch(selection.selectedRows.value.map(row => ({ ...row, state: action === 'enable' ? 'enabled' : 'disabled' })))
+      let response
+      if (action === 'delete') {
+        response = selection.all.value
+          ? await deletePoints(getBatchParams())
+          : await batchDeletePoint(selection.selectedKeys.value)
+      } else {
+        const query = selection.all.value
+          ? getBatchParams()
+          : { terms: [{ column: 'id', termType: 'in', value: selection.selectedKeys.value }] }
+        response = await (action === 'enable' ? enablePoints : disablePoints)(query)
+      }
       if (response.success) { onlyMessage($t('Point.index.400149-14')); await saved() }
     } finally { busy.value = false }
   }

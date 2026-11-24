@@ -81,7 +81,7 @@ import {devGetProtocol} from "@data-collector-ui/utils/utils";
 import RenderComponents from "@data-collector-ui/components/RenderComponents";
 import {savePointBatch, updatePoint} from "@data-collector-ui/api/data-collect/collector";
 import {onlyMessage} from "@jetlinks-web/utils";
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, omit } from 'lodash-es';
 import {getPointMetadata} from "@data-collector-ui/views/data-collect/utils";
 
 const {t: $t} = useI18n();
@@ -166,7 +166,7 @@ const onChange = async (provider) => {
 };
 
 const buildSubmitData = () => {
-  const data = !props.data?.id ? {...formData} : {...props.data, ...formData}
+  const data = !props.data?.id ? {...formData} : omit({...props.data, ...formData}, ['state', 'runningState', 'effectiveRunningState'])
   if (configVisible.value) {
     return data
   }
