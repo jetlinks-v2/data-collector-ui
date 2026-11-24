@@ -34,14 +34,17 @@ export const queryCertificateList = () =>
     request.get(`/network/certificate/_query/no-paging?paging=false`, {});
 
 export const getResourceFile = (provider: string, module: string) => request.get(`/data-collect/${provider}/resource/_/script/${module}.vue`, {}, { hiddenError: true });
-export const getResourceLangFile = (provider: string, language: string) => request.get(`/data-collect/${provider}/resource/_/script/lang/${language}.json`, {}, { hiddenError: true });
+export const getResourceLangFile = async (provider: string, language: string): Promise<unknown> => {
+    return JSON.parse(await getResourceModule(`/data-collect/${provider}/resource/_/script/lang/${language}.json`));
+};
 
 /** Read dependencies of an installed SFC through the existing provider resource API. */
 export async function getResourceModule(url: string): Promise<string> {
     if (!/^\/data-collect\/[^/]+\/resource\/_\/script\/.+\.(vue|js|mjs|ts|css|less|json)$/.test(url)) {
         throw new Error(`Unsupported plugin resource: ${url}`)
     }
-    const source = await request.get(url, {}, { hiddenError: true })
+    // Plugin files stay raw text until their consumer parses them, including JSON dictionaries.
+    const source: unknown = await request.get(url, {}, { hiddenError: true, responseType: 'text' })
     if (typeof source !== 'string' || /<(?:!doctype|html)[\s>]/i.test(source)) {
         throw new Error(`Invalid plugin resource: ${url}`)
     }
