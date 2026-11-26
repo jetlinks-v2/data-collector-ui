@@ -221,7 +221,13 @@
 
 后端相关文件编译及 28 项聚焦回归通过，覆盖三个保存入口、自定义 Number、缓冲序列化、原生数组／矩阵／Map／集合、真实数据库的数值／空值混合批次、长文本扩列后旧值保留与长 JSON 写入，以及公共时间桶、TimescaleDB 和 Elasticsearch 表达式。真实数据库核对 40 个类型点位，包含 14 个数组／矩阵点位，新样本没有对象地址或 `{}`，UInt64 标量及数组完整保留。模拟器的上升／下降、三角／周期、阶跃、累计与布尔曲线分别取得超过 3,400 条有效保存样本，值域及变化通过核对；数据库实际 `value` 为 text，`numberValue` 仍为 double precision，未改变查询字段或授权。
 
-本地 IoT 服务已加载最终数采与时序编译产物，两个模拟器持续运行；重启后未再出现数采历史写入错误。全库启动前构建被 `rule-engine-manager/DeviceAlarmSummaryCommandSupport.java` 的既有接口编译错误阻断，因此联调暂用同版本已安装的规则模块制品，没有修改该模块源码或持久运行配置。待规则模块修复后用正常 IDE 配置重新构建启动；未执行全库构建通过验收、真实设备与全协议硬件验收，也未提交或推送本轮改动。
+本地 IoT 服务已加载最终数采与时序编译产物，两个模拟器持续运行；重启后未再出现数采历史写入错误。全库启动前构建被 `rule-engine-manager/DeviceAlarmSummaryCommandSupport.java` 的既有接口编译错误阻断，因此联调暂用同版本已安装的规则模块制品，没有修改该模块源码或持久运行配置。待规则模块修复后用正常 IDE 配置重新构建启动；未执行全库构建通过验收、真实设备与全协议硬件验收。
+
+跨仓交付：公共存储 [jetlinks-components #1771](https://github.com/jetlinks-v2/jetlinks-components/pull/1771)（`25efbe92`）已提评审；历史保存 [collector-manager #29](https://github.com/jetlinks-v2/collector-manager/pull/29)（`5753ced5`）、共享组件 [jetlinks-web-core #274](https://github.com/jetlinks-v2/jetlinks-web-core/pull/274)（`025fc520`）、工作区 [data-collector-ui #107](https://github.com/jetlinks-v2/data-collector-ui/pull/107) 及根文档索引 [cloud.jetlinks #300](https://github.com/jetlinks-v2/cloud.jetlinks/pull/300)（`8f8659b1`）保持 draft。五个 PR 均以 `2.21` 为目标，当前没有 GitHub 自动检查结果，未合并或发布制品。
+
+隔离候选验收（2026-11-26）：公共存储正常 Maven reactor 编译与 26 项目标测试通过，包含真实 TimescaleDB 扩列及旧值保留；数采前端和共享组件配合上游已合并的精度包分别为 289/289、8/8，当前 npm `@jetlinks-web/core@2.3.8` 分别仍有 4 项 WebSocket 精度、3 项 NDJSON 校验／精度失败。原工作树模块生产构建通过，宿主类型检查仍有 803 项既有诊断；隔离 PR 候选未重跑整个宿主构建和类型检查。发布精度包、升级实际宿主依赖后，按 PR 中同一测试入口复验默认安装环境。
+
+后端默认 Maven 编译在测试前受 Core 依赖阻断：`ManagedPointImpl`、`PointProcessingState`、`CollectorRecordingSessions` 使用的 `Codec.reorder`、`SerialFlux(int)`／`join(Mono)`／`dispose`、`ActionSnapshot.startOffsetNanos` 尚在本地 Core 未提交改动中；三个调用方均不在历史保存 PR 的改动范围。将这些 Core 源码导出到临时 Maven reactor 后，后端完整编译及历史保存 2 项测试通过，但 Core 自身 33 项目标回归有 1 项记录器完成状态失败（`InMemoryRecorderTest.monoValueFinishesBeforeDownstreamCanSnapshotWhileFluxStillWaitsForCompletion`）。该候选没有安装到本机仓库或发布；需先在 Core owner 交付必要 API 并修复记录器回归，再执行 `mvn -Dtest=TimeSeriesCollectorDataServiceTest test` 复验采集后端默认依赖，不能将临时候选结果作为可发布结论。
 
 ## 点位批量编辑
 
@@ -324,7 +330,7 @@
 
 验证（2026-11-24）：上游共享库源码及完整 ESM 构建产物回归 40/40，声明生成与公开 API 严格类型用例通过；数采配合该候选包全量 261/261，包含当前工作区真实原始帧及兄弟订阅、嵌套值；宿主 NDJSON／认证夹具 30/30，候选包集成构建通过。宿主聚焦类型检查仍报共享 `@jetlinks-web/types/src/global.ts` 的 `PropType` 重复声明，本次改动文件无类型诊断；没有独立模块 lint 脚本。测试使用 `JETLINKS_SHARED_CORE_ROOT` 指向构建后的候选包，Vite 联调通过临时配置解析到同一产物，未改安装目录中的依赖源码，不能将候选包验证描述为已发布版本验证。未连接真实后端或协议设备。
 
-交付：上游提交 `3fbfea9`，[共享库 PR #62](https://github.com/jetlinks-v2/jetlinks-project-ui-cli/pull/62)，目标 `3.0`，包含 patch changeset。当前 npm 未登录，正式发布及宿主依赖／锁文件升级待执行；版本可用后再更新真实依赖并复跑默认环境。微前端必须升级真正持有连接的宿主，不能仅更新子应用。
+交付：[共享库 PR #62](https://github.com/jetlinks-v2/jetlinks-project-ui-cli/pull/62) 已合并至 `3.0`（merge `daef225c`），包含 patch changeset；当前 npm 最新仍为 `@jetlinks-web/core@2.3.8`，正式发布及宿主依赖／锁文件升级待执行。版本可用后再更新真实依赖并复跑默认环境。微前端必须升级真正持有连接的宿主，不能仅更新子应用。
 
 工作区复用平台统一 WebSocket 连接，POST NDJSON 接口继续可用，两者首次均立即返回当前快照。采集器及通道摘要、可见点位、诊断记录分别持有业务订阅；滚动只替换点位订阅，打开诊断只调整诊断订阅，摘要与速率基线持续更新。摘要负责采集器和通道的完整指标，点位请求不重复读取这两类对象的指标。每一路独立处理错误、取消和迟到帧，页面暂停或离开时统一释放。
 
