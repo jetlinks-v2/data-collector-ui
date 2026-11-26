@@ -9,7 +9,7 @@
   <a-drawer v-model:open="scanOpen" :width="'min(1120px, 100vw)'" :closable="true" destroy-on-close :title="$t('collectorWorkspace.browsePoints')">
     <PointScan v-if="scanOpen" :collector="collector" @saved="scanOpen = false; emit('saved')" />
   </a-drawer>
-  <PointImport v-if="importOpen" :download-url-builder="template" :request="importRequest" @close="importOpen = false" @save="emit('saved')" />
+  <PointImport v-if="importOpen" :download-url-builder="template" :request="importRequest" :message="$t('collectorWorkspace.importSaveHint')" @close="importOpen = false" @save="emit('saved')" />
 </template>
 <script setup lang="ts">
 import { computed, defineAsyncComponent, toRef } from 'vue'

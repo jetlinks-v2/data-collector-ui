@@ -19,8 +19,14 @@ export function useWorkspaceActions(data: ReturnType<typeof useWorkspaceData>, h
   }
   function toggle(id: string) { check(keys.value.includes(id) ? keys.value.filter(key => key !== id) : [...keys.value, id]) }
   function all() { check(keys.value.length === ids.value.length ? [] : ids.value) }
-  // Observation frames replace rows frequently; only identities reset the selection.
-  watch(() => `${data.collector.value?.id || ''}:${ids.value.join(',')}`, clear)
+  watch(() => data.collector.value?.id, clear)
+  // Directory refresh and live sorting must not cancel an explicit selection session.
+  // Removed points leave the selection; newly arriving points are never selected implicitly.
+  watch(ids, value => {
+    if (busy.value || !selecting.value || !keys.value.length) return
+    const allowed = new Set(value)
+    keys.value = keys.value.filter(id => allowed.has(id))
+  })
   watch([data.pointSort, data.pointState, data.pointSearch], clear)
   async function run(action: PointBatchAction) {
     const collectorId = data.collector.value?.id

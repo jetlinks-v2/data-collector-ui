@@ -32,7 +32,7 @@ test('stage presentation separates cleaning, conversion, filtering, output condi
   for(const key of ['outlier','converter','processor','changedOnly','deadband','storage','handler']) rules.add(key)
   const before=JSON.stringify(model)
   assert.deepEqual(rules.visibleGroups.value.map(group=>group.rules.map(rule=>rule.key)),[
-    ['outlier'],['converter'],['processor'],['changedOnly','deadband'],['storage','handler'],
+    ['outlier'],['converter'],['processor'],['changedOnly','deadband'],['handler'],
   ])
   assert.equal(rules.visibleGroups.value[0].description,'collectorProcessing.cleaningSourceHint')
   assert.equal(rules.visibleGroups.value[2].description,'collectorProcessing.processingConvertedHint')

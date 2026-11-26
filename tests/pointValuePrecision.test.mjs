@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import test from 'node:test'
 import { transformSync } from 'esbuild'
 import * as vue from 'vue'
@@ -12,6 +12,7 @@ const require = createRequire(import.meta.url)
 const moduleRoot = resolve(import.meta.dirname, '..')
 const coreRoot = process.env.JETLINKS_WEB_CORE_ROOT || resolve(moduleRoot, '../../jetlinks-web-core')
 const coreRequire = createRequire(resolve(coreRoot, 'package.json'))
+const sharedCoreRoot = process.env.JETLINKS_SHARED_CORE_ROOT || dirname(coreRequire.resolve('@jetlinks-web/core/package.json'))
 const lodash = await import('lodash-es')
 const uint64 = '18446744073709551615'
 const missing = '未上报'
@@ -28,9 +29,6 @@ const loadCode = (source, mocks = {}) => {
 const loadFile = (file, mocks) => loadCode(readFileSync(file, 'utf8'), mocks)
 const json = loadFile(resolve(coreRoot, 'src/utils/json/index.ts'), {
   'lossless-json': coreRequire('lossless-json'),
-})
-const { deserializeCollectorMessage } = loadFile(resolve(coreRoot, 'src/utils/json/collector.ts'), {
-  './index': json,
 })
 const values = loadFile(resolve(moduleRoot, 'utils/pointValue.ts'))
 
@@ -59,7 +57,7 @@ test('safe numbers and strings retain their existing types; HTTP empty/error res
   }
   assert.deepEqual(json.parseJsonResponseWithPrecision('{"status":403,"message":"forbidden"}'),
     { status: 403, message: 'forbidden' })
-  assert.throws(() => deserializeCollectorMessage({ data: 'invalid JSON' }), SyntaxError)
+  assert.throws(() => json.parseJsonWithPrecision('invalid JSON'), SyntaxError)
 })
 
 const createApi = (response) => {
@@ -107,8 +105,8 @@ class FakeSocket {
 }
 
 for (const [artifact, filename] of [
-  ['source', coreRequire.resolve('@jetlinks-web/core/src/websocket.ts')],
-  ['published entry', coreRequire.resolve('@jetlinks-web/core')],
+  ['source', resolve(sharedCoreRoot, 'src/websocket.ts')],
+  ['published entry', resolve(sharedCoreRoot, 'dist/index.mjs')],
 ]) {
   test(`real WebSocket client ${artifact}: precise collector frames, native sibling frames and default parser`, () => {
     const originalSocket = globalThis.WebSocket
@@ -123,16 +121,21 @@ for (const [artifact, filename] of [
       for (const enabled of [true, false]) {
         const client = new WebSocketClient()
         clients.push(client)
-        if (enabled) client.setOptions({ deserializer: deserializeCollectorMessage })
         client.initWebSocket('ws://localhost/test')
         client.connect()
         const socket = FakeSocket.instances.at(-1)
         socket.open()
-        for (const id of ['collector-channel-id-data-point', 'collector-log-channel', 'device-properties']) {
+        for (const [id, topic, precise] of [
+          ['collector-workspace:1', '/collector-workspace/observe', true],
+          ['legacy-point', '/collector/channel/id/data', true],
+          ['collector-log-channel', '/collector/channel/id/log', false],
+          ['device-properties', '/device/properties', false],
+        ]) {
           let received
-          const subscription = client.getWebSocket(id, '/collector/channel/id/data').subscribe(message => { received = message })
-          socket.receive(`{"type":"result","requestId":"${id}","payload":{"pointId":"point","parsedData":${uint64},"parseData":${uint64},"dataType":"ULong","timestamp":1793097242592}}`)
-          assert.equal(received.payload.parsedData, enabled && id === 'collector-channel-id-data-point' ? uint64 : Number(uint64))
+          const subscription = client.getWebSocket(id, topic, {}, enabled && precise ? { deserializer: json.parseJsonWithPrecision } : {}).subscribe(message => { received = message })
+          socket.receive(`{"type":"result","requestId":"${id}","payload":{"pointId":"point","parsedData":${uint64},"parseData":${uint64},"observation":{"data":[{"pointId":"point","parsedData":${uint64}}]},"dataType":"ULong","timestamp":1793097242592}}`)
+          assert.equal(received.payload.parsedData, enabled && precise ? uint64 : Number(uint64))
+          assert.equal(received.payload.observation.data[0].parsedData, enabled && precise ? uint64 : Number(uint64))
           assert.equal(received.payload.timestamp, 1793097242592)
           subscription.unsubscribe()
         }
@@ -141,6 +144,36 @@ for (const [artifact, filename] of [
       for (const client of clients) client.disconnect()
       globalThis.WebSocket = originalSocket
     }
+  })
+}
+
+for (const filename of [resolve(sharedCoreRoot,'src/websocket.ts'),resolve(sharedCoreRoot,'dist/index.mjs')]) {
+  test(`workspace subscription preserves original nested values via ${filename.endsWith('.ts')?'source':'bundle'}`, () => {
+    const originalSocket=globalThis.WebSocket
+    globalThis.WebSocket=FakeSocket
+    let client,subscription
+    try {
+      const {WebSocketClient}=loadFile(filename,{
+        'ant-design-vue':{notification:{error(){}}},
+        '@jetlinks-web/constants':{BASE_API:'/api',TOKEN_KEY:'X-Access-Token'},
+        '@jetlinks-web/utils':{getToken:()=>'',randomString:()=> 'test'},
+      })
+      client=new WebSocketClient()
+      let id,received
+      const api=loadFile(resolve(moduleRoot,'api/data-collect/workspace.ts'),{
+        '@jetlinks-web/core':{request:{},wsClient:{getWebSocket:(key,...args)=>{id=key;return client.getWebSocket(key,...args)}}},
+        '@jetlinks-web-core/utils/json':json,
+        '@jetlinks-web-core/utils/ndjson':{},'@jetlinks-web-core/utils/ndjson-precision':{},
+        '../../utils/workspaceList':{},'../../utils/runtimeMonitoring':{},'../../utils/workspaceObservation':{},
+      })
+      subscription=api.observeCollectionWorkspace({monitoring:[],observation:{interval:2000}}).subscribe(value=>{received=value})
+      client.initWebSocket('ws://localhost/test');client.connect()
+      const socket=FakeSocket.instances.at(-1);socket.open()
+      socket.receive(`{"type":"result","requestId":"${id}","payload":{"observation":{"data":[{"parsedData":${uint64},"nested":[0.1234567890123456789,0,false]}]}}}`)
+      assert.match(id,/^collector-workspace:/)
+      assert.equal(received.observation.data[0].parsedData,uint64)
+      assert.deepEqual(received.observation.data[0].nested,['0.1234567890123456789',0,false])
+    } finally {subscription?.unsubscribe();client?.disconnect();globalThis.WebSocket=originalSocket}
   })
 }
 

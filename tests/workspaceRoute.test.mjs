@@ -26,7 +26,7 @@ async function workspace(url = '/collectors', canSelect = () => true) {
     './collectScopeRoute': codec,
     'vue-router': { useRoute: () => route, useRouter: () => router, onBeforeRouteUpdate: callback => { guard = callback } },
   })
-  const select = scope.run(() => useWorkspaceRoute(data, (collector, channel) => {
+  const navigation = scope.run(() => useWorkspaceRoute(data, (collector, channel) => {
     changes.push(collector?.id || channel?.id || 'all')
     data.collector.value = collector
     data.selectedChannelId.value = channel?.id || ''
@@ -37,7 +37,7 @@ async function workspace(url = '/collectors', canSelect = () => true) {
     data.channels.value = [{ id: 'c' }]
     data.initializing.value = false
   }
-  return { router, data, changes, select, ready, stop() { removeGuard(); scope.stop() } }
+  return { router, data, changes, ...navigation, ready, stop() { removeGuard(); scope.stop() } }
 }
 
 test('scope codec accepts supported links and normalizes malformed scope parameters', () => {
@@ -150,4 +150,45 @@ test('catalog errors keep the requested link available for retry', async () => {
     state.data.initializing.value = true; state.data.error.value = ''; state.ready(); await settle()
     assert.equal(state.data.collector.value.id, 'a')
   } finally { state.stop() }
+})
+
+test('collector return scope follows its source list, route history and direct-link fallback', async () => {
+  const state = await workspace('/collectors?scopeType=channel&scopeId=c&keep=external')
+  let linked
+  try {
+    state.ready(); await settle()
+    await state.select(state.data.collectors.value[0]); await settle()
+    assert.deepEqual(state.parentScope.value, {scopeType:'channel',scopeId:'c'})
+    assert.equal(state.router.currentRoute.value.query.keep, 'external')
+    assert.equal(state.router.currentRoute.value.query.collectorReturnId, undefined, 'return context does not change shareable URLs')
+    await state.select(); await settle()
+    await state.select(state.data.collectors.value[0]); await settle()
+    assert.deepEqual(state.parentScope.value, {scopeType:'all',scopeId:''}, 'opening from all collectors returns to all')
+    const back = () => new Promise(resolve => { const stop=state.router.afterEach(()=>{stop();resolve()});state.router.back() })
+    await back(); await back(); await settle()
+    assert.deepEqual(state.parentScope.value, {scopeType:'channel',scopeId:'c'}, 'history restores the original entry context')
+    await state.select(undefined, state.data.channels.value[0]); await settle()
+    assert.equal(state.data.selectedChannelId.value, 'c')
+    linked = await workspace('/collectors?scopeType=collector&scopeId=b')
+    linked.ready(); await settle()
+    assert.deepEqual(linked.parentScope.value, {scopeType:'channel',scopeId:'c'})
+    linked.data.channels.value=[]; await settle()
+    assert.deepEqual(linked.parentScope.value, {scopeType:'all',scopeId:''}, 'missing parent channels retain a usable return')
+  } finally { state.stop(); linked?.stop() }
+})
+
+test('returning to a parent uses the existing leave guard and preserves context when cancelled', async () => {
+  let allowed=true,checks=0
+  const state=await workspace('/collectors?scopeType=channel&scopeId=c',()=>{checks++;return allowed})
+  try {
+    state.ready();await settle();await state.select(state.data.collectors.value[0]);await settle()
+    allowed=false
+    await state.select(undefined,state.data.channels.value[0]);await settle()
+    assert.equal(state.data.collector.value.id,'a')
+    assert.deepEqual(state.parentScope.value,{scopeType:'channel',scopeId:'c'})
+    assert.equal(checks,2)
+    allowed=true
+    await state.select(undefined,state.data.channels.value[0]);await settle()
+    assert.equal(state.data.selectedChannelId.value,'c')
+  } finally {state.stop()}
 })

@@ -20,26 +20,25 @@
       </div>
     </template>
     <div v-if="variant === 'navigation'" class="cw-nav-runtime" :class="tone" @keydown.esc.stop="open = false">
-      <span class="cw-nav-status" :class="{'is-open':open}" tabindex="0" :aria-label="`${object.name} · ${stateText}`" :aria-expanded="open" @click.stop>
+      <button class="cw-nav-status" :class="{'is-open':open}" :aria-label="`${object.name} · ${stateText} · ${label}`" :aria-expanded="open || detailsOpen" @click.stop="showDetails">
         <a-skeleton-input v-if="!object.runtime" active size="small" class="cw-metric-skeleton cw-nav-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
         <template v-else>
-          <i class="cw-dot" :class="tone" />
-          <template v-if="kind === 'channel' && keyMetrics.some(item=>hasValue(item.value))"><span v-for="item in keyMetrics.filter(item=>hasValue(item.value))" :key="item.key"><AIcon :type="item.icon" />{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></span></template>
+          <i v-if="navigationMetrics.length || !indicators.length" class="cw-dot" :class="tone" />
+          <template v-if="navigationMetrics.length"><span v-for="item in navigationMetrics" :key="item.key"><AIcon :type="item.icon" />{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></span></template>
           <template v-else-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" :class="item.tone"><AIcon :type="item.icon" />{{ item.id === 'state' ? stateText : $t(`collectorMonitoring.attentionShort.${item.id}`,{count:item.count}) }}</span></template>
-          <template v-else><span>{{ stateText }}</span><span v-if="object.runtime?.available && (object.monitoring?.collectionRate ?? object.monitoring?.sampleRate) != null"><AIcon type="LineChartOutlined" />{{ number(object.monitoring?.collectionRate ?? object.monitoring?.sampleRate) }}/s</span></template>
+          <template v-else><span>{{ stateText }}</span><span v-if="object.runtime?.available && (object.monitoring?.sampleRate ?? object.monitoring?.collectionRate) != null" class="cw-nav-rate" :title="$t('collectorMonitoring.sampleRateHint')">{{ number(object.monitoring?.sampleRate ?? object.monitoring?.collectionRate) }}/s</span></template>
         </template>
-      </span>
-      <button class="cw-icon-button cw-nav-monitor" :class="tone" :aria-label="`${object.name} · ${label}`" :aria-expanded="open || detailsOpen" @click.stop="showDetails"><AIcon type="LineChartOutlined" /></button>
+      </button>
     </div>
     <button v-else-if="variant === 'group'" class="cw-nav-runtime cw-nav-channel-runtime" :class="tone" :aria-label="`${object.name} · ${label}${indicators.length ? '' : ` · ${stateText}`}`" :aria-expanded="open || detailsOpen" @click.stop="showDetails" @keydown.esc.stop="open = false">
       <a-skeleton-avatar v-if="!object.runtime" active shape="circle" :size="6" :aria-label="$t('collectorWorkspace.loading')" />
       <i v-else class="cw-dot" :class="tone" />
     </button>
     <component v-else :is="variant === 'values' ? 'span' : 'button'" class="cw-runtime-indicators" :class="{ 'cw-runtime-values': variant === 'values', 'cw-runtime-status': variant === 'status' }" :aria-label="variant === 'values' ? undefined : label" :aria-expanded="variant === 'values' ? undefined : open || detailsOpen" @click.stop="variant !== 'values' && showDetails()" @keydown.esc.stop="open = false">
-      <WorkspaceStatus v-if="variant === 'status'" :object="object" />
+      <WorkspaceStatus v-if="variant === 'status'" :object="object" :icon-only="kind === 'point'" />
       <span v-if="variant !== 'status' && (kind === 'point' || kind === 'channel') && keyMetrics.length" class="cw-runtime-key-values"><span v-for="item in keyMetrics" :key="item.key" :title="`${$t(item.label)} · ${item.unit}\n${$t(item.hint)}${hasValue(item.value) ? `\n${item.value} ${item.unit}` : ''}`"><AIcon :type="item.icon" /><small v-if="kind === 'point'" class="cw-runtime-metric-label">{{ $t(item.label) }}</small><template v-if="hasValue(item.value)">{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></template><a-tooltip v-else :title="$t('collectorMonitoring.empty.calculating')"><a-skeleton-input class="cw-metric-skeleton" active size="small" :aria-label="$t('collectorMonitoring.empty.calculating')" /></a-tooltip></span></span>
       <span v-for="item in variant === 'status' || variant === 'values' ? [] : indicators" :key="item.id" :class="item.tone"><AIcon :type="item.icon" /><small v-if="item.count != null">{{ item.count }}</small></span>
-      <AIcon v-if="variant !== 'values'" type="LineChartOutlined" />
+      <AIcon v-if="variant !== 'values' && variant !== 'status'" type="LineChartOutlined" />
     </component>
   </a-popover>
   <RuntimeMetricDetails v-if="detailsOpen" :open="detailsOpen" :object="object" :kind="kind" :nodes="metricNodes" :loading="metadata.loading.value" :metadata-error="metadata.error.value" @close="detailsOpen = false" @diagnostic-visibility="setDiagnosticVisible"><template v-if="$slots.diagnostic" #diagnostic><slot name="diagnostic" /></template></RuntimeMetricDetails>
@@ -104,6 +103,7 @@ const metrics=computed(()=>{
 })
 const visibleMetrics=computed(()=>metrics.value.filter(item=>showRuntimeMetric(props.object,item.value,item.ids)))
 const keyMetrics=computed(()=>metrics.value.slice(0,2).filter(item=>showRuntimeMetric(props.object,item.value,item.ids)))
+const navigationMetrics=computed(()=>props.kind === 'channel' ? keyMetrics.value.filter(item=>hasValue(item.value)) : [])
 const metricNodes=computed(()=>{
   if(!detailsOpen.value)return []
   const values=props.object.monitoring?.nodes || (props.object.runtime ? [props.object.runtime] : [])

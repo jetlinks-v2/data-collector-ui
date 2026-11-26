@@ -49,9 +49,6 @@
           </template>
         </ProcessingFormula>
           <span v-else-if="rule.key === 'changedOnly'">{{ $t('collectorWorkspace.changedOnly') }}<a-tooltip :title="rule.description"><AIcon class="cw-muted" type="InfoCircleOutlined" /></a-tooltip></span>
-          <I18nT v-else-if="rule.key === 'storage'" keypath="collectorProcessing.storageSentence" scope="global" tag="span" class="cw-processing-clause">
-            <template #types><ConfigSelect v-model:value="storageValues" mode="multiple" :max-tag-count="1" :options="storageOptions" size="small" class="cw-storage-select" :aria-label="$t('collectorProcessing.storage')" /></template>
-          </I18nT>
           <ProcessingAlarm v-else-if="rule.key === 'handler' && managed.handler.provider === 'alarm'" :editor="alarm" />
           <span v-else class="cw-muted">{{ $t('collectorProcessing.customProvider', { provider: managed[rule.key]?.provider }) }}</span>
           <template v-if="rule.key === 'converter' && managed.converter.provider === 'expression' && (!simpleConversion || writable)" #details>
@@ -63,12 +60,14 @@
     </div>
     <p v-if="!visibleGroups.length" class="cw-muted cw-rule-empty">{{ $t('collectorWorkspace.noProcessing') }}</p>
   </section>
+  <PointHistoryStorage v-model:value="storageValues" :options="storageOptions" />
 </template>
 <script setup lang="ts">
 import { I18nT, useI18n } from 'vue-i18n'
 import { computed, ref } from 'vue'
 import type { CollectorObject, PointCapabilities } from '../../../../types/workspace'
 import { useProcessingRules } from '../../hook/useProcessingRules'
+import PointHistoryStorage from './PointHistoryStorage.vue'
 import { useProcessorDocumentation } from '../../hook/useProcessorDocumentation'
 import ProcessingRuleLine from './ProcessingRuleLine.vue'
 import ProcessingFormula from './ProcessingFormula.vue'

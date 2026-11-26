@@ -16,7 +16,6 @@
           name="file"
           :maxCount="1"
           :showUploadList="false"
-          @change="uploadChange"
           :accept="'.xlsx,.csv'"
           :before-upload="beforeUpload"
           :disabled="disabled"

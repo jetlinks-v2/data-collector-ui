@@ -34,7 +34,7 @@ function loader(overrides={}) {
     const module={exports:{}}
     new Function('require','module','exports',transformSync(source,{loader:'ts',format:'cjs'}).code)(name=>{
       if(name==='vue')return vue
-      if(name==='vue-i18n')return {useI18n:()=>({t})}
+      if(name==='vue-i18n')return {useI18n:()=>({t,te:key=>t(key)!==key,locale:vue.ref('zh')})}
       if(name==='@jetlinks-web-core/components')return {SelectOption:load('../../jetlinks-web-core/src/components/SelectOption/index.vue').default}
       if(Object.hasOwn(overrides,name))return overrides[name]
       if(name.startsWith('.')){let path=resolve(dirname(filename),name);if(!existsSync(path))path+='.ts';return load(path)}
@@ -55,6 +55,229 @@ function mount(component,components={}) {
 }
 function mouse(target,type){target.dispatchEvent(new dom.window.MouseEvent(type,{bubbles:true,composed:true}))}
 const settle=async()=>{await Promise.resolve();await vue.nextTick()}
+
+test('history details virtualize rows, expand structured values and request more only at the bottom',async()=>{
+  const load=loader(),Table=load('views/data-collect/components/workspace/PointHistoryTable.vue').default
+  const Scroll=load('../../jetlinks-web-core/src/components/VirtualScroll/index.vue').default
+  const rows=Array.from({length:1000},(_,i)=>({id:String(i),rowIndex:i+2,timestamp:i,value:i===1?[0,false]:i,reason:'normal'}))
+  let more=0
+  const state={tableRows:vue.ref(rows),samples:vue.ref(rows),source:vue.ref('stored'),total:vue.ref(2000),expandedId:vue.ref(),loadMore:()=>more++,formatTime:String,formatClock:String,formatDate:()=> '2026-11-26'}
+  const page=mount({setup:()=>()=>vue.h(Table,{state})},{VirtualScroll:Scroll,'a-button':require('ant-design-vue/lib/button').default})
+  try {
+    await settle()
+    assert.ok(page.container.querySelectorAll('[role="row"]').length<30,'offscreen records are not mounted')
+    assert.equal(page.container.querySelectorAll('[aria-expanded]').length,1,'scalar values need no expansion control')
+    mouse(page.container.querySelector('[aria-expanded]'),'click');await settle()
+    assert.equal(state.expandedId.value,'1');assert.ok(page.container.querySelector('pre').textContent.includes('false'))
+    const viewport=page.container.querySelector('.cw-history-scroll')
+    Object.defineProperties(viewport,{clientHeight:{value:300},scrollHeight:{value:56000}})
+    viewport.scrollTop=55700;viewport.dispatchEvent(new dom.window.Event('scroll'));await settle()
+    assert.equal(more,1)
+    viewport.dispatchEvent(new dom.window.Event('scroll'));await settle();assert.equal(more,1)
+  } finally {page.close()}
+})
+
+test('workspace search opens a real input, reflects its condition, preserves IME and clears without navigation',async()=>{
+  const Search=loader()('views/data-collect/components/workspace/WorkspaceSearch.vue').default
+  const Input=require('ant-design-vue/lib/input').default,Popover=require('ant-design-vue/lib/popover').default
+  const query=vue.ref(''),searches=[]
+  const page=mount({setup:()=>()=>vue.h(Search,{value:query.value,label:'Search points','onUpdate:value':value=>query.value=value,onSearch:()=>searches.push(query.value)})},{'a-input':Input,'a-popover':Popover})
+  const wait=async()=>{await settle();await new Promise(resolve=>setTimeout(resolve,30));await settle()}
+  try {
+    const trigger=page.container.querySelector('.cw-search-trigger')
+    mouse(trigger,'click');await wait()
+    const input=document.querySelector('.cw-search-input input')
+    assert.ok(input);assert.equal(document.activeElement,input)
+    input.value='pressure';input.dispatchEvent(new dom.window.Event('input',{bubbles:true}));await settle()
+    assert.equal(query.value,'pressure')
+    input.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter',keyCode:13,isComposing:true,bubbles:true}));await settle()
+    assert.deepEqual(searches,[]);assert.equal(trigger.getAttribute('aria-expanded'),'true')
+    input.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter',keyCode:13,bubbles:true}));await wait()
+    assert.deepEqual(searches,['pressure']);assert.equal(trigger.getAttribute('aria-expanded'),'false')
+    assert.equal(trigger.textContent,'pressure');assert.equal(document.activeElement,trigger)
+    mouse(page.container.querySelector('.cw-search-clear'),'click');await settle()
+    assert.equal(query.value,'');assert.deepEqual(searches,['pressure',''])
+    mouse(trigger,'click');await wait()
+    const next=document.querySelector('.cw-search-input input')
+    next.value='flow';next.dispatchEvent(new dom.window.Event('input',{bubbles:true}));await settle()
+    next.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await wait()
+    assert.equal(query.value,'flow');assert.equal(trigger.getAttribute('aria-expanded'),'false')
+    assert.equal(document.activeElement,trigger)
+  } finally {page.close()}
+})
+
+test('search uses available width and preserves its query, IME handling and focus between input and popover',async()=>{
+  const width=vue.ref(240),query=vue.ref('pressure'),searches=[]
+  const Search=loader({'@vueuse/core':{useElementSize:()=>({width})}})('views/data-collect/components/workspace/WorkspaceSearch.vue').default
+  const Input=require('ant-design-vue/lib/input').default,Popover=require('ant-design-vue/lib/popover').default
+  const page=mount({setup:()=>()=>vue.h(Search,{value:query.value,label:'Search points','onUpdate:value':value=>query.value=value,onSearch:()=>searches.push(query.value)})},{'a-input':Input,'a-popover':Popover})
+  const wait=async()=>{await settle();await new Promise(resolve=>setTimeout(resolve,30));await settle()}
+  try {
+    let input=page.container.querySelector('input')
+    assert.ok(input);assert.equal(input.value,'pressure');assert.equal(page.container.querySelector('.cw-search-trigger'),null)
+    input.focus();width.value=80;await wait()
+    const trigger=page.container.querySelector('.cw-search-trigger')
+    assert.ok(trigger);assert.equal(trigger.textContent,'pressure');assert.equal(document.activeElement,trigger)
+    mouse(trigger,'click');await wait()
+    input=document.querySelector('.cw-search-input input');assert.equal(document.activeElement,input)
+    input.value='flow';input.dispatchEvent(new dom.window.Event('input',{bubbles:true}));await settle()
+    width.value=240;await wait()
+    input=page.container.querySelector('input');assert.equal(input.value,'flow');assert.equal(document.activeElement,input)
+    input.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter',keyCode:13,isComposing:true,bubbles:true}));await settle();assert.deepEqual(searches,[])
+    input.dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter',keyCode:13,bubbles:true}));await settle();assert.deepEqual(searches,['flow'])
+    assert.equal(document.activeElement,input)
+  } finally {page.close()}
+})
+
+test('selection replaces the actual list toolbar and exits with its query and ordering preserved',async()=>{
+  const {descriptor}=parse(readFileSync(resolve(moduleRoot,'views/data-collect/index.vue'),'utf8'))
+  function find(node){if(node.type===1 && node.props.some(prop=>prop.type===6 && prop.name==='class' && prop.value?.content==='cw-toolbar'))return node;for(const child of node.children || []){const found=find(child);if(found)return found}}
+  const source=find(descriptor.template.ast)?.loc.source;assert.ok(source)
+  const compiled=compileTemplate({source,filename:'WorkspaceToolbarHarness.vue',id:'workspace-toolbar'});assert.deepEqual(compiled.errors,[])
+  const module={exports:{}}
+  new Function('require','module','exports',transformSync(compiled.code,{format:'cjs'}).code)(name=>name==='vue'?vue:require(name),module,module.exports)
+  const selection=vue.reactive({selecting:false,keys:[],total:1,busy:false,blocked:false,feedback:'',failed:false}),runs=[]
+  const pointSearch=vue.ref('pressure'),pointState=vue.ref('attention'),pointSort=vue.ref('name')
+  const Action={props:['disabled'],setup:props=>{const slots=vue.useSlots();return ()=>vue.h('button',{disabled:props.disabled},slots.default?.())}}
+  const Search={props:['value'],setup:props=>()=>vue.h('input',{'data-query':true,value:props.value})}
+  const Control={props:['value','label'],setup:props=>()=>vue.h('button',{'data-list-control':true},`${props.label}: ${props.value}`)}
+  const Batch=loader()('views/data-collect/components/workspace/PointBatchToolbar.vue').default
+  const page=mount({setup:()=>({collector:{id:'c'},batchEditor:{open:vue.ref(false)},selection,pointSearch,pointState,pointSort,batchBusy:false,data:{filterPoints(){},filterCollectors(){},loadStateCounts(){}},stateOptions:[],sortOptions:[],indexTime:0,paused:false,inline:true,startBatch:()=>{selection.selecting=true},batch:{all:()=>{selection.keys=selection.keys.length?[]:['a']},clear:()=>{selection.selecting=false;selection.keys=[]},run:action=>runs.push(action)}}),render:module.exports.render},{WorkspaceSearch:Search,WorkspaceListControl:Control,PointBatchToolbar:Batch,'a-button':Action,'j-permission-button':Action})
+  try {
+    assert.ok(page.container.querySelector('.cw-toolbar-query'));assert.ok(page.container.querySelector('.cw-toolbar-view'))
+    mouse([...page.container.querySelectorAll('button')].find(button=>button.textContent==='多选'),'click');await settle()
+    assert.equal(page.container.querySelector('.cw-toolbar-query'),null);assert.equal(page.container.querySelector('.cw-toolbar-view'),null)
+    assert.equal(page.container.querySelectorAll('.cw-toolbar>.cw-batch-toolbar').length,1)
+    const enable=[...page.container.querySelectorAll('button')].find(button=>button.textContent==='启用');assert.equal(enable.disabled,true)
+    selection.keys=['a'];await settle();mouse(enable,'click');await settle();assert.deepEqual(runs,['enable'])
+    mouse([...page.container.querySelectorAll('button')].find(button=>button.textContent==='退出多选'),'click');await settle()
+    assert.ok(page.container.querySelector('.cw-toolbar-query'));assert.ok(page.container.querySelector('.cw-toolbar-view'))
+    assert.equal(page.container.querySelector('[data-query]').value,'pressure');assert.equal(pointState.value,'attention');assert.equal(pointSort.value,'name')
+  } finally {page.close()}
+})
+
+test('batch heading moves into the workspace toolbar with one exit action and retains its scope',async()=>{
+  const {descriptor}=parse(readFileSync(resolve(moduleRoot,'views/data-collect/components/workspace/PointBatchEditor.vue'),'utf8'))
+  function find(node){if(node.type===1 && node.tag==='Teleport')return node;for(const child of node.children || []){const found=find(child);if(found)return found}}
+  const source=find(descriptor.template.ast)?.loc.source;assert.ok(source)
+  const compiled=compileTemplate({source,filename:'BatchHeadingHarness.vue',id:'batch-heading'});assert.deepEqual(compiled.errors,[])
+  const module={exports:{}}
+  new Function('require','module','exports',transformSync(compiled.code,{format:'cjs'}).code)(name=>name==='vue'?vue:require(name),module,module.exports)
+  const target=document.createElement('div');document.body.append(target);let exits=0
+  const Action={props:['disabled'],setup:(props,{slots})=>()=>vue.h('button',{disabled:props.disabled},slots.default?.())}
+  const page=mount({setup:()=>({headingTarget:target,state:{scopeLabel:vue.ref('编辑筛选结果 · 17'),saving:vue.ref(false)},exitHint:'Retain drafts',controls:{close:()=>exits++}}),render:module.exports.render},{'a-button':Action})
+  try {
+    await settle();assert.equal(page.container.querySelector('.cw-batch-head'),null)
+    assert.equal(target.querySelectorAll('.cw-batch-head').length,1)
+    assert.ok(target.textContent.includes('点位批量编辑'));assert.ok(target.textContent.includes('编辑筛选结果 · 17'))
+    mouse(target.querySelector('button'),'click');await settle();assert.equal(exits,1)
+  } finally {page.close();target.remove()}
+})
+
+test('history saving exposes real checkboxes and updates only the selected policies',async()=>{
+  const Storage=loader()('views/data-collect/components/workspace/PointHistoryStorage.vue').default
+  const Checkbox=require('ant-design-vue/lib/checkbox').default
+  const original=['storageOutlier'],value=vue.ref(original),updates=[]
+  const options=['storageData','storageOutlier','storageDeadband'].map((key,index)=>({value:key,label:t(`collectorProcessing.storage${index}`),description:key,icon:'DatabaseOutlined'}))
+  const page=mount({setup:()=>()=>vue.h(Storage,{value:value.value,options,'onUpdate:value':next=>{updates.push(next);value.value=next}})},{'a-checkbox':Checkbox})
+  try {
+    assert.equal(page.container.querySelector('h2').textContent,'历史保存')
+    let inputs=page.container.querySelectorAll('input[type="checkbox"]')
+    assert.equal(inputs.length,3);assert.deepEqual([...inputs].map(input=>input.checked),[false,true,false])
+    inputs[0].click();await settle();assert.deepEqual(value.value,['storageOutlier','storageData'])
+    inputs[1].click();await settle();assert.deepEqual(value.value,['storageData'])
+    inputs[0].click();await settle();assert.deepEqual(value.value,[])
+    assert.deepEqual(original,['storageOutlier'],'a child control never mutates the supplied policy array')
+    assert.equal(updates.length,3);assert.equal([...inputs].some(input=>input.checked),false)
+  } finally {page.close()}
+})
+
+test('navigation uses one status marker for attention and keeps dots for plain state or channel traffic',async()=>{
+  const stub={__esModule:true,default:passthrough}
+  const load=loader({'./WorkspaceStatus.vue':stub,'./RuntimePointSummary.vue':stub,'./RuntimeDataFlow.vue':stub,'./RuntimeFailureNotice.vue':stub,'../../hook/useRuntimeMetricMetadata':{useRuntimeMetricMetadata:()=>({})}})
+  const Metrics=load('views/data-collect/components/workspace/RuntimeCardMetrics.vue').default
+  const object=vue.ref({id:'c',name:'Collector',runtime:{available:true,state:'running'},monitoring:{pointSummary:{states:{collectionError:42}}}}),kind=vue.ref('collector')
+  const Icon={props:['type'],setup:props=>()=>vue.h('span',{'data-icon':props.type})}
+  const page=mount({setup:()=>()=>vue.h(Metrics,{object:object.value,kind:kind.value,variant:'navigation'})},{'a-popover':passthrough,AIcon:Icon})
+  try {
+    let status=page.container.querySelector('.cw-nav-status')
+    assert.equal(status.tagName,'BUTTON','the status row owns the named, keyboard accessible monitoring entry')
+    assert.equal(page.container.querySelector('.cw-nav-monitor'),null,'navigation has one monitoring entry')
+    assert.equal(status.querySelector('.cw-dot'),null)
+    assert.equal(status.querySelectorAll('[data-icon="CloseCircleOutlined"]').length,1);assert.ok(status.textContent.includes(t('collectorMonitoring.attentionShort.errors')))
+    object.value.monitoring.pointSummary.states={retrying:2};await settle()
+    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="ClockCircleOutlined"]').length,1)
+    object.value.monitoring.pointSummary.states={running:2};await settle()
+    assert.equal(status.querySelectorAll('.cw-dot').length,1)
+    kind.value='channel';object.value={id:'ch',name:'Channel',runtime:{available:true,state:'running'},monitoring:{readRate:0,writeRate:0,activeConnections:0}};await settle()
+    assert.equal(status.querySelectorAll('.cw-dot').length,1,'traffic keeps its independent connection state marker')
+    assert.equal(status.querySelectorAll('[data-icon="DownloadOutlined"]').length,1);assert.equal(status.querySelectorAll('[data-icon="UploadOutlined"]').length,1)
+    object.value.monitoring={activeConnections:0};await settle()
+    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="DisconnectOutlined"]').length,1)
+  } finally {page.close()}
+})
+
+test('channel navigation lists channels once, counts all linked collectors and keeps mode queries separate',async()=>{
+  const Icon={__esModule:true,default:{render:()=>vue.h('span')}},Metrics={__esModule:true,default:{props:['kind'],setup:props=>()=>vue.h('span',{'data-runtime-kind':props.kind})}}
+  const Navigation=loader({'@vueuse/core':{useElementSize:()=>({height:vue.ref(32)})},'./WorkspaceIcon.vue':Icon,'./RuntimeCardMetrics.vue':Metrics,'./WorkspaceSkeleton.vue':Icon})('views/data-collect/components/workspace/ObjectNavigation.vue').default
+  const Input=require('ant-design-vue/lib/input').default
+  const Segmented={props:['options'],emits:['update:value'],setup(props,{emit}){return ()=>vue.h('div',props.options.map(option=>vue.h('button',{'data-mode':option.value,onClick:()=>emit('update:value',option.value)},option.payload.title)))}}
+  const collectors=[{id:'c1',name:'Pump A',channelId:'a',pointNumber:2},{id:'c2',name:'Pump B',channelId:'a',pointNumber:3},{id:'c3',name:'Other',channelId:'missing',pointNumber:1}],channels=[{id:'a',name:'Line A'},{id:'b',name:'Line B'}]
+  const selected=vue.ref('c1'),selectedChannel=vue.ref(),events=[]
+  const page=mount({setup:()=>()=>vue.h(Navigation,{collectors,channels,selected:selected.value,selectedChannel:selectedChannel.value,drawer:true,onSelectChannel:channel=>events.push(channel.id)})},{'a-input':Input,'a-segmented':Segmented})
+  const names=()=>[...page.container.querySelectorAll('.cw-nav-name')].map(node=>node.textContent)
+  function search(value){const input=page.container.querySelector('.cw-navigation-search input');input.value=value;input.dispatchEvent(new dom.window.Event('input',{bubbles:true}))}
+  try {
+    assert.deepEqual(names(),['Pump A','Pump B','Other'])
+    search('Pump A');await settle();assert.deepEqual(names(),['Pump A'])
+    mouse(page.container.querySelector('[data-mode="channel"]'),'click');await settle()
+    assert.deepEqual(names(),['Line A','Line B']);assert.equal(page.container.querySelector('.cw-navigation-search input').placeholder,'搜索通道')
+    assert.deepEqual([...page.container.querySelectorAll('.cw-nav-point-count')].map(node=>node.textContent),['2','0'])
+    assert.equal(page.container.querySelector('.cw-nav-group-heading'),null)
+    assert.equal(page.container.querySelector('.cw-nav-child.selected .cw-nav-name').textContent,'Line A')
+    assert.ok([...page.container.querySelectorAll('[data-runtime-kind]')].every(node=>node.dataset.runtimeKind==='channel'))
+    mouse(page.container.querySelectorAll('.cw-nav-select')[1],'click');await settle();assert.deepEqual(events,['b'])
+    assert.equal(page.container.querySelector('.cw-nav-child.selected .cw-nav-name').textContent,'Line A','the route owner must accept navigation before selection changes')
+    selected.value=undefined;selectedChannel.value='b';await settle()
+    assert.equal(page.container.querySelector('.cw-nav-child.selected .cw-nav-name').textContent,'Line B')
+    search('Line B');await settle();assert.deepEqual(names(),['Line B'])
+    mouse(page.container.querySelector('[data-mode="collector"]'),'click');await settle()
+    assert.equal(page.container.querySelector('.cw-navigation-search input').value,'Pump A');assert.deepEqual(names(),['Pump A'])
+    mouse(page.container.querySelector('[data-mode="channel"]'),'click');await settle()
+    assert.equal(page.container.querySelector('.cw-navigation-search input').value,'Line B');assert.deepEqual(names(),['Line B'])
+  } finally {page.close()}
+})
+
+test('icon point status retains accessible meaning for unavailable, disabled and error states',async()=>{
+  const Status=loader()('views/data-collect/components/workspace/WorkspaceStatus.vue').default
+  const object=vue.ref({id:'point',state:'enabled',runtime:{available:false}})
+  const page=mount({setup:()=>()=>vue.h(Status,{object:object.value,iconOnly:true})})
+  try {
+    const badge=()=>page.container.querySelector('.cw-badge')
+    assert.equal(badge().textContent,'');assert.equal(badge().getAttribute('aria-label'),t('collectorWorkspace.unavailable'))
+    assert.equal(badge().getAttribute('title'),t('collectorWorkspace.unavailable'))
+    object.value={id:'point',state:'disabled'};await settle()
+    assert.equal(badge().textContent,'');assert.equal(badge().getAttribute('aria-label'),t('collectorWorkspace.disabled'))
+    object.value={id:'point',state:'enabled',runtime:{available:true,currentFailure:{code:1,reason:'test'}}};await settle()
+    assert.equal(badge().textContent,'');assert.equal(badge().getAttribute('aria-label'),t('collectorRuntime.states.collectionError'))
+    assert.match(badge().getAttribute('title'),/test/)
+  } finally {page.close()}
+})
+
+test('point status keeps its accessible state while removing the redundant chart icon',async()=>{
+  const load=loader({'../../hook/useRuntimeMetricMetadata':{useRuntimeMetricMetadata:()=>({loading:vue.ref(false),error:vue.ref(''),nodeDefinitions:vue.ref({})})}})
+  const Metrics=load('views/data-collect/components/workspace/RuntimeCardMetrics.vue').default
+  const Popover={setup:(_, {slots})=>()=>slots.default?.()}
+  const Icon={props:['type'],setup:props=>()=>vue.h('span',{'data-icon':props.type})}
+  const object={id:'point',name:'Point',state:'enabled',runtime:{available:true,currentFailure:{code:1,reason:'failed'}}}
+  const page=mount({setup:()=>()=>vue.h(Metrics,{object,kind:'point',variant:'status'})},{'a-popover':Popover,AIcon:Icon})
+  try {
+    const button=page.container.querySelector('.cw-runtime-status')
+    assert.match(button.getAttribute('aria-label'),/运行情况.*采集异常/)
+    assert.equal(button.querySelectorAll('[data-icon]').length,1)
+    assert.equal(button.querySelector('[data-icon="LineChartOutlined"]'),null)
+  } finally {page.close()}
+})
 
 test('point lookup waits for the actual Ant modal close callback before moving focus',async()=>{
   const Lookup=loader()('views/data-collect/components/workspace/WorkspacePointLookup.vue').default
@@ -207,9 +430,9 @@ test('the real diagnostic trigger names its action and retains hover, pinned and
   }finally{page.close()}
 })
 
-test('the actual workspace context keeps the same plugin tools and adapter while entering and leaving batch editing',async()=>{
+test('the actual workspace heading keeps the same plugin tools and adapter while entering and leaving batch editing',async()=>{
   const {descriptor}=parse(readFileSync(resolve(moduleRoot,'views/data-collect/index.vue'),'utf8'))
-  function context(node){if(node.type===1 && node.props.some(prop=>prop.type===6 && prop.name==='class' && prop.value?.content.split(' ').includes('cw-context-bar')))return node;for(const child of node.children || []){const found=context(child);if(found)return found}}
+  function context(node){if(node.type===1 && node.props.some(prop=>prop.type===6 && prop.name==='class' && prop.value?.content.split(' ').includes('cw-head-actions')))return node;for(const child of node.children || []){const found=context(child);if(found)return found}}
   const source=context(descriptor.template.ast)?.loc.source;assert.ok(source)
   const compiled=compileTemplate({source,filename:'WorkspaceContextHarness.vue',id:'workspace-context'});assert.deepEqual(compiled.errors,[])
   const module={exports:{}}
@@ -229,6 +452,29 @@ test('the actual workspace context keeps the same plugin tools and adapter while
     assert.notEqual(page.container.querySelector('.cw-head-actions').style.display,'none')
     assert.equal(pointTools.value,instance);assert.equal(pointTools.value.batchAdapter,adapter);assert.equal(mounts,1);assert.equal(unmounts,0)
   }finally{page.close()}
+})
+
+test('hover displays the trend before clicking, and expanding preserves the active history session',async()=>{
+  const opened=vue.ref(false),preview=vue.ref(false),point=vue.shallowRef(),shown=[]
+  let owner
+  const history={open:opened,preview,point,show(value,trigger,asPreview){shown.push({value,asPreview});owner=trigger;point.value=value;opened.value=true;preview.value=asPreview},hidePreview(trigger){if(preview.value && owner===trigger)opened.value=false},expand(){preview.value=false}}
+  const load=loader({'./PointHistoryPreview.vue':{__esModule:true,default:{render:()=>vue.h('div',{'data-inline-trend':true},'trend')}},'../../../api/data-collect/workspace':{observePointValues:()=>({subscribe:()=>({unsubscribe(){}})})}})
+  const Value=load('views/data-collect/components/workspace/PointValueDisplay.vue').default
+  const {POINT_HISTORY}=load('views/data-collect/hook/context.ts')
+  const Popover=require('ant-design-vue/lib/popover').default
+  const page=mount({setup(){vue.provide(POINT_HISTORY,history);return ()=>vue.h(Value,{point:{id:'p',name:'Temperature',latest:{parsedData:12.5}},emptyText:'empty'})}},{'a-popover':Popover,'a-radio-group':passthrough,'a-radio-button':passthrough})
+  try {
+    mouse(page.container.querySelector('.cw-value-anchor'),'mouseenter')
+    const deadline=Date.now()+2000
+    while(!document.querySelector('[data-inline-trend]') && Date.now()<deadline){await new Promise(resolve=>setTimeout(resolve,20));await settle()}
+    assert.equal(shown.length,1);assert.equal(shown[0].asPreview,true)
+    assert.ok(document.querySelector('[data-inline-trend]'),'trend is already visible without a click')
+    const expand=[...document.querySelectorAll('span')].find(node=>node.textContent==='展开历史与明细')
+    assert.ok(expand);mouse(expand,'click');await settle()
+    assert.equal(preview.value,false);assert.equal(opened.value,true)
+    assert.equal(shown.length,1,'expansion does not create a second viewing session')
+    assert.equal(document.querySelector('.cw-value-inspector'),null)
+  } finally {page.close()}
 })
 
 test('scalar and array values preview on hover or focus, pin on click and keep position during frequent updates',async()=>{

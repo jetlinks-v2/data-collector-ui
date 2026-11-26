@@ -1,5 +1,6 @@
 import { inject, type InjectionKey, type Ref } from 'vue'
 import type { ConditionFilterTerm } from '@jetlinks-web-core/components/ConditionFilter'
+import type { usePointHistory } from './usePointHistory'
 
 export type ScopeType = 'all' | 'channel' | 'collector'
 export interface EnumValue { value: string; text: string }
@@ -49,6 +50,7 @@ export interface CollectContext {
   refreshAll: () => Promise<void>
 }
 export const COLLECT_LIST = Symbol('collect-list') as InjectionKey<CollectContext>
+export const POINT_HISTORY = Symbol('point-history') as InjectionKey<ReturnType<typeof usePointHistory>>
 export function useCollectContext() {
   const context = inject(COLLECT_LIST)
   if (!context) throw new Error('Missing data collection page context')

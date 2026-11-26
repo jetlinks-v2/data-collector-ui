@@ -2,6 +2,7 @@ import { request, wsClient } from '@jetlinks-web/core'
 import type { CollectorObject, CollectorObservation, CollectorMonitoringSnapshot, CollectorWorkspaceQuery, CollectorWorkspaceFrame, EntityKind, MetricDefinition, ProviderDescriptor, RuntimeSnapshot, RecordingSnapshot } from '../../types/workspace'
 import { createRuntimeNdJson } from '@jetlinks-web-core/utils/ndjson'
 import { postRuntimeNdJson } from '@jetlinks-web-core/utils/ndjson-precision'
+import { parseJsonWithPrecision } from '@jetlinks-web-core/utils/json'
 import type { AxiosResponseRewrite } from '@jetlinks-web/types'
 import { EMPTY, defer, from, lastValueFrom, map, merge, mergeMap, reduce, timeout, toArray } from 'rxjs'
 import { collectorIndexMetrics, pointIndexMetrics, workspaceRuntimeIndex, type WorkspaceRuntimeIndex } from '../../utils/workspaceList'
@@ -45,11 +46,11 @@ export const monitorCollectors = (ids:string[],interval=2000,channelIds:string[]
 let workspaceSubscriptionId=0
 /** 页面复用平台 WebSocket；保留 NDJSON 供独立调用，两者使用同一帧契约。 */
 export const observeCollectionWorkspace=(query:CollectorWorkspaceQuery,transport:'websocket'|'ndjson'='websocket')=>transport === 'ndjson'
-  ? createRuntimeNdJson().post<CollectorWorkspaceFrame>('/data-collect/collector/_workspace',query)
-  : defer(()=>wsClient.getWebSocket(`collector-workspace:${++workspaceSubscriptionId}`,'/collector-workspace/observe',query))
+  ? createRuntimeNdJson(undefined,{deserializer:parseJsonWithPrecision}).post<CollectorWorkspaceFrame>('/data-collect/collector/_workspace',query)
+  : defer(()=>wsClient.getWebSocket(`collector-workspace:${++workspaceSubscriptionId}`,'/collector-workspace/observe',query,{deserializer:parseJsonWithPrecision}))
       // 平台连接恢复后也校验订阅是否恢复；只设工作区级超时，不为点位创建计时器。
       .pipe(map(message=>message.payload as CollectorWorkspaceFrame),timeout({each:Math.max(15000,...query.monitoring.map(item=>item.interval*3),(query.observation?.interval || 0)*3,(query.recording?.interval || 0)*3)}))
-export const observeWorkspace = (id:string,pointIds:string[],interval=2000,pointMetrics:string[]|null=null,metrics:string[]|null=null,includeRawData=false,includeData=true,includeObjects=true) => createRuntimeNdJson().post<CollectorObservation>(
+export const observeWorkspace = (id:string,pointIds:string[],interval=2000,pointMetrics:string[]|null=null,metrics:string[]|null=null,includeRawData=false,includeData=true,includeObjects=true) => createRuntimeNdJson(undefined,{deserializer:parseJsonWithPrecision}).post<CollectorObservation>(
   `/data-collect/collector/${encodeURIComponent(id)}/_observe`, {pointIds,interval,pointMetrics,metrics,channelMetrics:metrics,includeRawData,includeData,includeObjects},
 )
 

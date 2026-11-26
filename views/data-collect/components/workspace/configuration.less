@@ -26,12 +26,12 @@
   .cw-object-title .ant-input:hover,.cw-object-title .ant-input:focus { background:var(--cw-soft); box-shadow:inset 0 -1px var(--cw-blue); }
   .cw-object-icon .cw-object-icon-edit { width:100%; height:28px; padding:0; }
   .cw-object-anchor { flex:1; min-width:0; }
-  .cw-head-identity>.cw-object-anchor { flex:1; min-width:0; }
+  .cw-head-identity>.cw-object-anchor { flex:0 1 auto; min-width:0; }
   .cw-channel>.cw-object-identity { flex:1; min-width:0; }
   .cw-channel-link { padding:0; border:0; background:transparent; color:var(--cw-sub); text-align:left; }
   .cw-channel-link:hover { color:var(--cw-blue); }
   .cw-object-edit-heading { position:sticky; top:-12px; z-index:2; margin:-12px -12px 8px; padding:12px 12px 4px; background:var(--cw-panel); }
-  .cw-object-collapse { position:var(--cw-object-action-position,static); left:var(--cw-object-action-left); top:var(--cw-object-action-top); display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:none; width:var(--cw-object-action-width,32px); height:var(--cw-object-action-height,28px); padding-inline:8px; color:var(--cw-blue); background:var(--cw-soft); font-size:12px; }
+  .cw-object-collapse { display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:none; min-width:28px; height:28px; margin-left:auto; padding-inline:6px; color:var(--cw-blue); background:var(--cw-soft); font-size:12px; }
   .cw-object-collapse>.anticon { font-size:14px; }
   .cw-object-collapse>.anticon+span { margin-inline-start:0; }
   .cw-object-edit-heading .cw-object-title { flex:0 1 var(--cw-object-name-width,auto); width:var(--cw-object-name-width,auto); }
@@ -80,7 +80,13 @@
   .cw-editor-reading .cw-value-expand { opacity:.3; }
   .cw-editor-reading>.cw-runtime-indicators { margin-left:auto; }
   .cw-editor-reading>.cw-icon-button { flex:none; width:24px; height:24px; font-size:14px; }
-  .cw-object-configuration .cw-point-remark { margin:0 0 8px; }
+  .cw-object-configuration .cw-point-remark { margin:0 0 4px; }
+  .cw-object-configuration .cw-point-remark .ant-form-item-control-input { min-height:24px; }
+  .cw-object-note>.ant-collapse-item>.ant-collapse-header { padding:4px 0; color:var(--cw-sub); font-size:12px; }
+  .cw-object-note .ant-collapse-header-text { min-width:0; }
+  .cw-object-note-heading { display:flex; align-items:center; gap:8px; min-width:0; }
+  .cw-object-note-heading>small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+  .cw-object-note>.ant-collapse-item>.ant-collapse-content>.ant-collapse-content-box { padding:4px 0; }
   .cw-point-source { border-top:1px solid var(--cw-line); padding-top:9px; }
   .cw-settings-title { color:var(--cw-ink); font-weight:500; margin-bottom:7px; }
   .cw-settings-title .cw-link { margin-left:auto; padding:0 4px; height:24px; }

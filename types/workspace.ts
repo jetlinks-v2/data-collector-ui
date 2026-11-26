@@ -104,8 +104,14 @@ export interface PointRow extends CollectorObject {
   circuitBreaker?: Record<string, unknown>
   priority?: number
 }
+export interface PointDataType {
+  id?: string; type?: string; unit?: string
+  elements?: Array<{ value: unknown; text?: string }>
+  elementType?: PointDataType
+  trueText?: string; falseText?: string
+}
 export interface PointCapabilities {
-  autoCodec?: boolean; dataType?: { id?: string; type?: string; unit?: string }
+  autoCodec?: boolean; dataType?: PointDataType
   accessModes?: Array<{ value: string; text?: string }>; supportCodecs?: Array<{ id: string; name?: string }>
 }
 export const stateValue = (state?: StateValue): string => typeof state === 'string' ? state : state?.value || ''

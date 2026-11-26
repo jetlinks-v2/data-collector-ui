@@ -23,7 +23,7 @@ export function setPointBatchCell(row:PointBatchRow,key:BatchCellKey,input:unkno
       row.point=point
     } else {
       const value=Array.isArray(input)?input.join(','):String(input ?? '')
-      if(key==='byteLayout' && !byteLayoutOptions.some(option=>option.value===value))throw new Error('invalidByteLayout')
+      if(key==='byteLayout' && value && !byteLayoutOptions.some(option=>option.value===value))throw new Error('invalidByteLayout')
       if(key==='codec' && !adapter?.setCodec && !adapter?.isAutoCodec?.(row.point)) (row.point.managedConfiguration ||= {}).codec=value
       else setBatchField(row,key as Exclude<BatchCellKey,`plugin:${string}`>,value,adapter)
       if(row.fieldErrors?.[key])throw new Error(row.fieldErrors[key])

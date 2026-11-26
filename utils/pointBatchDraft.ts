@@ -40,11 +40,13 @@ export function setBatchField(row: PointBatchRow, field: BatchField, input: stri
     try { adapter.setAddress(point, input); row.point = point }
     catch (cause) { (row.fieldErrors ||= {}).address = cause instanceof Error ? cause.message : String(cause) }
   } else if (field === 'codec') {
+    if(!input){if(row.point.managedConfiguration)delete row.point.managedConfiguration.codec;return}
     if (!adapter?.setCodec || adapter.isAutoCodec?.(row.point)) throw new Error('typeReadOnly')
     const point = cloneDeep(row.point)
     adapter.setCodec(point, input)
     row.point = point
   } else if (field === 'byteLayout') {
+    if(!input){if(row.point.managedConfiguration)delete row.point.managedConfiguration.byteLayout;return}
     if(adapter?.isAutoCodec?.(row.point)){throw new Error('typeReadOnly')}
     (row.point.managedConfiguration ||= {}).byteLayout = input
   } else if (field === 'accessModes') {

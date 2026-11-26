@@ -19,7 +19,7 @@
       </template>
       <div class="cw-setup-device"><h2 class="cw-settings-title"><AIcon type="SettingOutlined" />{{ $t('collectorWorkspace.collectorSettings') }}</h2><ObjectConfiguration ref="collectorForm" kind="collector" :value="initialCollector" :channels="channels" :providers="[provider]" :connection="connection" form-only /></div>
       <a-alert v-if="error" type="error" :message="error" show-icon />
-      <div class="cw-between cw-connection-actions"><small class="cw-muted">{{ $t('collectorWorkspace.unsaved') }}</small><j-permission-button type="primary" has-permission="data-collect:add" :loading="saving" @click="apply"><AIcon type="CheckOutlined" />{{ $t('collectorWorkspace.applyConnection') }}</j-permission-button></div>
+      <div class="cw-between cw-connection-actions"><small class="cw-muted">{{ $t('collectorWorkspace.unsaved') }}</small><j-permission-button type="primary" has-permission="data-collect:add" :loading="saving" @click="apply"><AIcon type="CheckOutlined" />{{ $t(existingChannelId ? 'collectorEditing.applyCollector' : 'collectorWorkspace.applyConnection') }}</j-permission-button></div>
     </section>
     <div class="cw-toolbar"><span class="cw-muted">{{ $t('collectorWorkspace.pointCount', { count: 0 }) }}</span><a-tooltip :title="$t('collectorWorkspace.applyFirst')"><a-button disabled><AIcon type="PlusOutlined" />{{ $t('collectorWorkspace.newPoint') }}</a-button></a-tooltip></div>
     <div class="cw-points-empty"><WorkspaceIcon name="grid" :size="28" /><span>{{ $t('collectorWorkspace.applyFirst') }}</span></div>
@@ -32,8 +32,8 @@ import { useCollectionSetup } from '../../hook/useCollectionSetup'
 import ObjectConfiguration from './ObjectConfiguration.vue'
 import WorkspaceIcon from './WorkspaceIcon.vue'
 import ConfigSelect from '../../../../components/ConfigSelect.vue'
-const props = defineProps<{ provider: ProviderDescriptor; channels: CollectorObject[] }>()
+const props = defineProps<{ provider: ProviderDescriptor; channels: CollectorObject[]; channelId?: string }>()
 const emit = defineEmits<{ cancel: []; navigation: []; saved: [value: CollectorObject] }>()
-const { channelForm, collectorForm, existingChannelId, createdChannelId, availableChannels, connection, dirty, expanded, collectorName, channelName, saving, error, initialChannel, initialCollector, apply } = useCollectionSetup(props.provider, toRef(props, 'channels'), value => emit('saved', value))
+const { channelForm, collectorForm, existingChannelId, createdChannelId, availableChannels, connection, dirty, expanded, collectorName, channelName, saving, error, initialChannel, initialCollector, apply } = useCollectionSetup(props.provider, toRef(props, 'channels'), value => emit('saved', value), props.channelId)
 defineExpose({ dirty, saving })
 </script>

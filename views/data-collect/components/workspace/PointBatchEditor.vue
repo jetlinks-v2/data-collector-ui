@@ -1,9 +1,9 @@
 <template>
   <section class="cw-batch-editor" :aria-label="$t('collectorBatch.title')" :aria-busy="state.loading.value || state.saving.value">
-    <div class="cw-batch-head">
-      <div class="cw-batch-title"><AIcon type="EditOutlined" /><strong>{{ state.scopeLabel.value || $t('collectorBatch.title') }}</strong><small>{{ $t('collectorBatch.localDraft') }}</small></div>
+    <Teleport :to="headingTarget || 'body'" :disabled="!headingTarget"><div class="cw-batch-head">
+      <div class="cw-batch-title"><AIcon type="EditOutlined" /><strong>{{ $t('collectorNavigation.pointBatchEditing') }}</strong><span class="cw-batch-scope">{{ state.scopeLabel.value }}</span><small>{{ $t('collectorBatch.localDraft') }}</small></div>
       <a-tooltip :title="exitHint"><a-button size="small" type="text" :disabled="state.saving.value" @click="controls.close"><AIcon type="CloseOutlined" />{{ $t('collectorBatch.exit') }}</a-button></a-tooltip>
-    </div>
+    </div></Teleport>
     <div class="cw-batch-tools" role="toolbar" :aria-label="$t('collectorBatch.title')">
       <div class="cw-batch-primary-tools" role="group" :aria-label="$t('collectorBatch.title')">
       <a-tooltip :title="state.adapter.value ? $t('collectorBatch.addHint') : $t('collectorBatch.addressReadOnly')"><span><j-permission-button size="small" type="link" hasPermission="data-collect:add" :disabled="!state.adapter.value || state.loading.value || state.saving.value" @click="controls.add"><AIcon type="PlusOutlined" />{{ $t('collectorBatch.addRow') }}</j-permission-button></span></a-tooltip>
@@ -54,7 +54,7 @@ import { usePointBatchControls } from '../../hook/usePointBatchControls'
 import { accessOption, byteOrderOption, codecOption } from '../../../../utils/configOptions'
 import { byteLayoutOptions } from '../Config/data'
 import type { PointBatchEditorState } from '../../hook/usePointBatchEditor'
-const props = defineProps<{ state: PointBatchEditorState }>()
+const props = defineProps<{ state: PointBatchEditorState; headingTarget?: HTMLElement }>()
 const { t } = useI18n(), controls = usePointBatchControls(props.state)
 const exitHint = computed(() => t(props.state.storage.failed.value ? 'collectorBatch.storageFailed' : !props.state.storage.available.value ? 'collectorBatch.storageUnavailable' : 'collectorBatch.exitHint'))
 const { grid, rangeOpen, fillOpen, fillField, fillValue, fillText, fillEditor, modes, importOpen, importing, importError, filename, sheets, sheetIndex } = controls
@@ -63,13 +63,17 @@ const fillOptions=computed(()=>props.state.columns.value.filter(column=>column.k
 const fillCodecOptions=computed(()=>controls.fillDecoding.codecs.value.map(codec=>codecOption(codec,t)))
 const layoutOptions=computed(()=>byteLayoutOptions.map(option=>byteOrderOption(option.value,t)))
 // A safely retained local draft can be left without an unrelated discard dialog.
-defineExpose({ dirty: computed(() => props.state.dirty.value && (props.state.storage.failed.value || !props.state.storage.available.value)), saving: props.state.saving })
+defineExpose({ dirty: computed(() => props.state.dirty.value && (props.state.storage.failed.value || !props.state.storage.available.value)), saving: props.state.saving, prepareLeave: () => { grid.value?.commit(); props.state.storage.flush() } })
 </script>
 <style scoped>
 .cw-batch-editor { display:flex; flex-direction:column; gap:10px; padding:12px; background:var(--ant-color-bg-container,#fff); border:1px solid var(--ant-color-border-secondary,#f0f0f0); border-radius:var(--ant-border-radius-lg,8px); }
 .cw-batch-head,.cw-batch-title,.cw-batch-tools,.cw-batch-summary,.cw-batch-primary-tools,.cw-batch-context-tools { display:flex; align-items:center; gap:8px; min-width:0; }
-.cw-batch-head { justify-content:space-between; }
-.cw-batch-title { font-size:13px; }
+.cw-batch-head { justify-content:space-between; width:100%; min-height:28px; }
+.cw-batch-title { font-size:12px; }
+.cw-batch-title>strong { flex:none; }
+.cw-batch-scope { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cw-batch-head>.ant-tooltip,.cw-batch-head>.ant-btn { flex:none; }
+.cw-batch-head :deep(.ant-btn) { height:28px; font-size:12px; padding-inline:6px; }
 .cw-batch-title strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cw-batch-title small { color:var(--ant-color-text-tertiary,#8c8c8c); font-weight:400; white-space:nowrap; }
 .cw-batch-tools { flex-wrap:wrap; gap:6px 12px; min-height:28px; }

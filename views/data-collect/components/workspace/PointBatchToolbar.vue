@@ -1,7 +1,6 @@
 <template>
   <div class="cw-batch-toolbar" role="group" :aria-label="$t('collectorList.batch')" :aria-busy="state.busy">
     <template v-if="!state.selecting">
-      <small class="cw-muted">{{ $t('collectorWorkspace.pointCount', { count: state.total }) }}</small>
       <a-tooltip :title="state.blocked ? $t('collectorList.applyDraft') : undefined"><span><a-button size="small" type="text" :disabled="state.busy || state.blocked || !state.total" @click="$emit('start')"><AIcon type="CheckSquareOutlined" />{{ $t('collectorWorkspace.selectMultiple') }}</a-button></span></a-tooltip>
     </template>
     <a-checkbox v-else class="cw-batch-summary" :checked="state.total > 0 && state.keys.length === state.total" :indeterminate="state.keys.length > 0 && state.keys.length < state.total" :disabled="state.busy || !state.total" :aria-label="$t('collectorList.filteredSelection', { count: state.total })" :title="$t('collectorList.filteredSelection', { count: state.total })" @change="$emit('all')">{{ $t('collectorList.selected', { count: state.keys.length }) }}<small class="cw-muted"> / {{ state.total }}</small></a-checkbox>

@@ -16,16 +16,8 @@ const { open: visible, position, target } = useEditorOverlay({
   panelWidth: rect => props.surface === 'card' ? rect.width : Math.min(660, props.viewport?.clientWidth || 660),
   alignment: { source: () => props.anchor?.querySelector('[data-object-icon]'), panel: () => target.value?.querySelector('[data-object-icon]') },
   sourceStyle: source => {
-    const style = { '--cw-object-name-width': (source.querySelector('.cw-object-title') || source).getBoundingClientRect().width + 'px' }
-    const trigger = props.trigger?.getBoundingClientRect(), sourceIcon = source.querySelector('[data-object-icon]')?.getBoundingClientRect()
-    const panelIcon = target.value?.querySelector('[data-object-icon]')?.getBoundingClientRect(), heading = target.value?.querySelector('.cw-object-edit-heading')?.getBoundingClientRect()
-    if (!trigger || !sourceIcon || !panelIcon || !heading) return style
-    return { ...style,
-      '--cw-object-action-position': 'absolute',
-      '--cw-object-action-left': trigger.left - sourceIcon.left + panelIcon.left - heading.left + 'px',
-      '--cw-object-action-top': trigger.top - sourceIcon.top + panelIcon.top - heading.top + 'px',
-      '--cw-object-action-width': trigger.width + 'px', '--cw-object-action-height': trigger.height + 'px',
-    }
+    const title = source.querySelector('.cw-object-title')
+    return title ? { '--cw-object-name-width': `${title.getBoundingClientRect().width || 120}px` } : {}
   },
   focus: () => target.value?.querySelector<HTMLElement>('.cw-object-collapse:not(:disabled)'),
 })

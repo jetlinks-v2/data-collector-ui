@@ -21,6 +21,7 @@ const workspaceList=loadUtility(fileURLToPath(new URL('../utils/workspaceList.ts
 const {objectDisplayState}=loadUtility(fileURLToPath(new URL('../types/workspace.ts',import.meta.url)))
 const {applyObservedValues}=loadUtility(fileURLToPath(new URL('../utils/workspaceObservation.ts',import.meta.url)))
 const runtimeMonitoring=loadUtility(fileURLToPath(new URL('../utils/runtimeMonitoring.ts',import.meta.url)))
+const pointHistoryCache=loadUtility(fileURLToPath(new URL('../utils/pointHistoryCache.ts',import.meta.url)))
 const source = readFileSync(new URL('../views/data-collect/hook/useWorkspaceData.ts', import.meta.url), 'utf8')
 const deferred = () => {
   let resolve
@@ -76,6 +77,7 @@ test('initial queries run together and independent subscriptions paint the first
     if (id === './usePointTrial') return {usePointTrial:()=>({state:vue.ref({running:false,ids:[],total:0,completed:0,error:'',cancelled:false}),run:async()=>0,reset(){},stop(){}})}
     if (id.endsWith('/api/data-collect/collector')) return {}
     if (id.endsWith('/utils/workspaceList')) return workspaceList
+    if (id.endsWith('/utils/pointHistoryCache')) return pointHistoryCache
     return require(id)
   }, module, module.exports)
   const oldDocument = globalThis.document
@@ -217,6 +219,7 @@ async function reconnectingWorkspace(sorting = false, realMonitoring = false) {
     if(id === './usePointTrial')return {usePointTrial:()=>({state:vue.ref({running:false,ids:[],total:0,completed:0,error:'',cancelled:false}),run:async()=>0,reset(){},stop(){}})}
     if(id.endsWith('/api/data-collect/collector'))return {}
     if(id.endsWith('/utils/workspaceList'))return workspaceList
+    if(id.endsWith('/utils/pointHistoryCache'))return pointHistoryCache
     return require(id)
   },module,module.exports)
   const oldDocument=globalThis.document
@@ -231,6 +234,52 @@ async function reconnectingWorkspace(sorting = false, realMonitoring = false) {
     close(){unmount.forEach(callback=>callback());scope.stop();globalThis.document=oldDocument},
   }
 }
+
+test('history shares the workspace stream, retains its point outside the viewport and stops appending on close',async()=>{
+  const value=await reconnectingWorkspace(),{data}=value
+  try {
+    data.historyPointId.value='first';await vue.nextTick()
+    data.setVisiblePoints(['second']);await new Promise(resolve=>setTimeout(resolve,160))
+    assert.deepEqual(new Set(value.observations.at(-1).pointIds),new Set(['first','second']))
+    const observer=value.observations.at(-1).observer
+    observer.next({data:[{pointId:'first',timestamp:1,parsedData:false},{pointId:'second',timestamp:1,parsedData:2}]})
+    assert.equal(data.historyCache.read('collector','first').samples[0].value,false)
+    assert.equal(data.historyCache.read('collector','second'),undefined,'scrolling past a point does not start a history buffer')
+    const firstSegment=data.historyCache.read('collector','first').samples[0].segment
+    data.setVisiblePoints(['first']);await new Promise(resolve=>setTimeout(resolve,160))
+    value.observations.at(-1).observer.next({data:[{pointId:'first',timestamp:2,parsedData:true}]})
+    assert.notEqual(data.historyCache.read('collector','first').samples.at(-1).segment,firstSegment,'subscription replacement leaves a recording gap')
+    data.historyPaused.value=true;await vue.nextTick()
+    value.observations.at(-1).observer.next({data:[{pointId:'first',timestamp:3,parsedData:3}]})
+    assert.equal(data.historyCache.read('collector','first').samples.length,2)
+    data.historyPointId.value='';await vue.nextTick()
+    value.observations.at(-1).observer.next({data:[{pointId:'first',timestamp:3,parsedData:4}]})
+    assert.equal(data.historyCache.read('collector','first').samples.length,2)
+    value.deactivated.forEach(callback=>callback())
+    assert.equal(data.historyCache.size.samples,0,'leaving releases all cached samples')
+  } finally {value.close()}
+})
+
+test('search inputs filter after typing or clearing and cancel pending work when leaving',async()=>{
+  const value=await reconnectingWorkspace(),{data}=value
+  const settle=()=>new Promise(resolve=>setTimeout(resolve,280))
+  try {
+    data.pointSearch.value='fir';await vue.nextTick()
+    data.pointSearch.value='second';await vue.nextTick()
+    assert.equal(data.filteredPoints.value.length,2,'typing waits for the search delay')
+    await settle()
+    assert.deepEqual(data.filteredPoints.value.map(row=>row.id),['second'])
+    data.pointSearch.value='';await vue.nextTick();await settle()
+    assert.equal(data.filteredPoints.value.length,2,'clear restores the point list without Enter')
+    data.select();await new Promise(resolve=>setImmediate(resolve))
+    data.collectors.value=data.collectors.value.map(row=>({...row,name:row.id}))
+    data.search.value='other';await vue.nextTick();await settle()
+    assert.deepEqual(data.filteredCollectors.value.map(row=>row.id),['other'])
+    data.search.value='collector';await vue.nextTick()
+    value.deactivated.forEach(callback=>callback());await settle()
+    assert.deepEqual(data.filteredCollectors.value.map(row=>row.id),['other'],'leaving cancels the delayed filter')
+  } finally {value.close()}
+})
 
 test('saving and refreshing a point retain its list, live values and editor until the replacement directory arrives',async()=>{
   const value=await reconnectingWorkspace()

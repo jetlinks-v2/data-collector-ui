@@ -57,8 +57,10 @@ const register = () => {
     moduleRegistry.register(name, registerSetting)
 }
 
-// 点位新增与扫描页共用连续白底面板，避免壳层重复叠加一层内边距。
+// 分区工作区将留白放在各区内部；点位新增与扫描页自行承载面板。
 const getContentPanelOverrides = () => ({
+    'data-collect': { padding: 0 },
+    '/resources/collectors': { padding: 0 },
     'data-collect/BatchAdd': false,
     '/resources/collectors/batch-add/:id': false,
     'data-collect/Scan': false,
