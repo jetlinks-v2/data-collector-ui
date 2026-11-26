@@ -6,6 +6,7 @@ import { listWorkspaceChannels, listWorkspaceCollectors, listWorkspacePoints, li
 import { monitoredObjects } from '../../../utils/runtimeMonitoring'
 import { applyObservedValues, observedPoints } from '../../../utils/workspaceObservation'
 import { usePointTrial } from './usePointTrial'
+import { createPointHistoryCache } from '../../../utils/pointHistoryCache'
 import { runtimeFilter, runtimeSort, workspaceOrder, workspaceStateCounts, workspaceRuntimeIndex, type WorkspaceRuntimeIndex, type WorkspaceSort } from '../../../utils/workspaceList'
 import type { CollectorObject, CollectorObservation, CollectorWorkspaceQuery, PointRow, ProviderDescriptor, RecordingSnapshot, WorkspaceRecordingTarget } from '../../../types/workspace'
 
@@ -18,9 +19,11 @@ export function useWorkspaceData() {
   const recording=shallowRef<RecordingSnapshot>(),recordingTarget=shallowRef<WorkspaceRecordingTarget>()
   const collector = shallowRef<CollectorObject>(), selectedPointId = ref(''), selectedChannelId = ref('')
   const pointDetails = shallowRef<PointRow>(), selectedLoading = ref(false), selectedError = ref('')
+  const historyPointId = ref(''), historyPaused = ref(false), historyRevision = ref(0), historyCache = createPointHistoryCache()
   const initializing = ref(true), loading = ref(false), pointLoading = ref(false), ordering = ref(false)
   const error = ref(''), paused = ref(false), valueError = ref('')
   const search = ref(''), pointSearch = ref(''), pointState = ref(''), collectorState = ref('')
+  const updateSearch = debounce(() => collector.value ? filterPoints() : filterCollectors(), 250)
   const pointSort = ref<WorkspaceSort>('newest'), collectorSort = ref<WorkspaceSort>('newest')
   const orderHeld = ref(false)
   const pointOrder = shallowRef<string[]>([]), collectorOrder = shallowRef<string[]>([])
@@ -149,13 +152,18 @@ export function useWorkspaceData() {
   const flush = throttle(() => {
     applyObservedValues(pointsById.value,pending.values())
     pending.clear()
+    historyRevision.value = historyCache.revision
   },100,{leading:true,trailing:true})
   function updateValues(payload:any) {
-    const retained = new Set([...visibleIds,selectedPointId.value])
+    const retained = new Set([...visibleIds,selectedPointId.value,historyPointId.value])
     for(const value of Array.isArray(payload) ? payload : [payload]) {
       if(!value)continue
       const sample = 'lastData' in value ? value.lastData : value
       const id = value.pointId || sample?.pointId || value.id
+      if (sample && id === historyPointId.value && collector.value) {
+        const runtime = pointsById.value.get(id)?.runtime
+        historyCache.append({ collectorId: collector.value.id, pointId: id, data: sample, origin: `${runtime?.serverId || ''}/${runtime?.metrics?.instanceId || ''}` })
+      }
       // 同一刷新窗口也按采集时间保留最新值，避免晚到的旧样本覆盖待显示的新值。
       if(sample && retained.has(id) && Number(sample.timestamp || 0) >= Number(pending.get(id)?.timestamp || 0))pending.set(id,{...sample,pointId:id})
     }
@@ -164,7 +172,7 @@ export function useWorkspaceData() {
   function unavailable<T extends CollectorObject>(value:T):T {
     return {...value,runtime:{...value.runtime,id:value.id,serverId:value.runtime?.serverId || '',available:false}}
   }
-  function stopDetail() { ++streamRevision;subscription?.unsubscribe();subscription=undefined;flush.cancel();pending.clear();feedback('points') }
+  function stopDetail() { historyCache.interrupt();historyRevision.value=historyCache.revision;++streamRevision;subscription?.unsubscribe();subscription=undefined;flush.cancel();pending.clear();feedback('points') }
   function stopMonitoring() { ++monitoringRevision;monitoringSubscription?.unsubscribe();monitoringSubscription=undefined;feedback('monitoring') }
   function stopRecording() { ++recordingRevision;recordingSubscription?.unsubscribe();recordingSubscription=undefined;feedback('recording') }
   function unsubscribe() {
@@ -234,7 +242,7 @@ export function useWorkspaceData() {
     const revision=streamRevision,catalogRevision=pointGeneration
     const allowed=new Set(points.value.map(point=>point.id))
     // One selected object may remain open outside the viewport; never retain values for scrolled-away rows.
-    const ids=[...new Set([...visibleIds,selectedPointId.value])].filter(id=>allowed.has(id) && !id.startsWith('_new:')).slice(0,200)
+    const ids=[...new Set([selectedPointId.value,historyPointId.value,...visibleIds])].filter(id=>allowed.has(id) && !id.startsWith('_new:')).slice(0,200)
     const retained=new Set(ids)
     points.value=points.value.map(point=>{
       if(retained.has(point.id) || !point.latest && !point.runtime)return point
@@ -250,6 +258,7 @@ export function useWorkspaceData() {
     const disconnected=(cause:unknown)=>{
       if(revision !== streamRevision || catalogRevision !== pointGeneration)return
       feedback('points',cause)
+      historyCache.interrupt(); historyRevision.value = historyCache.revision
       points.value=points.value.map(point=>retained.has(point.id) ? shallowReactive(unavailable(point)) : point)
       if(previousObservation)previousObservation={...previousObservation,nodes:previousObservation.nodes.map(node=>({...node,
         points:node.points.map(point=>({...point,runtime:{...point.runtime,available:false}})),
@@ -281,7 +290,7 @@ export function useWorkspaceData() {
     if(firstRange && next.length){firstRange=false;subscribe()}
     else updateVisible()
   }
-  function filterPoints() { refreshPointIndex() }
+  function filterPoints() { updateSearch.cancel(); refreshPointIndex() }
   function refreshPointIndex(background=false) {
     stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false
     if(!collector.value || !runtimeSort(pointSort.value) && !runtimeFilter(pointState.value)) {applyPointOrder();return}
@@ -295,6 +304,7 @@ export function useWorkspaceData() {
     })
   }
   function filterCollectors() {
+    updateSearch.cancel()
     stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false
     if(!runtimeSort(collectorSort.value) && !runtimeFilter(collectorState.value)){applyCollectorOrder();return}
     const revision=generation
@@ -334,6 +344,10 @@ export function useWorkspaceData() {
       const response=await listWorkspacePoints({terms:[{column:'collectorId',value:current.id}],sorts:[{name:'id',order:'asc'}]})
       if(revision !== pointGeneration)return
       if(!response.success)throw new Error(t('collectorWorkspace.loadFailed'))
+      // The directory is authoritative after import/save; drafts never count as saved points.
+      const pointNumber=(response.result || []).length
+      collectors.value=collectors.value.map(item=>item.id === current.id ? {...item,pointNumber} : item)
+      collector.value={...collector.value!,pointNumber}
       const previous=pointsById.value
       points.value=[...unsavedPoints.value.filter(point=>point.collectorId === current.id),...response.result || []].map(point=>shallowReactive({...previous.get(point.id),...point}))
       const retained=new Set(points.value.map(point=>point.id))
@@ -357,7 +371,7 @@ export function useWorkspaceData() {
     pointTrial.reset()
     countSubscription?.unsubscribe()
     stopIndexRefresh();indexSubscription?.unsubscribe();ordering.value=false;observation.value=undefined;previousObservation=undefined;recordingTarget.value=undefined;recording.value=undefined
-    collector.value=value;selectedChannelId.value=value ? '' : channelId;pointSearch.value='';pointState.value='';selectedPointId.value=''
+    historyPointId.value='';collector.value=value;selectedChannelId.value=value ? '' : channelId;pointSearch.value='';pointState.value='';selectedPointId.value=''
     if(!value)filterCollectors()
     void loadPoints()
   }
@@ -391,6 +405,13 @@ export function useWorkspaceData() {
     visibleIds=visibleIds.map(id=>id === oldId ? value.id : id)
     setOrder(pointOrder,pointOrder.value.map(id=>id === oldId ? value.id : id))
   }
+  function removePointDraft(id:string) {
+    if(!id.startsWith('_new:'))return
+    unsavedPoints.value=unsavedPoints.value.filter(point=>point.id !== id)
+    points.value=points.value.filter(point=>point.id !== id)
+    setOrder(pointOrder,pointOrder.value.filter(value=>value !== id))
+    if(selectedPointId.value === id)selectedPointId.value=''
+  }
   const pointTrial=usePointTrial(updateValues)
   function trial(point?:PointRow,selectedIds?:string[]) {
     const current=collector.value
@@ -400,11 +421,15 @@ export function useWorkspaceData() {
   const onVisibility=()=>{if(document.hidden){unsubscribe();stopIndexRefresh()}else resume()}
   document.addEventListener('visibilitychange',onVisibility)
   watch(paused,()=>{if(paused.value){unsubscribe();stopIndexRefresh()}else resume()})
+  watch(search,()=>{if(!collector.value)updateSearch()})
+  watch(pointSearch,()=>{if(collector.value)updateSearch()})
   watch(orderHeld,held=>{if(held)stopIndexRefresh();else{applyCollectorOrder();if(collector.value)refreshPointIndex(true)}})
   watch(recordingTarget,()=>{recording.value=undefined;subscribeRecording()})
   watch(selectedPointId,()=>{void loadPointDetails();updateVisible.cancel();subscribe()})
-  onDeactivated(()=>{pointTrial.reset();active=false;++pointGeneration;cancelPointDetails();unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();countSubscription?.unsubscribe();ordering.value=false})
+  watch(historyPointId,id=>{if(id && collector.value)historyCache.start(collector.value.id,id);else historyCache.stop();historyPaused.value=false;historyRevision.value=historyCache.revision;updateVisible.cancel();subscribe()})
+  watch(historyPaused,value=>{historyCache.pause(value);historyRevision.value=historyCache.revision})
+  onDeactivated(()=>{historyPointId.value='';historyCache.clear();updateSearch.cancel();pointTrial.reset();active=false;++pointGeneration;cancelPointDetails();unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();countSubscription?.unsubscribe();ordering.value=false})
   onActivated(()=>{if(!active){active=true;resume();void loadPointDetails()}})
-  onBeforeUnmount(()=>{++generation;++pointGeneration;cancelPointDetails();unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();countSubscription?.unsubscribe();document.removeEventListener('visibilitychange',onVisibility)})
-  return {trialState:pointTrial.state,stopTrial:pointTrial.stop,collectors,filteredCollectors,scopedCollectors,channels,providers,points,filteredPoints,unsavedPoints,observation,recording,recordingTarget,collector,channel,selectedChannelId,selectedPointId,selectedPoint,selectedLoading,selectedError,loadPointDetails,initializing,loading,pointLoading,ordering,orderHeld,indexTime,error,valueError,paused,total,pointTotal,search,pointSearch,pointState,collectorState,pointSort,collectorSort,stateCounts,loadStateCounts,initialize,loadCollectors,loadPoints,applyObject,applyPoint,select,trial,filterPoints,filterCollectors,setVisiblePoints}
+  onBeforeUnmount(()=>{historyCache.clear();updateSearch.cancel();++generation;++pointGeneration;cancelPointDetails();unsubscribe();stopIndexRefresh();indexSubscription?.unsubscribe();countSubscription?.unsubscribe();document.removeEventListener('visibilitychange',onVisibility)})
+  return {historyPointId,historyPaused,historyRevision,historyCache,trialState:pointTrial.state,stopTrial:pointTrial.stop,collectors,filteredCollectors,scopedCollectors,channels,providers,points,filteredPoints,unsavedPoints,observation,recording,recordingTarget,collector,channel,selectedChannelId,selectedPointId,selectedPoint,selectedLoading,selectedError,loadPointDetails,initializing,loading,pointLoading,ordering,orderHeld,indexTime,error,valueError,paused,total,pointTotal,search,pointSearch,pointState,collectorState,pointSort,collectorSort,stateCounts,loadStateCounts,initialize,loadCollectors,loadPoints,applyObject,applyPoint,removePointDraft,select,trial,filterPoints,filterCollectors,setVisiblePoints}
 }

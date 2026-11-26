@@ -9,11 +9,12 @@ const require=createRequire(import.meta.url)
 test('workspace uses the shared platform connection, cancels its business subscription, and retains NDJSON',()=>{
   const calls=[],closed=[],http=[],module={exports:{}}
   new Function('require','module','exports',transformSync(readFileSync(new URL('../api/data-collect/workspace.ts',import.meta.url),'utf8'),{loader:'ts',format:'cjs'}).code)(id=>{
-    if(id==='@jetlinks-web/core')return {request:{},wsClient:{getWebSocket:(id,topic,query)=>new Observable(observer=>{
-      calls.push({id,topic,query});observer.next({payload:{monitoring:{timestamp:1}}});return ()=>closed.push(id)
+    if(id==='@jetlinks-web/core')return {request:{},wsClient:{getWebSocket:(id,topic,query,options)=>new Observable(observer=>{
+      calls.push({id,topic,query,options});observer.next({payload:{monitoring:{timestamp:1}}});return ()=>closed.push(id)
     })}}
     if(id==='@jetlinks-web-core/utils/ndjson')return {createRuntimeNdJson:()=>({post:(url,query)=>{http.push({url,query});return of({observation:{timestamp:2}})}})}
     if(id==='@jetlinks-web-core/utils/ndjson-precision')return {postRuntimeNdJson:()=>of({})}
+    if(id==='@jetlinks-web-core/utils/json')return {parseJsonWithPrecision:text=>text}
     if(id.startsWith('../../utils/'))return {}
     return require(id)
   },module,module.exports)
@@ -24,6 +25,8 @@ test('workspace uses the shared platform connection, cancels its business subscr
   assert.equal(calls.length,1)
   assert.equal(calls[0].topic,'/collector-workspace/observe')
   assert.equal(calls[0].query,query)
+  assert.equal(typeof calls[0].options.deserializer,'function')
+  assert.equal(Object.hasOwn(query,'deserializer'),false)
   assert.deepEqual(values,[{monitoring:{timestamp:1}}])
   subscription.unsubscribe();assert.deepEqual(closed,[calls[0].id])
   source.subscribe().unsubscribe()
@@ -39,6 +42,7 @@ test('point index batches explicitly omit object summaries while legacy observat
     if(id==='@jetlinks-web/core')return {request:{},wsClient:{}}
     if(id==='@jetlinks-web-core/utils/ndjson')return {createRuntimeNdJson:()=>({post:(url,query)=>{calls.push({url,query});return of({timestamp:1,nodes:[]})}})}
     if(id==='@jetlinks-web-core/utils/ndjson-precision')return {postRuntimeNdJson:()=>of({})}
+    if(id==='@jetlinks-web-core/utils/json')return {parseJsonWithPrecision:text=>text}
     if(id.endsWith('/workspaceObservation'))return {observedPoints:rows=>rows}
     if(id.endsWith('/workspaceList'))return {workspaceRuntimeIndex:row=>({id:row.id})}
     if(id.startsWith('../../utils/'))return {}

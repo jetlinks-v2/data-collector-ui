@@ -1,4 +1,4 @@
-<template><span class="cw-badge" :class="objectTone(object)" :title="title"><AIcon :type="icons[stateValue(objectDisplayState(object))] || toneIcons[objectTone(object)]" />{{ text }}</span></template>
+<template><span class="cw-badge" :class="objectTone(object)" :title="title || (iconOnly ? text : undefined)" :role="iconOnly ? 'img' : undefined" :aria-label="iconOnly ? text : undefined"><AIcon :type="icons[stateValue(objectDisplayState(object))] || toneIcons[objectTone(object)]" />{{ iconOnly ? '' : text }}</span></template>
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { CollectorObject } from '../../../../types/workspace'
@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n'
 import { objectDisplayState, objectStateText, objectTone, stateValue } from '../../../../types/workspace'
 import { runtimeFailureReason } from '../../../../utils/runtimePresentation'
 const { t, te } = useI18n()
-const props = defineProps<{ object: CollectorObject }>()
+const props = defineProps<{ object: CollectorObject; iconOnly?: boolean }>()
 const text = computed(() => objectStateText(props.object, value => {
   if (value === 'disabled') return t('collectorWorkspace.disabled')
   if (value === 'unavailable') return t('collectorWorkspace.unavailable')

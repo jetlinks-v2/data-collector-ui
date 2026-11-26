@@ -39,6 +39,7 @@ import * as JetlinksUtils from '@jetlinks-web/utils'
 import * as JetlinksTypes from '@jetlinks-web/types'
 import * as JetlinksConstants from '@jetlinks-web/constants'
 import * as JetlinksHooks from '@jetlinks-web/hooks'
+import { VirtualTable } from '@jetlinks-web/components'
 import * as pinia from 'pinia'
 import * as Router from 'vue-router'
 import * as LocalUtils from '@jetlinks-web-core/utils'
@@ -91,6 +92,7 @@ const render = async () => {
       'lodash-es': LodashEs,
       '@hooks': hooks,
       '@components': {
+        VirtualTable,
         PointEditTable,
         PointScanWorkspace,
         ConfigSelect,

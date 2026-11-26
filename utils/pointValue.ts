@@ -41,6 +41,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 /** ECharts 会将坐标归一化为 Number，提示必须从原始数据项取精确值。 */
 export const formatPointChartTooltip = (params: unknown, emptyText: string): string => {
+  if (Array.isArray(params) && params.length > 1) {
+    return params.filter(isRecord).map(point => [point.seriesName, formatPointChartTooltip(point, emptyText)].filter(Boolean).join('\n')).join('\n')
+  }
   const point = Array.isArray(params) ? params[0] : params
   if (!isRecord(point)) return ''
   const data = isRecord(point.data) ? point.data : undefined

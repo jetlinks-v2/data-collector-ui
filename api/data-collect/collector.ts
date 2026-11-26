@@ -159,12 +159,12 @@ export const getCollectorError = () => request.get('/data-collect/collector/erro
 /**
  * 查询点位历史数据
  */
-export const queryPointHistory = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_query`, data, pointValueResponse);
+export const queryPointHistory = (collectorId: string, data: any, signal?: AbortSignal) => request.post(`/data-collect/collector/${collectorId}/data/_query`, data, { ...pointValueResponse, signal });
 
 /**
  * 点位历史数据聚合
  */
-export const queryPointAggregation = (collectorId: string, data: any) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data, pointValueResponse);
+export const queryPointAggregation = (collectorId: string, data: any, signal?: AbortSignal) => request.post(`/data-collect/collector/${collectorId}/data/_aggregation`, data, { ...pointValueResponse, signal });
 export const queryAlarmLogList = (pointId: string, data: any) => request.post(`/alarm/history/collector/${pointId}/_query`, data)
 export const queryPointMetadata = (provider:any, data: any) => request.post(`/data-collect/point/${provider}/_metadata`, data)
 export const commandRequest = {
@@ -212,7 +212,7 @@ export const updatePoints = (data: any) => request.post(`/data-collect/point/bat
 /**
  * 获取点位数据类型
  */
-export const getPointDataType = (id: string) => request.get(`/things/collector/codecs/${id}/_detail`);
+export const getPointDataType = (id: string, signal?: AbortSignal) => request.get(`/things/collector/codecs/${id}/_detail`, undefined, { signal });
 
 /**
  * 查询设备列表

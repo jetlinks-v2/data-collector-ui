@@ -6,12 +6,12 @@ import { getPointDataType } from '../../../api/data-collect/collector'
 import { useProcessingFormula } from './useProcessingFormula'
 import { currentValue, expression } from '../../../utils/processingExpression'
 import { processingDraft } from '../../../utils/processingDraft'
+import { pointStorageFeatures as storageFeatures } from '../../../utils/pointStorage'
 import { createAlarmConfiguration, useProcessingAlarm } from './useProcessingAlarm'
 import { signalAlgorithms,cleaningSignalAlgorithms,signalDefaults,validSignal,validDecimal,supportsSignalInput,type SignalAlgorithm } from '../../../utils/signalProcessing'
 
 export type ProcessingRuleKey = 'converter' | 'processor' | 'outlier' | 'changedOnly' | 'deadband' | 'storage' | 'handler'
 export interface ProcessingRulePresentation { key:ProcessingRuleKey; title:string; icon:string; color:string; description:string; disabled?:boolean }
-const storageFeatures = ['storageData', 'storageOutlier', 'storageDeadband']
 
 /** 共用点位草稿；仅用户操作才写配置，展开和读取不会重置点位覆盖或采集器默认值。 */
 export function useProcessingRules(getModel: () => CollectorObject, getCapabilities: () => PointCapabilities = () => ({}), getInputTypes:(algorithm:string)=>string[]|undefined = () => undefined) {
@@ -104,7 +104,7 @@ export function useProcessingRules(getModel: () => CollectorObject, getCapabilit
     { key:'calculation', title:t('collectorProcessing.conversion'), description:t('collectorProcessing.conversionStageHint'), rules:rules.value.filter(rule => rule.key === 'converter') },
     { key:'signal', title:t('collectorSignal.title'), description:t(enabled('converter') ? 'collectorProcessing.processingConvertedHint' : 'collectorProcessing.processingSourceHint'), rules:rules.value.filter(rule => rule.key === 'processor') },
     { key:'output', title:t('collectorProcessing.outputConditions'), description:t('collectorProcessing.outputConditionsHint'), rules:rules.value.filter(rule => ['changedOnly','deadband'].includes(rule.key)) },
-    { key:'actions', title:t('collectorProcessing.storageAndAlarm'), description:t('collectorProcessing.storageAndAlarmHint'), rules:rules.value.filter(rule => ['storage','handler'].includes(rule.key)) },
+    { key:'actions', title:t('collectorProcessing.alarm'), description:t('collectorProcessing.alarmHint'), rules:rules.value.filter(rule => rule.key === 'handler') },
     ]
     // 旧配置只交换清洗与换算，后续滤波仍在清洗后；展示顺序不改写已保存的配置。
     if (convertedCleaning) [stages[0],stages[1]]=[stages[1],stages[0]]

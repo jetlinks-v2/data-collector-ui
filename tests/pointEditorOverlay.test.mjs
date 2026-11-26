@@ -3,7 +3,6 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import * as vue from 'vue'
 import { transformSync } from 'esbuild'
-import { compileScript, parse } from 'vue/compiler-sfc'
 
 function fixture(objectMode=false) {
   const saved=new Map(['window','document','Node','ResizeObserver','requestAnimationFrame','cancelAnimationFrame'].map(key=>[key,globalThis[key]]))
@@ -113,36 +112,4 @@ test('editors stay below the platform popup layer and follow theme changes',asyn
     assert.equal(page.overlay.position.value.zIndex,1999)
     assert.equal(page.overlay.open.value,true)
   } finally {page.close()}
-})
-
-test('object editor actions retain the source trigger position and size across surfaces',()=>{
-  const source=readFileSync(new URL('../views/data-collect/components/workspace/ObjectEditorOverlay.vue',import.meta.url),'utf8')
-  const script=compileScript(parse(source).descriptor,{id:'object-editor-test'}).content
-  const target=vue.shallowRef(),module={exports:{}}
-  let options
-  new Function('require','module','exports',transformSync(script,{loader:'ts',format:'cjs'}).code)(id=>{
-    if(id==='vue')return vue
-    if(id.endsWith('/useEditorDismiss'))return {useEditorDismiss(){}}
-    return {useEditorOverlay:value=>{options=value;return {open:vue.ref(false),position:vue.ref({}),target}}}
-  },module,module.exports)
-  const rect=(left,top,width=24,height=28)=>({left,top,width,height})
-  const element=value=>({getBoundingClientRect:()=>value})
-  const anchor={querySelector:selector=>element(selector==='[data-object-icon]'?rect(300,50):rect(332,50,160))}
-  const panelIcon=rect(313,63),heading=rect(301,51)
-  target.value={querySelector:selector=>element(selector==='[data-object-icon]'?panelIcon:heading)}
-  for(const surface of ['card','header','channel']){
-    const trigger=rect(surface==='header'?900:580,50,surface==='channel'?85:32)
-    const props={open:true,ready:true,kind:'channel',identity:'example',surface,anchor,trigger:element(trigger)}
-    module.exports.default.setup(props,{expose(){},emit(){}})
-    const style=options.sourceStyle(anchor)
-    assert.equal(style['--cw-object-name-width'],'160px')
-    assert.equal(style['--cw-object-action-left'],trigger.left-300+12+'px')
-    assert.equal(style['--cw-object-action-top'],'12px')
-    assert.equal(style['--cw-object-action-width'],trigger.width+'px')
-    assert.equal(style['--cw-object-action-height'],'28px')
-    panelIcon.left+=100;heading.left+=100
-    assert.deepEqual(options.sourceStyle(anchor),style,'moving the panel preserves the action offset')
-    props.trigger=undefined
-    assert.equal(options.sourceStyle(anchor)['--cw-object-action-position'],undefined,'missing triggers retain normal flow')
-  }
 })

@@ -1,6 +1,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, provide, reactive, ref, shallowReactive, shallowRef, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import type { ResponsiveSplitter } from '@jetlinks-web-core/components'
 import { Modal } from 'ant-design-vue'
 import { useWorkspaceData } from './useWorkspaceData'
 import { useWorkspaceRuntime } from './useWorkspaceRuntime'
@@ -25,18 +26,13 @@ export function useCollectionWorkspace() {
     await data.loadPoints()
   })
   const batch = useWorkspaceActions(data, draft.hasCurrentChanges)
-  const root = ref<HTMLElement>(), main = ref<HTMLElement>(), sidebar = ref<HTMLElement>(), drawerHost = ref<HTMLElement>()
-  const navigationTarget = ref<HTMLElement>(), editorTarget = ref<HTMLElement>()
-  const drawerOpen = ref(false), folded = ref(false), narrow = ref(false), inline = ref(false)
-  const navigationInDrawer = computed(() => narrow.value || folded.value)
-  function openNavigation() {
-    if (narrow.value) drawerOpen.value = true
-    else expandNavigation()
-  }
-  function expandNavigation() { folded.value = false; drawerOpen.value = false }
+  const root = ref<HTMLElement>(), main = ref<HTMLElement>(), content = ref<HTMLElement>()
+  const navigation = ref<InstanceType<typeof ResponsiveSplitter>>()
+  const editorTarget = ref<HTMLElement>()
+  const folded = ref(false), inline = ref(false)
   const view = ref<'cards' | 'table'>('cards'), editingId = ref(''), advanced = ref(false)
   const objectForm = ref<'channel' | 'collector'>(), diagnosticId = ref('')
-  const configurationEditor = ref<{ dirty: boolean; saving: boolean }>()
+  const configurationEditor = ref<{ dirty: boolean; saving: boolean; prepareLeave?: () => void }>()
   watch([editingId,objectForm,configurationEditor,()=>batch.state.value.selecting],()=>{
     data.orderHeld.value=!!editingId.value || !!objectForm.value || !!configurationEditor.value || batch.state.value.selecting
   },{flush:'sync'})
@@ -66,30 +62,42 @@ export function useCollectionWorkspace() {
   provide(REFRESH_HANDLER, { refreshAll: refresh, refreshLeft: data.initialize, refreshRight: data.loadPoints })
   const diagnosticState = computed(() => ({ snapshot: runtime.snapshot.value, recording: runtime.recording.value, definitions: runtime.definitions.value, loading: runtime.loading.value, error: runtime.error.value || data.valueError.value }))
   async function refresh() { if (batch.busy.value) return; await data.initialize(); if (data.collector.value) await data.loadPoints() }
+  watch(advanced, open => { if (!open) void refresh() })
   async function confirmConfiguration() {
     if (configurationSaving.value) return false
+    configurationEditor.value?.prepareLeave?.()
     if (!configurationEditor.value?.dirty) return true
     return confirmDiscard()
   }
   function confirmDiscard() {
     return new Promise<boolean>(resolve => Modal.confirm({ title: t('collectorWorkspace.leaveDraft'), okText: t('collectorWorkspace.leave'), cancelText: t('collectorWorkspace.continueEditing'), onOk: () => resolve(true), onCancel: () => resolve(false) }))
   }
-  let overviewScroll = 0
+  const listPositions = new Map<string, { scroll: number; search: string; state: string; sort: typeof data.collectorSort.value }>()
   const navigate = useWorkspaceRoute(data, applySelection, () => !batch.busy.value && confirmConfiguration())
+  const returnChannel = computed(() => navigate.parentScope.value.scopeType === 'channel' ? data.channels.value.find(item => item.id === navigate.parentScope.value.scopeId) : undefined)
+  function returnToList() { return select(undefined, data.collector.value ? returnChannel.value : undefined) }
   function select(value?: CollectorObject, selectedChannel?:CollectorObject) {
     if (batch.busy.value || configurationSaving.value) return
-    drawerOpen.value = false
+    navigation.value?.close(main.value)
     if (value && value.id === data.collector.value?.id) return
-    return navigate(value, selectedChannel)
+    return navigate.select(value, selectedChannel)
   }
   function applySelection(value?: CollectorObject, selectedChannel?:CollectorObject) {
-    drawerOpen.value = false
-    if (!data.collector.value) overviewScroll = main.value?.scrollTop || 0
+    closePoint(false)
+    navigation.value?.close(main.value)
+    if (!data.collector.value) listPositions.set(data.selectedChannelId.value || '', { scroll: content.value?.scrollTop || 0, search: data.search.value, state: data.collectorState.value, sort: data.collectorSort.value })
+    const position = !value ? listPositions.get(selectedChannel?.id || '') : undefined
+    if (position) { data.search.value = position.search; data.collectorState.value = position.state; data.collectorSort.value = position.sort }
     stashObject(); objectTarget.value=undefined; objectEditor.value=undefined
     closeDiagnostic(); data.select(value,selectedChannel?.id); editingId.value = ''; objectForm.value = undefined; choosingProvider.value = false; setupProvider.value = undefined
-    void nextTick(() => { if (main.value) main.value.scrollTop = value ? 0 : overviewScroll })
+    void nextTick(() => { if (content.value) content.value.scrollTop = position?.scroll || 0 })
   }
   async function cancelSetup() { if (await confirmConfiguration()) { setupProvider.value = undefined; choosingProvider.value = true } }
+  function startCollection() {
+    const channel = data.selectedChannelId.value ? data.channel.value : undefined
+    setupProvider.value = channel ? data.providers.value.find(provider => provider.id === channel.provider) : undefined
+    choosingProvider.value = !setupProvider.value
+  }
   function editObject(target?: ObjectEditorTarget, restoreFocus = true) {
     if (configurationSaving.value || batch.busy.value || draft.saving.value) return
     if (!target) { const trigger=objectTarget.value?.trigger; objectForm.value=undefined; if(restoreFocus)void nextTick(()=>trigger?.focus({preventScroll:true})); return }
@@ -106,6 +114,7 @@ export function useCollectionWorkspace() {
     if (batch.busy.value || configurationSaving.value) return
     // 多选沿用整卡操作范围，避免查看详情和勾选在同一次点击中竞争。
     if (batch.state.value.selecting) { batch.toggle(id); return }
+    if(editingId.value && editingId.value !== id)closePoint(false)
     const settingsOpen = !!objectForm.value
     objectForm.value = undefined
     editingId.value = !settingsOpen && editingId.value === id ? '' : id; data.selectedPointId.value = id
@@ -119,32 +128,21 @@ export function useCollectionWorkspace() {
     const trigger = root.value?.querySelector<HTMLButtonElement>('.cw-point-select[aria-current="true"]')
     // Hide the editor without changing the selected model or discarding its draft.
     editingId.value = ''
+    if(draft.model.value?.id.startsWith('_new:') && !draft.dirty.value)data.removePointDraft(draft.model.value.id)
     if(restoreFocus)void nextTick(() => trigger?.focus({ preventScroll: true }))
   }
-  function addPoint() { if (batch.busy.value || configurationSaving.value) return; objectForm.value = undefined; const point = draft.add(); if (point) { data.unsavedPoints.value = [point, ...data.unsavedPoints.value]; data.points.value = [point, ...data.points.value]; data.filterPoints(); data.selectedPointId.value = point.id; editingId.value = point.id } }
+  function addPoint() { if (batch.busy.value || configurationSaving.value) return; closePoint(false); objectForm.value = undefined; const point = draft.add(); if (point) { data.unsavedPoints.value = [point, ...data.unsavedPoints.value]; data.points.value = [point, ...data.points.value]; data.filterPoints(); data.selectedPointId.value = point.id; editingId.value = point.id } }
   function diagnose(kind: EntityKind, object: CollectorObject) { diagnosticId.value = object.id; runtime.inspect(kind, object.id) }
   function diagnosticVisibility(point: PointRow, visible: boolean) { if (visible) diagnose('point', point); else if (diagnosticId.value === point.id) closeDiagnostic() }
   function closeDiagnostic() { diagnosticId.value = ''; runtime.close() }
-  async function relocate() {
-    await nextTick()
-    navigationTarget.value = navigationInDrawer.value ? drawerHost.value : sidebar.value
-  }
   let observer: ResizeObserver | undefined
   onMounted(() => {
     observer = new ResizeObserver(() => {
-      narrow.value = (root.value?.clientWidth || 0) <= 800
       inline.value = (main.value?.clientWidth || 0) <= 680
-      void relocate()
     })
-    if (root.value) observer.observe(root.value)
     if (main.value) observer.observe(main.value)
-    void data.initialize(); void relocate()
+    void data.initialize()
   })
-  // Value updates must not trigger DOM relocation; only the visible point identities matter.
-  const pointIds = computed(() => data.points.value.map(point => point.id).join(','))
-  watch([narrow, folded, drawerOpen, inline, editingId, objectForm, data.selectedPointId, pointIds], relocate, { flush: 'post' })
-  // 跨越窄屏边界时关闭旧抽屉，再将同一份导航放回正确容器。
-  watch(narrow,()=>{drawerOpen.value=false})
   watch(data.selectedPointId, id => { if (editingId.value && editingId.value !== id) editingId.value = '' })
   onBeforeRouteLeave(() => {
     if (configurationSaving.value) return false
@@ -153,6 +151,6 @@ export function useCollectionWorkspace() {
   const preventLoss = (event: BeforeUnloadEvent) => { if (configurationDirty.value) { event.preventDefault(); event.returnValue = '' } }
   window.addEventListener('beforeunload', preventLoss)
   onBeforeUnmount(() => { observer?.disconnect(); window.removeEventListener('beforeunload', preventLoss) })
-  function visiblePoints(ids:string[]) { data.setVisiblePoints(ids);void relocate() }
-  return { data, runtime, draft, batch, root, main, sidebar, drawerHost, navigationTarget, navigationInDrawer, openNavigation, expandNavigation, editorTarget, configurationEditor, objectTarget, objectKey, objectValue, objectDraft, objectEditor, sharedCount, objectSaved, drawerOpen, folded, narrow, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, diagnosticId, diagnosticState, refresh, select, cancelSetup, editObject, selectPoint, startBatch, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic, visiblePoints }
+  function visiblePoints(ids:string[]) { data.setVisiblePoints(ids) }
+  return { data, runtime, draft, batch, root, main, content, navigation, editorTarget, configurationEditor, objectTarget, objectKey, objectValue, objectDraft, objectEditor, sharedCount, objectSaved, folded, inline, view, editingId, advanced, objectForm, choosingProvider, setupProvider, startCollection, diagnosticId, diagnosticState, refresh, select, returnChannel, returnToList, cancelSetup, editObject, selectPoint, startBatch, closePoint, addPoint, diagnose, diagnosticVisibility, closeDiagnostic, visiblePoints }
 }

@@ -61,7 +61,7 @@ test('point clicks browse normally and select in batch mode without opening or r
     vue: lifecycle, 'vue-i18n': translations, 'vue-router': { onBeforeRouteLeave() {} }, 'ant-design-vue': { Modal: {} },
     './useWorkspaceData': { useWorkspaceData: () => data }, './useWorkspaceRuntime': { useWorkspaceRuntime: () => ({ close() {} }) },
     './usePointDraft': { usePointDraft: () => ({ hasChanges: vue.ref(false), saving: vue.ref(false), model: vue.ref(), dirty: vue.ref(false) }) }, './useWorkspaceActions': { useWorkspaceActions: () => batch }, '../data': {},
-    './useWorkspaceRoute': { useWorkspaceRoute: (_data, apply, canSelect) => async (...args) => { if (await canSelect()) apply(...args) } },
+    './useWorkspaceRoute': { useWorkspaceRoute: (_data, apply, canSelect) => ({ parentScope:vue.ref({scopeType:'all',scopeId:''}), select:async (...args) => { if (await canSelect()) apply(...args) } }) },
   })
   const previous = globalThis.window
   globalThis.window = { addEventListener() {}, removeEventListener() {} }
@@ -83,4 +83,35 @@ test('point clicks browse normally and select in batch mode without opening or r
     batch.busy.value = true; workspace.selectPoint('c')
     assert.deepEqual(toggled, ['b'], 'executing actions cannot change selection')
   } finally { scope.stop(); globalThis.window = previous }
+})
+
+test('return restores the source list and commits pending batch input before leave protection', async () => {
+  const channel={id:'c',name:'Channel'},batch={busy:vue.ref(false),state:vue.ref({selecting:false})}
+  const data={orderHeld:vue.ref(false),collector:vue.ref(),channels:vue.ref([channel]),selectedChannelId:vue.ref('c'),points:vue.ref([]),selectedPointId:vue.ref(''),selectedPoint:vue.ref(),paused:vue.ref(false),observation:vue.ref(),search:vue.ref('pump'),collectorState:vue.ref('attention'),collectorSort:vue.ref('name')}
+  data.select=(collector,channelId)=>{data.collector.value=collector;data.selectedChannelId.value=collector?'':channelId}
+  let confirmations=0,commits=0,risk=false
+  const {useCollectionWorkspace}=load('useCollectionWorkspace',{
+    vue:{...vue,provide(){},onMounted(){},onBeforeUnmount(){}},'vue-i18n':translations,'vue-router':{onBeforeRouteLeave(){}},'ant-design-vue':{Modal:{confirm(options){confirmations++;options.onCancel()}}},
+    './useWorkspaceData':{useWorkspaceData:()=>data},'./useWorkspaceRuntime':{useWorkspaceRuntime:()=>({close(){}})},'./usePointDraft':{usePointDraft:()=>({hasChanges:vue.ref(false),hasCurrentChanges:vue.ref(false),saving:vue.ref(false),model:vue.ref(),dirty:vue.ref(false)})},'./useWorkspaceActions':{useWorkspaceActions:()=>batch},'../data':{},
+    './useWorkspaceRoute':{useWorkspaceRoute:(_data,apply,canSelect)=>({parentScope:vue.ref({scopeType:'channel',scopeId:'c'}),select:async(...args)=>{if(await canSelect())apply(...args)}})},
+  })
+  const previous=globalThis.window
+  globalThis.window={addEventListener(){},removeEventListener(){}}
+  const scope=vue.effectScope(),workspace=scope.run(()=>useCollectionWorkspace())
+  try {
+    workspace.content.value={scrollTop:84}
+    await workspace.select({id:'a',channelId:'c'});await vue.nextTick()
+    assert.equal(workspace.content.value.scrollTop,0)
+    data.search.value='changed';data.collectorState.value='';data.collectorSort.value='created'
+    workspace.configurationEditor.value={dirty:false,saving:false,prepareLeave(){commits++;this.dirty=risk}}
+    risk=true
+    await workspace.returnToList();await vue.nextTick()
+    assert.equal(data.collector.value.id,'a');assert.equal(confirmations,1);assert.equal(commits,1)
+    workspace.configurationEditor.value.saving=true
+    await workspace.returnToList();assert.equal(commits,1,'saving cannot prepare or leave the editor')
+    workspace.configurationEditor.value.saving=false;risk=false
+    await workspace.returnToList();await vue.nextTick()
+    assert.equal(data.collector.value,undefined);assert.equal(data.selectedChannelId.value,'c')
+    assert.equal(data.search.value,'pump');assert.equal(data.collectorState.value,'attention');assert.equal(data.collectorSort.value,'name');assert.equal(workspace.content.value.scrollTop,84)
+  } finally {scope.stop();globalThis.window=previous}
 })

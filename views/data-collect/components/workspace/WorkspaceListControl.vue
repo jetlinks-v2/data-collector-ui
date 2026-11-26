@@ -1,7 +1,7 @@
 <template>
   <a-dropdown :trigger="['click']" :disabled="disabled" @open-change="$emit('openChange',$event)">
     <button class="cw-list-control" :class="{active}" :disabled="disabled" :aria-label="`${label}: ${selected?.label || ''}`">
-      <AIcon :type="icon" /><span class="cw-list-control-label">{{ label }}</span><span>{{ selected?.label }}</span><AIcon type="DownOutlined" />
+      <AIcon :type="icon" /><span>{{ selected?.label }}</span><AIcon type="DownOutlined" />
     </button>
     <template #overlay>
       <a-menu class="cw-list-control-menu" :selected-keys="[value]" @click="select">
