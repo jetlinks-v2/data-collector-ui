@@ -163,7 +163,7 @@
   .cw-nav-attention { display:inline-flex; flex:none; align-items:center; gap:4px; font-size:11px; }
   .cw-nav-status .cw-nav-attention>span:last-child { color:var(--cw-sub); }
   .cw-nav-attention>.anticon { font-size:12px; opacity:.75; }
-  .cw-nav-status:is(:hover,.is-open) .cw-nav-state { text-decoration:underline; text-underline-offset:3px; }
+  .cw-nav-runtime .cw-nav-state.cw-badge { padding:0; background:none; }
   .cw-nav-status:focus-visible { outline:2px solid var(--cw-blue); outline-offset:2px; }
   .cw-nav-status>.cw-nav-metric { margin-left:auto; color:var(--cw-sub); font-size:11px; }
   .cw-nav-metric+.cw-nav-metric { margin-left:0; }
@@ -276,6 +276,7 @@
   .cw-point-status:has(.cw-runtime-status) { gap:0; }
   .cw-point-status .cw-runtime-status { padding:2px 4px; gap:5px; }
   .cw-point-status .cw-runtime-status>.cw-badge { background:none; padding:0; }
+  .cw-runtime-entry .cw-badge { background:none; padding:0; }
   .cw-inline .cw-point:not(.selected):not(:hover):not(:focus-within) .cw-diagnostic-trigger:not(.cw-attention):not([aria-expanded=true]) { opacity:0; pointer-events:none; }
   .cw-inline .cw-point .cw-value-expand { opacity:.3; }
   .cw-inline .cw-point .cw-value-trigger:is(:hover,:focus-visible) .cw-value-expand { opacity:1; }

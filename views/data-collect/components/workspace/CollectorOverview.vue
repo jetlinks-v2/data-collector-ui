@@ -3,7 +3,7 @@
     <article v-for="item in collectors" :key="item.id" class="cw-collector-card" @click="$emit('select', item)">
       <ObjectIdentity :object="item">
         <template #name><button class="cw-collector-name" @click.stop="$emit('select', item)"><strong :title="item.name">{{ item.name }}</strong></button></template>
-        <RuntimeCardMetrics :object="item" kind="collector" />
+        <template #status><RuntimeCardMetrics :object="item" kind="collector" variant="status" enter-on-click /></template>
         <j-permission-button type="text" size="small" hasPermission="data-collect:update" :aria-label="$t('collectorWorkspace.collectorSettings')" :title="$t('collectorWorkspace.collectorSettings')" @click.stop="edit(item, $event)"><AIcon type="SettingOutlined" /></j-permission-button>
         <AIcon type="RightOutlined" class="cw-collector-enter" aria-hidden="true" />
       </ObjectIdentity>

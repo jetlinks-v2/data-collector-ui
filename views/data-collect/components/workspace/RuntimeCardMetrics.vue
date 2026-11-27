@@ -20,23 +20,22 @@
       </div>
     </template>
     <div v-if="variant === 'navigation'" class="cw-nav-runtime" :class="tone" @keydown.esc.stop="open = false">
-      <button class="cw-nav-status" :class="{'is-open':open}" :aria-label="navigationLabel" :aria-expanded="open || detailsOpen" @click.stop="showDetails">
+      <button class="cw-nav-status" :class="{'is-open':open}" :aria-label="navigationLabel" @click="activate">
         <a-skeleton-input v-if="!object.runtime" active size="small" class="cw-metric-skeleton cw-nav-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
         <template v-else>
-          <i v-if="!indicators.length" class="cw-dot" :class="tone" />
-          <span class="cw-nav-state-group"><template v-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" class="cw-nav-attention" :class="item.tone" role="img" :aria-label="indicatorLabel(item)"><AIcon :type="item.icon" aria-hidden="true" /><span v-if="item.count != null">{{ item.count }}</span></span></template><AutoFitText v-else class="cw-nav-state" :text="stateText" :min-size="11" :max-size="12" :tooltip="false" /></span>
+          <span class="cw-nav-state-group"><template v-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" class="cw-nav-attention" :class="item.tone" role="img" :aria-label="indicatorLabel(item)"><WorkspaceStatus v-if="item.id === 'state'" class="cw-nav-state" :object="object" icon-only /><AIcon v-else :type="item.icon" aria-hidden="true" /><span v-if="item.count != null">{{ item.count }}</span></span></template><WorkspaceStatus v-else class="cw-nav-state" :object="object" icon-only /></span>
           <span v-for="item in navigationMetrics" :key="item.key" class="cw-nav-metric" :title="`${$t(item.label)} · ${$t(item.hint)}`"><AIcon :type="item.icon" aria-hidden="true" /><b>{{ quantity(item).value }}</b><small v-if="quantity(item).unit">{{ quantity(item).unit }}</small></span>
         </template>
       </button>
     </div>
-    <button v-else-if="variant === 'group'" class="cw-nav-runtime cw-nav-channel-runtime" :class="tone" :aria-label="`${object.name} · ${label}${indicators.length ? '' : ` · ${stateText}`}`" :aria-expanded="open || detailsOpen" @click.stop="showDetails" @keydown.esc.stop="open = false">
+    <button v-else-if="variant === 'group'" class="cw-nav-runtime cw-nav-channel-runtime" :class="tone" :aria-label="`${object.name} · ${label}${indicators.length ? '' : ` · ${stateText}`}`" @click="activate" @keydown.esc.stop="open = false">
       <a-skeleton-avatar v-if="!object.runtime" active shape="circle" :size="6" :aria-label="$t('collectorWorkspace.loading')" />
-      <i v-else class="cw-dot" :class="tone" />
+      <WorkspaceStatus v-else class="cw-nav-state" :object="object" icon-only />
     </button>
-    <component v-else :is="variant === 'values' ? 'span' : 'button'" class="cw-runtime-indicators" :class="{ 'cw-runtime-values': variant === 'values', 'cw-runtime-status': variant === 'status' }" :aria-label="variant === 'values' ? undefined : label" :aria-expanded="variant === 'values' ? undefined : open || detailsOpen" @click.stop="variant !== 'values' && showDetails()" @keydown.esc.stop="open = false">
-      <WorkspaceStatus v-if="variant === 'status'" :object="object" :icon-only="kind === 'point'" />
+    <component v-else :is="variant === 'values' ? 'span' : 'button'" class="cw-runtime-indicators" :class="{ 'cw-runtime-values': variant === 'values', 'cw-runtime-status': variant === 'status', 'cw-runtime-entry': enterOnClick }" :aria-label="variant === 'values' ? undefined : enterOnClick ? navigationLabel : label" :aria-expanded="variant === 'values' || enterOnClick ? undefined : open || detailsOpen" @click="activate" @keydown.esc.stop="open = false">
+      <WorkspaceStatus v-if="variant === 'status' && (!enterOnClick || !indicators.length)" :object="object" :icon-only="kind === 'point' || enterOnClick" />
       <span v-if="variant !== 'status' && (kind === 'point' || kind === 'channel') && keyMetrics.length" class="cw-runtime-key-values"><span v-for="item in keyMetrics" :key="item.key" :title="`${$t(item.label)} · ${item.unit}\n${$t(item.hint)}${hasValue(item.value) ? `\n${item.value} ${item.unit}` : ''}`"><AIcon :type="item.icon" /><small v-if="kind === 'point'" class="cw-runtime-metric-label">{{ $t(item.label) }}</small><template v-if="hasValue(item.value)">{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></template><a-tooltip v-else :title="$t('collectorMonitoring.empty.calculating')"><a-skeleton-input class="cw-metric-skeleton" active size="small" :aria-label="$t('collectorMonitoring.empty.calculating')" /></a-tooltip></span></span>
-      <span v-for="item in variant === 'status' || variant === 'values' ? [] : indicators" :key="item.id" :class="item.tone"><AIcon :type="item.icon" /><small v-if="item.count != null">{{ item.count }}</small></span>
+      <span v-for="item in (variant === 'status' && !enterOnClick) || variant === 'values' ? [] : indicators" :key="item.id" :class="item.tone" role="img" :aria-label="indicatorLabel(item)"><WorkspaceStatus v-if="item.id === 'state'" :object="object" icon-only /><AIcon v-else :type="item.icon" aria-hidden="true" /><small v-if="item.count != null">{{ item.count }}</small></span>
       <AIcon v-if="variant !== 'values' && variant !== 'status'" type="LineChartOutlined" />
     </component>
   </a-popover>
@@ -46,7 +45,6 @@
 import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
-import { AutoFitText } from '@jetlinks-web-core/components'
 import type { CollectorObject, EntityKind, MetricSnapshot } from '../../../../types/workspace'
 import { objectStateText, objectTone } from '../../../../types/workspace'
 import { runtimeIndicators, runtimePrimaryMetrics, showRuntimeMetric } from '../../../../utils/runtimeMonitoring'
@@ -58,7 +56,7 @@ import RuntimeDataFlow from './RuntimeDataFlow.vue'
 import RuntimeFailureNotice from './RuntimeFailureNotice.vue'
 const RuntimeMetricDetails=defineAsyncComponent(()=>import('./RuntimeMetricDetails.vue'))
 
-const props=defineProps<{object:CollectorObject; kind:EntityKind; variant?:'summary'|'navigation'|'group'|'status'|'values'}>()
+const props=defineProps<{object:CollectorObject; kind:EntityKind; variant?:'summary'|'navigation'|'group'|'status'|'values'; enterOnClick?:boolean}>()
 const emit=defineEmits<{diagnosticVisibility:[visible:boolean]}>()
 const {t,te,locale}=useI18n()
 const open=ref(false),detailsOpen=ref(false)
@@ -70,11 +68,21 @@ function setDiagnosticVisible(visible:boolean) {
 // 悬浮只读已有摘要；完整浏览打开后才解析全部指标和请求说明。
 const metadata=useRuntimeMetricMetadata(()=>props.kind,detailsOpen,()=>props.object)
 function showDetails(){open.value=false;detailsOpen.value=true}
+function activate(event:MouseEvent){
+  open.value=false
+  if(props.enterOnClick || props.variant === 'navigation' || props.variant === 'group')return
+  event.stopPropagation()
+  if(props.variant !== 'values')showDetails()
+}
 watch(detailsOpen,visible=>{if(!visible)setDiagnosticVisible(false)})
 onBeforeUnmount(()=>setDiagnosticVisible(false))
 const indicators=computed(()=>runtimeIndicators(props.object,props.kind))
 const tone=computed(()=>!props.object.runtime ? 'gray' : indicators.value.some(item=>item.tone === 'bad') ? 'bad' : indicators.value.some(item=>item.tone === 'warn') ? 'warn' : objectTone(props.object))
-const stateText=computed(()=>!props.object.runtime ? t('collectorRuntime.states.pending') : !props.object.runtime.available ? t('collectorWorkspace.unavailable') : objectStateText(props.object,state=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined))
+const stateText=computed(()=>objectStateText(props.object,state=>{
+  if(state === 'disabled')return t('collectorWorkspace.disabled')
+  if(state === 'unavailable')return t('collectorWorkspace.unavailable')
+  return te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined
+}) || t('collectorWorkspace.unknown'))
 function indicatorLabel(item:{id:string;count?:number}) {
   return item.id === 'state' ? stateText.value : t(item.id === 'disconnected' ? 'collectorMonitoring.disconnected' : `collectorMonitoring.attention.${item.id}`,{count:item.count})
 }

@@ -194,7 +194,7 @@ test('history saving exposes real checkboxes and updates only the selected polic
 
 test('navigation keeps attention beside quiet key metrics, including zero, totals and channel traffic',async()=>{
   const stub={__esModule:true,default:passthrough}
-  const load=loader({'./WorkspaceStatus.vue':stub,'./RuntimePointSummary.vue':stub,'./RuntimeDataFlow.vue':stub,'./RuntimeFailureNotice.vue':stub,'../../hook/useRuntimeMetricMetadata':{useRuntimeMetricMetadata:()=>({})}})
+  const load=loader({'./RuntimePointSummary.vue':stub,'./RuntimeDataFlow.vue':stub,'./RuntimeFailureNotice.vue':stub,'../../hook/useRuntimeMetricMetadata':{useRuntimeMetricMetadata:()=>({})}})
   const Metrics=load('views/data-collect/components/workspace/RuntimeCardMetrics.vue').default
   const object=vue.ref({id:'c',name:'Collector',runtime:{available:true,state:'running',runtimeState:'running'},monitoring:{collectionRate:12.5,outputRate:0,pointSummary:{states:{collectionError:42}}}}),kind=vue.ref('collector')
   const Icon={props:['type'],setup:props=>()=>vue.h('span',{'data-icon':props.type})}
@@ -217,8 +217,10 @@ test('navigation keeps attention beside quiet key metrics, including zero, total
     assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="ClockCircleOutlined"]').length,1)
     assert.deepEqual(values(),['12.5','0'],'protection states do not hide real metrics')
     object.value.monitoring.pointSummary.states={running:2};await settle()
-    assert.equal(status.querySelectorAll('.cw-dot').length,1)
-    assert.equal(status.querySelector('.cw-nav-state').textContent,t('collectorRuntime.states.running'),'healthy collectors keep their state alongside metrics')
+    assert.equal(status.querySelector('.cw-dot'),null)
+    assert.ok(status.querySelector('.cw-nav-state [data-icon="CheckCircleOutlined"]'))
+    assert.equal(status.querySelector('.cw-nav-state').getAttribute('aria-label'),t('collectorRuntime.states.running'))
+    assert.equal(status.querySelector('.cw-nav-state').textContent,'','healthy collectors use the shared status icon alongside metrics')
     assert.deepEqual(values(),['12.5','0'])
     object.value.monitoring={collectionTotal:120,outputTotal:0,pointSummary:{states:{collectionError:2}}};await settle()
     assert.deepEqual(values(),['120','0'],'the first snapshot uses cumulative values instead of inventing a rate')
@@ -232,11 +234,15 @@ test('navigation keeps attention beside quiet key metrics, including zero, total
     assert.deepEqual(values(),['0','0'])
     assert.equal(status.querySelectorAll('[data-icon="DownloadOutlined"]').length,1);assert.equal(status.querySelectorAll('[data-icon="UploadOutlined"]').length,1)
     object.value.monitoring.activeConnections=1;await settle()
-    assert.equal(status.querySelector('.cw-nav-state').textContent,t('collectorRuntime.states.running'),'channel traffic must not replace the running state')
+    assert.ok(status.querySelector('.cw-nav-state [data-icon="CheckCircleOutlined"]'))
+    assert.equal(status.querySelector('.cw-nav-state').getAttribute('aria-label'),t('collectorRuntime.states.running'),'channel traffic must not replace the accessible running state')
     assert.deepEqual(values(),['0','0'])
     object.value.monitoring={activeConnections:0};await settle()
     assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="DisconnectOutlined"]').length,1)
     assert.deepEqual(values(),[])
+    object.value.state='disabled';object.value.runtime.available=false;await settle()
+    assert.ok(status.querySelector('.cw-nav-state [data-icon="PauseCircleOutlined"]'))
+    assert.ok(status.getAttribute('aria-label').includes(t('collectorWorkspace.disabled')),'the icon and monitoring entry agree for inactive objects without a live instance')
   } finally {page.close()}
 })
 
@@ -299,6 +305,33 @@ test('point status keeps its accessible state while removing the redundant chart
     assert.match(button.getAttribute('aria-label'),/运行情况.*采集异常/)
     assert.equal(button.querySelectorAll('[data-icon]').length,1)
     assert.equal(button.querySelector('[data-icon="LineChartOutlined"]'),null)
+  } finally {page.close()}
+})
+
+test('collector cards combine state and counts in one entry that selects the collector',async()=>{
+  const stub={__esModule:true,default:passthrough}
+  const load=loader({'./RuntimeDataFlow.vue':stub,'./WorkspaceIcon.vue':stub,'../../hook/useRuntimeMetricMetadata':{useRuntimeMetricMetadata:()=>({loading:vue.ref(false),error:vue.ref(''),nodeDefinitions:vue.ref({})})}})
+  const Overview=load('views/data-collect/components/workspace/CollectorOverview.vue').default
+  const Icon={props:['type'],setup:props=>()=>vue.h('span',{'data-icon':props.type})}
+  const Popover={setup:(_,{slots})=>()=>slots.default?.()}
+  const object=vue.ref({id:'collector',name:'Collector',provider:'test',runtime:{available:true,runtimeState:'collectionError'},monitoring:{pointSummary:{states:{collectionError:3}}}})
+  const selected=[]
+  const page=mount({setup:()=>()=>vue.h(Overview,{collectors:[object.value],providers:[],onSelect:value=>selected.push(value.id)})},{AIcon:Icon,'a-popover':Popover,'j-permission-button':passthrough})
+  try {
+    const card=page.container.querySelector('.cw-collector-card')
+    const status=card.querySelector('.cw-runtime-entry')
+    assert.equal(card.querySelectorAll('.cw-runtime-entry').length,1)
+    assert.equal(status.querySelectorAll('[data-icon="CloseCircleOutlined"]').length,1)
+    assert.equal(status.textContent,'3')
+    assert.equal(card.querySelector('[data-icon="LineChartOutlined"]'),null)
+    assert.equal(card.querySelector('.cw-badge'),null,'the error count replaces the duplicate state badge')
+    mouse(status,'click');await settle()
+    assert.deepEqual(selected,['collector'],'the status follows the same card selection handler exactly once')
+    assert.equal(status.hasAttribute('aria-expanded'),false)
+    object.value.runtime.runtimeState='running';object.value.monitoring.pointSummary.states={running:3};await settle()
+    assert.equal(status.textContent,'')
+    assert.ok(status.querySelector('[data-icon="CheckCircleOutlined"]'))
+    assert.ok(status.getAttribute('aria-label').includes(t('collectorRuntime.states.running')))
   } finally {page.close()}
 })
 
