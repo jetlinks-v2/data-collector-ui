@@ -1,21 +1,21 @@
 <template>
-  <a-dropdown :disabled="!hasPerm" :trigger="['click']" placement="topRight" :min-overlay-width-match-trigger="false"
+  <a-dropdown :disabled="!canAdd" :trigger="['click']" placement="topRight" :min-overlay-width-match-trigger="false"
     :overlay-style="{ minWidth: '8rem' }">
-    <j-permission-button block has-permission="data-collect:add">
+    <j-permission-button block :has-permission="canAdd">
       <template #icon><AIcon type="PlusOutlined" /></template>
       {{ $t('PointWorkspace.create') }}
     </j-permission-button>
     <template #overlay>
       <a-menu>
-        <a-menu-item key="add" @click="emit('add')">
+        <a-menu-item key="add" :disabled="!canAdd" @click="canAdd && emit('add')">
           <template #icon><AIcon type="PlusOutlined" /></template>
           {{ $t('DataCollect.index.400150-27') }}
         </a-menu-item>
-        <a-menu-item key="importChannel" @click="openImport('importChannel')">
+        <a-menu-item key="importChannel" :disabled="!canImport" @click="openImport('importChannel')">
           <template #icon><AIcon type="ImportOutlined" /></template>
           {{ $t('PointWorkspace.importChannel') }}
         </a-menu-item>
-        <a-menu-item key="importCollector" @click="openImport('importCollector')">
+        <a-menu-item key="importCollector" :disabled="!canImport" @click="openImport('importCollector')">
           <template #icon><AIcon type="ImportOutlined" /></template>
           {{ $t('PointWorkspace.importCollector') }}
         </a-menu-item>
@@ -45,12 +45,10 @@
 </template>
 
 <script setup lang="ts">
-import { usePermission } from '@jetlinks-web/hooks'
 import Import from '../../components/Import/index.vue'
 import { useCollectImport } from './useCollectImport'
-const { hasPerm } = usePermission('data-collect:add')
 const props = defineProps<{ channelList?: any[] }>()
 const emit = defineEmits<{ add: [] }>()
-const { $t, form, formRef, activeKey, importVisible, providers, providerChannelList, showUpload,
+const { $t, form, formRef, activeKey, importVisible, providers, providerChannelList, showUpload, canAdd, canImport,
   openImport, handleImportSuccess, channelDownloadImportTemplate, collectorDownloadImportTemplate, channelImport, collectorImport } = useCollectImport(props)
 </script>

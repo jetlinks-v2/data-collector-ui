@@ -19,6 +19,8 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   const { t: $t } = useI18n()
   const menu = useMenuStore(), route = useRoute(), router = useRouter()
   const auth = useAuthStore()
+  const canView = computed(() => auth.hasPermission('data-collect:view'))
+  const canUpdate = computed(() => auth.hasPermission('data-collect:update'))
   const canExport = computed(() => auth.hasPermission('data-collect:export'))
   const visible = reactive({ save: false, import: false, batchUpdate: false })
   const current = ref<CollectRecord>({}), formCollector = ref<CollectRecord>({})
@@ -47,16 +49,19 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   })
   const saved = async () => { selection.clear(); await refreshAll() }
   function add() {
+    if (!auth.hasPermission('data-collect:add')) return
     formCollector.value = cloneDeep(scope.value)
     current.value = { collectorId: scope.value.id, provider: scope.value.provider }
     visible.save = true
   }
   async function edit(row: PointRecord) {
+    if (!canUpdate.value) return
     const token = ++editVersion
     editing.value = true
     try {
       const [pointResponse, collectorResponse] = await Promise.all([pointDetail(row.id), detail(row.collectorId || '')])
-      if (token !== editVersion) return
+      // 请求期间撤销编辑授权时，不再打开携带详情的编辑表单。
+      if (token !== editVersion || !canUpdate.value) return
       if (!pointResponse.success || !collectorResponse.success) throw new Error('Point edit unavailable')
       current.value = pointResponse.result
       formCollector.value = collectorResponse.result
@@ -65,10 +70,12 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
     finally { if (token === editVersion) editing.value = false }
   }
   function view(row: PointRecord) {
+    if (!canView.value) return
     const returnTo = router.resolve({ path: route.path, query: { ...route.query, ...collectRouteQuery(state) } }).fullPath
     menu.jumpPage('data-collect/PointDetail', { params: { id: row.id }, query: { returnTo } })
   }
   async function remove(row: PointRecord) {
+    if (!auth.hasPermission('data-collect:delete')) return
     const response = await removePoint(row.id)
     if (response.success) { onlyMessage($t('Point.index.400149-14')); await saved() }
   }
@@ -100,6 +107,10 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   const batchAdd = () => {
     if (!auth.hasPermission('data-collect:add')) return
     return menu.jumpPage('data-collect/BatchAdd', { params: { id: scope.value.id } })
+  }
+  const scan = () => {
+    if (!auth.hasPermission('data-collect:add')) return
+    return menu.jumpPage('data-collect/Scan', { params: { id: scope.value.id } })
   }
   // 添加与导入作用于当前采集器，不依赖已勾选点位。
   const batchActions = computed(() => [
@@ -140,8 +151,7 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   }
   onScopeDispose(() => { version++; editVersion++ })
   return {
-    visible, current, formCollector, editing, pointActions, jsonData, batchActions, canExport, busy, saved, add, edit, view, remove, getBatchParams,
-    exportData, exportTemplate, pointImport, scope, batchAdd,
-    scan: () => menu.jumpPage('data-collect/Scan', { params: { id: scope.value.id } }),
+    visible, current, formCollector, editing, pointActions, jsonData, batchActions, canView, canUpdate, canExport, busy, saved, add, edit, view, remove, getBatchParams,
+    exportData, exportTemplate, pointImport, scope, batchAdd, scan,
   }
 }

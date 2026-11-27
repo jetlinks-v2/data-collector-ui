@@ -6,10 +6,10 @@
       <PointTop ref="pointTopRef" class="point-workspace__status-filter" />
       <div class="point-workspace__actions">
         <template v-if="state.scopeType === 'collector'">
-          <j-permission-button v-if="actions.pointActions.add" type="primary" :has-permission="true" @click="actions.add">
+          <j-permission-button v-if="actions.pointActions.add" type="primary" has-permission="data-collect:add" @click="actions.add">
             <AIcon type="PlusOutlined" /> {{ $t('Point.index.400149-0') }}
           </j-permission-button>
-          <j-permission-button v-if="actions.pointActions.scan" type="primary" :has-permission="true" @click="actions.scan">
+          <j-permission-button v-if="actions.pointActions.scan" type="primary" has-permission="data-collect:add" @click="actions.scan">
             <AIcon type="ScanOutlined" /> {{ $t('data-collector-ui.index.237811-1') }}
           </j-permission-button>
           <j-permission-button v-if="actions.canExport.value" has-permission="data-collect:export" @click="actions.exportData">{{ $t('Point.index.400149-3') }}</j-permission-button>
@@ -48,7 +48,8 @@
         </template>
         <template #name="record">
           <div class="point-workspace__name">
-            <a @click="actions.view(record)"><j-ellipsis>{{ record.name }}</j-ellipsis></a>
+            <a v-if="actions.canView.value" @click="actions.view(record)"><j-ellipsis>{{ record.name }}</j-ellipsis></a>
+            <j-ellipsis v-else>{{ record.name }}</j-ellipsis>
           </div>
         </template>
         <template #runningState="record">
@@ -56,7 +57,8 @@
             :status="ChannelState[record.state?.value === 'disabled' ? 'stopped' : (record.effectiveRunningState ?? record.runningState)?.value] || 'default'"
             :text="record.state?.value === 'disabled' ? record.state?.text : (record.effectiveRunningState ?? record.runningState)?.text" />
         </template>
-        <template #value="record"><div class="point-workspace__value"><ValueItem :value="propertyValue.get(record.id)" :data="record" /></div></template>
+        <template #value="record"><div class="point-workspace__value"><ValueItem :value="propertyValue.get(record.id)" :data="record"
+          :can-read="actions.canView.value" :can-write="actions.canUpdate.value" /></div></template>
         <template #modifyTime="record">{{ record.modifyTime != null ? dayjs(record.modifyTime).format('YYYY-MM-DD HH:mm:ss') : '—' }}</template>
         <template #address="record"><j-ellipsis><code class="point-workspace__address">{{ record.address ?? '—' }}</code></j-ellipsis></template>
         <template #accessModes="record">{{ record.accessModes?.map((item: { text: string }) => item.text).join(' / ') || '—' }}</template>
@@ -64,9 +66,9 @@
         <template #description="record"><j-ellipsis>{{ record.description || '—' }}</j-ellipsis></template>
         <template #action="record">
           <a-space>
-            <j-permission-button type="link" size="small" :has-permission="true" :disabled="actions.editing.value"
+            <j-permission-button type="link" size="small" has-permission="data-collect:update" :disabled="actions.editing.value"
               :tooltip="{ title: $t('Channel.index.290640-13') }" @click="actions.edit(record)"><AIcon type="EditOutlined" /></j-permission-button>
-            <j-permission-button type="link" size="small" danger :has-permission="true"
+            <j-permission-button type="link" size="small" danger has-permission="data-collect:delete"
               :tooltip="{ title: $t('Channel.index.290640-16') }"
               :pop-confirm="{ title: $t('DataCollect.utils.400158-2'), onConfirm: () => actions.remove(record) }"><AIcon type="DeleteOutlined" /></j-permission-button>
           </a-space>

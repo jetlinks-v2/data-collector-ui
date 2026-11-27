@@ -3,7 +3,7 @@
     <div class="header-left">
       <div style="max-width: 200px;">
         <j-ellipsis>
-          <div class="title" :class="{'_title': type !== 'all'}" @click="onDetail">{{ title }}</div>
+          <div class="title" :class="{'_title': type !== 'all' && canView}" @click="onDetail">{{ title }}</div>
         </j-ellipsis>
       </div>
         <a-tag v-if="type === 'channel'" :color="ChannelState[getState(data).value]">{{ getState(data).text }}</a-tag>
@@ -35,7 +35,7 @@
 import ChannelDetail from './Detail/Channel/index.vue'
 import CollectorDetail from './Detail/Collector/index.vue'
 import { useCollectHeader } from './useCollectHeader'
-const { $t, title, type, data, visible, countList, getActive, onClick, onDetail, onRefresh, loadData, getState, ChannelState } = useCollectHeader()
+const { $t, title, type, data, visible, countList, canView, getActive, onClick, onDetail, onRefresh, loadData, getState, ChannelState } = useCollectHeader()
 defineExpose({ loadData })
 </script>
 <style scoped>

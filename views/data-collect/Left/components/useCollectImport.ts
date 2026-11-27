@@ -6,11 +6,16 @@ import { channelImport, channelDownloadImportTemplate } from "@data-collector-ui
 import { useCollectorProvider } from "@data-collector-ui/hooks";
 import { REFRESH_HANDLER } from "../../data";
 import {useI18n} from "vue-i18n";
+import { useAuthStore } from '@jetlinks-web-core/store';
 
 type CollectImportType = 'importChannel' | 'importCollector'
 
 export function useCollectImport(props: { channelList?: any[] }) {
 const {t: $t} = useI18n();
+const auth = useAuthStore();
+const canAdd = computed(() => auth.hasPermission('data-collect:add'));
+// 左侧导入属于“新增”菜单，必须同时满足主入口和导入子项授权。
+const canImport = computed(() => canAdd.value && auth.hasPermission('data-collect:import'));
 
 const { providers } = useCollectorProvider('data-collect/channel');
 
@@ -39,6 +44,7 @@ const showUpload = computed(() => {
 })
 
 const openImport = (type: CollectImportType) => {
+  if (!canImport.value) return;
   activeKey.value = type;
   importVisible.value = true;
 }
@@ -53,6 +59,6 @@ watch(() => importVisible.value, (newValue) => {
   }
 })
 
-return { $t, form, formRef, activeKey, importVisible, providers, providerChannelList, showUpload,
+return { $t, form, formRef, activeKey, importVisible, providers, providerChannelList, showUpload, canAdd, canImport,
   openImport, handleImportSuccess, channelDownloadImportTemplate, collectorDownloadImportTemplate, channelImport, collectorImport }
 }

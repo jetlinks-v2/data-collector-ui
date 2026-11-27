@@ -17,18 +17,19 @@ function load(source, imports) {
   }, module, module.exports)
   return module.exports
 }
-function fixture(initialGrants = []) {
+function fixture(initialGrants = [], apiOverrides = {}) {
   const grants = vue.ref(new Set(initialGrants)), calls = [], messages = []
   const state = vue.reactive({scopeType: 'collector', scopeId: 'collector', pointType: 'all', sort: '', order: '', page: 1})
   const current = vue.ref({id: 'collector', provider: 'COLLECTOR_GATEWAY', configuration: {collectorProvider: 'modbus'}})
-  const rows = vue.ref([{id: 'point', collectorId: 'collector'}])
+  const rows = vue.ref([{id: 'point', collectorId: 'collector', name: 'point-name'}])
   const query = vue.ref({terms: [{column: 'collectorId', value: 'collector'}]})
   const selection = {all: vue.ref(false), selectedRows: rows, selectedKeys: vue.ref(['point']), clear: () => calls.push(['clear'])}
   const send = name => async value => {calls.push([name, value]); return {success: true}}
   const auth = {hasPermission: code => grants.value.has(code)}
   const imports = {
     vue: {...vue, provide() {}},
-    'vue-router': {useRoute: () => ({}), useRouter: () => ({})},
+    'vue-router': {useRoute: () => ({path: '/resources/collectors', query: {scope: 'collector'}}),
+      useRouter: () => ({resolve: () => ({fullPath: '/resources/collectors?scope=collector'})})},
     'vue-i18n': {useI18n: () => ({t: key => key})},
     'lodash-es': {cloneDeep},
     '@jetlinks-web/utils': {onlyMessage: text => messages.push(text), downloadFileByUrl: () => calls.push(['download'])},
@@ -37,11 +38,15 @@ function fixture(initialGrants = []) {
       queryCodecProvider: async () => ({success: true, result: []}),
       enablePoints: send('enable'), disablePoints: send('disable'),
       deletePoints: send('delete-all'), batchDeletePoint: send('delete-selected'),
+      removePoint: send('delete-point'),
+      pointDetail: async id => {calls.push(['point-detail', id]); return {success: true, result: {id}}},
+      detail: async id => {calls.push(['collector-detail', id]); return {success: true, result: {id}}},
       exportPoint: async (...args) => {calls.push(['export', ...args]); return new Uint8Array([1])},
+      ...apiOverrides,
     },
     '@data-collector-ui/utils/utils': {},
     '../../hook/context': {useCollectContext: () => ({state, current, refreshAll: async () => calls.push(['refresh'])})},
-    '../../hook/useCollectRouteState': {},
+    '../../hook/useCollectRouteState': {collectRouteQuery: () => ({scope: 'collector'})},
   }
   const {usePointActions} = load(readFileSync(new URL('usePointActions.ts', root), 'utf8'), imports)
   const scope = vue.effectScope()
@@ -128,14 +133,74 @@ test('import and export menu definitions preserve the existing write and read au
   assert.ok(buttons.export.permissions.every(permission => permission.actions.every(action => action === 'query')))
 })
 
-test('the real first-page template hides empty batch controls and unauthorized export', async () => {
+test('each homepage operation requires its own grant and preserves its original parameters', async () => {
+  for (const grant of ['', 'view', 'add', 'update', 'delete', 'import']) {
+    const f = fixture(grant ? [`data-collect:${grant}`] : [])
+    try {
+      f.actions.add()
+      assert.equal(f.actions.visible.save, grant === 'add', grant)
+      if (grant === 'add') {
+        assert.deepEqual(f.actions.current.value, {collectorId: 'collector', provider: 'COLLECTOR_GATEWAY'})
+        assert.equal(f.actions.formCollector.value.id, 'collector')
+      }
+      f.actions.visible.save = false
+      f.actions.scan()
+      f.actions.view(f.rows.value[0])
+      await f.actions.edit(f.rows.value[0])
+      assert.equal(f.actions.visible.save, grant === 'update', grant)
+      await f.actions.remove(f.rows.value[0])
+      const expected = {
+        '': [], import: [],
+        view: [['jump', 'data-collect/PointDetail', {params: {id: 'point'}, query: {returnTo: '/resources/collectors?scope=collector'}}]],
+        add: [['jump', 'data-collect/Scan', {params: {id: 'collector'}}]],
+        update: [['point-detail', 'point'], ['collector-detail', 'collector']],
+        delete: [['delete-point', 'point'], ['clear'], ['refresh']],
+      }
+      assert.deepEqual(f.calls, expected[grant], grant)
+    } finally {f.stop()}
+  }
+})
+
+test('captured homepage callbacks cannot run after authorization is revoked', async () => {
+  const f = fixture(['add', 'view', 'update', 'delete'].map(key => `data-collect:${key}`))
+  try {
+    const {add, scan, view, edit, remove} = f.actions
+    f.grants.value.clear()
+    add(); scan(); view(f.rows.value[0])
+    await edit(f.rows.value[0])
+    await remove(f.rows.value[0])
+    assert.equal(f.actions.visible.save, false)
+    assert.equal(f.actions.canView.value, false)
+    assert.equal(f.actions.canUpdate.value, false)
+    assert.deepEqual(f.calls, [])
+  } finally {f.stop()}
+})
+
+test('revoking update while point details load prevents the editor from opening', async () => {
+  let resolve
+  const pending = new Promise(done => {resolve = done})
+  const f = fixture(['data-collect:update'], {pointDetail: () => pending})
+  try {
+    const editing = f.actions.edit(f.rows.value[0])
+    assert.equal(f.actions.editing.value, true)
+    f.grants.value.clear()
+    resolve({success: true, result: {id: 'point'}})
+    await editing
+    assert.equal(f.actions.visible.save, false)
+    assert.equal(f.actions.editing.value, false)
+    assert.deepEqual(f.actions.current.value, {})
+  } finally {f.stop()}
+})
+
+test('the real first-page template binds toolbar, row, detail and live-value permissions', async () => {
   const path = new URL('PointTable.vue', root)
   const {descriptor} = parse(readFileSync(path, 'utf8'), {filename: path.pathname})
   const source = compileScript(descriptor, {id: path.pathname, inlineTemplate: true}).content
   const empty = {__esModule: true, default: {render: () => null}}
-  for (const grants of [[], ['data-collect:delete'], ['data-collect:export']]) {
+  for (const grants of [[], ...['view', 'add', 'update', 'delete', 'import', 'export'].map(key => [`data-collect:${key}`])]) {
     const f = fixture(grants)
     try {
+      f.actions.pointActions.scan = true
       const imports = {
         vue, dayjs: {__esModule: true, default: () => {}}, 'vue-i18n': {useI18n: () => ({t: key => key})},
         '@jetlinks-web-core/components/CorePagination': empty,
@@ -151,15 +216,34 @@ test('the real first-page template hides empty batch controls and unauthorized e
         './usePointTableSize': {usePointTableSize: () => ({viewport: vue.ref(), bodyHeight: vue.ref(300)})},
       }
       for (const path of ['./PointTop.vue', './SortsIcon.vue', './ColumnsConfig/index.vue', './components/ValueItem.vue', './Save/index.vue', '../Import/index.vue', './components/BatchUpdate.vue']) imports[path] = empty
+      imports['./components/ValueItem.vue'] = {__esModule: true, default: {props: ['canRead', 'canWrite'],
+        render() {return vue.h('span', {'data-read': String(this.canRead), 'data-write': String(this.canWrite)})}}}
       const component = load(source, imports).default
       const app = vue.createSSRApp(component)
       const stub = () => null
-      for (const name of ['AAlert', 'AButton', 'JProTable', 'AIcon', 'CloudEmpty', 'AMenuItem', 'AMenu', 'APopover', 'ATooltip', 'JEllipsis', 'ABadge', 'ASpace']) app.component(name, stub)
+      for (const name of ['AAlert', 'AButton', 'AIcon', 'CloudEmpty', 'AMenuItem', 'AMenu', 'APopover', 'ATooltip', 'ABadge']) app.component(name, stub)
+      app.component('JProTable', {setup(_, {slots}) {return () => vue.h('div', [
+        slots.name?.(f.rows.value[0]), slots.action?.(f.rows.value[0]), slots.value?.(f.rows.value[0]),
+      ])}})
+      for (const name of ['JEllipsis', 'ASpace']) app.component(name, {setup(_, {slots}) {return () => vue.h('span', slots.default?.())}})
       app.component('JPermissionButton', {props: ['hasPermission'], setup(props, {slots}) {return () => props.hasPermission === true || grants.includes(props.hasPermission) ? vue.h('button', {'data-grant': props.hasPermission}, slots.default?.()) : null}})
       app.config.globalProperties.$t = key => key
       const html = await renderToString(app)
-      assert.equal(html.includes('data-batch='), grants.includes('data-collect:delete'))
-      assert.equal(html.includes('data-grant="data-collect:export"'), grants.includes('data-collect:export'))
+      assert.equal(html.includes('data-batch='), keys(f).length > 0)
+      for (const grant of ['add', 'update', 'delete', 'export']) {
+        assert.equal(html.includes(`data-grant="data-collect:${grant}"`), grants.includes(`data-collect:${grant}`), grant)
+      }
+      assert.equal((html.match(/data-grant="data-collect:add"/g) ?? []).length, grants.includes('data-collect:add') ? 2 : 0)
+      assert.equal(html.includes('<a>'), grants.includes('data-collect:view'))
+      assert.ok(html.includes('point-name'), 'the name remains visible without detail authorization')
+      assert.ok(html.includes(`data-read="${grants.includes('data-collect:view')}"`))
+      assert.ok(html.includes(`data-write="${grants.includes('data-collect:update')}"`))
+      f.actions.pointActions.add = false
+      f.actions.pointActions.scan = false
+      const noCapabilityApp = vue.createSSRApp(component)
+      Object.assign(noCapabilityApp._context.components, app._context.components)
+      noCapabilityApp.config.globalProperties.$t = key => key
+      assert.ok(!(await renderToString(noCapabilityApp)).includes('data-grant="data-collect:add"'), 'authorization must not enable an unsupported protocol capability')
     } finally {f.stop()}
   }
 })

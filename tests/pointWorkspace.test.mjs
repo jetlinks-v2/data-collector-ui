@@ -228,6 +228,7 @@ test('anomaly statistics toggle exclusively and reset pagination', () => {
  const {useCollectHeader}=load('components/useCollectHeader.ts',{
   vue:{...vue,inject:(_key,fallback)=>fallback},
   'vue-i18n':{useI18n:()=>({t:key=>key})},
+  '@jetlinks-web-core/store':{useAuthStore:()=>({hasPermission:()=>false})},
   '../hook/context':{useCollectContext:()=>({state})},
   '@data-collector-ui/views/data-collect/data':{ChannelState:{},COLLECTOR_DATA:'data',COLLECTOR_TYPE:'type',REFRESH_HANDLER:'refresh',getState(){}},
   '@data-collector-ui/views/data-collect/utils':{getCountList:async()=>[]},

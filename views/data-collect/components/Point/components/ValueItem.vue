@@ -11,13 +11,13 @@
     <div :class="{'actions': type !== 'detail'}">
       <a-space>
         <a
-            v-if="accessModes.includes('write')"
+            v-if="canWrite && accessModes.includes('write')"
             @click.stop="clickEdit"
         >
           <AIcon type="EditOutlined"/>
         </a>
         <a
-            v-if="accessModes.includes('read')"
+            v-if="canRead && accessModes.includes('read')"
             @click.stop="clickRead"
         >
           <AIcon type="RedoOutlined"/>
@@ -25,7 +25,7 @@
       </a-space>
     </div>
   </div>
-  <WritePoint v-if="visible && accessModes.includes('write')" :data="data" @close="visible = false" @save="onSave"/>
+  <WritePoint v-if="visible && canWrite && accessModes.includes('write')" :data="data" @close="visible = false" @save="onSave"/>
 </template>
 
 <script setup lang="ts">
@@ -49,6 +49,9 @@ const props = defineProps({
     default: () => ({}),
   },
   type: { type: String },
+  // 首页传入菜单授权；详情等已有调用方保留原有读写策略。
+  canRead: { type: Boolean, default: true },
+  canWrite: { type: Boolean, default: true },
 })
 
 const emits = defineEmits(['refresh'])
@@ -65,21 +68,27 @@ watch([() => props.data.id, () => props.data.collectorId, stopped], () => {
   visible.value = false
 }, { flush: 'sync' })
 onScopeDispose(() => { readRevision++ })
+// 撤销授权后丢弃在途读取结果，并关闭已打开的写入入口。
+watch(() => props.canRead, () => {
+  readRevision++
+  historyData.value = undefined
+}, { flush: 'sync' })
+watch(() => props.canWrite, () => { visible.value = false }, { flush: 'sync' })
 
 const formattedValue = computed(() => formatPointData(
   stopped.value ? undefined : liveValue.value?.dataType ? liveValue.value : historyData.value,
   $t('comm.table.empty-2'),
 ))
 const clickEdit = () => {
-  if (accessModes.value.includes('write')) visible.value = true
+  if (props.canWrite && accessModes.value.includes('write')) visible.value = true
 }
 
 const clickRead = async () => {
   const { collectorId, id } = props.data;
-  if (!collectorId || !id || !accessModes.value.includes('read')) return;
+  if (!props.canRead || !collectorId || !id || !accessModes.value.includes('read')) return;
   const revision = ++readRevision
   const res = await readPoint(collectorId, [id]);
-  if (res.success && revision === readRevision && accessModes.value.includes('read')) {
+  if (res.success && revision === readRevision && props.canRead && accessModes.value.includes('read')) {
     historyData.value = res.result?.[0] || {};
     emits('refresh')
     onlyMessage($t('DataCollect.index.400155-24'));

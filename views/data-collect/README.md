@@ -2,9 +2,33 @@
 
 当前入口属于 `runtime-ui/modules/data-collector-ui`。本页采用运行时设备列表的双栏布局、共享组件与主题 token；点位详情已由抽屉改为独立页面。旧版 `views/DataCollect/`、运营端 `ui/`、后端接口及通道／采集器详情承载方式保持原有边界。
 
-左侧新增入口权限：`Left/components/ActionButtons.vue` 的 `j-permission-button` 使用现有 `data-collect:add` 授权；外层 `a-dropdown` 通过共享 `usePermission` 同步禁用，防止无权限提示的包装元素触发菜单。沿用现有菜单、表单和接口。
+## 首页操作权限
 
-验证：真实 SFC 编译及有／无新增权限两种渲染检查通过，核对按钮权限标识与下拉禁用状态（权限 hook 和组件使用替身，未验证真实账号点击）。`pnpm -C runtime-ui -F jetlinks-web-core build -- --module-name data-collector-ui`、`git diff --check` 通过；`pnpm -C runtime-ui exec vue-tsc --noEmit -p modules/data-collector-ui/tsconfig.json` 未通过，共 397 项诊断，修改文件无诊断。模块和工作区未提供独立 lint 脚本；仍需用有／无新增权限的真实账号复验菜单能否打开。
+`/resources/collectors` 的首页入口由 `runtime-ui/modules/data-collector-ui` 负责，沿用现有 `data-collect` 菜单按钮，不增加按钮 ID 或后端授权动作。
+
+| 首页入口 | 按钮权限 |
+| --- | --- |
+| 新增点位、扫描点位、批量添加、新增通道／采集器 | `data-collect:add` |
+| 点位名称进入详情、顶部通道／采集器详情、实时值读取 | `data-collect:view` |
+| 点位行编辑、实时值写入、批量编辑 | `data-collect:update` |
+| 点位行删除、批量删除 | `data-collect:delete` |
+| 批量启用／禁用 | `data-collect:action` |
+| 左侧导入通道／采集器、右侧批量导入 | `data-collect:import` |
+| 数据导出 | `data-collect:export` |
+
+`components/Point/PointTable.vue` 与 `components/Point/usePointActions.ts` 同时控制首页按钮／链接及回调，编辑请求返回后再次检查授权；无查看权限时名称仍展示为普通文字。`components/Header.vue`、`components/useCollectHeader.ts` 控制顶部详情入口。协议能力、运行状态和选择范围限制继续生效。
+
+左侧 `Left/components/ActionButtons.vue` 的主入口与子项由 `useCollectImport.ts` 派生当前授权，外层下拉同步禁用，防止无权限提示的包装元素触发菜单。主入口继续要求 `add`，两个导入子项另外要求 `import`，因此左侧导入需要同时持有两项授权；右侧批量导入只要求 `import`。
+
+列表向共享 `components/Point/components/ValueItem.vue` 显式传递 `canRead`／`canWrite`，回调同时校验授权与点位读写能力；撤销授权时丢弃在途读取结果并关闭写入入口。已有详情调用方省略这两个参数时继续沿用原读写策略。搜索、状态筛选、刷新、分页、勾选、列配置等本地操作保持原有行为；运营端、后端、菜单定义、详情页／弹窗内部保存及旧版 `views/DataCollect/` 不在此次修改范围。
+
+验证（本节方案已确认并完成）：
+
+- `node --test tests/pointBatchPermissions.test.mjs tests/collectorHomePermissions.test.mjs`：**15/15 通过**，覆盖独立授权、无授权、撤销授权、编辑／读取在途结果、真实 SFC 模板授权传递、左侧菜单、实时值访问模式／停止状态及详情默认调用兼容。使用实际 hooks／SFC，store、API 和外部组件使用替身。
+- `node --test tests/pointValuePrecision.test.mjs tests/pointTablePagination.test.mjs tests/pointWorkspace.test.mjs`：**19/24 通过**；五项失败在修改前 HEAD 源码下复跑一致，分别为 WebSocket 源码／发布入口的大整数精度两项、旧运行状态查询条件断言，以及订阅／详情测试缺少本地依赖替身各一项。本次补上头部 hook 新增 store 依赖的替身，异常统计回归通过。实际 `ValueItem` 的实时值、手动读取、零值与 false 显示通过；未修改上述既有失败涉及的查询、订阅、详情或 WebSocket 实现。
+- 7 个修改的 Vue／TypeScript 文件脚本、模板和样式编译及 `git diff --check` 通过。`pnpm -C runtime-ui -F jetlinks-web-core build -- --module-name data-collector-ui` 通过，保留既有依赖与大包警告。
+- `pnpm -C runtime-ui exec vue-tsc --noEmit -p modules/data-collector-ui/tsconfig.json` 改前／改后均为 **397** 项诊断，忽略行号逐项比较无新增或移除，全量类型检查仍未通过。模块及工作区无独立 lint 脚本。
+- 真实受限账号的页面点击、后端授权及设备实际读写未验证；需在真实环境核对有／无对应按钮权限的入口表现，并在已有类型／回归问题修复后重跑上述命令。未提交真实新增、导入、编辑、删除或设备写入数据。
 
 ## 配置项切换布局
 

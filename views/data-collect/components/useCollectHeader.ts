@@ -10,11 +10,14 @@ import {
 import {getCountList} from "@data-collector-ui/views/data-collect/utils";
 import {useI18n} from "vue-i18n";
 import { useCollectContext } from '../hook/context'
+import { useAuthStore } from '@jetlinks-web-core/store'
 
 
 export function useCollectHeader() {
 const {t: $t} = useI18n();
 const context = useCollectContext()
+const auth = useAuthStore()
+const canView = computed(() => auth.hasPermission('data-collect:view'))
 
 const refreshHandler = inject<any>(REFRESH_HANDLER)
 const type = inject(COLLECTOR_TYPE, ref('all'))
@@ -50,6 +53,7 @@ const onRefresh = () => {
 }
 
 const onDetail = () => {
+  if (!canView.value || type.value === 'all') return
   visible.point = false
   if (type.value === 'channel') {
     visible.channel = true
@@ -86,5 +90,5 @@ watch(() => [
 
 
 
-return { $t, title, type, data, visible, countList, getActive, onClick, onDetail, onRefresh, loadData, getState, ChannelState }
+return { $t, title, type, data, visible, countList, canView, getActive, onClick, onDetail, onRefresh, loadData, getState, ChannelState }
 }
