@@ -9,11 +9,11 @@ import { useEditorOverlay } from '../../hook/useEditorOverlay'
 import { useEditorDismiss } from '../../hook/useEditorDismiss'
 const props = defineProps<{ open: boolean; ready: boolean; kind: 'channel' | 'collector'; identity: string; anchor?: HTMLElement; trigger?: HTMLElement; viewport?: HTMLElement; surface: 'card' | 'header' | 'channel' }>()
 const emit = defineEmits<{ close: [restoreFocus: boolean] }>()
-const key = computed(() => props.open ? `${props.identity}:${props.surface}` : undefined), width = computed(() => props.surface === 'card' ? props.anchor?.offsetWidth || 400 : 660)
+const key = computed(() => props.open ? `${props.identity}:${props.surface}` : undefined), width = computed(() => props.surface === 'card' ? props.anchor?.offsetWidth || 400 : props.surface === 'header' ? Math.min(660, (props.anchor?.offsetWidth || 636) + 24) : 660)
 const { open: visible, position, target } = useEditorOverlay({
   key, width, onSource: computed(() => true), ready: computed(() => props.open && props.ready),
   anchor: () => props.anchor, viewport: () => props.viewport,
-  panelWidth: rect => props.surface === 'card' ? rect.width : Math.min(660, props.viewport?.clientWidth || 660),
+  panelWidth: rect => props.surface === 'card' ? rect.width : Math.min(width.value, props.viewport?.clientWidth || 660),
   alignment: { source: () => props.anchor?.querySelector('[data-object-icon]'), panel: () => target.value?.querySelector('[data-object-icon]') },
   sourceStyle: source => {
     const title = source.querySelector('.cw-object-title')

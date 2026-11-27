@@ -2243,6 +2243,7 @@
     "backCollectors": "Back to collectors",
     "backAll": "Back to all collectors",
     "points": "Points",
+    "filteredPoints": "{count} of {total} points",
     "collectors": "Collectors",
     "pointBatchEditing": "Edit points"
   },
