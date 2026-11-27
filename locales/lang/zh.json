@@ -663,7 +663,12 @@
       "starting": "启动中",
       "shutdown": "已关闭",
       "connectionClosed": "连接已断开",
-      "pending": "等待运行信息"
+      "pending": "等待运行信息",
+      "standby": "备用",
+      "preparing": "准备中",
+      "candidate": "候选",
+      "unassigned": "无可用节点",
+      "takingOver": "接管中"
     },
     "errors": {
       "Bad_Timeout": "设备响应超时",
@@ -2243,6 +2248,7 @@
     "backCollectors": "返回采集器列表",
     "backAll": "返回全部采集器",
     "points": "点位",
+    "filteredPoints": "{count} / {total} 个点位",
     "collectors": "采集器",
     "pointBatchEditing": "点位批量编辑"
   },
@@ -2316,5 +2322,15 @@
       "1w": "每周",
       "1M": "每月"
     }
+  },
+  "collectorScheduling": {
+    "allowed": "允许调度的节点",
+    "node": "节点",
+    "unrestricted": "全部可用节点",
+    "hint": "仅限定允许范围，平台自动分配和故障迁移。",
+    "noNodes": "当前没有已就绪的采集节点，可保留条件等待节点恢复。",
+    "loadFailed": "节点列表加载失败",
+    "runningOn": "运行节点",
+    "targetNode": "目标节点"
   }
 }

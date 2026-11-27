@@ -663,7 +663,12 @@
       "starting": "Starting",
       "shutdown": "Closed",
       "connectionClosed": "Connection closed",
-      "pending": "Waiting for runtime information"
+      "pending": "Waiting for runtime information",
+      "standby": "Standby",
+      "preparing": "Preparing",
+      "candidate": "Candidate",
+      "unassigned": "No available node",
+      "takingOver": "Taking over"
     },
     "errors": {
       "Bad_Timeout": "Device response timed out",
@@ -2243,6 +2248,7 @@
     "backCollectors": "Back to collectors",
     "backAll": "Back to all collectors",
     "points": "Points",
+    "filteredPoints": "{count} of {total} points",
     "collectors": "Collectors",
     "pointBatchEditing": "Edit points"
   },
@@ -2316,5 +2322,15 @@
       "1w": "Weekly",
       "1M": "Monthly"
     }
+  },
+  "collectorScheduling": {
+    "allowed": "Allowed nodes",
+    "node": "Node",
+    "unrestricted": "All available nodes",
+    "hint": "Choose the allowed scope. The platform assigns channels and handles failover.",
+    "noNodes": "No collector nodes are ready. Conditions can remain while nodes recover.",
+    "loadFailed": "Could not load nodes",
+    "runningOn": "Running on",
+    "targetNode": "Assigned node"
   }
 }

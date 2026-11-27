@@ -13,6 +13,7 @@ export interface CollectorObject {
   state?: StateValue
   runningState?: StateValue
   configuration: PluginConfiguration
+  scheduling?: { serverId?:string; tags?:Record<string,string>; tagsFilter?:import('@jetlinks-web-core/components/ConditionFilter').ConditionFilterTerm[] } | null
   channelId?: string
   collectorId?: string
   channelName?: string
@@ -49,6 +50,7 @@ export interface RuntimeSnapshot {
   failureSettled?: boolean
   protectionState?: 'open' | 'retrying' | 'halfOpen' | null
   pointSummary?: PointRuntimeSummary
+  execution?: {role:'active'|'takingOver'|'standby'|'preparing'|'candidate'|'unassigned'|'disabled';assignedNode?:string;ownerEpoch?:string|number;assignmentVersion?:string|number;revision?:string}
 }
 export interface PointRuntimeSummary { total:number; available:number; states:Record<string,number>; scheduled?:number; awaitingFirst?:number; longGap?:number }
 export interface CollectorMonitoringSnapshot { timestamp:number; collectors:RuntimeSnapshot[]; channels?:RuntimeSnapshot[] }
@@ -121,6 +123,8 @@ export const accessValues = (point: CollectorObject): string[] => (point.accessM
 export function objectDisplayState(object: CollectorObject): StateValue | undefined {
   const managed = object.runtime?.state || stateValue(object.state)
   if (['disabled', 'stopped', 'paused'].includes(stateValue(object.state))) return object.state
+  const role=object.runtime?.execution?.role
+  if(role && !['active','takingOver'].includes(role))return role
   if (['stopped', 'paused'].includes(managed)) return managed
   // 目录中的运行态可能来自上次启动；当前状态必须等实时快照确认。
   if (!object.runtime) return 'pending'
@@ -130,7 +134,7 @@ export function objectDisplayState(object: CollectorObject): StateValue | undefi
   const state = object.runtime?.runtimeState || object.runningState
   if (stateValue(state) && stateValue(state) !== 'running') return state
   if (object.runtime?.lastFailure && !object.runtime.failureSettled) return 'currentFailure' in object.runtime ? 'recovered' : 'recentError'
-  return state
+  return role === 'takingOver' ? role : state
 }
 export function objectTone(object: CollectorObject): 'ok' | 'warn' | 'bad' | 'gray' {
   if (object.runtime?.available === false) return 'gray'

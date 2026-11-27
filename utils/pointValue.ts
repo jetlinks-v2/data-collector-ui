@@ -4,9 +4,28 @@ export interface PointValueData {
   parseData?: unknown
   dataType?: string
   timestamp?: number
+  channelId?:string
+  serverId?:string
+  ownerEpoch?:string|number
   /** Included only for an explicit raw-data preview. */
   hex?: string
   rawByteLength?: number
+}
+
+/** epoch 是十进制整数，不能转 Number 丢失长期运行后的精度。 */
+export function compareOwnerEpoch(current?:string|number,before?:string|number):number {
+  const parse=(value:string|number|undefined)=>{
+    try{return value == null ? undefined : BigInt(value)}catch{return undefined}
+  }
+  const after=parse(current),previous=parse(before)
+  return after == null ? previous == null ? 0 : -1
+    : previous == null ? 1 : after === previous ? 0 : after > previous ? 1 : -1
+}
+
+export function newerPointSample(current:PointValueData,previous?:PointValueData):boolean {
+  if(!previous)return true
+  const generation=compareOwnerEpoch(current.ownerEpoch,previous.ownerEpoch)
+  return generation !== 0 ? generation > 0 : Number(current.timestamp || 0) >= Number(previous.timestamp || 0)
 }
 
 /** 只做展示格式化；精确数字字符串不再转换为 Number，结构化值保留 JSON 结构。 */

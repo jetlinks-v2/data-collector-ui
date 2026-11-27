@@ -4,6 +4,10 @@
     <template #extra><WorkspaceStatus v-if="object.runtime" :object="object" /></template>
     <div class="cw-metric-browser">
       <div class="cw-monitoring-meta"><span v-if="object.monitoring"><AIcon type="ClusterOutlined" /> {{ object.monitoring.nodeCount }} {{ $t('collectorMonitoring.nodes') }}</span><time>{{ sampledAt }}</time></div>
+      <p v-if="object.runtime?.execution?.assignedNode" class="cw-monitoring-meta">
+        <span>{{ $t(object.runtime.execution.ownerEpoch != null ? 'collectorScheduling.runningOn' : 'collectorScheduling.targetNode') }}</span>
+        <strong>{{ object.runtime.execution.ownerEpoch != null ? object.runtime.serverId : object.runtime.execution.assignedNode }}</strong>
+      </p>
       <RuntimePointSummary v-if="kind === 'collector'" :summary="object.monitoring?.pointSummary" />
       <RuntimeFailureNotice :object="object" />
       <a-collapse v-if="$slots.diagnostic" ghost :destroy-inactive-panel="true" class="cw-monitoring-diagnostics" @change="diagnosticsChanged"><a-collapse-panel key="diagnostic" :header="$t('collectorRuntimeNotice.recentRead')"><slot name="diagnostic" /></a-collapse-panel></a-collapse>

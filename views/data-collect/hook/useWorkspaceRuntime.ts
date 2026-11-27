@@ -30,6 +30,7 @@ export function useWorkspaceRuntime(collector:Ref<CollectorObject|undefined>,pau
   }
   function accept(value:RuntimeSnapshot) {
     const changed=snapshot.value?.serverId !== value.serverId || snapshot.value?.available !== value.available
+      || snapshot.value?.execution?.ownerEpoch !== value.execution?.ownerEpoch
     snapshot.value=value;loading.value=false;error.value=''
     if(changed)recording.value=undefined
     connectRecording()

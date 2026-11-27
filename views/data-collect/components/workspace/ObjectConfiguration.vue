@@ -15,6 +15,7 @@
         <ConfigSelect v-model:value="model.channelId" :disabled="!!value?.id" show-search :options="channels.map(item => ({value:item.id,label:item.name,icon:'ApiOutlined',description:item.description || item.provider}))" />
       </a-form-item>
       <a-collapse v-if="!formOnly" ghost class="cw-object-note"><a-collapse-panel key="description"><template #header><span class="cw-object-note-heading"><span>{{ $t('collectorNotes.label') }}</span><small :title="model.description">{{ model.description || $t('collectorNotes.placeholder') }}</small></span></template><a-form-item name="description" class="cw-point-remark"><a-textarea v-model:value="model.description" :bordered="false" :maxlength="200" :auto-size="{ minRows: 1, maxRows: 3 }" :aria-label="$t('collectorNotes.label')" :placeholder="$t('collectorNotes.placeholder')" /></a-form-item></a-collapse-panel></a-collapse>
+      <ChannelScheduling v-if="kind === 'channel'" :model="model" :disabled="saving || !pluginReady" />
       <a-spin :spinning="loading"><div class="cw-content-fields"><RenderComponents v-if="source" :key="formRevision" :value="source" @ready="ready" @error="onPluginError" /><a-skeleton v-else-if="loading" active :paragraph="{ rows: 2 }" /></div></a-spin>
       <a-alert v-if="error" type="warning" :message="error" show-icon><template #action><a-button type="link" :disabled="loading" @click="loadPlugin">{{ $t('collectorWorkspace.retry') }}</a-button></template></a-alert>
       <div v-if="kind === 'collector'" class="cw-diagnostics-setting"><span><AIcon type="AimOutlined" />{{ $t('collectorWorkspace.diagnostics') }}<small>{{ $t('collectorProcessing.diagnosticsMemoryHint') }}</small></span><a-switch v-model:checked="diagnosticsEnabled" size="small" :aria-label="$t('collectorWorkspace.diagnostics')" /></div>
@@ -43,6 +44,7 @@ import WorkspaceIcon from './WorkspaceIcon.vue'
 import ObjectIdentity from './ObjectIdentity.vue'
 import RuntimeCardMetrics from './RuntimeCardMetrics.vue'
 import ConfigSelect from '../../../../components/ConfigSelect.vue'
+import ChannelScheduling from './ChannelScheduling.vue'
 const props = withDefaults(defineProps<{ kind: 'channel' | 'collector'; value?: CollectorObject; channels: CollectorObject[]; providers: ProviderDescriptor[]; formOnly?: boolean; connection?: Partial<CollectorObject>; surface?: 'card' | 'header' | 'channel'; sharedCount?: number; draft?: ObjectConfigurationDraft }>(), { surface: 'card', sharedCount: 0 })
 const emit = defineEmits<{ close: []; saved: [value: CollectorObject] }>()
 const form = ref<FormInstance>(), rules = ref<InstanceType<typeof ProcessingRules>>()

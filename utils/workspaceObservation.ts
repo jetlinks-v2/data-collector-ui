@@ -1,11 +1,13 @@
 import type { CollectorObject, CollectorObservation, EntityKind, PointRow, RuntimeSnapshot } from '../types/workspace'
 import { monitoredObjects, selectRuntime } from './runtimeMonitoring'
+import { newerPointSample } from './pointValue'
 
 /** 按ID更新已响应化的点位；高频值流不替换目录数组，也不触发排序或虚拟行重建。 */
 export function applyObservedValues(points:ReadonlyMap<string,PointRow>,data:Iterable<NonNullable<CollectorObservation['data']>[number]>):void {
   for(const sample of data){
     const point=sample.pointId ? points.get(sample.pointId) : undefined
-    if(point && Number(sample.timestamp || 0) >= Number(point.latest?.timestamp || 0))point.latest=sample
+    if(point && (!point.channelId || !sample.channelId || point.channelId === sample.channelId)
+      && newerPointSample(sample,point.latest))point.latest=sample
   }
 }
 
@@ -14,7 +16,8 @@ export function observedValues(points:PointRow[],data:NonNullable<CollectorObser
   const samples=new Map(data.map(sample=>[sample.pointId,sample]))
   return points.map(point=>{
     const sample=samples.get(point.id)
-    return sample && Number(sample.timestamp || 0) >= Number(point.latest?.timestamp || 0) ? {...point,latest:sample} : point
+    return sample && (!point.channelId || !sample.channelId || point.channelId === sample.channelId)
+      && newerPointSample(sample,point.latest) ? {...point,latest:sample} : point
   })
 }
 
@@ -35,10 +38,11 @@ export function observedPoints(points:PointRow[],observation:CollectorObservatio
   const latest=new Map<string,CollectorObservation['nodes'][number]['points'][number]>()
   for(const node of observation.nodes)for(const sample of node.points){
     const before=latest.get(sample.id)
-    if(!before || sample.runtime.available && (!before.runtime.available || Number(sample.lastData?.timestamp || 0) > Number(before.lastData?.timestamp || 0)))latest.set(sample.id,sample)
+    if(!before || sample.runtime.available && (!before.runtime.available || sample.lastData
+      && newerPointSample(sample.lastData,before.lastData)))latest.set(sample.id,sample)
   }
   return monitoredObjects(points,round(observation),previous ? round(previous) : undefined,'point').map(point=>{
     const current=latest.get(point.id)
-    return current?.lastData && Number(current.lastData.timestamp || 0) >= Number(point.latest?.timestamp || 0) ? {...point,latest:current.lastData} : point
+    return current?.lastData && newerPointSample(current.lastData,point.latest) ? {...point,latest:current.lastData} : point
   })
 }

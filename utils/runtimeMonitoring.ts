@@ -1,4 +1,5 @@
 import { objectTone, stateTone } from '../types/workspace'
+import { compareOwnerEpoch } from './pointValue'
 import type { RuntimeMonitoring, CollectorObject, PointRuntimeSummary, RuntimeSnapshot, MetricSnapshot, EntityKind } from '../types/workspace'
 
 export interface RuntimeMonitoringRound { timestamp:number; snapshots:RuntimeSnapshot[] }
@@ -16,7 +17,7 @@ export function runtimeIntervalComparison(expected?:number,actual?:number){
 export function runtimeMetricEmptyState(object:CollectorObject, ids:string[]) {
   if(!object.runtime)return 'waiting'
   const nodes=object.monitoring?.nodes || [object.runtime]
-  const active=nodes.filter(node=>node.available)
+  const active=executingRuntimes(nodes)
   if(!active.length)return 'unavailable'
   const hasMetric=(node:RuntimeSnapshot,id:string)=>{
     const path=id.split('.')
@@ -34,12 +35,14 @@ export function runtimeMetricEmptyState(object:CollectorObject, ids:string[]) {
 
 /** 未暴露的统计不占据卡片；首次建立速率基线时保留位置，避免布局跳动。 */
 export function showRuntimeMetric(object:CollectorObject, value:number|undefined, ids:string[]) {
+  if(object.runtime?.execution && !['active','takingOver'].includes(object.runtime.execution.role))return false
   return object.runtime?.available !== false && (value != null || ['waiting','calculating'].includes(runtimeMetricEmptyState(object,ids)))
 }
 
 /** 正常指标只在浮层展开；卡片仅突出当前需要关注的实例状态和排队量。 */
 export function runtimeIndicators(object:CollectorObject,kind:EntityKind):RuntimeIndicator[] {
   if(!object.runtime?.available)return []
+  if(object.runtime.execution && !['active','takingOver'].includes(object.runtime.execution.role))return []
   const indicators:RuntimeIndicator[]=[]
   if(kind === 'channel' && object.monitoring?.activeConnections === 0 && !['paused','stopped'].includes(object.runtime.state || '')){
     indicators.push({id:'disconnected',icon:'DisconnectOutlined',tone:'warn'})
@@ -80,6 +83,7 @@ function metricValue(snapshot:MetricSnapshot|undefined,id:string):number|undefin
 
 /** 只比较同一节点、同一实例的相邻采样；重建、计数回退或时钟回退时等待新基线。 */
 function rate(current:RuntimeSnapshot,previous:RuntimeSnapshot|undefined,ids:string[]):number|undefined {
+  if(compareOwnerEpoch(current.execution?.ownerEpoch,previous?.execution?.ownerEpoch) !== 0)return
   return previous?.available ? metricRate(current.metrics,previous.metrics,ids) : undefined
 }
 
@@ -115,11 +119,23 @@ function sum(values:Array<number|undefined>):number|undefined {
 export function selectRuntime(values:RuntimeSnapshot[],object?:CollectorObject):RuntimeSnapshot|undefined {
   const rank={bad:0,warn:1,gray:2,ok:3}
   let selected:RuntimeSnapshot|undefined
-  for(const runtime of values){
+  const owners=executingRuntimes(values)
+  const known=values.filter(value=>value.execution)
+  for(const runtime of owners.length ? owners : known.length ? known : values){
     if(!runtime.available)continue
     if(!selected || rank[objectTone({...object,id:runtime.id,name:'',provider:'',configuration:{},runtime})] < rank[objectTone({...object,id:selected.id,name:'',provider:'',configuration:{},runtime:selected})])selected=runtime
   }
   return selected || values[0]
+}
+
+/** 新契约只汇总当前执行代次；旧宿主全缺字段时保留原有显示方式。 */
+export function executingRuntimes(values:RuntimeSnapshot[]):RuntimeSnapshot[] {
+  if(!values.some(value=>value.execution))return values.filter(value=>value.available)
+  const owners=values.filter(value=>value.available && value.execution?.ownerEpoch != null
+    && ['active','takingOver'].includes(value.execution.role))
+  let epoch:string|number|undefined
+  for(const value of owners)if(compareOwnerEpoch(value.execution?.ownerEpoch,epoch)>0)epoch=value.execution!.ownerEpoch
+  return owners.filter(value=>compareOwnerEpoch(value.execution?.ownerEpoch,epoch) === 0)
 }
 
 /** 每轮完整替换当前页；多节点按运行实例合计，不将未加载节点计为零或延用旧节点。 */
@@ -132,7 +148,7 @@ export function monitoredObjects<T extends CollectorObject>(objects:T[],current:
     if(group)group.push(value);else groups.set(value.id,[value])
   }
   return objects.map(object=>{
-    const all=groups.get(object.id) || [],active=all.filter(value=>value.available)
+    const all=groups.get(object.id) || [],active=executingRuntimes(all)
     const representative=selectRuntime(all,object) || {id:object.id,serverId:'',available:false}
     let pointSummary:PointRuntimeSummary|undefined
     if(active.length && active.every(value=>value.pointSummary)){

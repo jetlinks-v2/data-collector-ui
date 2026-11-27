@@ -1,5 +1,6 @@
 import { getBaseApi } from '@jetlinks-web-core/utils';
 import { request } from '@jetlinks-web/core'
+import type { AxiosResponseRewrite } from '@jetlinks-web/types'
 
 export const query = (data: any) =>
     request.post(`/data-collect/channel/_query`, data);
@@ -16,6 +17,10 @@ export const update = (id: string, data: any) =>
     request.put(`/data-collect/channel/${id}`, data);
 
 export const getProviders = () => request.get(`/data-collect/channel/providers`);
+
+export interface SchedulingNode {id:string;name?:string;tags:Record<string,string>}
+export const schedulingNodes = (provider:string):Promise<AxiosResponseRewrite<SchedulingNode[]>> =>
+    request.get(`/data-collect/channel/_scheduling/nodes`, {provider});
 
 export const queryNoPaging = (data: any) =>
   request.post(`/data-collect/channel/_query/no-paging`, data);
