@@ -2,6 +2,10 @@
 
 当前入口属于 `runtime-ui/modules/data-collector-ui`。本页采用运行时设备列表的双栏布局、共享组件与主题 token；点位详情已由抽屉改为独立页面。旧版 `views/DataCollect/`、运营端 `ui/`、后端接口及通道／采集器详情承载方式保持原有边界。
 
+左侧新增入口权限：`Left/components/ActionButtons.vue` 的 `j-permission-button` 使用现有 `data-collect:add` 授权；外层 `a-dropdown` 通过共享 `usePermission` 同步禁用，防止无权限提示的包装元素触发菜单。沿用现有菜单、表单和接口。
+
+验证：真实 SFC 编译及有／无新增权限两种渲染检查通过，核对按钮权限标识与下拉禁用状态（权限 hook 和组件使用替身，未验证真实账号点击）。`pnpm -C runtime-ui -F jetlinks-web-core build -- --module-name data-collector-ui`、`git diff --check` 通过；`pnpm -C runtime-ui exec vue-tsc --noEmit -p modules/data-collector-ui/tsconfig.json` 未通过，共 397 项诊断，修改文件无诊断。模块和工作区未提供独立 lint 脚本；仍需用有／无新增权限的真实账号复验菜单能否打开。
+
 ## 配置项切换布局
 
 `components/Config/Collapsible/CollapseRadio.vue` 使用 `a-segmented` 承载开／关／复用模板，右侧控件固定为 264px，选项等分宽度，模板文字与说明图标间距为 0.25rem；`components/Config/Collapsible/index.vue` 的左侧说明自适应剩余空间，右侧不参与压缩。组件内部使用字符串选项，对外仍发送布尔值／`template`；沿用禁用项、模板说明浮层和既有配置表单，不修改后端接口。
