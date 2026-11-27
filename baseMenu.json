@@ -295,14 +295,14 @@
                 "permission": "data-collect-channel",
                 "actions": [
                   "query",
-                  "save"
+                  "import"
                 ]
               },
               {
                 "permission": "data-collector",
                 "actions": [
                   "query",
-                  "save"
+                  "import"
                 ]
               },
               {
@@ -341,13 +341,15 @@
               {
                 "permission": "data-collect-channel",
                 "actions": [
-                  "query"
+                  "query",
+                  "export"
                 ]
               },
               {
                 "permission": "data-collector",
                 "actions": [
-                  "query"
+                  "query",
+                  "export"
                 ]
               },
               {
