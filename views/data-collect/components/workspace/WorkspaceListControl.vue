@@ -1,7 +1,7 @@
 <template>
   <a-dropdown :trigger="['click']" :disabled="disabled" @open-change="$emit('openChange',$event)">
     <button class="cw-list-control" :class="{active}" :disabled="disabled" :aria-label="`${label}: ${selected?.label || ''}`">
-      <AIcon :type="icon" /><span>{{ selected?.label }}</span><AIcon type="DownOutlined" />
+      <AIcon :type="icon" /><AutoFitText :text="selected?.label || ''" :min-size="12" :max-size="12" :tooltip="false" /><AIcon type="DownOutlined" />
     </button>
     <template #overlay>
       <a-menu class="cw-list-control-menu" :selected-keys="[value]" @click="select">
@@ -14,6 +14,7 @@
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
+import { AutoFitText } from '@jetlinks-web-core/components'
 const props=defineProps<{value:string;label:string;icon:string;active?:boolean;disabled?:boolean;options:Array<{value:string;label:string;icon:string;description?:string;count?:number}>}>()
 const emit=defineEmits<{'update:value':[value:string];change:[];openChange:[open:boolean]}>()
 const selected=computed(()=>props.options.find(option=>option.value === props.value))

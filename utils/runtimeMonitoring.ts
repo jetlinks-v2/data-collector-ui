@@ -238,12 +238,12 @@ export function runtimePrimaryMetrics(object:CollectorObject,kind:EntityKind){
   const sparse=kind === 'point' && cadence != null && (cadence.windowMillis == null || cadence.windowMillis/cadence.expectedMillis < 20)
   const firstSnapshot=kind !== 'channel' && !cadence && monitoring?.collectionRate == null && monitoring?.sampleRate == null && monitoring?.outputRate == null
   return [
-    {key:'collection',icon:sparse ? 'FieldTimeOutlined' : 'LineChartOutlined',
-      label:kind !== 'point' ? firstSnapshot ? 'collectorMonitoring.collectionTotal' : 'collectorMonitoring.collection' : sparse ? 'collectorMonitoring.collectedTotal' : firstSnapshot ? 'collectorMonitoring.receivedTotal' : cadence ? 'collectorMonitoring.scheduledCollection' : 'collectorMonitoring.data',
+    {key:'collection',icon:kind === 'collector' ? 'PlayCircleOutlined' : cadence ? 'FieldTimeOutlined' : 'DownloadOutlined',
+      label:kind !== 'point' ? firstSnapshot ? 'collectorMonitoring.collectionTotal' : 'collectorMonitoring.path.executions' : sparse ? 'collectorMonitoring.collectedTotal' : firstSnapshot ? 'collectorMonitoring.receivedTotal' : cadence ? 'collectorMonitoring.scheduledCollection' : 'collectorMonitoring.data',
       hint:kind !== 'point' ? firstSnapshot ? 'collectorMonitoring.collectionTotalHint' : 'collectorMonitoring.collectionHint' : cadence ? 'collectorMonitoring.scheduledHint' : firstSnapshot ? 'collectorMonitoring.receivedTotalHint' : 'collectorMonitoring.sampleRateHint',
       value:kind !== 'point' ? firstSnapshot ? monitoring?.collectionTotal : monitoring?.collectionRate : sparse ? cadence?.count : firstSnapshot ? monitoring?.receivedTotal : cadence ? cadence.rate : monitoring?.sampleRate,
       unit:sparse || firstSnapshot ? '' : '/s',ids:kind !== 'point' ? ['collectionAttempts'] : cadence ? ['scheduledSamples'] : ['receivedSamples']},
-    {key:'output',icon:'SendOutlined',label:sparse || firstSnapshot ? 'collectorMonitoring.outputTotal' : 'collectorMonitoring.output',hint:sparse || firstSnapshot ? 'collectorMonitoring.outputTotalHint' : 'collectorMonitoring.outputHint',
+    {key:'output',icon:'ExportOutlined',label:sparse || firstSnapshot ? 'collectorMonitoring.outputTotal' : 'collectorMonitoring.output',hint:sparse || firstSnapshot ? 'collectorMonitoring.outputTotalHint' : 'collectorMonitoring.outputHint',
       value:sparse || firstSnapshot ? monitoring?.outputTotal : monitoring?.outputRate,unit:sparse || firstSnapshot ? '' : '/s',ids:['outputSamples']},
   ]
 }
@@ -254,9 +254,9 @@ export function collectorFlowMetrics(object:CollectorObject) {
   const totals=monitoring?.sampleRate == null && monitoring?.outputRate == null && monitoring?.collectionRate == null
   const unit=totals ? '' : '/s'
   return {totals,steps:[
-    {id:'received',icon:'DotChartOutlined',value:totals ? monitoring?.receivedTotal : monitoring?.sampleRate,unit,
+    {id:'received',icon:'DownloadOutlined',value:totals ? monitoring?.receivedTotal : monitoring?.sampleRate,unit,
       label:totals ? 'collectorMonitoring.receivedTotal' : 'collectorMonitoring.path.received',hint:totals ? 'collectorMonitoring.receivedTotalHint' : 'collectorMonitoring.sampleRateHint'},
-    {id:'output',icon:'SendOutlined',value:totals ? monitoring?.outputTotal : monitoring?.outputRate,unit,
+    {id:'output',icon:'ExportOutlined',value:totals ? monitoring?.outputTotal : monitoring?.outputRate,unit,
       label:totals ? 'collectorMonitoring.outputTotal' : 'collectorMonitoring.path.output',hint:totals ? 'collectorMonitoring.outputTotalHint' : 'collectorMonitoring.outputHint'},
     {id:'filtered',icon:'FilterOutlined',value:totals ? monitoring?.filteredTotal : monitoring?.filteredRate,unit,
       label:totals ? 'collectorMonitoring.filteredTotal' : 'collectorMonitoring.path.filtered',hint:totals ? 'collectorMonitoring.filteredTotalHint' : 'collectorMonitoring.filterHint'},

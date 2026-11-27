@@ -1,9 +1,9 @@
 <template>
-  <nav class="cw-object-navigation" :aria-label="$t('collectorWorkspace.navigation')">
+  <nav ref="navigationRoot" class="cw-object-navigation" :aria-label="$t('collectorWorkspace.navigation')">
     <div class="cw-navigation-controls">
     <div class="cw-navigation-controls-content">
     <div ref="headingContent" class="cw-navigation-heading">
-      <a-segmented v-model:value="view" block :options="viewOptions"><template #label="{payload}"><span class="cw-row"><AIcon :type="payload.icon" />{{ payload.title }}</span></template></a-segmented>
+      <a-segmented v-model:value="view" block :options="viewOptions"><template #label="{payload}"><span class="cw-row"><AIcon :type="payload.icon" /><AutoFitText :ref="value => rememberLabel(payload.icon,value)" :text="payload.title" /></span></template></a-segmented>
       <PanelCollapseButton v-if="!drawer" :collapsed="false" :aria-controls="controls" :label="$t('collectorWorkspace.collapse')" @toggle="$emit('collapse')" />
     </div>
     <div ref="searchContent" class="cw-navigation-search"><a-input v-model:value="keyword" allow-clear :placeholder="$t(view === 'channel' ? 'collectorWorkspace.searchChannels' : 'collectorWorkspace.searchCollectors')"><template #prefix><AIcon type="SearchOutlined" /></template></a-input></div>
@@ -29,10 +29,10 @@
   </nav>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, shallowReactive, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useElementSize } from '@vueuse/core'
-import { PanelCollapseButton } from '@jetlinks-web-core/components'
+import { AutoFitText, PanelCollapseButton } from '@jetlinks-web-core/components'
 import type { CollectorObject } from '../../../../types/workspace'
 import WorkspaceIcon from './WorkspaceIcon.vue'
 import RuntimeCardMetrics from './RuntimeCardMetrics.vue'
@@ -50,10 +50,22 @@ const channelCounts = computed(() => {
 })
 function itemCount(item: CollectorObject) { return view.value === 'channel' ? channelCounts.value.get(item.id) || 0 : item.pointNumber }
 const headingContent = ref<HTMLElement>(), searchContent = ref<HTMLElement>()
+const navigationRoot = ref<HTMLElement>()
+const { width: navigationWidth } = useElementSize(navigationRoot)
+const labelRefs = shallowReactive(new Map<string,InstanceType<typeof AutoFitText>>())
+function rememberLabel(key:string,value:unknown) {
+  if(value)labelRefs.set(key,value as InstanceType<typeof AutoFitText>)
+  else labelRefs.delete(key)
+}
+const preferredWidth = computed(() => {
+  if(!navigationWidth.value || !labelRefs.size)return 272
+  const extra = Math.max(...[...labelRefs.values()].map(label => label.preferredWidth - (label.element?.clientWidth || 0)))
+  return Math.max(272,Math.min(432,Math.ceil(navigationWidth.value + extra * labelRefs.size)))
+})
 const { height: headingHeight } = useElementSize(headingContent)
 const { height: searchHeight } = useElementSize(searchContent)
 const controlsHeight = computed(() => headingHeight.value + searchHeight.value + 17)
-defineExpose({ controlsHeight })
+defineExpose({ controlsHeight, preferredWidth })
 const viewOptions = computed(() => [
   {value:'collector',payload:{icon:'ApartmentOutlined',title:t('collectorNavigation.byCollector')}},
   {value:'channel',payload:{icon:'ApiOutlined',title:t('collectorNavigation.byChannel')}},
