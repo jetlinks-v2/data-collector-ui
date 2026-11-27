@@ -2243,6 +2243,7 @@
     "backCollectors": "収集器一覧に戻る",
     "backAll": "すべての収集器に戻る",
     "points": "ポイント",
+    "filteredPoints": "{count} / {total} ポイント",
     "collectors": "収集器",
     "pointBatchEditing": "ポイント一括編集"
   },

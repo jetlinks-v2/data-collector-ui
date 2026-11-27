@@ -6,6 +6,7 @@
     "backCollectors": "수집기 목록으로 돌아가기",
     "backAll": "전체 수집기로 돌아가기",
     "points": "포인트",
+    "filteredPoints": "{count} / {total}개 포인트",
     "collectors": "수집기",
     "pointBatchEditing": "포인트 일괄 편집"
   },

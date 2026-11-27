@@ -2243,6 +2243,7 @@
     "backCollectors": "返回采集器列表",
     "backAll": "返回全部采集器",
     "points": "点位",
+    "filteredPoints": "{count} / {total} 个点位",
     "collectors": "采集器",
     "pointBatchEditing": "点位批量编辑"
   },

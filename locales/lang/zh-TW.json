@@ -6,6 +6,7 @@
     "backCollectors": "返回採集器清單",
     "backAll": "返回全部採集器",
     "points": "點位",
+    "filteredPoints": "{count} / {total} 個點位",
     "collectors": "採集器",
     "pointBatchEditing": "點位批次編輯"
   },
