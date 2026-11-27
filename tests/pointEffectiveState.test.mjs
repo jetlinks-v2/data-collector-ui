@@ -45,7 +45,7 @@ test('selected points use ID-only enable and disable requests, while all uses th
     'vue-i18n': { useI18n: () => ({ t: key => key }) },
     'lodash-es': { cloneDeep },
     '@jetlinks-web/utils': { onlyMessage() {} },
-    '@jetlinks-web-core/store': { useMenuStore: () => ({}) },
+    '@jetlinks-web-core/store': { useMenuStore: () => ({}), useAuthStore: () => ({ hasPermission: () => true }) },
     '@data-collector-ui/api/data-collect/collector': {
       queryCodecProvider: async () => ({ success: true, result: [] }),
       enablePoints: send('enable'),

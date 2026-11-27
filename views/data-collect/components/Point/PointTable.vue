@@ -12,9 +12,9 @@
           <j-permission-button v-if="actions.pointActions.scan" type="primary" :has-permission="true" @click="actions.scan">
             <AIcon type="ScanOutlined" /> {{ $t('data-collector-ui.index.237811-1') }}
           </j-permission-button>
-          <j-permission-button :has-permission="true" @click="actions.exportData">{{ $t('Point.index.400149-3') }}</j-permission-button>
+          <j-permission-button v-if="actions.canExport.value" has-permission="data-collect:export" @click="actions.exportData">{{ $t('Point.index.400149-3') }}</j-permission-button>
         </template>
-        <BatchDropdown :actions="actions.batchActions.value" />
+        <BatchDropdown v-if="actions.batchActions.value.length" :actions="actions.batchActions.value" />
       </div>
     </div>
     <a-alert v-if="failed" type="error" show-icon :message="$t('PointWorkspace.loadFailed')">

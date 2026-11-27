@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { cloneDeep } from 'lodash-es'
 import { onlyMessage, downloadFileByUrl } from '@jetlinks-web/utils'
-import { useMenuStore } from '@jetlinks-web-core/store'
+import { useAuthStore, useMenuStore } from '@jetlinks-web-core/store'
 import { detail, pointDetail, removePoint, batchDeletePoint, enablePoints, disablePoints, deletePoints,
   exportPoint, exportTemplate, pointImport, queryCodecProvider } from '@data-collector-ui/api/data-collect/collector'
 import { devGetProtocol } from '@data-collector-ui/utils/utils'
@@ -18,6 +18,8 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   const { state, current: scope, refreshAll } = useCollectContext()
   const { t: $t } = useI18n()
   const menu = useMenuStore(), route = useRoute(), router = useRouter()
+  const auth = useAuthStore()
+  const canExport = computed(() => auth.hasPermission('data-collect:export'))
   const visible = reactive({ save: false, import: false, batchUpdate: false })
   const current = ref<CollectRecord>({}), formCollector = ref<CollectRecord>({})
   const editing = ref(false), busy = ref(false)
@@ -75,7 +77,7 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
     return cloneDeep(query.value)
   }
   async function runBatch(action: 'enable' | 'disable' | 'delete') {
-    if (busy.value) return
+    if (busy.value || !auth.hasPermission(`data-collect:${action === 'delete' ? 'delete' : 'action'}`)) return
     if ((!selection.all.value && !selection.selectedRows.value.length) || !rows.value.length) {
       onlyMessage($t('Point.index.400149-15'), 'warning'); return
     }
@@ -95,25 +97,28 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
       if (response.success) { onlyMessage($t('Point.index.400149-14')); await saved() }
     } finally { busy.value = false }
   }
-  const batchAdd = () => menu.jumpPage('data-collect/BatchAdd', { params: { id: scope.value.id } })
+  const batchAdd = () => {
+    if (!auth.hasPermission('data-collect:add')) return
+    return menu.jumpPage('data-collect/BatchAdd', { params: { id: scope.value.id } })
+  }
   // 添加与导入作用于当前采集器，不依赖已勾选点位。
   const batchActions = computed(() => [
     ...(state.scopeType === 'collector' ? [
       ...(pointActions.batchAdd ? [{
-        key: 'batchAdd', text: $t('DataCollect.index.400151-12'), icon: 'PlusOutlined', onClick: batchAdd,
+        key: 'batchAdd', permission: 'data-collect:add', text: $t('DataCollect.index.400151-12'), icon: 'PlusOutlined', onClick: batchAdd,
       }] : []),
       {
-        key: 'import', text: $t('Point.index.400149-2'), icon: 'ImportOutlined',
-        onClick: () => { visible.import = true },
+        key: 'import', permission: 'data-collect:import', text: $t('Point.index.400149-2'), icon: 'ImportOutlined',
+        onClick: () => { if (auth.hasPermission('data-collect:import')) visible.import = true },
       },
       {
-        key: 'update', text: $t('DataCollect.index.400151-19'), icon: 'EditOutlined',
+        key: 'update', permission: 'data-collect:update', text: $t('DataCollect.index.400151-19'), icon: 'EditOutlined',
         disabled: busy.value || !selection.selectedKeys.value.length,
-        onClick: () => { if (rows.value.length) visible.batchUpdate = true },
+        onClick: () => { if (auth.hasPermission('data-collect:update') && rows.value.length) visible.batchUpdate = true },
       },
     ] : []),
     ...(['enable', 'disable', 'delete'] as const).map(key => ({
-      key, text: $t(key === 'enable' ? 'DataCollect.index.400151-17' : key === 'disable' ? 'DataCollect.index.400151-20' : 'DataCollect.index.400151-22'),
+      key, permission: `data-collect:${key === 'delete' ? 'delete' : 'action'}`, text: $t(key === 'enable' ? 'DataCollect.index.400151-17' : key === 'disable' ? 'DataCollect.index.400151-20' : 'DataCollect.index.400151-22'),
       icon: key === 'enable' ? 'CheckCircleOutlined' : key === 'disable' ? 'StopOutlined' : 'DeleteOutlined',
       danger: key === 'delete', disabled: busy.value || !selection.selectedKeys.value.length,
       popConfirm: {
@@ -121,8 +126,9 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
         onConfirm: () => runBatch(key),
       },
     })),
-  ])
+  ].filter(action => auth.hasPermission(action.permission)))
   async function exportData() {
+    if (!canExport.value) return
     const provider = scope.value.provider === 'COLLECTOR_GATEWAY' ? scope.value.configuration?.collectorProvider : scope.value.provider
     const result = await exportPoint(scope.value.id || '', provider || '')
     if (!result) return
@@ -134,7 +140,7 @@ export function usePointActions(selection: Selection, query: Ref<PointQuery>, ro
   }
   onScopeDispose(() => { version++; editVersion++ })
   return {
-    visible, current, formCollector, editing, pointActions, jsonData, batchActions, busy, saved, add, edit, view, remove, getBatchParams,
+    visible, current, formCollector, editing, pointActions, jsonData, batchActions, canExport, busy, saved, add, edit, view, remove, getBatchParams,
     exportData, exportTemplate, pointImport, scope, batchAdd,
     scan: () => menu.jumpPage('data-collect/Scan', { params: { id: scope.value.id } }),
   }
