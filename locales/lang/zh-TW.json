@@ -388,7 +388,13 @@
       "operation": "次",
       "count": "個"
     },
-    "states": {"running":"執行中","partialError":"部分異常","failed":"執行異常","stopped":"已停止","unknown":"未知","created":"等待中","completed":"已完成","cancelled":"已取消","paused":"已暫停","collectionError":"採集異常","recentError":"最近有異常","recovered":"已恢復","open":"已熔斷","retrying":"降頻重試","halfOpen":"恢復探測","initializing":"初始化","starting":"啟動中","shutdown":"已關閉","connectionClosed":"連線已中斷","pending":"等待執行資訊"},
+    "states": {"running":"執行中","partialError":"部分異常","failed":"執行異常","stopped":"已停止","unknown":"未知","created":"等待中","completed":"已完成","cancelled":"已取消","paused":"已暫停","collectionError":"採集異常","recentError":"最近有異常","recovered":"已恢復","open":"已熔斷","retrying":"降頻重試","halfOpen":"恢復探測","initializing":"初始化","starting":"啟動中","shutdown":"已關閉","connectionClosed":"連線已中斷","pending":"等待執行資訊",
+      "standby": "備用",
+      "preparing": "準備中",
+      "candidate": "候選",
+      "unassigned": "無可用節點",
+      "takingOver": "接管中"
+    },
     "errors": {"Bad_Timeout":"裝置回應逾時","Bad_ConnectionLost":"裝置連線已中斷","Bad_InvalidAddress":"裝置位址無效","Bad_DecodingError":"通訊資料解析失敗","Bad_DecoderError":"資料解析或轉換失敗","Bad_ConnectionError":"裝置連線失敗，請檢查連線設定","Bad_ConnectionRefused":"裝置拒絕連線，請檢查位址、連接埠及服務狀態","Bad_ServerNotConnected":"尚未連線至裝置","Bad_ReadTimeout":"讀取裝置逾時","Bad_WriteTimeout":"寫入裝置逾時","Bad_ConfigurationError":"裝置設定有誤，請檢查點位和連線設定","unknown":"操作失敗，請參照狀態碼排查"},
     "stages": {"signal":"處理採集訊號",
       "execution": "執行本輪採集",
@@ -582,5 +588,15 @@
     "pluginFailed": "設定表單載入失敗",
     "savedOnly": "試讀使用已套用設定",
     "observationEnded": "觀測連線已結束"
+  },
+  "collectorScheduling": {
+    "allowed": "允許調度的節點",
+    "node": "節點",
+    "unrestricted": "全部可用節點",
+    "hint": "僅限定允許範圍，平台自動分配及故障遷移。",
+    "noNodes": "目前沒有已就緒的採集節點，可保留條件等待節點恢復。",
+    "loadFailed": "節點清單載入失敗",
+    "runningOn": "執行節點",
+    "targetNode": "目標節點"
   }
 }

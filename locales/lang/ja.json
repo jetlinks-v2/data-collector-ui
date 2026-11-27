@@ -663,7 +663,12 @@
       "starting": "起動中",
       "shutdown": "終了",
       "connectionClosed": "接続切断",
-      "pending": "稼働情報を待機中"
+      "pending": "稼働情報を待機中",
+      "standby": "待機中",
+      "preparing": "準備中",
+      "candidate": "候補",
+      "unassigned": "利用可能なノードなし",
+      "takingOver": "引き継ぎ中"
     },
     "errors": {
       "Bad_Timeout": "機器応答がタイムアウト",
@@ -2317,5 +2322,15 @@
       "1w": "週ごと",
       "1M": "月ごと"
     }
+  },
+  "collectorScheduling": {
+    "allowed": "配置を許可するノード",
+    "node": "ノード",
+    "unrestricted": "利用可能なすべてのノード",
+    "hint": "許可範囲を指定します。割り当てと障害時の移行はプラットフォームが行います。",
+    "noNodes": "準備済みの収集ノードがありません。条件を保持して復旧を待てます。",
+    "loadFailed": "ノードの読み込みに失敗しました",
+    "runningOn": "実行ノード",
+    "targetNode": "割り当て先"
   }
 }
