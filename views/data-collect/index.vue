@@ -1,7 +1,7 @@
 <template>
   <FullPage flex transparent-background :padding="0" class="cw-page">
   <div ref="root" class="collection-workspace" :class="{ 'cw-collapsed': navigation?.collapsed, 'cw-setup': !!setupProvider }" :style="{ '--cw-controls-height': `${controlsHeight}px` }">
-    <ResponsiveSplitter ref="navigation" v-model:collapsed="folded" class="cw-layout" :default-size="272" :min="232" :max="432" :end-min="592" collapse-on-drag :panel-title="$t('collectorWorkspace.navigation')">
+    <ResponsiveSplitter ref="navigation" v-model:collapsed="folded" class="cw-layout" :default-size="navigationContent?.preferredWidth || 272" :min="232" :max="432" :end-min="592" collapse-on-drag :panel-title="$t('collectorWorkspace.navigation')">
       <template #start="{ compact }"><div class="cw-navigation-pane" :class="{ 'is-compact': compact }"><ObjectNavigation ref="navigationContent" :collectors="collectors" :channels="channels" :selected="collector?.id" :selected-channel="selectedChannelId" :total="error && !collectors.length ? undefined : collectors.length" :loading="initializing || loading && !collectors.length" :drawer="compact" :controls="navigation?.startId" @select="select" @select-channel="value => select(undefined, value)" @collapse="folded = true" /></div></template>
       <template #end="{ collapsed, toggle, startId }"><main ref="main" class="cw-main">
         <div v-if="!setupProvider" class="cw-main-controls"><div ref="controlsContent" class="cw-controls-content">

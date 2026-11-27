@@ -24,8 +24,7 @@
         <a-skeleton-input v-if="!object.runtime" active size="small" class="cw-metric-skeleton cw-nav-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
         <template v-else>
           <i v-if="!indicators.length" class="cw-dot" :class="tone" />
-          <template v-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" class="cw-nav-state" :class="item.tone">{{ item.id === 'state' ? stateText : $t(`collectorMonitoring.attentionShort.${item.id}`,{count:item.count}) }}</span></template>
-          <span v-else class="cw-nav-state">{{ stateText }}</span>
+          <span class="cw-nav-state-group"><template v-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" class="cw-nav-attention" :class="item.tone" role="img" :aria-label="indicatorLabel(item)"><AIcon :type="item.icon" aria-hidden="true" /><span v-if="item.count != null">{{ item.count }}</span></span></template><AutoFitText v-else class="cw-nav-state" :text="stateText" :min-size="11" :max-size="12" :tooltip="false" /></span>
           <span v-for="item in navigationMetrics" :key="item.key" class="cw-nav-metric" :title="`${$t(item.label)} · ${$t(item.hint)}`"><AIcon :type="item.icon" aria-hidden="true" /><b>{{ quantity(item).value }}</b><small v-if="quantity(item).unit">{{ quantity(item).unit }}</small></span>
         </template>
       </button>
@@ -47,6 +46,7 @@
 import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
+import { AutoFitText } from '@jetlinks-web-core/components'
 import type { CollectorObject, EntityKind, MetricSnapshot } from '../../../../types/workspace'
 import { objectStateText, objectTone } from '../../../../types/workspace'
 import { runtimeIndicators, runtimePrimaryMetrics, showRuntimeMetric } from '../../../../utils/runtimeMonitoring'
@@ -75,9 +75,10 @@ onBeforeUnmount(()=>setDiagnosticVisible(false))
 const indicators=computed(()=>runtimeIndicators(props.object,props.kind))
 const tone=computed(()=>!props.object.runtime ? 'gray' : indicators.value.some(item=>item.tone === 'bad') ? 'bad' : indicators.value.some(item=>item.tone === 'warn') ? 'warn' : objectTone(props.object))
 const stateText=computed(()=>!props.object.runtime ? t('collectorRuntime.states.pending') : !props.object.runtime.available ? t('collectorWorkspace.unavailable') : objectStateText(props.object,state=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined))
-const label=computed(()=>[t('collectorMonitoring.monitoring'),...indicators.value.map(item=>item.id === 'state'
-  ? objectStateText(props.object,state=>te(`collectorRuntime.states.${state}`) ? t(`collectorRuntime.states.${state}`) : undefined)
-  : t(item.id === 'disconnected' ? 'collectorMonitoring.disconnected' : `collectorMonitoring.attention.${item.id}`,{count:item.count}))].join(' · '))
+function indicatorLabel(item:{id:string;count?:number}) {
+  return item.id === 'state' ? stateText.value : t(item.id === 'disconnected' ? 'collectorMonitoring.disconnected' : `collectorMonitoring.attention.${item.id}`,{count:item.count})
+}
+const label=computed(()=>[t('collectorMonitoring.monitoring'),...indicators.value.map(indicatorLabel)].join(' · '))
 const sampledAt=computed(()=>props.object.monitoring?.timestamp ? dayjs(props.object.monitoring.timestamp).format('HH:mm:ss') : t('collectorMonitoring.empty.waiting'))
 const numberFormat=computed(()=>new Intl.NumberFormat(locale.value,{maximumFractionDigits:2}))
 const number=(value?:number)=>value != null ? numberFormat.value.format(value) : '—'

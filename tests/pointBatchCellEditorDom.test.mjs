@@ -35,7 +35,7 @@ function loader(overrides={}) {
     new Function('require','module','exports',transformSync(source,{loader:'ts',format:'cjs'}).code)(name=>{
       if(name==='vue')return vue
       if(name==='vue-i18n')return {useI18n:()=>({t,te:key=>t(key)!==key,locale:vue.ref('zh')})}
-      if(name==='@jetlinks-web-core/components')return {SelectOption:load('../../jetlinks-web-core/src/components/SelectOption/index.vue').default}
+      if(name==='@jetlinks-web-core/components')return {SelectOption:load('../../jetlinks-web-core/src/components/SelectOption/index.vue').default,AutoFitText:load('../../jetlinks-web-core/src/components/AutoFitText/index.vue').default}
       if(Object.hasOwn(overrides,name))return overrides[name]
       if(name.startsWith('.')){let path=resolve(dirname(filename),name);if(!existsSync(path))path+='.ts';return load(path)}
       return require(name)
@@ -205,14 +205,16 @@ test('navigation keeps attention beside quiet key metrics, including zero, total
     assert.equal(page.container.querySelector('.cw-nav-monitor'),null,'navigation has one monitoring entry')
     assert.equal(status.querySelector('.cw-dot'),null)
     const values=()=>[...status.querySelectorAll('.cw-nav-metric b')].map(node=>node.textContent)
-    assert.equal(status.querySelectorAll('[data-icon="CloseCircleOutlined"]').length,0);assert.ok(status.textContent.includes(t('collectorMonitoring.attentionShort.errors')))
+    assert.equal(status.querySelectorAll('[data-icon="CloseCircleOutlined"]').length,1)
+    assert.equal(status.querySelector('.cw-nav-attention').textContent,'42')
+    assert.equal(status.querySelector('.cw-nav-attention').getAttribute('aria-label'),t('collectorMonitoring.attention.errors'))
     assert.deepEqual(values(),['12.5','0'],'an error keeps collection and output visible, including real zero')
     assert.equal(status.querySelectorAll('.cw-nav-metric [data-icon="PlayCircleOutlined"]').length,1)
     assert.equal(status.querySelectorAll('.cw-nav-metric [data-icon="ExportOutlined"]').length,1)
     assert.ok(status.getAttribute('aria-label').includes(`${t('collectorMonitoring.path.executions')} 12.5/s`))
     assert.ok(status.getAttribute('aria-label').includes(`${t('collectorMonitoring.output')} 0/s`))
     object.value.monitoring.pointSummary.states={retrying:2};await settle()
-    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="ClockCircleOutlined"]').length,0)
+    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="ClockCircleOutlined"]').length,1)
     assert.deepEqual(values(),['12.5','0'],'protection states do not hide real metrics')
     object.value.monitoring.pointSummary.states={running:2};await settle()
     assert.equal(status.querySelectorAll('.cw-dot').length,1)
@@ -226,14 +228,14 @@ test('navigation keeps attention beside quiet key metrics, including zero, total
     assert.deepEqual(values(),[],'unavailable nodes do not show stale totals as current data')
     kind.value='channel';object.value={id:'ch',name:'Channel',runtime:{available:true,state:'running',runtimeState:'running'},monitoring:{readRate:0,writeRate:0,activeConnections:0}};await settle()
     assert.equal(status.querySelectorAll('.cw-dot').length,0)
-    assert.ok(status.textContent.includes(t('collectorMonitoring.attentionShort.disconnected')),'traffic keeps its independent connection state')
+    assert.equal(status.querySelector('.cw-nav-attention').getAttribute('aria-label'),t('collectorMonitoring.disconnected'),'traffic keeps its independent connection state')
     assert.deepEqual(values(),['0','0'])
     assert.equal(status.querySelectorAll('[data-icon="DownloadOutlined"]').length,1);assert.equal(status.querySelectorAll('[data-icon="UploadOutlined"]').length,1)
     object.value.monitoring.activeConnections=1;await settle()
     assert.equal(status.querySelector('.cw-nav-state').textContent,t('collectorRuntime.states.running'),'channel traffic must not replace the running state')
     assert.deepEqual(values(),['0','0'])
     object.value.monitoring={activeConnections:0};await settle()
-    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="DisconnectOutlined"]').length,0)
+    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="DisconnectOutlined"]').length,1)
     assert.deepEqual(values(),[])
   } finally {page.close()}
 })
