@@ -192,11 +192,11 @@ test('history saving exposes real checkboxes and updates only the selected polic
   } finally {page.close()}
 })
 
-test('navigation uses one status marker for attention and keeps dots for plain state or channel traffic',async()=>{
+test('navigation keeps attention beside quiet key metrics, including zero, totals and channel traffic',async()=>{
   const stub={__esModule:true,default:passthrough}
   const load=loader({'./WorkspaceStatus.vue':stub,'./RuntimePointSummary.vue':stub,'./RuntimeDataFlow.vue':stub,'./RuntimeFailureNotice.vue':stub,'../../hook/useRuntimeMetricMetadata':{useRuntimeMetricMetadata:()=>({})}})
   const Metrics=load('views/data-collect/components/workspace/RuntimeCardMetrics.vue').default
-  const object=vue.ref({id:'c',name:'Collector',runtime:{available:true,state:'running'},monitoring:{pointSummary:{states:{collectionError:42}}}}),kind=vue.ref('collector')
+  const object=vue.ref({id:'c',name:'Collector',runtime:{available:true,state:'running',runtimeState:'running'},monitoring:{collectionRate:12.5,outputRate:0,pointSummary:{states:{collectionError:42}}}}),kind=vue.ref('collector')
   const Icon={props:['type'],setup:props=>()=>vue.h('span',{'data-icon':props.type})}
   const page=mount({setup:()=>()=>vue.h(Metrics,{object:object.value,kind:kind.value,variant:'navigation'})},{'a-popover':passthrough,AIcon:Icon})
   try {
@@ -204,16 +204,37 @@ test('navigation uses one status marker for attention and keeps dots for plain s
     assert.equal(status.tagName,'BUTTON','the status row owns the named, keyboard accessible monitoring entry')
     assert.equal(page.container.querySelector('.cw-nav-monitor'),null,'navigation has one monitoring entry')
     assert.equal(status.querySelector('.cw-dot'),null)
-    assert.equal(status.querySelectorAll('[data-icon="CloseCircleOutlined"]').length,1);assert.ok(status.textContent.includes(t('collectorMonitoring.attentionShort.errors')))
+    const values=()=>[...status.querySelectorAll('.cw-nav-metric b')].map(node=>node.textContent)
+    assert.equal(status.querySelectorAll('[data-icon="CloseCircleOutlined"]').length,0);assert.ok(status.textContent.includes(t('collectorMonitoring.attentionShort.errors')))
+    assert.deepEqual(values(),['12.5','0'],'an error keeps collection and output visible, including real zero')
+    assert.equal(status.querySelectorAll('.cw-nav-metric [data-icon="PlayCircleOutlined"]').length,1)
+    assert.equal(status.querySelectorAll('.cw-nav-metric [data-icon="ExportOutlined"]').length,1)
+    assert.ok(status.getAttribute('aria-label').includes(`${t('collectorMonitoring.path.executions')} 12.5/s`))
+    assert.ok(status.getAttribute('aria-label').includes(`${t('collectorMonitoring.output')} 0/s`))
     object.value.monitoring.pointSummary.states={retrying:2};await settle()
-    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="ClockCircleOutlined"]').length,1)
+    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="ClockCircleOutlined"]').length,0)
+    assert.deepEqual(values(),['12.5','0'],'protection states do not hide real metrics')
     object.value.monitoring.pointSummary.states={running:2};await settle()
     assert.equal(status.querySelectorAll('.cw-dot').length,1)
-    kind.value='channel';object.value={id:'ch',name:'Channel',runtime:{available:true,state:'running'},monitoring:{readRate:0,writeRate:0,activeConnections:0}};await settle()
-    assert.equal(status.querySelectorAll('.cw-dot').length,1,'traffic keeps its independent connection state marker')
+    assert.equal(status.querySelector('.cw-nav-state').textContent,t('collectorRuntime.states.running'),'healthy collectors keep their state alongside metrics')
+    assert.deepEqual(values(),['12.5','0'])
+    object.value.monitoring={collectionTotal:120,outputTotal:0,pointSummary:{states:{collectionError:2}}};await settle()
+    assert.deepEqual(values(),['120','0'],'the first snapshot uses cumulative values instead of inventing a rate')
+    assert.ok(status.getAttribute('aria-label').includes(`${t('collectorMonitoring.collectionTotal')} 120`))
+    assert.equal(status.textContent.includes('/s'),false)
+    object.value.runtime.available=false;await settle()
+    assert.deepEqual(values(),[],'unavailable nodes do not show stale totals as current data')
+    kind.value='channel';object.value={id:'ch',name:'Channel',runtime:{available:true,state:'running',runtimeState:'running'},monitoring:{readRate:0,writeRate:0,activeConnections:0}};await settle()
+    assert.equal(status.querySelectorAll('.cw-dot').length,0)
+    assert.ok(status.textContent.includes(t('collectorMonitoring.attentionShort.disconnected')),'traffic keeps its independent connection state')
+    assert.deepEqual(values(),['0','0'])
     assert.equal(status.querySelectorAll('[data-icon="DownloadOutlined"]').length,1);assert.equal(status.querySelectorAll('[data-icon="UploadOutlined"]').length,1)
+    object.value.monitoring.activeConnections=1;await settle()
+    assert.equal(status.querySelector('.cw-nav-state').textContent,t('collectorRuntime.states.running'),'channel traffic must not replace the running state')
+    assert.deepEqual(values(),['0','0'])
     object.value.monitoring={activeConnections:0};await settle()
-    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="DisconnectOutlined"]').length,1)
+    assert.equal(status.querySelector('.cw-dot'),null);assert.equal(status.querySelectorAll('[data-icon="DisconnectOutlined"]').length,0)
+    assert.deepEqual(values(),[])
   } finally {page.close()}
 })
 

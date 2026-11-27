@@ -11,7 +11,7 @@
         <p v-if="!object.runtime?.available" class="cw-monitoring-empty">{{ $t(object.runtime ? 'collectorWorkspace.unavailable' : 'collectorMonitoring.waiting') }}</p>
         <template v-else>
           <div class="cw-monitoring-values">
-            <div v-for="item in visibleMetrics" :key="item.key" :title="`${$t(item.hint)}${hasValue(item.value) ? `\n${item.value} ${item.unit}` : ''}`"><span><AIcon :type="item.icon" />{{ $t(item.label) }}</span><strong v-if="hasValue(item.value)">{{ quantity(item).value }}<small v-if="quantity(item).unit">{{ quantity(item).unit }}</small></strong><a-tooltip v-else :title="$t('collectorMonitoring.empty.calculating')"><a-skeleton-input class="cw-metric-skeleton" active size="small" :aria-label="$t('collectorMonitoring.empty.calculating')" /></a-tooltip></div>
+            <div v-for="item in visibleMetrics" :key="item.key" :title="`${$t(item.hint)}${hasValue(item.value) ? `\n${item.value} ${item.unit}` : ''}`"><span><AIcon :type="item.icon" aria-hidden="true" />{{ $t(item.label) }}</span><strong v-if="hasValue(item.value)">{{ quantity(item).value }}<small v-if="quantity(item).unit">{{ quantity(item).unit }}</small></strong><a-tooltip v-else :title="$t('collectorMonitoring.empty.calculating')"><a-skeleton-input class="cw-metric-skeleton" active size="small" :aria-label="$t('collectorMonitoring.empty.calculating')" /></a-tooltip></div>
           </div>
           <RuntimePointSummary v-if="kind === 'collector'" :summary="object.monitoring?.pointSummary" compact />
           <RuntimeFailureNotice :object="object" attention-only />
@@ -20,13 +20,13 @@
       </div>
     </template>
     <div v-if="variant === 'navigation'" class="cw-nav-runtime" :class="tone" @keydown.esc.stop="open = false">
-      <button class="cw-nav-status" :class="{'is-open':open}" :aria-label="`${object.name} · ${stateText} · ${label}`" :aria-expanded="open || detailsOpen" @click.stop="showDetails">
+      <button class="cw-nav-status" :class="{'is-open':open}" :aria-label="navigationLabel" :aria-expanded="open || detailsOpen" @click.stop="showDetails">
         <a-skeleton-input v-if="!object.runtime" active size="small" class="cw-metric-skeleton cw-nav-skeleton" :aria-label="$t('collectorWorkspace.loading')" />
         <template v-else>
-          <i v-if="navigationMetrics.length || !indicators.length" class="cw-dot" :class="tone" />
-          <template v-if="navigationMetrics.length"><span v-for="item in navigationMetrics" :key="item.key"><AIcon :type="item.icon" />{{ quantity(item).value }}<small>{{ quantity(item).unit }}</small></span></template>
-          <template v-else-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" :class="item.tone"><AIcon :type="item.icon" />{{ item.id === 'state' ? stateText : $t(`collectorMonitoring.attentionShort.${item.id}`,{count:item.count}) }}</span></template>
-          <template v-else><span>{{ stateText }}</span><span v-if="object.runtime?.available && (object.monitoring?.sampleRate ?? object.monitoring?.collectionRate) != null" class="cw-nav-rate" :title="$t('collectorMonitoring.sampleRateHint')">{{ number(object.monitoring?.sampleRate ?? object.monitoring?.collectionRate) }}/s</span></template>
+          <i v-if="!indicators.length" class="cw-dot" :class="tone" />
+          <template v-if="indicators.length"><span v-for="item in indicators.slice(0,2)" :key="item.id" class="cw-nav-state" :class="item.tone">{{ item.id === 'state' ? stateText : $t(`collectorMonitoring.attentionShort.${item.id}`,{count:item.count}) }}</span></template>
+          <span v-else class="cw-nav-state">{{ stateText }}</span>
+          <span v-for="item in navigationMetrics" :key="item.key" class="cw-nav-metric" :title="`${$t(item.label)} · ${$t(item.hint)}`"><AIcon :type="item.icon" aria-hidden="true" /><b>{{ quantity(item).value }}</b><small v-if="quantity(item).unit">{{ quantity(item).unit }}</small></span>
         </template>
       </button>
     </div>
@@ -97,13 +97,14 @@ const metrics=computed(()=>{
     ...runtimePrimaryMetrics(props.object,props.kind),
     {key:'duration',icon:'ClockCircleOutlined',label:'collectorMonitoring.duration',hint:props.kind === 'point' ? 'collectorMonitoring.pointDurationHint' : 'collectorMonitoring.durationHint',value:monitoring?.durationNanos != null ? monitoring.durationNanos / 1e6 : undefined,unit:'ms',ids:[props.kind === 'point' ? 'lastCollectionTimeNanos' : 'lastTaskTimeNanos']},
   ]
-  if(!values.some(item=>item.ids.includes('receivedSamples')))values.splice(2,0,{key:'received',icon:'DotChartOutlined',label:'collectorMonitoring.data',hint:'collectorMonitoring.sampleRateHint',value:monitoring?.sampleRate,unit:'/s',ids:['receivedSamples']})
+  if(!values.some(item=>item.ids.includes('receivedSamples')))values.splice(2,0,{key:'received',icon:'DownloadOutlined',label:'collectorMonitoring.data',hint:'collectorMonitoring.sampleRateHint',value:monitoring?.sampleRate,unit:'/s',ids:['receivedSamples']})
   if(props.kind === 'collector')values.push({key:'pending',icon:'BarsOutlined',label:'collectorMonitoring.pending',hint:'collectorMonitoring.pendingHint',value:monitoring?.pending,unit:'',ids:['pending']})
   return values
 })
 const visibleMetrics=computed(()=>metrics.value.filter(item=>showRuntimeMetric(props.object,item.value,item.ids)))
 const keyMetrics=computed(()=>metrics.value.slice(0,2).filter(item=>showRuntimeMetric(props.object,item.value,item.ids)))
-const navigationMetrics=computed(()=>props.kind === 'channel' ? keyMetrics.value.filter(item=>hasValue(item.value)) : [])
+const navigationMetrics=computed(()=>keyMetrics.value.filter(item=>hasValue(item.value)))
+const navigationLabel=computed(()=>[props.object.name,stateText.value,label.value,...navigationMetrics.value.map(item=>`${t(item.label)} ${quantity(item).value}${quantity(item).unit}`)].join(' · '))
 const metricNodes=computed(()=>{
   if(!detailsOpen.value)return []
   const values=props.object.monitoring?.nodes || (props.object.runtime ? [props.object.runtime] : [])

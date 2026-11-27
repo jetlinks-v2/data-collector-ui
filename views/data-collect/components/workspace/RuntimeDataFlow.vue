@@ -45,7 +45,7 @@
     </div>
     <div v-if="retrySeconds != null" class="cw-flow-note warn"><AIcon type="ClockCircleOutlined" />{{ $t('collectorMonitoring.retryAfter',{seconds:retrySeconds}) }}</div>
     <div v-if="!point || (!compact && monitoring?.rateWindowMillis != null && (!cadence || cadence.quantityRatio != null))" class="cw-flow-window">
-      <span v-if="!point" :class="{bad:readFailed}" :title="$t(flow.execution.hint)"><AIcon :type="readFailed ? 'WarningOutlined' : 'FieldTimeOutlined'" />{{ $t(flow.execution.label) }} <b>{{ number(flow.execution.value) }}</b><small v-if="!flow.totals && flow.execution.value != null">{{ $t('collectorMonitoring.path.runsPerSecond') }}</small></span>
+      <span v-if="!point" :class="{bad:readFailed}" :title="$t(flow.execution.hint)"><AIcon :type="readFailed ? 'WarningOutlined' : 'PlayCircleOutlined'" />{{ $t(flow.execution.label) }} <b>{{ number(flow.execution.value) }}</b><small v-if="!flow.totals && flow.execution.value != null">{{ $t('collectorMonitoring.path.runsPerSecond') }}</small></span>
       <span v-if="monitoring?.rateWindowMillis != null && (point || !flow.totals)">{{ $t('collectorMonitoring.rateWindow',{time:milliseconds(monitoring.rateWindowMillis)}) }}</span>
     </div>
   </div>
